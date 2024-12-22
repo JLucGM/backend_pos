@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
             $table->string('slug');
             $table->string('identification');
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->timestamps();
         });
     }

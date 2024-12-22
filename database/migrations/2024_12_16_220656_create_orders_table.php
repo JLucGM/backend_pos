@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('status'); 
             $table->string('total');
-            $table->string('direction_delivery');
+            $table->string('direction_delivery')->nullable();
             $table->foreignId('payments_id')->nullable()->constrained();
             $table->foreignId('user_id')->nullable()->constrained();
             $table->foreignId('client_id')->nullable()->constrained();

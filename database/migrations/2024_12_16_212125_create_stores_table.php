@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
             $table->string('slug');
-            $table->string('phone');
-            $table->text('direction');
+            $table->string('phone')->nullable();
+            $table->text('direction')->nullable();
             $table->foreignId('country_id')->nullable()->constrained();
             $table->foreignId('state_id')->nullable()->constrained();
             $table->foreignId('city_id')->nullable()->constrained();

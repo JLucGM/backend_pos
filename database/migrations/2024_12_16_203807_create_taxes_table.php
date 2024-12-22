@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 255);
             $table->string('slug');
-            $table->string('description', 100);
+            $table->string('description', 100)->nullable();
             $table->decimal('tax_rate', 5, 2);
             $table->timestamps();
         });
