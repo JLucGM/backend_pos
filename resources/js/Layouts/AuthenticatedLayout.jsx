@@ -18,6 +18,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { Toaster } from "@/components/ui/sonner"
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
@@ -60,6 +61,7 @@ export default function AuthenticatedLayout({ header, children }) {
           <main className='px-8'>
             {children}
           </main>
+          <Toaster />
         </div>
       </SidebarInset>
     </SidebarProvider>

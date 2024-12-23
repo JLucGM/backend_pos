@@ -29,6 +29,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { Link } from "@inertiajs/react"
 
 export function NavUser({
   user
@@ -96,7 +97,9 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <LogOut />
-              Log out
+              <Link href={route('logout')} method="post" as="button">
+                                 Log Out
+                              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

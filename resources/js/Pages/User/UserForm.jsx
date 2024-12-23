@@ -1,0 +1,112 @@
+// UserForm.jsx
+import InputError from '@/Components/InputError';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+export default function UserForm({ data, setData, errors, roles, role }) {
+    return (
+        <>
+            <div>
+                <InputLabel htmlFor="name" value="Nombre" />
+                <TextInput
+                    id="name"
+                    type="text"
+                    name="name"
+                    value={data.name}
+                    className="mt-1 block w-full"
+                    isFocused={true}
+                    onChange={(e) => setData('name', e.target.value)}
+                />
+                <InputError message={errors.name} className="mt-2" />
+            </div>
+
+            <div>
+                <InputLabel htmlFor="email" value="Correo" />
+                <TextInput
+                    id="email"
+                    type="text"
+                    name="email"
+                    value={data.email}
+                    className="mt-1 block w-full"
+                    isFocused={true}
+                    onChange={(e) => setData('email', e.target.value)}
+                />
+                <InputError message={errors.email} className="mt-2" />
+            </div>
+
+            <div>
+                <InputLabel htmlFor="password" value="Contraseña" />
+                <TextInput
+                    id="password"
+                    type="text"
+                    name="password"
+                    value={data.password}
+                    className="mt-1 block w-full"
+                    isFocused={true}
+                    onChange={(e) => setData('password', e.target.value)}
+                />
+                <InputError message={errors.password} className="mt-2" />
+            </div>
+
+            <div>
+                <InputLabel htmlFor="phone" value="Teléfono" />
+                <TextInput
+                    id="phone"
+                    type="text"
+                    name="phone"
+                    value={data.phone}
+                    className="mt-1 block w-full"
+                    isFocused={true}
+                    onChange={(e) => setData('phone', e.target.value)}
+                />
+                <InputError message={errors.phone} className="mt-2" />
+            </div>
+
+            <div>
+                <InputLabel htmlFor="status" value="Estado" />
+                <select
+                    name="status"
+                    id="status"
+                    value={data.status}
+                    className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-full"
+                    onChange={(e) => setData('status', e.target.value)}
+                >
+                    <option value={0}>Inactivo</option>
+                    <option value={1}>Activo</option>
+                </select>
+                <InputError message={errors.status} className="mt-2" />
+            </div>
+
+            <div>
+                
+                <InputLabel htmlFor="avatar" value="Avatar" />
+                <TextInput
+                    id="avatar"
+                    type="file"
+                    name="avatar"
+                    className="mt-1 block w-full"
+                    onChange={(e) => setData('avatar', e.target.files[0])}
+                />
+                <InputError message={errors.avatar} className="mt-2" />
+            </div>
+
+            <div>
+                <InputLabel htmlFor="role" value="Rol" />
+                <Select value={data.role} onValueChange={(value) => setData('role', value)}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un rol" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {roles.map((role) => (
+                            <SelectItem key={role.id} value={role.name}>
+                                {role.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <InputError message={errors.role} className="mt-2" />
+            </div>
+        </>
+    );
+}

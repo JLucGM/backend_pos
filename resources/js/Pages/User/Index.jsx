@@ -1,16 +1,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
-import {  Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
+import { Head } from '@inertiajs/react';
+import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { useState } from 'react'
 import { useForm } from '@inertiajs/react';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
-import PrimaryButton from '@/Components/PrimaryButton';
+import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
 import { Button } from '@/Components/ui/button';
 import { userColumns } from './Columns';
+import UserForm from './UserForm';
 
 export default function Index({ auth, users, roles, role, permission }) {
     //console.log(users)
@@ -65,12 +66,12 @@ export default function Index({ auth, users, roles, role, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Usuarios
                     </h2>
-                     {permission.some(perm => perm.name === 'admin.user.create') && (
+                    {permission.some(perm => perm.name === 'admin.user.create') && (
                         <Button variant="outline"
                             onClick={() => setIsOpen(true)}>
                             Crear
                         </Button>
-                    )} 
+                    )}
                 </div>
             }
         >
@@ -107,7 +108,9 @@ export default function Index({ auth, users, roles, role, permission }) {
                         <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear usuario</DialogTitle>
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del usuario</Description>
                         <form onSubmit={submit} className='space-y-4'>
-                            <div>
+                            
+                            <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} />
+                            {/* <div>
                                 <InputLabel htmlFor="name" value="Nombre" />
 
                                 <TextInput
@@ -217,18 +220,24 @@ export default function Index({ auth, users, roles, role, permission }) {
                                 </select>
 
                                 <InputError message={errors.role} className="mt-2" />
-                            </div>
+                            </div> */}
 
                             <div className="flex justify-end p-2.5">
-                                <PrimaryButton>
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        toast("Creado.", {
+                                            description: "Se ha creado con éxito.",
+                                        })
+                                    }
+                                >
                                     Guardar
-                                </PrimaryButton>
+                                </Button>
                             </div>
                         </form>
                     </DialogPanel>
                 </div>
-            </Dialog> 
-
+            </Dialog>
         </AuthenticatedLayout>
     )
 }
