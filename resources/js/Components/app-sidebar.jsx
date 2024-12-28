@@ -3,6 +3,7 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
+  Cog,
   Command,
   Frame,
   GalleryVerticalEnd,
@@ -54,43 +55,43 @@ export function AppSidebar({
       },
     ],
     navMain: [
-      // {
-      //   title: "Playground",
-      //   url: "",
-      //   icon: SquareTerminal,
-      //   isActive: true,
-      //   items: [
-      //     {
-      //       title: "History",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Starred",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Settings",
-      //       url: "#",
-      //     },
-      //   ],
-      // },
       {
         title: "usuarios",
         url: "#",
         icon: Bot,
         items: [
           {
-            title: "Users",
+            title: "Staff",
             url: "user.index",
           },
           // {
-          //   title: "Explorer",
-          //   url: "#",
+          //   title: "Taxes",
+          //   url: "tax.index",
           // },
           // {
           //   title: "Quantum",
           //   url: "#",
           // },
+        ],
+      },
+      {
+        title: "Settings",
+        url: "",
+        icon: Cog,
+        // isActive: true,
+        items: [
+          // {
+          //   title: "History",
+          //   url: "user.index",
+          // },
+          // {
+          //   title: "Starred",
+          //   url: "user.index",
+          // },
+          {
+            title: "Taxes",
+            url: "tax.index",
+          },
         ],
       },
       // {

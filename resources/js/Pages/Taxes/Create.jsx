@@ -1,50 +1,45 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
-import UserForm from './UserForm';
+import { Head, Link, useForm } from '@inertiajs/react';
+import TaxesForm from './TaxesForm';
 import { Button } from '@/Components/ui/button';
 
-export default function Create({ roles, role }) {
+export default function Create({ }) {
 
     const initialValues = {
         name: "",
-        phone: "",
-        email: "",
-        password: "",
-        status: 0, // o 1, dependiendo del valor predeterminado que desees
-        avatar: null,
-        role: "",
+        description: "",
+        tax_rate: "",
     }
 
     const { data, setData, errors, post } = useForm(initialValues)
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('user.store'))
-        console.log(data)
+        post(route('tax.store'))
+        // console.log(data)
     }
     return (
         <AuthenticatedLayout
             header={
                 <div className='flex justify-between items-center px-6'>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Crear Usuario
+                        Crear impuesto
                     </h2>
                 </div>
             }
         >
-            <Head className="capitalize" title="Usuario" />
+            <Head className="capitalize" title="Impuesto" />
 
-            <div className="p-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
-                        <div className="text-gray-900 dark:text-gray-100">
-                            <form onSubmit={submit} className='space-y-4'>
+            <div className="max-w-7xl mx-auto">
+                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
+                    <div className="text-gray-900 dark:text-gray-100">
+                        <form onSubmit={submit} className='space-y-4'>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} />
-                                </div>
-                                
-                                <div className="flex justify-end p-2.5">
+                            <div className="grid grid-cols-2 gap-4">
+                                <TaxesForm data={data} setData={setData} errors={errors} />
+                            </div>
+
+                            <div className="flex justify-end p-2.5">
                                 <Button
                                     variant="outline"
                                     onClick={() =>
@@ -57,8 +52,7 @@ export default function Create({ roles, role }) {
                                 </Button>
                             </div>
 
-                            </form>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>

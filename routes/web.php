@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +32,20 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
     Route::post('users/{user}', [UserController::class, 'update'])->name('user.update');
     Route::delete('users/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+    
+    Route::get('taxes', [TaxController::class, 'index'])->name('tax.index');
+    Route::get('taxes/create', [TaxController::class, 'create'])->name('tax.create');
+    Route::post('taxes', [TaxController::class, 'store'])->name('tax.store');
+    Route::get('taxes/{tax}/edit', [TaxController::class, 'edit'])->name('tax.edit');
+    Route::post('taxes/{tax}', [TaxController::class, 'update'])->name('tax.update');
+    Route::delete('taxes/{tax}', [TaxController::class, 'destroy'])->name('tax.destroy');
+    
+    Route::get('categories', [CategoryController::class, 'index'])->name('category.index');
+    Route::get('categories/create', [CategoryController::class, 'create'])->name('category.create');
+    Route::post('categories', [CategoryController::class, 'store'])->name('category.store');
+    Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('category.edit');
+    Route::post('categories/{category}', [CategoryController::class, 'update'])->name('category.update');
+    Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('category.destroy');
 
 });
 

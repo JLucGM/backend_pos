@@ -1,12 +1,22 @@
-// UserForm.jsx
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import { AspectRatio } from '@/Components/ui/aspect-ratio';
+import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function UserForm({ data, setData, errors, roles, role }) {
+export default function UserForm({ data, setData, errors, roles, role, user = "" }) {
     return (
         <>
+            {user.avatar ? (
+                <div className="w-[350px] mx-auto col-span-full">
+                    <AspectRatio ratio={14 / 9}>
+                        <img className='rounded-xl object-cover' src={user.avatar} alt="Avatar" />
+                    </AspectRatio>
+                </div>
+            ) : (
+                null
+            )}
             <div>
                 <InputLabel htmlFor="name" value="Nombre" />
                 <TextInput
@@ -79,9 +89,9 @@ export default function UserForm({ data, setData, errors, roles, role }) {
             </div>
 
             <div>
-                
+
                 <InputLabel htmlFor="avatar" value="Avatar" />
-                <TextInput
+                <Input
                     id="avatar"
                     type="file"
                     name="avatar"

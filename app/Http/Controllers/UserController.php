@@ -15,15 +15,15 @@ use Illuminate\Support\Facades\File;
 class UserController extends Controller
 {
 
-    // public function __construct()
-    // {
-    //     $this->middleware('auth');
+    public function __construct()
+    {
+        $this->middleware('auth');
 
-    //     $this->middleware('can:admin.user.index')->only('index');
-    //     $this->middleware('can:admin.user.create')->only('create', 'store');
-    //     $this->middleware('can:admin.user.edit')->only('edit', 'update');
-    //     // $this->middleware('can:admin.user.delete')->only('delete');
-    // }
+        $this->middleware('can:admin.user.index')->only('index');
+        $this->middleware('can:admin.user.create')->only('create', 'store');
+        $this->middleware('can:admin.user.edit')->only('edit', 'update');
+        // $this->middleware('can:admin.user.delete')->only('delete');
+    }
 
     /**
      * Display a listing of the resource.
@@ -45,9 +45,11 @@ class UserController extends Controller
      */
     public function create()
     {
+        $user = Auth::user();
         $roles = Role::all();
+        $role = $user->getRoleNames();
 
-        return Inertia::render('User/Create', compact('roles'));
+        return Inertia::render('User/Create', compact('roles','role'));
     }
 
     /**

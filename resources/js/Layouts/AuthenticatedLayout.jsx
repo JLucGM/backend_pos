@@ -1,8 +1,4 @@
-// import ApplicationLogo from '@/Components/ApplicationLogo';
-// import Dropdown from '@/Components/Dropdown';
-// import NavLink from '@/Components/NavLink';
-// import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -19,13 +15,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
-import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
-  const user = usePage().props.auth.user;
-
-  const [showingNavigationDropdown, setShowingNavigationDropdown] =
-    useState(false);
+  // const user = usePage().props.auth.user;
 
   return (
     <SidebarProvider>
@@ -34,7 +26,7 @@ export default function AuthenticatedLayout({ header, children }) {
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
+            {/* <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
@@ -47,13 +39,13 @@ export default function AuthenticatedLayout({ header, children }) {
                   <BreadcrumbPage>Data Fetching</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
-            </Breadcrumb>
+            </Breadcrumb> */}
           </div>
         </header>
         <div className="">
           {header && (
             <header className="bg-white  dark:bg-gray-800">
-              <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+              <div className="mx-auto max-w-7xl px-0 py-4 sm:px-5 lg:px-5">
                 {header}
               </div>
             </header>

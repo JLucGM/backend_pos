@@ -7,20 +7,15 @@ import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
 import { Button } from '@/Components/ui/button';
-import { userColumns } from './Columns';
-import UserForm from './UserForm';
+import { taxesColumns } from './Columns';
+import TaxesForm from './TaxesForm';
 
-export default function Index({ users, roles, role, permission }) {
-    //console.log(users)
+export default function Index({ taxes, permission }) {
     let [isOpen, setIsOpen] = useState(false)
     const { data, setData, errors, post } = useForm({
         name: "",
-        phone: "",
-        email: "",
-        password: "",
-        status: "0",
-        avatar: null,
-        role: "",
+        description: "",
+        tax_rate: "",
     });
 
     // const items = [
@@ -41,28 +36,23 @@ export default function Index({ users, roles, role, permission }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('user.store'))
+        post(route('tax.store'))
         // console.log(data)
         setData({
             name: "",
-            phone: "",
-            email: "",
-            password: "",
-            status: "0",
-            avatar: null,
+            description: "",
+            tax_rate: "",
         });
     }
 
     return (
         <AuthenticatedLayout
-            roles={role}
-            permission={permission}
             header={
                 <div className='flex justify-between items-center'>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Usuarios
+                        Impuestos
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.user.create') && (
+                    {permission.some(perm => perm.name === 'admin.tax.create') && (
                         <Button variant="outline"
                             onClick={() => setIsOpen(true)}>
                             Crear
@@ -73,24 +63,22 @@ export default function Index({ users, roles, role, permission }) {
         >
             {/* <Breadcrumb items={items} /> */}
 
-            <Head className="capitalize" title="Usuarios" />
+            <Head className="capitalize" title="Impuestos" />
 
-            <div className="">
-                <div className="max-w-7xl mx-auto ">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden ">
-                        <div className=" text-gray-900 dark:text-gray-100">
-                            <div className="relative overflow-x-auto">
-                                <DataTable
-                                    columns={userColumns}
-                                    data={users}
-                                    routeEdit={'user.edit'}
-                                    routeDestroy={'user.destroy'}
-                                    editPermission={'admin.user.edit'} // Pasa el permiso de editar
-                                    deletePermission={'admin.user.delete'} // Pasa el permiso de eliminar
-                                    // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                                    permissions={permission}
-                                />
-                            </div>
+            <div className="max-w-7xl mx-auto ">
+                <div className="bg-white dark:bg-gray-800 overflow-hidden ">
+                    <div className=" text-gray-900 dark:text-gray-100">
+                        <div className="relative overflow-x-auto">
+                            <DataTable
+                                columns={taxesColumns}
+                                data={taxes}
+                                routeEdit={'tax.edit'}
+                                routeDestroy={'tax.destroy'}
+                                editPermission={'admin.tax.edit'} // Pasa el permiso de editar
+                                deletePermission={'admin.tax.delete'} // Pasa el permiso de eliminar
+                                // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                                permissions={permission}
+                            />
                         </div>
                     </div>
                 </div>
@@ -101,11 +89,11 @@ export default function Index({ users, roles, role, permission }) {
 
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
                     <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
-                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear usuario</DialogTitle>
-                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del usuario</Description>
+                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear impuesto</DialogTitle>
+                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del impuesto</Description>
                         <form onSubmit={submit} className='space-y-4'>
-                            
-                            <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} />
+
+                            <TaxesForm data={data} setData={setData} errors={errors} />
 
                             <div className="flex justify-end p-2.5">
                                 <Button

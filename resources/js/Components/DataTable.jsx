@@ -3,7 +3,7 @@ import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender, getPagin
 import { useState } from 'react';
 import TextInput from './TextInput';
 import { Link } from '@inertiajs/react';
-import { Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel, Select } from '@headlessui/react';
+import { Popover, PopoverButton, PopoverPanel, Select } from '@headlessui/react';
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, MagnifyingGlassIcon, MinusIcon, PencilSquareIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from './ui/button';
 // import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -50,7 +50,6 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
                     type="text"
                     value={filtering}
                     className="mt-1 block w-2/5 py-1.5 pl-7 "
-
                     onChange={(e) => setFiltering(e.target.value)}
                 />
             </div>
@@ -84,7 +83,6 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
                                 <th key="acciones" className="border-slate-300 border px-6 py-3 w-20">
                                     Acciones
                                 </th>
-
                             </tr>
                         ))
                     }
@@ -169,7 +167,6 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
                                             </PopoverPanel>
                                         </Popover>
 
-
                                     </td>
                                 </tr>
                                 {
@@ -224,9 +221,7 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
                         <ChevronLeftIcon
                             className='size-4'
                         />
-
                     </Button>
-
 
                     <span className='flex items-center mx-1'>
                         <TextInput
