@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('payments_method_details', function (Blueprint $table) {
             $table->id();
-            $table->string('data_types'); //Tipo de dato (email, cuenta, banco, etc.).
-            $table->string('value'); // Valor del tipo de dato (joedoe@mail.com, 1223456, Bank of america, etc)
+            $table->string('payments_method_details_data_types')->nullable(); //Tipo de dato (email, cuenta, banco, etc.).
+            $table->string('payments_method_details_value')->nullable(); // Valor del tipo de dato (joedoe@mail.com, 1223456, Bank of america, etc)
             $table->foreignId('payments_method_id')->nullable()->constrained();
             $table->timestamps();
         });

@@ -1,7 +1,7 @@
 import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export const taxesColumns = [
+export const PaymentMethodColumn = [
     {
         header: "#id",
         accessorKey: "id",
@@ -13,10 +13,6 @@ export const taxesColumns = [
     },
     {
         header: "Nombre",
-        accessorKey: "tax_name",
-    },
-    {
-        header: "tax_rate",
-        accessorKey: "tax_rate",
+        accessorKey: "payment_method_name",
     },
 ];

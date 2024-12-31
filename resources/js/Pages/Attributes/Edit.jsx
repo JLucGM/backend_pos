@@ -2,14 +2,12 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
-import TaxesForm from './TaxesForm';
+import AttributeForm from './AttributeForm';
 
-export default function Edit({ tax }) {
-    //  console.log(tax)
+export default function Edit({ attribute }) {
+    //  console.log(attribute)
     const initialValues = {
-        tax_name: tax.name,
-        tax_description: tax.description,
-        tax_rate: tax.tax_rate, 
+        attribute_name: attribute.attribute_name,
     }
 
     // const items = [
@@ -22,7 +20,7 @@ export default function Edit({ tax }) {
     //     },
     //     {
     //         name: 'Lista de usuario',
-    //         href: 'tax.index',
+    //         href: 'attribute.index',
     //         icon: {
     //             path: 'M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z',
     //         },
@@ -39,7 +37,7 @@ export default function Edit({ tax }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('tax.update', tax))
+        post(route('attribute.update', attribute))
         // console.log(data)
     }
     return (
@@ -47,9 +45,9 @@ export default function Edit({ tax }) {
             header={
                 <div className='flex justify-between items-center '>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Actualizar Usuario
+                        Actualizar atributo
                     </h2>
-                    {/* <Link href={route('tax.create')}
+                    {/* <Link href={route('attribute.create')}
                         className="capitalize py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                     >
                         Crear
@@ -59,7 +57,7 @@ export default function Edit({ tax }) {
         >
             {/* <Breadcrumb items={items} /> */}
 
-            <Head className="capitalize" title="Usuarios" />
+            <Head className="capitalize" title="atributos" />
 
             <div className="max-w-7xl mx-auto ">
                 <div className="bg-white dark:bg-gray-800 overflow-hidden">
@@ -67,7 +65,7 @@ export default function Edit({ tax }) {
                         <form onSubmit={submit} className='space-y-4'>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <TaxesForm data={data} setData={setData} errors={errors} />
+                                <AttributeForm data={data} setData={setData} errors={errors} />
                             </div>
 
                             <div className="flex justify-end p-2.5">

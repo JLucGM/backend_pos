@@ -13,8 +13,8 @@ import TaxesForm from './TaxesForm';
 export default function Index({ taxes, permission }) {
     let [isOpen, setIsOpen] = useState(false)
     const { data, setData, errors, post } = useForm({
-        name: "",
-        description: "",
+        tax_name: "",
+        tax_description: "",
         tax_rate: "",
     });
 
@@ -39,8 +39,8 @@ export default function Index({ taxes, permission }) {
         post(route('tax.store'))
         // console.log(data)
         setData({
-            name: "",
-            description: "",
+            tax_name: "",
+            tax_description: "",
             tax_rate: "",
         });
     }

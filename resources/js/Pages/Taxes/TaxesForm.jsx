@@ -6,15 +6,15 @@ export default function TaxesForm({ data, setData, errors }) {
     return (
         <>
             <div>
-                <InputLabel htmlFor="name" value="Nombre" />
+                <InputLabel htmlFor="tax_name" value="Nombre" />
                 <TextInput
-                    id="name"
+                    id="tax_name"
                     type="text"
-                    name="name"
-                    value={data.name}
+                    name="tax_name"
+                    value={data.tax_name}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('name', e.target.value)}
+                    onChange={(e) => setData('tax_name', e.target.value)}
                 />
                 <InputError message={errors.name} className="mt-2" />
             </div>
@@ -33,17 +33,17 @@ export default function TaxesForm({ data, setData, errors }) {
                 <InputError message={errors.tax_rate} className="mt-2" />
             </div>
             <div>
-                <InputLabel htmlFor="description" value="description" />
+                <InputLabel htmlFor="tax_description" value="tax_description" />
                 <TextInput
-                    id="description"
+                    id="tax_description"
                     type="text"
-                    name="description"
-                    value={data.description}
+                    name="tax_description"
+                    value={data.tax_description}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('description', e.target.value)}
+                    onChange={(e) => setData('tax_description', e.target.value)}
                 />
-                <InputError message={errors.description} className="mt-2" />
+                <InputError message={errors.tax_description} className="mt-2" />
             </div>
 
         </>

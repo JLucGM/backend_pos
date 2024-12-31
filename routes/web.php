@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UserController;
@@ -46,6 +48,20 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('category.edit');
     Route::post('categories/{category}', [CategoryController::class, 'update'])->name('category.update');
     Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('category.destroy');
+    
+    Route::get('attributes', [AttributeController::class, 'index'])->name('attribute.index');
+    Route::get('attributes/create', [AttributeController::class, 'create'])->name('attribute.create');
+    Route::post('attributes', [AttributeController::class, 'store'])->name('attribute.store');
+    Route::get('attributes/{attribute}/edit', [AttributeController::class, 'edit'])->name('attribute.edit');
+    Route::post('attributes/{attribute}', [AttributeController::class, 'update'])->name('attribute.update');
+    Route::delete('attributes/{attribute}', [AttributeController::class, 'destroy'])->name('attribute.destroy');
+    
+    Route::get('payments_methods', [PaymentMethodController::class, 'index'])->name('paymentmethod.index');
+    Route::get('payments_methods/create', [PaymentMethodController::class, 'create'])->name('paymentmethod.create');
+    Route::post('payments_methods', [PaymentMethodController::class, 'store'])->name('paymentmethod.store');
+    Route::get('payments_methods/{payment_method}/edit', [PaymentMethodController::class, 'edit'])->name('paymentmethod.edit');
+    Route::post('payments_methods/{payment_method}', [PaymentMethodController::class, 'update'])->name('paymentmethod.update');
+    Route::delete('payments_methods/{payment_method}', [PaymentMethodController::class, 'destroy'])->name('paymentmethod.destroy');
 
 });
 

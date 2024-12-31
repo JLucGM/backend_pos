@@ -10,6 +10,7 @@ import {
   Map,
   PieChart,
   Settings2,
+  ShoppingBag,
   SquareTerminal,
 } from "lucide-react"
 
@@ -56,6 +57,25 @@ export function AppSidebar({
     ],
     navMain: [
       {
+        title: "Inventario",
+        url: "#",
+        icon: ShoppingBag,
+        items: [
+          {
+            title: "Categoria",
+            url: "category.index",
+          },
+          {
+            title: "Atributo",
+            url: "attribute.index",
+          },
+          // {
+          //   title: "Quantum",
+          //   url: "#",
+          // },
+        ],
+      },
+      {
         title: "usuarios",
         url: "#",
         icon: Bot,
@@ -80,10 +100,10 @@ export function AppSidebar({
         icon: Cog,
         // isActive: true,
         items: [
-          // {
-          //   title: "History",
-          //   url: "user.index",
-          // },
+          {
+            title: "Metodo de pago",
+            url: "paymentmethod.index",
+          },
           // {
           //   title: "Starred",
           //   url: "user.index",

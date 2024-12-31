@@ -12,9 +12,9 @@ class Tax extends Model
     use HasFactory, HasSlug;
 
     protected $fillable = [
-        'name',
+        'tax_name',
         'slug',
-        'description',
+        'tax_description',
         'tax_rate',
     ];
 
@@ -26,7 +26,7 @@ class Tax extends Model
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('name')
+            ->generateSlugsFrom('tax_name')
             ->saveSlugsTo('slug');
     }
 }

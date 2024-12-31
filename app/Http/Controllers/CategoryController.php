@@ -45,7 +45,7 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->only('name');
+        $data = $request->only('category_name');
 
         Category::create($data); // Crear el nuevo usuario
 
@@ -74,7 +74,7 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        $data = $request->only('name', 'description', 'tax_rate');
+        $data = $request->only('category_name');
 
         $category->update($data); // Actualizar el usuario con los nuevos datos
 

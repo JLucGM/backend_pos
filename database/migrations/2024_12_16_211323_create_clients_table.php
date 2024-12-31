@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
+            $table->string('client_name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
             $table->string('slug');
-            $table->string('identification');
-            $table->string('phone')->nullable();
+            $table->string('client_identification');
+            $table->string('client_phone')->nullable();
             $table->timestamps();
         });
     }

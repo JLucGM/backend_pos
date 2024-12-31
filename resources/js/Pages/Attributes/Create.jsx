@@ -1,21 +1,19 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import TaxesForm from './TaxesForm';
+import CategoriesForm from './AttributeForm';
 import { Button } from '@/Components/ui/button';
 
 export default function Create({ }) {
 
     const initialValues = {
-        tax_name: "",
-        tax_description: "",
-        tax_rate: "",
+        name: "",
     }
 
     const { data, setData, errors, post } = useForm(initialValues)
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('tax.store'))
+        post(route('category.store'))
         // console.log(data)
     }
     return (
@@ -23,12 +21,12 @@ export default function Create({ }) {
             header={
                 <div className='flex justify-between items-center px-6'>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Crear impuesto
+                        Crear Categoria
                     </h2>
                 </div>
             }
         >
-            <Head className="capitalize" title="Impuesto" />
+            <Head className="capitalize" title="Categoria" />
 
             <div className="max-w-7xl mx-auto">
                 <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
@@ -36,7 +34,7 @@ export default function Create({ }) {
                         <form onSubmit={submit} className='space-y-4'>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <TaxesForm data={data} setData={setData} errors={errors} />
+                                <CategoriesForm data={data} setData={setData} errors={errors} />
                             </div>
 
                             <div className="flex justify-end p-2.5">

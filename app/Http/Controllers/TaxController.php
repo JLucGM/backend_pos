@@ -46,7 +46,7 @@ class TaxController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->only('name', 'description', 'tax_rate');
+        $data = $request->only('tax_name', 'tax_description', 'tax_rate');
 
         Tax::create($data); // Crear el nuevo usuario
 
@@ -75,7 +75,7 @@ class TaxController extends Controller
      */
     public function update(Request $request, Tax $tax)
     {
-        $data = $request->only('name', 'description', 'tax_rate');
+        $data = $request->only('tax_name', 'tax_description', 'tax_rate');
 
         $tax->update($data); // Actualizar el usuario con los nuevos datos
 

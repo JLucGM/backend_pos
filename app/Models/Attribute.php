@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
-class Category extends Model
+class Attribute extends Model
 {
     use HasFactory, HasSlug;
 
     protected $fillable = [
-        'category_name',
+        'attribute_name',
         'slug',
     ];
 
@@ -24,7 +24,7 @@ class Category extends Model
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('category_name')
+            ->generateSlugsFrom('attribute_name')
             ->saveSlugsTo('slug');
     }
 }

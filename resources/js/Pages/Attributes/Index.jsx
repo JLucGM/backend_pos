@@ -7,13 +7,13 @@ import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
 import { Button } from '@/Components/ui/button';
-import { categoriesColumns } from './Columns';
-import CategoriesForm from './CategoriesForm';
+import { attributeColumns } from './Columns';
+import AttributeForm from './AttributeForm';
 
-export default function Index({ categories, permission }) {
+export default function Index({ attribute, permission }) {
     let [isOpen, setIsOpen] = useState(false)
     const { data, setData, errors, post } = useForm({
-        category_name: "",
+        attribute_name: "",
     });
 
     // const items = [
@@ -34,10 +34,10 @@ export default function Index({ categories, permission }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('category.store'))
+        post(route('attribute.store'))
         // console.log(data)
         setData({
-            category_name: "",
+            attribute_name: "",
         });
     }
 
@@ -46,7 +46,7 @@ export default function Index({ categories, permission }) {
             header={
                 <div className='flex justify-between items-center'>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Categorias
+                        Atributos del producto
                     </h2>
                     {permission.some(perm => perm.name === 'admin.tax.create') && (
                         <Button variant="outline"
@@ -59,19 +59,19 @@ export default function Index({ categories, permission }) {
         >
             {/* <Breadcrumb items={items} /> */}
 
-            <Head className="capitalize" title="Categorias" />
+            <Head className="capitalize" title="Atributos del producto" />
 
             <div className="max-w-7xl mx-auto ">
                 <div className="bg-white dark:bg-gray-800 overflow-hidden ">
                     <div className=" text-gray-900 dark:text-gray-100">
                         <div className="relative overflow-x-auto">
                             <DataTable
-                                columns={categoriesColumns}
-                                data={categories}
-                                routeEdit={'category.edit'}
-                                routeDestroy={'category.destroy'}
-                                editPermission={'admin.category.edit'} // Pasa el permiso de editar
-                                deletePermission={'admin.category.delete'} // Pasa el permiso de eliminar
+                                columns={attributeColumns}
+                                data={attribute}
+                                routeEdit={'attribute.edit'}
+                                routeDestroy={'attribute.destroy'}
+                                editPermission={'admin.attribute.edit'} // Pasa el permiso de editar
+                                deletePermission={'admin.attribute.delete'} // Pasa el permiso de eliminar
                                 // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
                                 permissions={permission}
                             />
@@ -89,7 +89,7 @@ export default function Index({ categories, permission }) {
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del categoria</Description>
                         <form onSubmit={submit} className='space-y-4'>
 
-                            <CategoriesForm data={data} setData={setData} errors={errors} />
+                            <AttributeForm data={data} setData={setData} errors={errors} />
 
                             <div className="flex justify-end p-2.5">
                                 <Button

@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
-class Category extends Model
+class PaymentMethod extends Model
 {
     use HasFactory, HasSlug;
 
+    protected $table = 'payments_methods';
+
     protected $fillable = [
-        'category_name',
+        'payment_method_name',
         'slug',
     ];
 
@@ -24,7 +26,14 @@ class Category extends Model
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('category_name')
+            ->generateSlugsFrom('payment_method_name')
             ->saveSlugsTo('slug');
     }
+
+    // Definir la relación con PaymentMethodDetail
+    public function details()
+    {
+        return $this->hasMany(PaymentMethodDetail::class, 'payments_method_id');
+    }
+    
 }

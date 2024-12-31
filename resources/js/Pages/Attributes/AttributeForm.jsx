@@ -6,17 +6,17 @@ export default function CategoriesForm({ data, setData, errors }) {
     return (
         <>
             <div>
-                <InputLabel htmlFor="category_name" value="Nombre" />
+                <InputLabel htmlFor="attribute_name" value="Nombre" />
                 <TextInput
-                    id="category_name"
+                    id="attribute_name"
                     type="text"
-                    name="category_name"
-                    value={data.category_name}
+                    name="attribute_name"
+                    value={data.attribute_name}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('category_name', e.target.value)}
+                    onChange={(e) => setData('attribute_name', e.target.value)}
                 />
-                <InputError message={errors.category_name} className="mt-2" />
+                <InputError message={errors.attribute_name} className="mt-2" />
             </div>
         </>
     );

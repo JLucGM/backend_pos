@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export const categoriesColumns = [
     {
         header: "#id",
+        accessorKey: "id",
         cell: ({ row }) => (
             <div className="flex items-center">
                 <p className='me-2'>{row.original.id}</p>  
@@ -12,6 +13,6 @@ export const categoriesColumns = [
     },
     {
         header: "Nombre",
-        accessorKey: "name",
+        accessorKey: "category_name",
     },
 ];

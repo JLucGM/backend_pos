@@ -34,6 +34,16 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.category.create', 'description' => 'Crear categorias'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.category.edit', 'description' => 'Editar categorias'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.category.delete', 'description' => 'Eliminar categorias'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        
+        Permission::create(['name' => 'admin.attribute.index', 'description' => 'Ver lista de atributo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.attribute.create', 'description' => 'Crear atributo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.attribute.edit', 'description' => 'Editar atributo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.attribute.delete', 'description' => 'Eliminar atributo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        
+        Permission::create(['name' => 'admin.paymentmethod.index', 'description' => 'Ver lista de metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.paymentmethod.create', 'description' => 'Crear metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.paymentmethod.edit', 'description' => 'Editar metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.paymentmethod.delete', 'description' => 'Eliminar metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
 
         // Permission::create(['name' => 'admin.role.index', 'description' => 'Ver lista de roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         // Permission::create(['name' => 'admin.role.create', 'description' => 'Crear roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);

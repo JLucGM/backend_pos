@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('cities', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
+            $table->string('city_name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
             $table->string('slug');
             $table->foreignId('state_id')->constrained();
             $table->timestamps();

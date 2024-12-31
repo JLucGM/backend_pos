@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('countries', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
+            $table->string('country_name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
             $table->string('slug');
             $table->timestamps();
         });
