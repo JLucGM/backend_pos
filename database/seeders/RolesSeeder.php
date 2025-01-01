@@ -44,6 +44,11 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.paymentmethod.create', 'description' => 'Crear metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.paymentmethod.edit', 'description' => 'Editar metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.paymentmethod.delete', 'description' => 'Eliminar metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        
+        Permission::create(['name' => 'admin.client.index', 'description' => 'Ver lista de clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.client.create', 'description' => 'Crear clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.client.edit', 'description' => 'Editar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.client.delete', 'description' => 'Eliminar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
 
         // Permission::create(['name' => 'admin.role.index', 'description' => 'Ver lista de roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         // Permission::create(['name' => 'admin.role.create', 'description' => 'Crear roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);

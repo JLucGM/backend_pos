@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaxController;
@@ -62,6 +63,13 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('payments_methods/{payment_method}/edit', [PaymentMethodController::class, 'edit'])->name('paymentmethod.edit');
     Route::post('payments_methods/{payment_method}', [PaymentMethodController::class, 'update'])->name('paymentmethod.update');
     Route::delete('payments_methods/{payment_method}', [PaymentMethodController::class, 'destroy'])->name('paymentmethod.destroy');
+    
+    Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::get('clients/create', [ClientController::class, 'create'])->name('clients.create');
+    Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
+    Route::get('clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
+    Route::post('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
+    Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 
 });
 

@@ -134,7 +134,11 @@ public function update(Request $request, PaymentMethod $payment_method)
      * Remove the specified resource from storage.
      */
     public function destroy(PaymentMethod $payment_method)
-    {
-        $payment_method->delete();
-    }
+{
+    // Eliminar los registros dependientes
+    $payment_method->details()->delete(); // Asegúrate de tener la relación definida en el modelo
+
+    // Ahora eliminar el método de pago
+    $payment_method->delete();
+}
 }

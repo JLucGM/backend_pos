@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('client_name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
             $table->string('slug');
-            $table->string('client_identification');
+            $table->string('client_identification')->unique();
             $table->string('client_phone')->nullable();
             $table->timestamps();
         });
