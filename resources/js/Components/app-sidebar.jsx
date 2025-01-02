@@ -8,6 +8,8 @@ import {
   Frame,
   GalleryVerticalEnd,
   Map,
+  MapPin,
+  MapPinned,
   PieChart,
   Settings2,
   ShoppingBag,
@@ -76,7 +78,7 @@ export function AppSidebar({
         ],
       },
       {
-        title: "usuarios",
+        title: "Usuarios",
         url: "#",
         icon: Bot,
         items: [
@@ -84,10 +86,10 @@ export function AppSidebar({
             title: "Staff",
             url: "user.index",
           },
-          // {
-          //   title: "Taxes",
-          //   url: "tax.index",
-          // },
+          {
+            title: "Clientes",
+            url: "clients.index",
+          },
           // {
           //   title: "Quantum",
           //   url: "#",
@@ -104,39 +106,35 @@ export function AppSidebar({
             title: "Metodo de pago",
             url: "paymentmethod.index",
           },
-          // {
-          //   title: "Starred",
-          //   url: "user.index",
-          // },
           {
             title: "Taxes",
             url: "tax.index",
           },
         ],
       },
-      // {
-      //   title: "Documentation",
-      //   url: "#",
-      //   icon: BookOpen,
-      //   items: [
-      //     {
-      //       title: "Introduction",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Get Started",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Tutorials",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Changelog",
-      //       url: "#",
-      //     },
-      //   ],
-      // },
+      {
+        title: "Locaciones",
+        url: "#",
+        icon: MapPinned,
+        items: [
+          {
+            title: "Paises",
+            url: "countries.index",
+          },
+          {
+            title: "Estados",
+            url: "states.index",
+          },
+          {
+            title: "Ciudades",
+            url: "cities.index",
+          },
+          // {
+          //   title: "Changelog",
+          //   url: "#",
+          // },
+        ],
+      },
       // {
       //   title: "Settings",
       //   url: "#",

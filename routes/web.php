@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CitiesController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StatesController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
@@ -70,6 +73,29 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
     Route::post('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
     Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+
+    
+    Route::get('countries', [CountriesController::class, 'index'])->name('countries.index');
+    Route::get('countries/create', [CountriesController::class, 'create'])->name('countries.create');
+    Route::post('countries', [CountriesController::class, 'store'])->name('countries.store');
+    Route::get('countries/{country}/edit', [CountriesController::class, 'edit'])->name('countries.edit');
+    Route::post('countries/{country}', [CountriesController::class, 'update'])->name('countries.update');
+    Route::delete('countries/{country}', [CountriesController::class, 'destroy'])->name('countries.destroy');
+
+    Route::get('states', [StatesController::class, 'index'])->name('states.index');
+    Route::get('states/create', [StatesController::class, 'create'])->name('states.create');
+    Route::post('states', [StatesController::class, 'store'])->name('states.store');
+    Route::get('states/{state}/edit', [StatesController::class, 'edit'])->name('states.edit');
+    Route::post('states/{state}', [StatesController::class, 'update'])->name('states.update');
+    Route::delete('states/{state}', [StatesController::class, 'destroy'])->name('states.destroy');
+
+    Route::get('cities', [CitiesController::class, 'index'])->name('cities.index');
+    Route::get('cities/create', [CitiesController::class, 'create'])->name('cities.create');
+    Route::post('cities', [CitiesController::class, 'store'])->name('cities.store');
+    Route::get('cities/{city}/edit', [CitiesController::class, 'edit'])->name('cities.edit');
+    Route::post('cities/{city}', [CitiesController::class, 'update'])->name('cities.update');
+    Route::delete('cities/{city}', [CitiesController::class, 'destroy'])->name('cities.destroy');
+
 
 });
 
