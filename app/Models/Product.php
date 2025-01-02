@@ -7,15 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
-class Tax extends Model
+class Product extends Model
 {
     use HasFactory, HasSlug;
 
     protected $fillable = [
-        'tax_name',
+        'product_name',
         'slug',
-        'tax_description',
-        'tax_rate',
+        'product_description',
+        'product_price',
+        'tax_id',
     ];
 
     public function getRouteKeyName()
@@ -26,12 +27,12 @@ class Tax extends Model
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('tax_name')
+            ->generateSlugsFrom('product_name')
             ->saveSlugsTo('slug');
     }
 
-    public function products()
+    public function tax()
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsTo(Tax::class);
     }
 }

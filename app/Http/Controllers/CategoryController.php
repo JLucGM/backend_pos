@@ -12,7 +12,6 @@ class CategoryController extends Controller
 {
     public function __construct()
     {
-
         $this->middleware('can:admin.category.index')->only('index');
         $this->middleware('can:admin.category.create')->only('create', 'store');
         $this->middleware('can:admin.category.edit')->only('edit', 'update');
@@ -76,9 +75,9 @@ class CategoryController extends Controller
     {
         $data = $request->only('category_name');
 
-        $category->update($data); // Actualizar el usuario con los nuevos datos
+        $category->update($data);
 
-        return to_route('category.edit', $category); // Redirigir a la edición del usuario
+        return to_route('category.edit', $category);
     }
 
     /**

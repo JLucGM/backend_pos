@@ -70,6 +70,11 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.stores.create', 'description' => 'Crear tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.stores.edit', 'description' => 'Editar tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.stores.delete', 'description' => 'Eliminar tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        
+        Permission::create(['name' => 'admin.products.index', 'description' => 'Ver lista de productos'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.products.create', 'description' => 'Crear productos'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.products.edit', 'description' => 'Editar productos'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.products.delete', 'description' => 'Eliminar productos'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
 
         // Permission::create(['name' => 'admin.role.index', 'description' => 'Ver lista de roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         // Permission::create(['name' => 'admin.role.create', 'description' => 'Crear roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);

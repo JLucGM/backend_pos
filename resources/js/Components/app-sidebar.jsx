@@ -64,6 +64,10 @@ export function AppSidebar({
         icon: ShoppingBag,
         items: [
           {
+            title: "Productos",
+            url: "products.index",
+          },
+          {
             title: "Categoria",
             url: "category.index",
           },
@@ -102,6 +106,10 @@ export function AppSidebar({
         icon: Cog,
         // isActive: true,
         items: [
+          {
+            title: "Tiendas",
+            url: "stores.index",
+          },
           {
             title: "Metodo de pago",
             url: "paymentmethod.index",
