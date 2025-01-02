@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('stores', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
+            $table->string('store_name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
             $table->string('slug');
-            $table->string('phone')->nullable();
-            $table->text('direction')->nullable();
+            $table->string('store_phone')->nullable();
+            $table->text('store_direction')->nullable();
             $table->foreignId('country_id')->nullable()->constrained();
             $table->foreignId('state_id')->nullable()->constrained();
             $table->foreignId('city_id')->nullable()->constrained();
