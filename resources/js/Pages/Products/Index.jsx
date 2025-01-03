@@ -17,6 +17,7 @@ export default function Index({ product, taxes, categories, permission }) {
         product_description: "",
         product_price: "",
         tax_id: taxes[0].id,
+        categories: categories.length > 0 ? [categories[0].id] : [] // Establece el primer valor por defecto si hay categorías
     });
 
     // const items = [
@@ -44,6 +45,8 @@ export default function Index({ product, taxes, categories, permission }) {
             product_description: "",
             product_price: "",
             tax_id: taxes[0].id,
+            categories: categories.length > 0 ? [categories[0].id] : [] // Establece el primer valor por defecto si hay categorías
+
         });
     }
 console.log(data)
@@ -95,7 +98,7 @@ console.log(data)
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del producto</Description>
                         <form onSubmit={submit} className='space-y-4'>
 
-                            <ProductsForm data={data} setData={setData} errors={errors} taxes={taxes} />
+                            <ProductsForm data={data} setData={setData} errors={errors} taxes={taxes} categories={categories} />
 
                             <div className="flex justify-end p-2.5">
                                 <Button

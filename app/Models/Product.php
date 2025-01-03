@@ -35,4 +35,10 @@ class Product extends Model
     {
         return $this->belongsTo(Tax::class);
     }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'product_categories', 'product_id', 'category_id');
+    }
+    
 }

@@ -1,8 +1,24 @@
+import Select from 'react-select';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 
-export default function ProductsForm({ data, taxes, setData, errors }) {
+export default function ProductsForm({ data, taxes, categories, setData, errors }) {
+    // Mapeamos las categorías para que sean compatibles con react-select
+    const categoryOptions = categories.map(category => ({
+        value: category.id,
+        label: category.category_name // Asegúrate de que 'name' sea la propiedad correcta
+    }));
+
+    // Función para manejar el cambio en el select
+    const handleCategoryChange = (selectedOptions) => {
+        const selectedValues = selectedOptions ? selectedOptions.map(option => option.value) : [];
+        setData('categories', selectedValues);
+    };
+
+    // Mapeamos las categorías seleccionadas para react-select
+    const selectedCategories = categoryOptions.filter(option => data.categories.includes(option.value));
+
     return (
         <>
             <div>
@@ -19,7 +35,7 @@ export default function ProductsForm({ data, taxes, setData, errors }) {
                 <InputError message={errors.product_name} />
             </div>
             <div>
-                <InputLabel htmlFor="product_price" value="precio" />
+                <InputLabel htmlFor="product_price" value="Precio" />
                 <TextInput
                     id="product_price"
                     type="text"
@@ -32,7 +48,7 @@ export default function ProductsForm({ data, taxes, setData, errors }) {
                 <InputError message={errors.product_price} />
             </div>
             <div>
-                <InputLabel htmlFor="product_description" value="description" />
+                <InputLabel htmlFor="product_description" value="Descripción" />
                 <TextInput
                     id="product_description"
                     type="text"
@@ -46,7 +62,7 @@ export default function ProductsForm({ data, taxes, setData, errors }) {
             </div>
 
             <div>
-                <InputLabel htmlFor="tax_id" value="Estados" />
+                <InputLabel htmlFor="tax_id" value="Impuesto" />
                 <select
                     name="tax_id"
                     id="tax_id"
@@ -60,7 +76,19 @@ export default function ProductsForm({ data, taxes, setData, errors }) {
                         </option>
                     ))}
                 </select>
-                <InputError message={errors.tax_id} className="mt-2" /> {/* Cambia a 'country_id' */}
+                <InputError message={errors.tax_id} className="mt-2" />
+            </div>
+
+            <div>
+                <InputLabel value="Categorías" />
+                <Select
+                    isMulti
+                    options={categoryOptions}
+                    onChange={handleCategoryChange}
+                    value={selectedCategories} // Establece el valor seleccionado
+                    className="mt-1"
+                />
+                <InputError message={errors.categories} />
             </div>
         </>
     );

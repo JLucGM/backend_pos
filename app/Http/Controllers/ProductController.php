@@ -48,13 +48,28 @@ class ProductController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $data = $request->only('product_name', 'product_description', 'product_price', 'tax_id');
+{
+    // Validar los datos de entrada
+    $request->validate([
+        'product_name' => 'required|string|max:255',
+        'product_description' => 'nullable|string',
+        'product_price' => 'required|numeric',
+        'tax_id' => 'required|exists:taxes,id',
+        'categories' => 'required|array', // Asegúrate de que se envíe un array de categorías
+        'categories.*' => 'exists:categories,id', // Cada categoría debe existir en la tabla categories
+    ]);
 
-        Product::create($data);
+    // Extraer los datos del producto
+    $data = $request->only('product_name', 'product_description', 'product_price', 'tax_id');
 
-        return to_route('products.index');
-    }
+    // Crear el producto
+    $product = Product::create($data);
+
+    // Asociar las categorías al producto
+    $product->categories()->attach($request->categories);
+
+    return to_route('products.index')->with('success', 'Producto creado con éxito.');
+}
 
     /**
      * Display the specified resource.
@@ -69,10 +84,12 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        $product->load('tax');
-        $taxes = Tax::all();
+        $product->load(['tax', 'categories']); // Carga ambas relaciones
 
-        return Inertia::render('Products/Edit', compact('product', 'taxes'));
+        $taxes = Tax::all();
+        $categories = Category::all();
+
+        return Inertia::render('Products/Edit', compact('product', 'taxes','categories'));
 
     }
 
@@ -81,10 +98,25 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        // Validar los datos de entrada
+        $request->validate([
+            'product_name' => 'required|string|max:255',
+            'product_description' => 'nullable|string',
+            'product_price' => 'required|numeric',
+            'tax_id' => 'required|exists:taxes,id',
+            'categories' => 'required|array',
+            'categories.*' => 'exists:categories,id',
+        ]);
+    
+        // Extraer los datos del producto
         $data = $request->only('product_name', 'product_description', 'product_price', 'tax_id');
-
+    
+        // Actualizar el producto
         $product->update($data);
-
+    
+        // Actualizar las categorías asociadas
+        $product->categories()->sync($request->categories); // Sincroniza las categorías
+    
         return to_route('products.edit', $product);
     }
 
@@ -92,7 +124,13 @@ class ProductController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Product $product)
-    {
-        $product->delete();
-    }
+{
+    // Eliminar las relaciones en la tabla pivote
+    $product->categories()->detach(); // Esto elimina las relaciones en product_categories
+
+    // Ahora puedes eliminar el producto
+    $product->delete();
+
+    return to_route('products.index')->with('success', 'Producto eliminado con éxito.');
+}
 }
