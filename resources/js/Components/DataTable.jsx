@@ -136,6 +136,7 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
                                                 <TrashIcon className='size-4' />
                                             </Link>
                                         )} */}
+    {(hasPermission(editPermission) || hasPermission(deletePermission)) && (
 
                                         <Popover className="relative">
                                             <PopoverButton
@@ -166,7 +167,7 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
                                                 )}
                                             </PopoverPanel>
                                         </Popover>
-
+    )}
                                     </td>
                                 </tr>
                                 {

@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('stocks', function (Blueprint $table) {
             $table->id();
-            $table->string('quantity', 255)->default(0);
+            $table->string('quantity', 255)->default(0); //cantidad de productos entrantes o salida
             // $table->string('slug');
-            $table->string('status');
-            $table->foreignId('product_id')->nullable()->constrained();
-            $table->foreignId('store_id')->nullable()->constrained();
+            $table->string('status'); //estado del stock (entrada o salida)
+            $table->foreignId('product_id')->nullable()->constrained(); //id del producto
+            $table->foreignId('store_id')->nullable()->constrained(); //id de la tienda
             $table->timestamps();
         });
     }

@@ -47,4 +47,9 @@ class Store extends Model
     {
         return $this->belongsTo(City::class);
     }
+
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class);
+    }
 }

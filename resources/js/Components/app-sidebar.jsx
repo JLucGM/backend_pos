@@ -75,10 +75,10 @@ export function AppSidebar({
             title: "Atributo",
             url: "attribute.index",
           },
-          // {
-          //   title: "Quantum",
-          //   url: "#",
-          // },
+          {
+            title: "Stock",
+            url: "stocks.index",
+          },
         ],
       },
       {
