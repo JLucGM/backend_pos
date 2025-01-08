@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('attributes', function (Blueprint $table) {
             $table->id();
-            $table->string('attribute_name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
+            $table->string('attribute_name', 255)->nullable(); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
             $table->string('slug');
             // $table->string('data_types'); //Tipo de dato del atributo (texto, numérico, booleano, etc.).
             $table->timestamps();

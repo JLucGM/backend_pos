@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('attribute_values', function (Blueprint $table) {
             $table->id();
-            $table->string('value', 255);
+            $table->string('attribute_value_name', 255)->nullable();
             $table->foreignId('attribute_id')->nullable()->constrained();
             $table->timestamps();
         });

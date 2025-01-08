@@ -45,4 +45,10 @@ class Product extends Model
     {
         return $this->hasMany(Stock::class);
     }
+
+    public function attributes()
+{
+    return $this->belongsToMany(Attribute::class, 'product_attributes', 'product_id', 'attribute_id');
+}
+
 }

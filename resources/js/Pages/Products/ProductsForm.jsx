@@ -2,12 +2,14 @@ import Select from 'react-select';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import { Button, buttonVariants } from '@/Components/ui/button';
+import { Link } from '@inertiajs/react';
 
-export default function ProductsForm({ data, taxes, categories, setData, errors }) {
+export default function ProductsForm({ data, taxes, categories, addAttribute, handleAttributeChange, setData, errors, handleAttributeValueChange, addAttributeValue }) {
     // Mapeamos las categorías para que sean compatibles con react-select
     const categoryOptions = categories.map(category => ({
         value: category.id,
-        label: category.category_name // Asegúrate de que 'name' sea la propiedad correcta
+        label: category.category_name
     }));
 
     // Función para manejar el cambio en el select
@@ -42,7 +44,6 @@ export default function ProductsForm({ data, taxes, categories, setData, errors 
                     name="product_price"
                     value={data.product_price}
                     className="mt-1 block w-full"
-                    isFocused={true}
                     onChange={(e) => setData('product_price', e.target.value)}
                 />
                 <InputError message={errors.product_price} />
@@ -55,7 +56,6 @@ export default function ProductsForm({ data, taxes, categories, setData, errors 
                     name="product_description"
                     value={data.product_description}
                     className="mt-1 block w-full"
-                    isFocused={true}
                     onChange={(e) => setData('product_description', e.target.value)}
                 />
                 <InputError message={errors.product_description} />
@@ -90,6 +90,46 @@ export default function ProductsForm({ data, taxes, categories, setData, errors 
                 />
                 <InputError message={errors.categories} />
             </div>
+
+            <div>
+                <InputLabel value="Atributos" />
+                {data.attribute_names.map((attribute, index) => (
+                    <div key={index} className="mb-4">
+                        <TextInput
+                            id={`attribute_name_${index}`}
+                            type="text"
+                            value={attribute}
+                            onChange={(e) => handleAttributeChange(index, e.target.value)}
+                            placeholder="Nombre del atributo"
+                        />
+                        <InputError message={errors.attribute_names?.[index]} />
+
+                        <InputLabel value="Valores" />
+                        {data.attribute_values[index]?.map((value, valueIndex) => (
+                            <div key={valueIndex} className="flex items-center mb-2 w-full">
+                                <TextInput
+                                    id={`attribute_value_${index}_${valueIndex}`}
+                                    type="text"
+                                    value={value}
+                                    onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
+                                    placeholder="Valor del atributo"
+                                    className="w-full"
+                                />
+                                <InputError message={errors.attribute_values?.[index]?.[valueIndex]} />
+                            </div>
+                        ))}
+
+                        <Button  type="button" onClick={() => addAttributeValue(index)}>
+                            Agregar Valor
+                        </Button>
+                    </div>
+                ))}
+                <Button variant="link" type="button" onClick={addAttribute}>
+                    Agregar Atributo
+                </Button>
+
+            </div>
+
         </>
     );
 }

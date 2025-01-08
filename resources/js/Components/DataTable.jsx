@@ -27,7 +27,7 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
         onSortingChange: setSorting,
         initialState: {
             pagination: {
-                pageSize: 5,
+                pageSize: 10,
             }
         },
         onGlobalFilterChange: setFiltering,

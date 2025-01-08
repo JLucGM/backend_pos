@@ -16,7 +16,7 @@ export default function Index({ stock, products, stores, permission }) {
         quantity: "",
         status: 0,
         product_id: products[0].id,
-        store_id: stores[0].id,
+        store_id: stores[0].id ,
     });
 
     // const items = [
@@ -46,7 +46,7 @@ export default function Index({ stock, products, stores, permission }) {
             store_id: stores[0].id,
         });
     }
-console.log(stock)
+// console.log(stock)
     return (
         <AuthenticatedLayout
             header={

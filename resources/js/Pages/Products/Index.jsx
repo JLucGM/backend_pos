@@ -1,55 +1,51 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { useState } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
-import { Button } from '@/Components/ui/button';
+import { Button, buttonVariants } from '@/Components/ui/button';
 import { ProductColumns } from './Columns';
 import ProductsForm from './ProductsForm';
 
 export default function Index({ product, taxes, categories, permission }) {
-    let [isOpen, setIsOpen] = useState(false)
-    const { data, setData, errors, post } = useForm({
-        product_name: "",
-        product_description: "",
-        product_price: "",
-        tax_id: taxes[0].id,
-        categories: categories.length > 0 ? [categories[0].id] : [] // Establece el primer valor por defecto si hay categorías
-    });
+    // let [isOpen, setIsOpen] = useState(false)
+    // const { data, setData, errors, post } = useForm({
+    //     product_name: "",
+    //     product_description: "",
+    //     product_price: "",
+    //     tax_id: taxes[0].id,
+    //     categories: categories.length > 0 ? [categories[0].id] : [], // Establece el primer valor por defecto si hay categorías
+    //     attribute_names: [""],
+    // });
 
-    // const items = [
-    //     {
-    //         name: 'Dashboard',
-    //         href: 'dashboard',
-    //         icon: {
-    //             path: 'M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z',
-    //         },
-    //     },
-    //     {
-    //         name: 'Lista de usuarios',
-    //         icon: {
-    //             path: 'M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z',
-    //         },
-    //     },
-    // ];
+    // const addAttribute = () => {
+    //     setData('attribute_names', [...data.attribute_names, ""]);
+    // };
+    
+    // // Función para manejar el cambio en los campos de atributo
+    // const handleAttributeChange = (index, value) => {
+    //     const newAttributes = [...data.attribute_names];
+    //     newAttributes[index] = value;
+    //     setData('attribute_names', newAttributes);
+    // };
 
-    const submit = (e) => {
-        e.preventDefault();
-        post(route('products.store'))
-        // console.log(data)
-        setData({
-            product_name: "",
-            product_description: "",
-            product_price: "",
-            tax_id: taxes[0].id,
-            categories: categories.length > 0 ? [categories[0].id] : [] // Establece el primer valor por defecto si hay categorías
-
-        });
-    }
-console.log(data)
+    // const submit = (e) => {
+    //     e.preventDefault();
+    //     post(route('products.store'))
+    //     // console.log(data)
+    //     setData({
+    //         product_name: "",
+    //         product_description: "",
+    //         product_price: "",
+    //         tax_id: taxes[0].id,
+    //         categories: categories.length > 0 ? [categories[0].id] : [], // Establece el primer valor por defecto si hay categorías
+    //         attribute_names: [""],
+    //     });
+    // }
+    // console.log(data)
     return (
         <AuthenticatedLayout
             header={
@@ -58,10 +54,13 @@ console.log(data)
                         Productos
                     </h2>
                     {permission.some(perm => perm.name === 'admin.products.create') && (
-                        <Button variant="outline"
-                            onClick={() => setIsOpen(true)}>
-                            Crear
-                        </Button>
+                        // <Button variant="outline"
+                        //     onClick={() => setIsOpen(true)}>
+                        //     Crear
+                        // </Button>
+                        <Link className={buttonVariants({ variant: "outline" })} 
+                        href={route('products.create')}
+                        >Crear</Link>
                     )}
                 </div>
             }
@@ -89,7 +88,7 @@ console.log(data)
                 </div>
             </div>
 
-            <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
+            {/* <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
 
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
@@ -98,7 +97,9 @@ console.log(data)
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del producto</Description>
                         <form onSubmit={submit} className='space-y-4'>
 
-                            <ProductsForm data={data} setData={setData} errors={errors} taxes={taxes} categories={categories} />
+                            <ProductsForm data={data} setData={setData} errors={errors} taxes={taxes} categories={categories}
+                            handleAttributeChange={handleAttributeChange}
+                            />
 
                             <div className="flex justify-end p-2.5">
                                 <Button
@@ -113,9 +114,12 @@ console.log(data)
                                 </Button>
                             </div>
                         </form>
+                        <Button type="button" onClick={addAttribute}>
+        Agregar Atributo
+    </Button>
                     </DialogPanel>
                 </div>
-            </Dialog>
+            </Dialog> */}
         </AuthenticatedLayout>
     )
 }

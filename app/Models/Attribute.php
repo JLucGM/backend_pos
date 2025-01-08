@@ -27,4 +27,12 @@ class Attribute extends Model
             ->generateSlugsFrom('attribute_name')
             ->saveSlugsTo('slug');
     }
+
+    public function attribute_values()
+    {
+        return $this->hasMany(AttributeValue::class);
+    }
+
+    
+    
 }
