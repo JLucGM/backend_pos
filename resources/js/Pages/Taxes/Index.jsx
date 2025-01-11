@@ -9,6 +9,7 @@ import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { taxesColumns } from './Columns';
 import TaxesForm from './TaxesForm';
+import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ taxes, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -53,9 +54,9 @@ export default function Index({ taxes, permission }) {
                         Impuestos
                     </h2>
                     {permission.some(perm => perm.name === 'admin.tax.create') && (
-                        <Button variant="outline"
+                        <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
-                            Crear
+                            Añadir impuesto
                         </Button>
                     )}
                 </div>
@@ -65,24 +66,22 @@ export default function Index({ taxes, permission }) {
 
             <Head className="capitalize" title="Impuestos" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden ">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <div className="relative overflow-x-auto">
-                            <DataTable
-                                columns={taxesColumns}
-                                data={taxes}
-                                routeEdit={'tax.edit'}
-                                routeDestroy={'tax.destroy'}
-                                editPermission={'admin.tax.edit'} // Pasa el permiso de editar
-                                deletePermission={'admin.tax.delete'} // Pasa el permiso de eliminar
-                                // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                                permissions={permission}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DivSection>
+                {taxes.length > 0 ? (
+                    <DataTable
+                        columns={taxesColumns}
+                        data={taxes}
+                        routeEdit={'tax.edit'}
+                        routeDestroy={'tax.destroy'}
+                        editPermission={'admin.tax.edit'} // Pasa el permiso de editar
+                        deletePermission={'admin.tax.delete'} // Pasa el permiso de eliminar
+                        // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                        permissions={permission}
+                    />
+                ) : (
+                    <p>no hay nada</p>
+                )}
+            </DivSection>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
@@ -97,7 +96,8 @@ export default function Index({ taxes, permission }) {
 
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                    variant="outline"
+                                    variant="default"
+                                    size="sm"
                                     onClick={() =>
                                         toast("Creado.", {
                                             description: "Se ha creado con éxito.",

@@ -9,6 +9,7 @@ import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { StoresColumns } from './Columns';
 import StoresForm from './storesForm';
+import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ stores, countries, states, cities, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -59,9 +60,9 @@ export default function Index({ stores, countries, states, cities, permission })
                         Tiendas
                     </h2>
                     {permission.some(perm => perm.name === 'admin.stores.create') && (
-                        <Button variant="outline"
+                        <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
-                            Crear
+                            Añadir tienda
                         </Button>
                     )}
                 </div>
@@ -71,24 +72,23 @@ export default function Index({ stores, countries, states, cities, permission })
 
             <Head className="capitalize" title="Tiendas" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden ">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <div className="relative overflow-x-auto">
-                            <DataTable
-                                columns={StoresColumns}
-                                data={stores}
-                                routeEdit={'stores.edit'}
-                                routeDestroy={'stores.destroy'}
-                                editPermission={'admin.stores.edit'} // Pasa el permiso de editar
-                                deletePermission={'admin.stores.delete'} // Pasa el permiso de eliminar
-                                // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                                permissions={permission}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DivSection>
+                {stores.length > 0 ? (
+                    <DataTable
+                        columns={StoresColumns}
+                        data={stores}
+                        routeEdit={'stores.edit'}
+                        routeDestroy={'stores.destroy'}
+                        editPermission={'admin.stores.edit'} // Pasa el permiso de editar
+                        deletePermission={'admin.stores.delete'} // Pasa el permiso de eliminar
+                        // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                        permissions={permission}
+                    />
+                ) : (
+                    <p>no hay nada</p>
+                )}
+            </DivSection>
+
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
@@ -103,7 +103,8 @@ export default function Index({ stores, countries, states, cities, permission })
 
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                    variant="outline"
+                                    variant="default"
+                                    size="sm"
                                     onClick={() =>
                                         toast("Creado.", {
                                             description: "Se ha creado con éxito.",

@@ -9,6 +9,7 @@ import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { categoriesColumns } from './Columns';
 import CategoriesForm from './CategoriesForm';
+import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ categories, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -48,10 +49,10 @@ export default function Index({ categories, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Categorias
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.tax.create') && (
-                        <Button variant="outline"
+                    {permission.some(perm => perm.name === 'admin.category.create') && (
+                        <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
-                            Crear
+                            Añadir categoria
                         </Button>
                     )}
                 </div>
@@ -61,31 +62,29 @@ export default function Index({ categories, permission }) {
 
             <Head className="capitalize" title="Categorias" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden ">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <div className="relative overflow-x-auto">
-                            <DataTable
-                                columns={categoriesColumns}
-                                data={categories}
-                                routeEdit={'category.edit'}
-                                routeDestroy={'category.destroy'}
-                                editPermission={'admin.category.edit'} // Pasa el permiso de editar
-                                deletePermission={'admin.category.delete'} // Pasa el permiso de eliminar
-                                // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                                permissions={permission}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DivSection>
+                {categories.length > 0 ? (
+                    <DataTable
+                        columns={categoriesColumns}
+                        data={categories}
+                        routeEdit={'category.edit'}
+                        routeDestroy={'category.destroy'}
+                        editPermission={'admin.category.edit'} // Pasa el permiso de editar
+                        deletePermission={'admin.category.delete'} // Pasa el permiso de eliminar
+                        // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                        permissions={permission}
+                    />
+                ) : (
+                    <p>no hay nada</p>
+                )}
+            </DivSection>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
 
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
                     <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
-                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear categoria</DialogTitle>
+                        <DialogTitle className="text-lg font-bold text-gray-700 dark:text-gray-300 capitalize">Crear categoria</DialogTitle>
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del categoria</Description>
                         <form onSubmit={submit} className='space-y-4'>
 
@@ -93,7 +92,7 @@ export default function Index({ categories, permission }) {
 
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                    variant="outline"
+                                    variant="default"
                                     onClick={() =>
                                         toast("Creado.", {
                                             description: "Se ha creado con éxito.",

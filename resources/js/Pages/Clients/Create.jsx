@@ -6,7 +6,9 @@ import { Button } from '@/Components/ui/button';
 export default function Create({ }) {
 
     const initialValues = {
-        name: "",
+        client_name: "",
+        client_identification: "",
+        client_phone: "",
     }
 
     const { data, setData, errors, post } = useForm(initialValues)
@@ -21,20 +23,22 @@ export default function Create({ }) {
             header={
                 <div className='flex justify-between items-center px-6'>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Crear Categoria
+                        Crear cliente
                     </h2>
                 </div>
             }
         >
-            <Head className="capitalize" title="Categoria" />
+            <Head className="capitalize" title="Cliente" />
 
             <div className="max-w-7xl mx-auto">
                 <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
                     <div className="text-gray-900 dark:text-gray-100">
                         <form onSubmit={submit} className='space-y-4'>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4">
+                                <DivSection>
                                 <CategoriesForm data={data} setData={setData} errors={errors} />
+                                </DivSection>
                             </div>
 
                             <div className="flex justify-end p-2.5">

@@ -20,7 +20,7 @@ export default function TaxesForm({ data, setData, errors }) {
             </div>
 
             <div>
-                <InputLabel htmlFor="tax_rate" value="tax_rate %" />
+                <InputLabel htmlFor="tax_rate" value="Tasa %" />
                 <TextInput
                     id="tax_rate"
                     type="text"
@@ -32,8 +32,8 @@ export default function TaxesForm({ data, setData, errors }) {
                 />
                 <InputError message={errors.tax_rate} className="mt-2" />
             </div>
-            <div>
-                <InputLabel htmlFor="tax_description" value="tax_description" />
+            <div className='col-span-full'>
+                <InputLabel htmlFor="tax_description" value="Descripción" />
                 <TextInput
                     id="tax_description"
                     type="text"

@@ -55,7 +55,7 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
             </div>
 
             <table className="w-full  border-collapse border text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 hover:border-collapse my-2">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
                     {
                         table.getHeaderGroups().map(headerGroup => (
                             <tr key={headerGroup.id}>
@@ -144,7 +144,7 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
                                             >
                                                 Opciones
                                             </PopoverButton>
-                                            <PopoverPanel anchor="bottom" className="flex flex-col space-y-2 p-3 rounded-xl border border-gray-200 bg-white dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 ">
+                                            <PopoverPanel anchor="bottom" className="flex flex-col space-y-2 p-1 rounded-xl border border-gray-200 bg-white dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 ">
                                                 {/* {hasPermission(downloadPdfPermission) && PDFComponent && (
                                                     <PDFDownloadLink onClick={console.log(row)} document={<PDFComponent data={row.original} />} fileName='pfdprueba1.pdf'>
                                                         <Button className="w-full text-left">
@@ -153,16 +153,16 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
                                                     </PDFDownloadLink>
                                                 )} */}
                                                 {hasPermission(editPermission) && (
-                                                    <Link href={route(routeEdit, [row.original.slug])} className="flex w-full text-left">
+                                                    <Link href={route(routeEdit, [row.original.slug])} className="flex w-full text-left hover:bg-gray-200 hover:rounded-md p-2">
                                                         <PencilSquareIcon className='size-5' /> Editar
                                                     </Link>
                                                 )}
                                                 {hasPermission(deletePermission) && (
                                                     <Link
-                                                        className="flex w-full text-left text-red-600"
+                                                        className="flex w-full text-left text-red-600 hover:bg-red-200 hover:rounded-md p-2"
                                                         // onClick={() => console.log('Delete clicked for:', row.original.slug)}
                                                         href={route(routeDestroy, [row.original.slug])} method='delete' as="button">
-                                                        <TrashIcon className='size-5' /> Eliminar
+                                                        <TrashIcon className='size-5' /> Eliminar 
                                                     </Link>
                                                 )}
                                             </PopoverPanel>
@@ -236,7 +236,7 @@ export default function DataTable({ className = '', data, columns, routeEdit = n
                             }}
                             className={'w-16 border'}
                         />
-                        <span className='ml-1'>of {table.getPageCount()}</span>
+                        <span className='w-16 ml-1'>of {table.getPageCount()}</span>
                     </span>
 
 

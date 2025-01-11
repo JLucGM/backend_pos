@@ -1,9 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 // import Breadcrumb from '@/Components/Breadcrumb';
-import { Button } from '@/Components/ui/button';
+import { Button, buttonVariants } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import UserForm from './UserForm';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 export default function Edit({ user, roles, role, permission }) {
     // console.log(user)
@@ -40,7 +41,7 @@ export default function Edit({ user, roles, role, permission }) {
     //     },
     // ];
 
-    const { data, setData, errors, post, recentlySuccessful } = useForm(initialValues)
+    const { data, setData, errors, post } = useForm(initialValues)
 
     const submit = (e) => {
         e.preventDefault();
@@ -51,16 +52,20 @@ export default function Edit({ user, roles, role, permission }) {
         <AuthenticatedLayout
             roles={role}
             permission={permission}
-            items={items}
             header={
                 <div className='flex justify-between items-center '>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Actualizar Usuario
-                    </h2>
-                    <Link href={route('user.create')}
-                        className="capitalize py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                    <div className="flex justify-start items-center">
+                        <Link href={route('user.index')} >
+                            <ArrowLongLeftIcon className='size-6' />
+                        </Link>
+                        <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                            Actualizar {user.name}
+                        </h2>
+                    </div>
+
+                    <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('user.create')}
                     >
-                        Crear
+                        Crear Usuario
                     </Link>
                 </div>
             }
@@ -69,32 +74,31 @@ export default function Edit({ user, roles, role, permission }) {
 
             <Head className="capitalize" title="Usuarios" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <form onSubmit={submit} className='space-y-4'>
+            <div className="text-gray-900 dark:text-gray-100">
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} user={user} />
-                            </div>
+                <form onSubmit={submit} className='space-y-4'>
 
-                            <div className="flex justify-end p-2.5">
-                                <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                        toast("Actualizado.", {
-                                            description: "Se ha actualizado con éxito.",
-                                        })
-                                    }
-                                >
-                                    Guardar
-                                </Button>
-                            </div>
-
-                        </form>
+                    <div className="grid grid-cols-3 gap-4">
+                        <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} user={user} />
                     </div>
-                </div>
+
+                    <div className="flex justify-end p-2.5">
+                        <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() =>
+                                toast("Actualizado.", {
+                                    description: "Se ha actualizado con éxito.",
+                                })
+                            }
+                        >
+                            Guardar
+                        </Button>
+                    </div>
+
+                </form>
             </div>
+
         </AuthenticatedLayout>
     )
 }

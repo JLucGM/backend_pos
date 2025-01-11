@@ -23,8 +23,8 @@ export default function AuthenticatedLayout({ header, children }) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
+        <header className="flex h-16 shrink-0 bg-gray-100 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 bg-gray-100 px-4">
             <SidebarTrigger className="-ml-1" />
             {/* <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
@@ -42,15 +42,15 @@ export default function AuthenticatedLayout({ header, children }) {
             </Breadcrumb> */}
           </div>
         </header>
-        <div className="">
+        <div className="bg-gray-100 h-screen">
+          <main className='bg-gray-100 px-16'>
           {header && (
-            <header className="bg-white  dark:bg-gray-800">
-              <div className="mx-auto max-w-7xl px-0 py-4 sm:px-5 lg:px-5">
+            <header className="bg-gray-100  dark:bg-gray-800">
+              <div className="mb-5 ">
                 {header}
               </div>
             </header>
           )}
-          <main className='px-8'>
             {children}
           </main>
           <Toaster />

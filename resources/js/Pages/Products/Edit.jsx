@@ -1,8 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import ProductsForm from './ProductsForm';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 export default function Edit({ product, taxes, categories }) {
     // Extraer las categorías asociadas al producto
@@ -13,7 +14,7 @@ export default function Edit({ product, taxes, categories }) {
     const attributeData = product.attributes.reduce((acc, attribute) => {
         // Verificar si el atributo ya existe en el acumulador
         const existingAttribute = acc.find(item => item.name === attribute.attribute_name);
-        
+
         // Si existe, agregar los valores únicos
         if (existingAttribute) {
             const uniqueValues = new Set(existingAttribute.values);
@@ -28,7 +29,7 @@ export default function Edit({ product, taxes, categories }) {
         }
         return acc;
     }, []);
-console.log(attributeData);
+    console.log(attributeData);
     const initialValues = {
         product_name: product.product_name,
         product_description: product.product_description,
@@ -72,49 +73,48 @@ console.log(attributeData);
     return (
         <AuthenticatedLayout
             header={
-                <div className='flex justify-between items-center '>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Actualizar producto
+                <div className='flex justify-start items-center '>
+                    <Link href={route('products.index')} >
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
+                    <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        {product.product_name}
                     </h2>
                 </div>
             }
         >
             <Head title="Productos" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden">
-                    <div className="text-gray-900 dark:text-gray-100">
-                        <form onSubmit={submit} className='space-y-4'>
-                            <div className="grid grid-cols-1 gap-4">
-                                <ProductsForm 
-                                    data={data} 
-                                    setData={setData} 
-                                    errors={errors} 
-                                    taxes={taxes} 
-                                    categories={categories}
-                                    addAttribute={addAttribute}
-                                    handleAttributeChange={handleAttributeChange}
-                                    handleAttributeValueChange={handleAttributeValueChange}
-                                    addAttributeValue={addAttributeValue}
-                                />
-                            </div>
+                <div className="text-gray-900 dark:text-gray-100">
+                    <form onSubmit={submit} className='space-y-4'>
+                        <div className="grid grid-cols-3 gap-4">
+                            <ProductsForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                                taxes={taxes}
+                                categories={categories}
+                                addAttribute={addAttribute}
+                                handleAttributeChange={handleAttributeChange}
+                                handleAttributeValueChange={handleAttributeValueChange}
+                                addAttributeValue={addAttributeValue}
+                            />
+                        </div>
 
-                            <div className="flex justify-end p-2.5">
+                        <div className="flex justify-end p-2.5">
                             <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                        toast("Actualizado.", {
-                                            description: "Se ha actualizado con éxito.",
-                                        })
-                                    }
-                                >
-                                    Guardar
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
+                                variant="default"
+                                onClick={() =>
+                                    toast("Actualizado.", {
+                                        description: "Se ha actualizado con éxito.",
+                                    })
+                                }
+                            >
+                                Guardar
+                            </Button>
+                        </div>
+                    </form>
                 </div>
-            </div>
         </AuthenticatedLayout>
     );
 }

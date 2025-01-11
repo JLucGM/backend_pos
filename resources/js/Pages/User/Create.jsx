@@ -34,34 +34,30 @@ export default function Create({ roles, role }) {
         >
             <Head className="capitalize" title="Usuario" />
 
-            <div className="p-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
-                        <div className="text-gray-900 dark:text-gray-100">
-                            <form onSubmit={submit} className='space-y-4'>
+            <div className="text-gray-900 dark:text-gray-100">
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} />
-                                </div>
-                                
-                                <div className="flex justify-end p-2.5">
-                                <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                        toast("Creado.", {
-                                            description: "Se ha creado con éxito.",
-                                        })
-                                    }
-                                >
-                                    Guardar
-                                </Button>
-                            </div>
+                <form onSubmit={submit} className='space-y-4'>
 
-                            </form>
-                        </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} />
                     </div>
-                </div>
+
+                    <div className="flex justify-end p-2.5">
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                toast("Creado.", {
+                                    description: "Se ha creado con éxito.",
+                                })
+                            }
+                        >
+                            Guardar
+                        </Button>
+                    </div>
+
+                </form>
             </div>
+
         </AuthenticatedLayout>
     )
 }

@@ -1,14 +1,15 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { useState } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
-import { Button } from '@/Components/ui/button';
+import { Button, buttonVariants } from '@/Components/ui/button';
 import { userColumns } from './Columns';
 import UserForm from './UserForm';
+import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ users, roles, role, permission }) {
     //console.log(users)
@@ -55,18 +56,18 @@ export default function Index({ users, roles, role, permission }) {
 
     return (
         <AuthenticatedLayout
-            roles={role}
-            permission={permission}
             header={
                 <div className='flex justify-between items-center'>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Usuarios
                     </h2>
                     {permission.some(perm => perm.name === 'admin.user.create') && (
-                        <Button variant="outline"
-                            onClick={() => setIsOpen(true)}>
-                            Crear
-                        </Button>
+                        <Link
+                            className={buttonVariants({ variant: "default", size: "sm" })}
+                            href={route('user.create')}
+                        >
+                            Añadir Usuario
+                        </Link>
                     )}
                 </div>
             }
@@ -75,26 +76,23 @@ export default function Index({ users, roles, role, permission }) {
 
             <Head className="capitalize" title="Usuarios" />
 
-            <div className="">
-                <div className="max-w-7xl mx-auto ">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden ">
-                        <div className=" text-gray-900 dark:text-gray-100">
-                            <div className="relative overflow-x-auto">
-                                <DataTable
-                                    columns={userColumns}
-                                    data={users}
-                                    routeEdit={'user.edit'}
-                                    routeDestroy={'user.destroy'}
-                                    editPermission={'admin.user.edit'} // Pasa el permiso de editar
-                                    deletePermission={'admin.user.delete'} // Pasa el permiso de eliminar
-                                    // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                                    permissions={permission}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DivSection>
+                {users.length > 0 ? (
+                    <DataTable
+                        columns={userColumns}
+                        data={users}
+                        routeEdit={'user.edit'}
+                        routeDestroy={'user.destroy'}
+                        editPermission={'admin.user.edit'} // Pasa el permiso de editar
+                        deletePermission={'admin.user.delete'} // Pasa el permiso de eliminar
+                        // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                        permissions={permission}
+                    />
+                ) : (
+                    <p>no hay nada</p>
+                )}
+            </DivSection>
+
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
@@ -104,12 +102,12 @@ export default function Index({ users, roles, role, permission }) {
                         <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear usuario</DialogTitle>
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del usuario</Description>
                         <form onSubmit={submit} className='space-y-4'>
-                            
+
                             <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} />
 
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                    variant="outline"
+                                    variant="default" size="sm"
                                     onClick={() =>
                                         toast("Creado.", {
                                             description: "Se ha creado con éxito.",

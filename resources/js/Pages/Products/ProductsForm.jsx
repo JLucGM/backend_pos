@@ -2,8 +2,8 @@ import Select from 'react-select';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
-import { Button, buttonVariants } from '@/Components/ui/button';
-import { Link } from '@inertiajs/react';
+import { Button } from '@/Components/ui/button';
+import DivSection from '@/Components/ui/div-section';
 
 export default function ProductsForm({ data, taxes, categories, addAttribute, handleAttributeChange, setData, errors, handleAttributeValueChange, addAttributeValue }) {
     // Mapeamos las categorías para que sean compatibles con react-select
@@ -21,113 +21,151 @@ export default function ProductsForm({ data, taxes, categories, addAttribute, ha
     // Mapeamos las categorías seleccionadas para react-select
     const selectedCategories = categoryOptions.filter(option => data.categories.includes(option.value));
 
+    const customStyles = {
+        control: (base, { isFocused }) => ({
+            ...base,
+            borderRadius: '30px',
+            backgroundColor: isFocused ? 'gray-500' : 'gray-200', // Cambia el fondo del control
+            borderColor: isFocused ? 'gray-500' : 'gray-200', // Cambia el borde del control
+            '&:hover': {
+                borderColor: 'gray-500', // Cambia el borde del control al pasar el mouse
+            },
+            '&.dark': {
+                backgroundColor: 'gray-700', // Cambia el fondo del control en dark mode
+                borderColor: 'gray-700', // Cambia el borde del control en dark mode
+            },
+        }),
+        option: (base, { isSelected }) => ({
+            ...base,
+            backgroundColor: isSelected ? '#F7F7F7' : 'white', // Cambia el fondo de la opción seleccionada
+            color: isSelected ? 'black' : 'black', // Cambia el color de la opción seleccionada
+            '&.dark': {
+                backgroundColor: isSelected ? 'gray-700' : 'gray-900', // Cambia el fondo de la opción seleccionada en dark mode
+                color: isSelected ? 'white' : 'gray-300', // Cambia el color de la opción seleccionada en dark mode
+            },
+        }),
+    };
+
     return (
         <>
-            <div>
-                <InputLabel htmlFor="product_name" value="Nombre" />
-                <TextInput
-                    id="product_name"
-                    type="text"
-                    name="product_name"
-                    value={data.product_name}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('product_name', e.target.value)}
-                />
-                <InputError message={errors.product_name} />
-            </div>
-            <div>
-                <InputLabel htmlFor="product_price" value="Precio" />
-                <TextInput
-                    id="product_price"
-                    type="text"
-                    name="product_price"
-                    value={data.product_price}
-                    className="mt-1 block w-full"
-                    onChange={(e) => setData('product_price', e.target.value)}
-                />
-                <InputError message={errors.product_price} />
-            </div>
-            <div>
-                <InputLabel htmlFor="product_description" value="Descripción" />
-                <TextInput
-                    id="product_description"
-                    type="text"
-                    name="product_description"
-                    value={data.product_description}
-                    className="mt-1 block w-full"
-                    onChange={(e) => setData('product_description', e.target.value)}
-                />
-                <InputError message={errors.product_description} />
-            </div>
-
-            <div>
-                <InputLabel htmlFor="tax_id" value="Impuesto" />
-                <select
-                    name="tax_id"
-                    id="tax_id"
-                    className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-3xl shadow-sm"
-                    value={data.tax_id}
-                    onChange={(e) => setData('tax_id', parseInt(e.target.value))}
-                >
-                    {taxes.map((tax) => (
-                        <option value={tax.id} key={tax.id}>
-                            {tax.tax_name}
-                        </option>
-                    ))}
-                </select>
-                <InputError message={errors.tax_id} className="mt-2" />
-            </div>
-
-            <div>
-                <InputLabel value="Categorías" />
-                <Select
-                    isMulti
-                    options={categoryOptions}
-                    onChange={handleCategoryChange}
-                    value={selectedCategories} // Establece el valor seleccionado
-                    className="mt-1"
-                />
-                <InputError message={errors.categories} />
-            </div>
-
-            <div>
-                <InputLabel value="Atributos" />
-                {data.attribute_names.map((attribute, index) => (
-                    <div key={index} className="mb-4">
+            <div className="col-span-1 md:col-span-2 ">
+                <DivSection>
+                    <div>
+                        <InputLabel htmlFor="product_name" value="Nombre" />
                         <TextInput
-                            id={`attribute_name_${index}`}
+                            id="product_name"
                             type="text"
-                            value={attribute}
-                            onChange={(e) => handleAttributeChange(index, e.target.value)}
-                            placeholder="Nombre del atributo"
+                            name="product_name"
+                            value={data.product_name}
+                            className="mt-1 block w-full"
+                            isFocused={true}
+                            onChange={(e) => setData('product_name', e.target.value)}
                         />
-                        <InputError message={errors.attribute_names?.[index]} />
+                        <InputError message={errors.product_name} />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="product_price" value="Precio" />
+                        <TextInput
+                            id="product_price"
+                            type="text"
+                            name="product_price"
+                            value={data.product_price}
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('product_price', e.target.value)}
+                        />
+                        <InputError message={errors.product_price} />
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="product_description" value="Descripción" />
+                        <TextInput
+                            id="product_description"
+                            type="text"
+                            name="product_description"
+                            value={data.product_description}
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('product_description', e.target.value)}
+                        />
+                        <InputError message={errors.product_description} />
+                    </div>
 
-                        <InputLabel value="Valores" />
-                        {data.attribute_values[index]?.map((value, valueIndex) => (
-                            <div key={valueIndex} className="flex items-center mb-2 w-full">
+                    <div>
+                        <InputLabel htmlFor="tax_id" value="Impuesto" />
+                        <select
+                            name="tax_id"
+                            id="tax_id"
+                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-3xl border shadow-sm"
+                            value={data.tax_id}
+                            onChange={(e) => setData('tax_id', parseInt(e.target.value))}
+                        >
+                            {taxes.map((tax) => (
+                                <option value={tax.id} key={tax.id}>
+                                    {tax.tax_name}
+                                </option>
+                            ))}
+                        </select>
+                        <InputError message={errors.tax_id} className="mt-2" />
+                    </div>
+                </DivSection>
+
+                <DivSection className='my-4'>
+                    <p className=' font-semibold'>Atributos</p>
+                    <div className='border border-gray-300 rounded-2xl mt-4 '>
+                        {data.attribute_names.map((attribute, index) => (
+                            <div key={index} className="mb-4 p-4">
+                                <InputLabel value="Atributos" />
                                 <TextInput
-                                    id={`attribute_value_${index}_${valueIndex}`}
+                                    id={`attribute_name_${index}`}
                                     type="text"
-                                    value={value}
-                                    onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
-                                    placeholder="Valor del atributo"
-                                    className="w-full"
+                                    value={attribute}
+                                    onChange={(e) => handleAttributeChange(index, e.target.value)}
+                                    placeholder="Nombre del atributo"
                                 />
-                                <InputError message={errors.attribute_values?.[index]?.[valueIndex]} />
+                                <InputError message={errors.attribute_names?.[index]} />
+
+                                {data.attribute_values[index]?.map((value, valueIndex) => (
+                                    <div key={valueIndex} className="my-2">
+                                        <InputLabel value="Valores" />
+                                        <TextInput
+                                            id={`attribute_value_${index}_${valueIndex}`}
+                                            type="text"
+                                            value={value}
+                                            onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
+                                            placeholder="Valor del atributo"
+                                        />
+                                        <InputError message={errors.attribute_values?.[index]?.[valueIndex]} />
+                                    </div>
+                                ))}
+
+                                <Button variant="link" type="button" onClick={() => addAttributeValue(index)}>
+                                    Agregar Valor
+                                </Button>
                             </div>
                         ))}
+                        <div className=" border-t border-gray-300">
 
-                        <Button  type="button" onClick={() => addAttributeValue(index)}>
-                            Agregar Valor
-                        </Button>
+                            <Button variant="link" type="button" onClick={addAttribute}>
+                                Agregar Atributo
+                            </Button>
+                        </div>
                     </div>
-                ))}
-                <Button variant="link" type="button" onClick={addAttribute}>
-                    Agregar Atributo
-                </Button>
+                </DivSection>
+            </div>
 
+            <div className="col-span-1 sm:col-span-1">
+                <DivSection>
+                    <div>
+                        <InputLabel value="Categorías" />
+                        <Select
+                            isMulti
+                            options={categoryOptions}
+                            onChange={handleCategoryChange}
+                            value={selectedCategories} // Establece el valor seleccionado
+                            className="mt-1"
+                            styles={customStyles}
+                        />
+                        <InputError message={errors.categories} />
+                    </div>
+                </DivSection>
             </div>
 
         </>

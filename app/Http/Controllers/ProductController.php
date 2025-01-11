@@ -99,7 +99,7 @@ class ProductController extends Controller
             }
         }
 
-        return to_route('products.index')->with('success', 'Producto creado con éxito.');
+        return to_route('products.index');
     }
 
     /**

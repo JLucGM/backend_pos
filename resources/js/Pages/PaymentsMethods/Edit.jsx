@@ -1,9 +1,11 @@
 // Edit.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import PaymentMethodForm from './PaymentMethodForm';
 import { toast } from 'sonner';
+import DivSection from '@/Components/ui/div-section';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 export default function Edit({ payment_method }) {
     const initialValues = {
@@ -15,7 +17,7 @@ export default function Edit({ payment_method }) {
     };
 
     const { data, setData, errors, post } = useForm(initialValues);
-console.log(data);
+    console.log(data);
     const addPaymentDetail = () => {
         setData('payment_details', [...data.payment_details, { data_type: "", value: "" }]);
     };
@@ -42,28 +44,36 @@ console.log(data);
         <AuthenticatedLayout
             header={
                 <div className='flex justify-between items-center'>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Actualizar Método de Pago
-                    </h2>
+                    <div className="flex justify-start items-center">
+                        <Link href={route('paymentmethod.index')} >
+                            <ArrowLongLeftIcon className='size-6' />
+                        </Link>
+                        <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                            Actualizar {payment_method.payment_method_name}
+                        </h2>
+                    </div>
                 </div>
             }
         >
             <Head title="Actualizar Método de Pago" />
 
-            <div className="max-w-7xl mx-auto">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden">
-                    <div className="text-gray-900 dark:text-gray-100">
-                        <form onSubmit={submit} className='space-y-4'>
-                            <PaymentMethodForm 
-                                data={data} 
-                                setData={setData} 
-                                errors={errors} 
-                                addPaymentDetail={addPaymentDetail} 
-                                removePaymentDetail={removePaymentDetail} 
-                            />
+                <div className=" text-gray-900 dark:text-gray-100">
+                    <div className="relative overflow-x-auto">
+                        <form onSubmit={submit}>
+
+                            <DivSection>
+                                <PaymentMethodForm
+                                    data={data}
+                                    setData={setData}
+                                    errors={errors}
+                                    addPaymentDetail={addPaymentDetail}
+                                    removePaymentDetail={removePaymentDetail}
+                                />
+                            </DivSection>
+
                             <div className="flex justify-end p-2.5">
-                            <Button
-                                    variant="outline"
+                                <Button
+                                    variant="default"
                                     onClick={() =>
                                         toast("Creado.", {
                                             description: "Se ha creado con éxito.",
@@ -76,7 +86,6 @@ console.log(data);
                         </form>
                     </div>
                 </div>
-            </div>
         </AuthenticatedLayout>
     );
 }

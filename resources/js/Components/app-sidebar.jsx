@@ -71,10 +71,10 @@ export function AppSidebar({
             title: "Categoria",
             url: "category.index",
           },
-          {
-            title: "Atributo",
-            url: "attribute.index",
-          },
+          // {
+          //   title: "Atributo",
+          //   url: "attribute.index",
+          // },
           {
             title: "Stock",
             url: "stocks.index",

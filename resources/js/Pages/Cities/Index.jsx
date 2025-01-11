@@ -9,6 +9,7 @@ import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { CitiesColumns } from './Columns';
 import CitiesForm from './CitiesForm';
+import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ cities, state, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -42,7 +43,7 @@ export default function Index({ cities, state, permission }) {
             state_id: state[0].id,
         });
     }
-    console.log(data)
+    // console.log(data)
     return (
         <AuthenticatedLayout
             header={
@@ -51,9 +52,9 @@ export default function Index({ cities, state, permission }) {
                         Ciudades
                     </h2>
                     {permission.some(perm => perm.name === 'admin.cities.create') && (
-                        <Button variant="outline"
+                        <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
-                            Crear
+                            Anadir ciudad
                         </Button>
                     )}
                 </div>
@@ -63,39 +64,37 @@ export default function Index({ cities, state, permission }) {
 
             <Head title="Ciudades" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden ">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <div className="relative overflow-x-auto">
-                            <DataTable
-                                columns={CitiesColumns}
-                                data={cities}
-                                routeEdit={'cities.edit'}
-                                routeDestroy={'cities.destroy'}
-                                editPermission={'admin.cities.edit'} // Pasa el permiso de editar
-                                deletePermission={'admin.cities.delete'} // Pasa el permiso de eliminar
-                                // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                                permissions={permission}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DivSection>
+            {cities.length > 0 ? (
+                <DataTable
+                    columns={CitiesColumns}
+                    data={cities}
+                    routeEdit={'cities.edit'}
+                    routeDestroy={'cities.destroy'}
+                    editPermission={'admin.cities.edit'} // Pasa el permiso de editar
+                    deletePermission={'admin.cities.delete'} // Pasa el permiso de eliminar
+                    // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                    permissions={permission}
+                />
+            ) : (
+                <p>no hay nada</p>
+            )}
+            </DivSection>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
 
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
                     <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
-                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear categoria</DialogTitle>
-                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del categoria</Description>
+                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear ciudad</DialogTitle>
+                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del ciudad</Description>
                         <form onSubmit={submit} className='space-y-4'>
 
                             <CitiesForm data={data} setData={setData} errors={errors} states={state} />
 
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                    variant="outline"
+                                    variant="default" size="sm"
                                     onClick={() =>
                                         toast("Creado.", {
                                             description: "Se ha creado con éxito.",

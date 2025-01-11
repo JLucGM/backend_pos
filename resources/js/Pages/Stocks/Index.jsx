@@ -1,14 +1,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { useState } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
-import { Button } from '@/Components/ui/button';
+import { Button, buttonVariants } from '@/Components/ui/button';
 import { StocksColumns } from './Columns';
 import StocksForm from './StocksForm';
+import DivSection from '@/Components/ui/div-section';
+import { Plus } from 'lucide-react';
+import { ShoppingBagIcon } from '@heroicons/react/24/outline';
 
 export default function Index({ stock, products, stores, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -16,7 +19,7 @@ export default function Index({ stock, products, stores, permission }) {
         quantity: "",
         status: 0,
         product_id: products[0].id,
-        store_id: stores[0].id ,
+        store_id: stores[0].id,
     });
 
     // const items = [
@@ -46,7 +49,7 @@ export default function Index({ stock, products, stores, permission }) {
             store_id: stores[0].id,
         });
     }
-// console.log(stock)
+    // console.log(stock)
     return (
         <AuthenticatedLayout
             header={
@@ -55,7 +58,7 @@ export default function Index({ stock, products, stores, permission }) {
                         Stocks
                     </h2>
                     {permission.some(perm => perm.name === 'admin.stocks.create') && (
-                        <Button variant="outline"
+                        <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Crear
                         </Button>
@@ -67,24 +70,36 @@ export default function Index({ stock, products, stores, permission }) {
 
             <Head className="capitalize" title="Stocks" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden ">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <div className="relative overflow-x-auto">
-                            <DataTable
-                                columns={StocksColumns}
-                                data={stock}
-                                routeEdit={'stocks.edit'}
-                                routeDestroy={'stocks.destroy'}
-                                editPermission={'admin.stocks.edit'} // Pasa el permiso de editar
-                                deletePermission={'admin.stocks.delete'} // Pasa el permiso de eliminar
-                                // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                                permissions={permission}
-                            />
+            <DivSection>
+                {stock.length > 0 ? (
+                    <DataTable
+                        columns={StocksColumns}
+                        data={stock}
+                        routeEdit={'stocks.edit'}
+                        routeDestroy={'stocks.destroy'}
+                        editPermission={'admin.stocks.edit'} // Pasa el permiso de editar
+                        deletePermission={'admin.stocks.delete'} // Pasa el permiso de eliminar
+                        // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                        permissions={permission}
+                    />
+                ) : (
+                    <div className="flex justify-between text-start px-8 py-16">
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-semibold text-gray-500">Añade tus productos</h2>
+                            <p className="text-sm text-gray-500">Comience por abastecer su tienda con productos que les encantarán a sus clientes.</p>
+                            {permission.some(perm => perm.name === 'admin.products.create') && (
+                                <Link className={buttonVariants({ variant: "default", size: "sm" })}
+                                    href={route('products.create')}
+                                >
+                                    <Plus className="size-4" />
+                                    Añadir un producto
+                                </Link>
+                            )}
                         </div>
+                        <ShoppingBagIcon className="size-10" />
                     </div>
-                </div>
-            </div>
+                )}
+            </DivSection>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
@@ -99,7 +114,8 @@ export default function Index({ stock, products, stores, permission }) {
 
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                    variant="outline"
+                                    variant="default"
+                                    size="sm"
                                     onClick={() =>
                                         toast("Creado.", {
                                             description: "Se ha creado con éxito.",

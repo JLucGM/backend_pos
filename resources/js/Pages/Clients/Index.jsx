@@ -9,6 +9,7 @@ import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { clientColumns } from './Columns';
 import ClientsForm from './ClientForm';
+import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ client, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -52,10 +53,12 @@ export default function Index({ client, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Clientes
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.tax.create') && (
-                        <Button variant="outline"
-                            onClick={() => setIsOpen(true)}>
-                            Crear
+                    {permission.some(perm => perm.name === 'admin.client.create') && (
+                        <Button variant="default"
+                            size="sm"
+                            onClick={() => setIsOpen(true)}
+                        >
+                            Añadir cliente
                         </Button>
                     )}
                 </div>
@@ -65,24 +68,22 @@ export default function Index({ client, permission }) {
 
             <Head className="capitalize" title="Clientes" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden ">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <div className="relative overflow-x-auto">
-                            <DataTable
-                                columns={clientColumns}
-                                data={client}
-                                routeEdit={'clients.edit'}
-                                routeDestroy={'clients.destroy'}
-                                editPermission={'admin.client.edit'} // Pasa el permiso de editar
-                                deletePermission={'admin.client.delete'} // Pasa el permiso de eliminar
-                                // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                                permissions={permission}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DivSection>
+                {client.length > 0 ? (
+                    <DataTable
+                        columns={clientColumns}
+                        data={client}
+                        routeEdit={'clients.edit'}
+                        routeDestroy={'clients.destroy'}
+                        editPermission={'admin.client.edit'} // Pasa el permiso de editar
+                        deletePermission={'admin.client.delete'} // Pasa el permiso de eliminar
+                        // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                        permissions={permission}
+                    />
+                ) : (
+                    <p>no hay nada</p>
+                )}
+            </DivSection>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />

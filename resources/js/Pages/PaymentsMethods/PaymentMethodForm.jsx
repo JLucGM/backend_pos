@@ -25,7 +25,7 @@ export default function PaymentMethodForm({ data, setData, errors, addPaymentDet
             {data.payment_details.map((detail, index) => (
                 <div key={index} className="grid grid-cols-5 gap-4">
                     <div className="col-span-2">
-                        <InputLabel htmlFor={`payments_method_details_data_types_${index}`} value="Tipo de dato" />
+                        <InputLabel htmlFor={`payments_method_details_data_types_${index}`} value="Dato" />
                         <TextInput
                             id={`payments_method_details_data_types_${index}`}
                             type="text"
@@ -65,7 +65,7 @@ export default function PaymentMethodForm({ data, setData, errors, addPaymentDet
             ))}
 
             <div className="flex justify-center">
-                <Button type="button" onClick={addPaymentDetail}>
+                <Button variant="link" size="sm" type="button" onClick={addPaymentDetail}>
                     Agregar Detalle
                 </Button>
             </div>

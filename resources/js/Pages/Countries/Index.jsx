@@ -9,6 +9,7 @@ import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { countriesColumns } from './Columns';
 import CountriesForm from './CountriesForm';
+import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ countries, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -49,9 +50,9 @@ export default function Index({ countries, permission }) {
                         Paises
                     </h2>
                     {permission.some(perm => perm.name === 'admin.countries.create') && (
-                        <Button variant="outline"
+                        <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
-                            Crear
+                            Añadir pais
                         </Button>
                     )}
                 </div>
@@ -61,39 +62,39 @@ export default function Index({ countries, permission }) {
 
             <Head className="capitalize" title="Paises" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden ">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <div className="relative overflow-x-auto">
-                            <DataTable
-                                columns={countriesColumns}
-                                data={countries}
-                                routeEdit={'countries.edit'}
-                                routeDestroy={'countries.destroy'}
-                                editPermission={'admin.countries.edit'} // Pasa el permiso de editar
-                                deletePermission={'admin.countries.delete'} // Pasa el permiso de eliminar
-                                // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                                permissions={permission}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DivSection>
+                {countries.length > 0 ? (
+                    <DataTable
+                        columns={countriesColumns}
+                        data={countries}
+                        routeEdit={'countries.edit'}
+                        routeDestroy={'countries.destroy'}
+                        editPermission={'admin.countries.edit'} // Pasa el permiso de editar
+                        deletePermission={'admin.countries.delete'} // Pasa el permiso de eliminar
+                        // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                        permissions={permission}
+                    />
+                ) : (
+                    <p>no hay nada</p>
+                )}
+            </DivSection>
+
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
 
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
                     <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
-                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear categoria</DialogTitle>
-                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del categoria</Description>
+                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear pais</DialogTitle>
+                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del pais</Description>
                         <form onSubmit={submit} className='space-y-4'>
 
                             <CountriesForm data={data} setData={setData} errors={errors} />
 
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                    variant="outline"
+                                    variant="default"
+                                    size="sm"
                                     onClick={() =>
                                         toast("Creado.", {
                                             description: "Se ha creado con éxito.",
