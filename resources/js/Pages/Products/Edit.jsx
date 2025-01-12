@@ -29,12 +29,14 @@ export default function Edit({ product, taxes, categories }) {
         }
         return acc;
     }, []);
-    console.log(attributeData);
+    // console.log(attributeData);
     const initialValues = {
         product_name: product.product_name,
         product_description: product.product_description,
         product_price: product.product_price,
         tax_id: product.tax_id,
+        status: product.status,
+        product_price_discount: product.product_price_discount,
         categories: selectedCategories, // Establece las categorías seleccionadas
         attribute_names: attributeData.map(attr => attr.name), // Nombres de atributos
         attribute_values: attributeData.map(attr => attr.values) // Valores de atributos

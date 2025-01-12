@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('slug');
             $table->text('product_description')->nullable();
             $table->string('product_price');
-            // $table->string('image');
+            $table->string('product_price_discount')->nullable();
+            $table->tinyInteger('status')->default(1);            // $table->string('image');
             $table->foreignId('tax_id')->nullable()->constrained();
             $table->timestamps();
         });

@@ -14,12 +14,43 @@ class CategorySeeder extends Seeder
     {
         $categorias = [
             [
-                'category_name' => 'Sin categoria',
-            ],            
+                'category_name' => 'Sin categoría',
+            ],
+            [
+                'category_name' => 'Ropa',
+            ],
+            [
+                'category_name' => 'Calzado',
+            ],
+            [
+                'category_name' => 'Electrónica',
+            ],
+            [
+                'category_name' => 'Hogar',
+            ],
+            [
+                'category_name' => 'Belleza',
+            ],
+            [
+                'category_name' => 'Alimentos',
+            ],
+            [
+                'category_name' => 'Deportes',
+            ],
+            [
+                'category_name' => 'Automotriz',
+            ],
+            [
+                'category_name' => 'Juguetes',
+            ],
+            [
+                'category_name' => 'Libros y papelería',
+            ],
+            // Agrega más categorías aquí
         ];
 
-        foreach ($categorias as $categoriasData) {
-            Category::create($categoriasData);
+        foreach ($categorias as $categoriaData) {
+            Category::create($categoriaData);
         }
     }
 }

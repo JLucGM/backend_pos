@@ -18,8 +18,8 @@ export default function Index({ stock, products, stores, permission }) {
     const { data, setData, errors, post } = useForm({
         quantity: "",
         status: 0,
-        product_id: products[0].id,
-        store_id: stores[0].id,
+        product_id: products.length > 0 ? products[0].id : null, // Cambia a null si no hay productos
+        store_id: stores.length > 0 ? stores[0].id : null, // Cambia a null si no hay tiendas
     });
 
     // const items = [

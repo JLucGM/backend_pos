@@ -16,6 +16,8 @@ class Product extends Model
         'slug',
         'product_description',
         'product_price',
+        'product_price_discount',
+        'status',
         'tax_id',
     ];
 
@@ -47,8 +49,7 @@ class Product extends Model
     }
 
     public function attributes()
-{
-    return $this->belongsToMany(Attribute::class, 'product_attributes', 'product_id', 'attribute_id');
-}
-
+    {
+        return $this->belongsToMany(Attribute::class, 'product_attributes', 'product_id', 'attribute_id');
+    }
 }

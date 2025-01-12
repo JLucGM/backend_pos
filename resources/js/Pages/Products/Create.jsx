@@ -13,6 +13,8 @@ export default function Create({ taxes, categories }) {
         categories: categories.length > 0 ? [categories[0].id] : [],
         attribute_names: [""],
         attribute_values: [[]], // Inicializa como un array de arrays
+        product_price_discount: "",
+        status: 0,
     });
 
     const addAttribute = () => {

@@ -11,6 +11,7 @@ use App\Models\Tax;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -71,7 +72,7 @@ class ProductController extends Controller
         ]);
 
         // Crear el producto
-        $product = Product::create($request->only('product_name', 'product_description', 'product_price', 'tax_id'));
+        $product = Product::create($request->only('product_name', 'product_description', 'product_price', 'product_price_discount', 'status', 'tax_id'));
 
         // Asociar las categorías al producto
         $product->categories()->attach($request->categories);
@@ -144,7 +145,7 @@ class ProductController extends Controller
         ]);
 
         // Extraer los datos del producto
-        $data = $request->only('product_name', 'product_description', 'product_price', 'tax_id');
+        $data = $request->only('product_name', 'product_description', 'product_price', 'product_price_discount', 'status', 'tax_id');
 
         // Actualizar el producto
         $product->update($data);
@@ -198,11 +199,28 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        // Eliminar las relaciones en la tabla pivote
-        $product->categories()->detach(); // Esto elimina las relaciones en product_categories
+        // Iniciar una transacción
+        DB::transaction(function () use ($product) {
+            // Obtener todos los atributos asociados al producto
+            $attributes = $product->attributes()->with('attribute_values')->get();
 
-        // Ahora puedes eliminar el producto
-        $product->delete();
+            // Eliminar las relaciones en la tabla pivote product_attributes
+            $product->attributes()->detach(); // Esto elimina las relaciones en product_attributes
+
+            // Eliminar los valores de atributo y los atributos
+            foreach ($attributes as $attribute) {
+                // Eliminar los valores de atributo asociados
+                $attributeValueIds = $attribute->attribute_values()->pluck('id'); // Obtener los IDs de los valores de atributo
+                $attribute->attribute_values()->delete(); // Elimina los valores de atributo
+                $attribute->delete(); // Elimina el atributo
+            }
+
+            // Eliminar las relaciones en la tabla pivote product_categories
+            $product->categories()->detach(); // Esto elimina las relaciones en product_categories
+
+            // Ahora puedes eliminar el producto
+            $product->delete();
+        });
 
         return to_route('products.index')->with('success', 'Producto eliminado con éxito.');
     }

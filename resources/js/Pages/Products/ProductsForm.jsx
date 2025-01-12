@@ -76,6 +76,18 @@ export default function ProductsForm({ data, taxes, categories, addAttribute, ha
                         <InputError message={errors.product_price} />
                     </div>
                     <div>
+                        <InputLabel htmlFor="product_price_discount" value="Precio de descuento" />
+                        <TextInput
+                            id="product_price_discount"
+                            type="text"
+                            name="product_price_discount"
+                            value={data.product_price_discount}
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('product_price_discount', e.target.value)}
+                        />
+                        <InputError message={errors.product_price_discount} />
+                    </div>
+                    <div>
                         <InputLabel htmlFor="product_description" value="Descripción" />
                         <TextInput
                             id="product_description"
@@ -153,6 +165,23 @@ export default function ProductsForm({ data, taxes, categories, addAttribute, ha
 
             <div className="col-span-1 sm:col-span-1">
                 <DivSection>
+                <div className='md:col-span-2 lg:col-span-1'>
+                                                <InputLabel htmlFor="status" value="Publicar" />
+
+                                                <select
+                                                    name="status"
+                                                    id="status"
+                                                    value={data.status}
+                                                    className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-full shadow-sm"
+                                                    onChange={(e) => setData('status', e.target.value)}
+                                                >
+                                                    <option value={0}>Borrador</option>
+                                                    <option value={1}>Publicar</option>
+                                                </select>
+
+                                                <InputError message={errors.status} className="mt-2" />
+                                            </div>
+
                     <div>
                         <InputLabel value="Categorías" />
                         <Select

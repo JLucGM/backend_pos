@@ -19,4 +19,15 @@ export const ProductColumns = [
         header: "price",
         accessorKey: "product_price",
     },
+    {
+        header: "Estado",
+        accessorKey: "status",
+        cell: ({ row }) => {
+            return (
+                <Badge className={` ${row.original.status === 1 ? 'bg-primary' : 'bg-destructive '}`}>
+                    {row.original.status === 1 ? 'Activo' : 'Inactivo'}
+                </Badge>
+            )
+        },
+    },
 ];

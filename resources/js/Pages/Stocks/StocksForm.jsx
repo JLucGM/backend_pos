@@ -47,15 +47,21 @@ export default function StocksForm({ data, stores, products, setData, errors }) 
                     value={data.store_id}
                     onChange={(e) => setData('store_id', parseInt(e.target.value))}
                 >
-                    {stores.map((store) => (
-                        <option value={store.id} key={store.id}>
-                            {store.store_name}
+                    {stores.length === 0 ? (
+                        <option value="" disabled>
+                            No hay tiendas disponibles
                         </option>
-                    ))}
+                    ) : (
+                        stores.map((store) => (
+                            <option value={store.id} key={store.id}>
+                                {store.store_name}
+                            </option>
+                        ))
+                    )}
                 </select>
                 <InputError message={errors.store_id} className="mt-2" /> {/* Cambia a 'store_id' */}
             </div>
-            
+
             <div>
                 <InputLabel htmlFor="product" value="Tiendas" />
                 <select
@@ -65,11 +71,19 @@ export default function StocksForm({ data, stores, products, setData, errors }) 
                     value={data.product_id}
                     onChange={(e) => setData('product_id', parseInt(e.target.value))}
                 >
-                    {products.map((product) => (
-                        <option value={product.id} key={product.id}>
-                            {product.product_name}
-                        </option>
-                    ))}
+                    {products.length === 0 ? (
+                        <option value="" disabled>
+                        No hay tiendas disponibles
+                    </option>
+                        
+                    ) : (
+                        products.map((product) => (
+                            <option value={product.id} key={product.id}>
+                                {product.product_name}
+                            </option>
+                        ))
+                        
+                    )}
                 </select>
                 <InputError message={errors.product_id} className="mt-2" /> {/* Cambia a 'product_id' */}
             </div>
