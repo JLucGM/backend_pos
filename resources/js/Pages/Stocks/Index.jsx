@@ -57,12 +57,12 @@ export default function Index({ stock, products, stores, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Stocks
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.stocks.create') && (
+                    {/* {permission.some(perm => perm.name === 'admin.stocks.create') && (
                         <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Crear
                         </Button>
-                    )}
+                    )} */}
                 </div>
             }
         >
@@ -101,7 +101,7 @@ export default function Index({ stock, products, stores, permission }) {
                 )}
             </DivSection>
 
-            <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
+            {/* <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
 
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
@@ -128,7 +128,7 @@ export default function Index({ stock, products, stores, permission }) {
                         </form>
                     </DialogPanel>
                 </div>
-            </Dialog>
+            </Dialog> */}
         </AuthenticatedLayout>
     )
 }

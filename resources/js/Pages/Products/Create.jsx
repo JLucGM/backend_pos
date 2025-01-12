@@ -4,17 +4,25 @@ import { Button } from '@/Components/ui/button';
 import ProductsForm from './ProductsForm';
 import { toast } from 'sonner';
 
-export default function Create({ taxes, categories }) {
+export default function Create({ taxes, categories, stores }) {
     const { data, setData, errors, post } = useForm({
         product_name: "",
         product_description: "",
         product_price: "",
-        tax_id: taxes[0].id,
-        categories: categories.length > 0 ? [categories[0].id] : [],
-        attribute_names: [""],
-        attribute_values: [[]], // Inicializa como un array de arrays
         product_price_discount: "",
         status: 0,
+
+        // Datos de categorías
+        categories: categories.length > 0 ? [categories[0].id] : [],
+        // Datos de atributos
+        attribute_names: [""],
+        attribute_values: [[]], // Inicializa como un array de arrays
+        // Datos de impuestos
+        tax_id: taxes[0].id,
+        // Datos de stock
+        quantity: 0,
+        store_id: stores.length > 0 ? stores[0].id : null, // Cambia a null si no hay tiendas
+
     });
 
     const addAttribute = () => {
@@ -66,6 +74,7 @@ export default function Create({ taxes, categories }) {
                             errors={errors}
                             taxes={taxes}
                             categories={categories}
+                            stores={stores}
                             addAttribute={addAttribute}
                             handleAttributeChange={handleAttributeChange}
                             handleAttributeValueChange={handleAttributeValueChange} // Asegúrate de pasar esto

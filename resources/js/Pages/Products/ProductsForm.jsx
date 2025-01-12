@@ -5,7 +5,7 @@ import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
 
-export default function ProductsForm({ data, taxes, categories, addAttribute, handleAttributeChange, setData, errors, handleAttributeValueChange, addAttributeValue }) {
+export default function ProductsForm({ data, taxes, categories, stores, addAttribute, handleAttributeChange, setData, errors, handleAttributeValueChange, addAttributeValue }) {
     // Mapeamos las categorías para que sean compatibles con react-select
     const categoryOptions = categories.map(category => ({
         value: category.id,
@@ -165,22 +165,22 @@ export default function ProductsForm({ data, taxes, categories, addAttribute, ha
 
             <div className="col-span-1 sm:col-span-1">
                 <DivSection>
-                <div className='md:col-span-2 lg:col-span-1'>
-                                                <InputLabel htmlFor="status" value="Publicar" />
+                    <div className='md:col-span-2 lg:col-span-1'>
+                        <InputLabel htmlFor="status" value="Publicar" />
 
-                                                <select
-                                                    name="status"
-                                                    id="status"
-                                                    value={data.status}
-                                                    className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-full shadow-sm"
-                                                    onChange={(e) => setData('status', e.target.value)}
-                                                >
-                                                    <option value={0}>Borrador</option>
-                                                    <option value={1}>Publicar</option>
-                                                </select>
+                        <select
+                            name="status"
+                            id="status"
+                            value={data.status}
+                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-full shadow-sm"
+                            onChange={(e) => setData('status', e.target.value)}
+                        >
+                            <option value={0}>Borrador</option>
+                            <option value={1}>Publicar</option>
+                        </select>
 
-                                                <InputError message={errors.status} className="mt-2" />
-                                            </div>
+                        <InputError message={errors.status} className="mt-2" />
+                    </div>
 
                     <div>
                         <InputLabel value="Categorías" />
@@ -193,6 +193,44 @@ export default function ProductsForm({ data, taxes, categories, addAttribute, ha
                             styles={customStyles}
                         />
                         <InputError message={errors.categories} />
+                    </div>quantity
+
+                    <div>
+                        <InputLabel htmlFor="quantity" value="Stock" />
+                        <TextInput
+                            id="quantity"
+                            type="text"
+                            name="quantity"
+                            value={data.quantity}
+                            className="mt-1 block w-full"
+                            isFocused={true}
+                            onChange={(e) => setData('quantity', e.target.value)}
+                        />
+                        <InputError message={errors.quantity} />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="store" value="Tiendas" />
+                        <select
+                            name="store_id"
+                            id="store"
+                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-3xl shadow-sm"
+                            value={data.store_id}
+                            onChange={(e) => setData('store_id', parseInt(e.target.value))}
+                        >
+                            {stores.length === 0 ? (
+                                <option value="" disabled>
+                                    No hay tiendas disponibles
+                                </option>
+                            ) : (
+                                stores.map((store) => (
+                                    <option value={store.id} key={store.id}>
+                                        {store.store_name}
+                                    </option>
+                                ))
+                            )}
+                        </select>
+                        <InputError message={errors.store_id} className="mt-2" /> {/* Cambia a 'store_id' */}
                     </div>
                 </DivSection>
             </div>

@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import ProductsForm from './ProductsForm';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
-export default function Edit({ product, taxes, categories }) {
+export default function Edit({ product, taxes, categories, stores }) {
     // Extraer las categorías asociadas al producto
     // console.log(product);
     const selectedCategories = product.categories.map(category => category.id);
@@ -37,9 +37,12 @@ export default function Edit({ product, taxes, categories }) {
         tax_id: product.tax_id,
         status: product.status,
         product_price_discount: product.product_price_discount,
-        categories: selectedCategories, // Establece las categorías seleccionadas
-        attribute_names: attributeData.map(attr => attr.name), // Nombres de atributos
-        attribute_values: attributeData.map(attr => attr.values) // Valores de atributos
+        categories: selectedCategories,
+        attribute_names: attributeData.map(attr => attr.name),
+        attribute_values: attributeData.map(attr => attr.values),
+        quantity: product.stocks[0]?.quantity || 0, // Inicializa la cantidad de stock
+        store_id: product.stocks[0]?.store_id, // Inicializa el store_id
+
     };
 
     const { data, setData, errors, post } = useForm(initialValues);
@@ -72,6 +75,8 @@ export default function Edit({ product, taxes, categories }) {
         post(route('products.update', product)); // Asegúrate de enviar el ID del producto
     };
 
+    console.log(product);
+
     return (
         <AuthenticatedLayout
             header={
@@ -87,36 +92,37 @@ export default function Edit({ product, taxes, categories }) {
         >
             <Head title="Productos" />
 
-                <div className="text-gray-900 dark:text-gray-100">
-                    <form onSubmit={submit} className='space-y-4'>
-                        <div className="grid grid-cols-3 gap-4">
-                            <ProductsForm
-                                data={data}
-                                setData={setData}
-                                errors={errors}
-                                taxes={taxes}
-                                categories={categories}
-                                addAttribute={addAttribute}
-                                handleAttributeChange={handleAttributeChange}
-                                handleAttributeValueChange={handleAttributeValueChange}
-                                addAttributeValue={addAttributeValue}
-                            />
-                        </div>
+            <div className="text-gray-900 dark:text-gray-100">
+                <form onSubmit={submit} className='space-y-4'>
+                    <div className="grid grid-cols-3 gap-4">
+                        <ProductsForm
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                            taxes={taxes}
+                            categories={categories}
+                            stores={stores}
+                            addAttribute={addAttribute}
+                            handleAttributeChange={handleAttributeChange}
+                            handleAttributeValueChange={handleAttributeValueChange}
+                            addAttributeValue={addAttributeValue}
+                        />
+                    </div>
 
-                        <div className="flex justify-end p-2.5">
-                            <Button
-                                variant="default"
-                                onClick={() =>
-                                    toast("Actualizado.", {
-                                        description: "Se ha actualizado con éxito.",
-                                    })
-                                }
-                            >
-                                Guardar
-                            </Button>
-                        </div>
-                    </form>
-                </div>
+                    <div className="flex justify-end p-2.5">
+                        <Button
+                            variant="default"
+                            onClick={() =>
+                                toast("Actualizado.", {
+                                    description: "Se ha actualizado con éxito.",
+                                })
+                            }
+                        >
+                            Guardar
+                        </Button>
+                    </div>
+                </form>
+            </div>
         </AuthenticatedLayout>
     );
 }
