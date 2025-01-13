@@ -67,11 +67,11 @@ class ProductController extends Controller
             'tax_id' => 'required|exists:taxes,id',
             'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
-            'attribute_names' => 'required|array',
-            'attribute_names.*' => 'string|max:255',
-            'attribute_values' => 'required|array',
-            'attribute_values.*' => 'array',
-            'attribute_values.*.*' => 'string|max:255', // Cada valor de atributo debe ser una cadena
+            'attribute_names' => 'nullable|array|max:3', // Cambiar a nullable
+            'attribute_names.*' => 'nullable|string|max:255', // Cambiar a nullable
+            'attribute_values' => 'nullable|array', // Cambiar a nullable
+            'attribute_values.*' => 'nullable|array', // Cambiar a nullable
+            'attribute_values.*.*' => 'nullable|string|max:255', // Cambiar a nullable
 
             'quantity' => 'required|integer|min:0', // Validar la cantidad
             'store_id' => 'required|exists:stores,id', // Validar el ID de la tienda
@@ -94,25 +94,27 @@ class ProductController extends Controller
         // Asociar las categorías al producto
         $product->categories()->attach($request->categories);
 
-        // Crear atributos y sus valores
-        foreach ($request->attribute_names as $index => $attributeName) {
-            // Crear el atributo
-            $attribute = Attribute::create(['attribute_name' => $attributeName]);
+        // Crear atributos y sus valores solo si se proporcionan
+        if (!empty($request->attribute_names) && !empty($request->attribute_values)) {
+            foreach ($request->attribute_names as $index => $attributeName) {
+                // Crear el atributo
+                $attribute = Attribute::create(['attribute_name' => $attributeName]);
 
-            // Crear los valores del atributo
-            foreach ($request->attribute_values[$index] as $value) {
-                if (!empty($value)) { // Asegúrate de que el valor no esté vacío
-                    $attributeValue = AttributeValue::create([
-                        'attribute_value_name' => $value,
-                        'attribute_id' => $attribute->id,
-                    ]);
+                // Crear los valores del atributo
+                foreach ($request->attribute_values[$index] as $value) {
+                    if (!empty($value)) { // Asegúrate de que el valor no esté vacío
+                        $attributeValue = AttributeValue::create([
+                            'attribute_value_name' => $value,
+                            'attribute_id' => $attribute->id,
+                        ]);
 
-                    // Asociar el atributo y el valor al producto
-                    ProductAttribute::create([
-                        'product_id' => $product->id,
-                        'attribute_id' => $attribute->id,
-                        'attribute_value_id' => $attributeValue->id,
-                    ]);
+                        // Asociar el atributo y el valor al producto
+                        ProductAttribute::create([
+                            'product_id' => $product->id,
+                            'attribute_id' => $attribute->id,
+                            'attribute_value_id' => $attributeValue->id,
+                        ]);
+                    }
                 }
             }
         }
@@ -225,33 +227,33 @@ class ProductController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(Product $product)
-{
-    // Iniciar una transacción
-    DB::transaction(function () use ($product) {
-        // Eliminar los registros de stock asociados al producto
-        $product->stocks()->delete(); // Elimina todos los registros de stock relacionados
+    {
+        // Iniciar una transacción
+        DB::transaction(function () use ($product) {
+            // Eliminar los registros de stock asociados al producto
+            $product->stocks()->delete(); // Elimina todos los registros de stock relacionados
 
-        // Obtener todos los atributos asociados al producto
-        $attributes = $product->attributes()->with('attribute_values')->get();
+            // Obtener todos los atributos asociados al producto
+            $attributes = $product->attributes()->with('attribute_values')->get();
 
-        // Eliminar las relaciones en la tabla pivote product_attributes
-        $product->attributes()->detach(); // Esto elimina las relaciones en product_attributes
+            // Eliminar las relaciones en la tabla pivote product_attributes
+            $product->attributes()->detach(); // Esto elimina las relaciones en product_attributes
 
-        // Eliminar los valores de atributo y los atributos
-        foreach ($attributes as $attribute) {
-            // Eliminar los valores de atributo asociados
-            $attributeValueIds = $attribute->attribute_values()->pluck('id'); // Obtener los IDs de los valores de atributo
-            $attribute->attribute_values()->delete(); // Elimina los valores de atributo
-            $attribute->delete(); // Elimina el atributo
-        }
+            // Eliminar los valores de atributo y los atributos
+            foreach ($attributes as $attribute) {
+                // Eliminar los valores de atributo asociados
+                $attributeValueIds = $attribute->attribute_values()->pluck('id'); // Obtener los IDs de los valores de atributo
+                $attribute->attribute_values()->delete(); // Elimina los valores de atributo
+                $attribute->delete(); // Elimina el atributo
+            }
 
-        // Eliminar las relaciones en la tabla pivote product_categories
-        $product->categories()->detach(); // Esto elimina las relaciones en product_categories
+            // Eliminar las relaciones en la tabla pivote product_categories
+            $product->categories()->detach(); // Esto elimina las relaciones en product_categories
 
-        // Ahora puedes eliminar el producto
-        $product->delete();
-    });
+            // Ahora puedes eliminar el producto
+            $product->delete();
+        });
 
-    return to_route('products.index')->with('success', 'Producto eliminado con éxito.');
-}
+        return to_route('products.index')->with('success', 'Producto eliminado con éxito.');
+    }
 }

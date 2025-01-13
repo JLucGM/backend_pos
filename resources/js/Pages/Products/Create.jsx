@@ -26,8 +26,14 @@ export default function Create({ taxes, categories, stores }) {
     });
 
     const addAttribute = () => {
-        setData('attribute_names', [...data.attribute_names, ""]);
-        setData('attribute_values', [...data.attribute_values, [""]]); // Inicializa un nuevo array para los valores
+        if (data.attribute_names.length < 3) {
+            setData('attribute_names', [...data.attribute_names, ""]);
+            setData('attribute_values', [...data.attribute_values, [""]]); // Inicializa un nuevo array para los valores
+        } else {
+            toast("No puedes agregar más de 3 atributos.", {
+                description: "Límite alcanzado.",
+            });
+        }
     };
 
     const handleAttributeChange = (index, value) => {

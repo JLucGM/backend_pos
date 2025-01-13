@@ -123,7 +123,7 @@ export default function ProductsForm({ data, taxes, categories, stores, addAttri
                     <p className=' font-semibold'>Atributos</p>
                     <div className='border border-gray-300 rounded-2xl mt-4 '>
                         {data.attribute_names.map((attribute, index) => (
-                            <div key={index} className="mb-4 p-4">
+                            <div key={index} className="mb-2 px-4 pt-4">
                                 <InputLabel value="Atributos" />
                                 <TextInput
                                     id={`attribute_name_${index}`}
@@ -153,11 +153,15 @@ export default function ProductsForm({ data, taxes, categories, stores, addAttri
                                 </Button>
                             </div>
                         ))}
-                        <div className=" border-t border-gray-300">
-
-                            <Button variant="link" type="button" onClick={addAttribute}>
-                                Agregar Atributo
-                            </Button>
+                        <div className="border-t border-gray-300">
+                            {data.attribute_names.length < 3 && (
+                                <Button variant="link" type="button" onClick={addAttribute}>
+                                    Agregar Atributo
+                                </Button>
+                            )}
+                            {data.attribute_names.length >= 3 && (
+                                <p className="text-red-500 text-sm mt-2">Has alcanzado el límite de 3 atributos.</p>
+                            )}
                         </div>
                     </div>
                 </DivSection>
@@ -193,7 +197,7 @@ export default function ProductsForm({ data, taxes, categories, stores, addAttri
                             styles={customStyles}
                         />
                         <InputError message={errors.categories} />
-                    </div>quantity
+                    </div>
 
                     <div>
                         <InputLabel htmlFor="quantity" value="Stock" />
