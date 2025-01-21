@@ -22,7 +22,7 @@ export default function Create({ taxes, categories, stores }) {
         // Datos de stock
         quantity: 0,
         store_id: stores.length > 0 ? stores[0].id : null, // Cambia a null si no hay tiendas
-
+        prices: {}
     });
 
     const addAttribute = () => {
@@ -54,11 +54,50 @@ export default function Create({ taxes, categories, stores }) {
         setData('attribute_values', newValues);
     };
 
+    const generateCombinations = () => {
+        const { attribute_names, attribute_values } = data;
+        const combinations = [];
+
+        const generate = (prefix, index) => {
+            if (index === attribute_names.length) {
+                combinations.push(prefix);
+                return;
+            }
+            for (const value of attribute_values[index]) {
+                generate([...prefix, value], index + 1);
+            }
+        };
+
+        generate([], 0);
+        return combinations;
+    };
+
+    const calculatePrices = () => {
+        const combinations = generateCombinations();
+        const prices = {};
+    
+        combinations.forEach(combination => {
+            const key = combination.join(", ");
+            // Aquí puedes definir la lógica para calcular el precio
+            prices[key] = 0; // Inicializa el precio en 0
+        });
+    //console.log(prices)
+        return prices;
+    };
+
     const submit = (e) => {
         e.preventDefault();
+        const combinations = generateCombinations();
+        const prices = calculatePrices();
+    
+        const formattedCombinations = combinations.map((combination) => ({
+            ids: combination, // Lista de IDs
+            price: prices[combination.join(", ")], // Precio asociado
+        }));
+    
+        setData('combinations', formattedCombinations); // Enviar combinaciones formateadas
         post(route('products.store'));
     };
-    console.log(data)
     return (
         <AuthenticatedLayout
             header={
@@ -84,6 +123,7 @@ export default function Create({ taxes, categories, stores }) {
                             addAttribute={addAttribute}
                             handleAttributeChange={handleAttributeChange}
                             handleAttributeValueChange={handleAttributeValueChange} // Asegúrate de pasar esto
+                            calculatePrices={calculatePrices} // Pasa la función para calcular precios
                             addAttributeValue={addAttributeValue} // Asegúrate de pasar esto
                         />
                     </div>

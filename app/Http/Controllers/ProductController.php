@@ -7,6 +7,7 @@ use App\Models\AttributeValue;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Models\ProductAttributeCombination;
 use App\Models\Stock;
 use App\Models\Store;
 use App\Models\Tax;
@@ -57,78 +58,110 @@ class ProductController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        // dd($request->all());
-        // Validar los datos de entrada
-        $request->validate([
-            'product_name' => 'required|string|max:255',
-            'product_description' => 'nullable|string',
-            'product_price' => 'required|numeric',
-            'tax_id' => 'required|exists:taxes,id',
-            'categories' => 'required|array',
-            'categories.*' => 'exists:categories,id',
-            'attribute_names' => 'nullable|array|max:3', // Cambiar a nullable
-            'attribute_names.*' => 'nullable|string|max:255', // Cambiar a nullable
-            'attribute_values' => 'nullable|array', // Cambiar a nullable
-            'attribute_values.*' => 'nullable|array', // Cambiar a nullable
-            'attribute_values.*.*' => 'nullable|string|max:255', // Cambiar a nullable
+{
+    // Validar los datos de entrada
+    $request->validate([
+        'product_name' => 'required|string|max:255',
+        'product_description' => 'nullable|string',
+        'product_price' => 'required|numeric',
+        'tax_id' => 'required|exists:taxes,id',
+        'categories' => 'required|array',
+        'categories.*' => 'exists:categories,id',
+        'attribute_names' => 'nullable|array|max:3',
+        'attribute_names.*' => 'nullable|string|max:255',
+        'attribute_values' => 'nullable|array',
+        'attribute_values.*' => 'nullable|array',
+        'attribute_values.*.*' => 'nullable|string|max:255',
+        'prices' => 'nullable|array',
+        'quantity' => 'required|integer|min:0',
+        'store_id' => 'required|exists:stores,id',
+    ]);
 
-            'quantity' => 'required|integer|min:0', // Validar la cantidad
-            'store_id' => 'required|exists:stores,id', // Validar el ID de la tienda
-        ]);
+    // Crear el producto
+    $product = Product::create($request->only(
+        'product_name',
+        'product_description',
+        'product_price',
+        'product_price_discount',
+        'status',
+        'tax_id',
+        'quantity',
+        'store_id',
+    ));
 
-        // Crear el producto
-        $product = Product::create(
-            $request->only(
-                'product_name',
-                'product_description',
-                'product_price',
-                'product_price_discount',
-                'status',
-                'tax_id',
-                'quantity',
-                'store_id',
-            )
-        );
+    // Asociar las categorías al producto
+    $product->categories()->attach($request->categories);
 
-        // Asociar las categorías al producto
-        $product->categories()->attach($request->categories);
+    // Crear atributos y sus valores
+    $attributeValueMap = []; // Mapa para almacenar los IDs de los valores de atributos organizados por atributo
 
-        // Crear atributos y sus valores solo si se proporcionan
-        if (!empty($request->attribute_names) && !empty($request->attribute_values)) {
+    if (!empty($request->attribute_names) && !empty($request->attribute_values)) {
+        foreach ($request->attribute_names as $index => $attributeName) {
+            // Crear el atributo
+            $attribute = Attribute::create(['attribute_name' => $attributeName]);
+
+            // Crear los valores del atributo
+            foreach ($request->attribute_values[$index] as $value) {
+                if (!empty($value)) {
+                    $attributeValue = AttributeValue::create([
+                        'attribute_value_name' => $value,
+                        'attribute_id' => $attribute->id,
+                    ]);
+
+                    // Asociar el atributo y el valor al producto
+                    ProductAttribute::create([
+                        'product_id' => $product->id,
+                        'attribute_id' => $attribute->id,
+                        'attribute_value_id' => $attributeValue->id,
+                    ]);
+
+                    // Agregar el ID del valor de atributo al mapa
+                    $attributeValueMap[$index][$value] = $attributeValue->id; // Mapeo de valor a ID
+                }
+            }
+        }
+    }
+
+    // Crear el stock del producto
+    Stock::create([
+        'quantity' => $request->quantity,
+        'product_id' => $product->id,
+        'store_id' => $request->store_id,
+    ]);
+
+    // Guardar las combinaciones de atributos y precios
+    foreach ($request->prices as $combination => $price) {
+        // Convertir la combinación (string) en un arreglo de valores
+        $combinationIndexes = explode(',', $combination); // Asegúrate de que las combinaciones lleguen como "rojo,s"
+
+        // Reiniciar combinationIds para cada combinación
+        $combinationIds = [];
+
+        foreach ($combinationIndexes as $value) {
+            // Limpiar el valor
+            $value = trim($value); // Asegúrate de que no haya espacios adicionales
+
+            // Verificar en cada atributo
             foreach ($request->attribute_names as $index => $attributeName) {
-                // Crear el atributo
-                $attribute = Attribute::create(['attribute_name' => $attributeName]);
-
-                // Crear los valores del atributo
-                foreach ($request->attribute_values[$index] as $value) {
-                    if (!empty($value)) { // Asegúrate de que el valor no esté vacío
-                        $attributeValue = AttributeValue::create([
-                            'attribute_value_name' => $value,
-                            'attribute_id' => $attribute->id,
-                        ]);
-
-                        // Asociar el atributo y el valor al producto
-                        ProductAttribute::create([
-                            'product_id' => $product->id,
-                            'attribute_id' => $attribute->id,
-                            'attribute_value_id' => $attributeValue->id,
-                        ]);
-                    }
+                // Solo buscar el valor en el mapeo correspondiente
+                if (isset($attributeValueMap[$index][$value])) {
+                    // Agregar el ID de la combinación actual
+                    $combinationIds[] = $attributeValueMap[$index][$value];
+                    break; // Salir del bucle una vez que se encuentra el valor
                 }
             }
         }
 
-        // Crear el stock del producto
-        Stock::create([
-            'quantity' => $request->quantity,
-            // 'status' => 1, // Puedes establecer un valor predeterminado para el estado
+        // Guardar en la tabla product_attribute_combinations
+        ProductAttributeCombination::create([
             'product_id' => $product->id,
-            'store_id' => $request->store_id,
+            'attribute_value_ids' => json_encode($combinationIds), // Almacena como JSON
+            'price' => $price,
         ]);
-
-        return to_route('products.index');
     }
+
+    return to_route('products.index');
+}
 
     /**
      * Display the specified resource.

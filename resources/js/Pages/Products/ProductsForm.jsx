@@ -4,8 +4,9 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
+import { useState } from 'react';
 
-export default function ProductsForm({ data, taxes, categories, stores, addAttribute, handleAttributeChange, setData, errors, handleAttributeValueChange, addAttributeValue }) {
+export default function ProductsForm({ data, taxes, categories, stores, addAttribute, handleAttributeChange, setData, errors, handleAttributeValueChange, addAttributeValue, calculatePrices  }) {
     // Mapeamos las categorías para que sean compatibles con react-select
     const categoryOptions = categories.map(category => ({
         value: category.id,
@@ -44,6 +45,38 @@ export default function ProductsForm({ data, taxes, categories, stores, addAttri
                 color: isSelected ? 'white' : 'gray-300', // Cambia el color de la opción seleccionada en dark mode
             },
         }),
+    };
+
+
+    // 1. Crear estado para precios
+    const [prices, setPrices] = useState({});
+
+    // 2. Obtener combinaciones
+    const combinations = calculatePrices();
+
+    // 3. Manejar cambios en el input de precio
+    const handlePriceChange = (combination, value) => {
+        const numericValue = parseFloat(value);
+        if (isNaN(numericValue) || numericValue < 0) {
+            toast("Por favor, ingresa un precio válido.", {
+                description: "El precio debe ser un número positivo.",
+            });
+            return;
+        }
+        
+        // Actualiza el estado de prices
+        setPrices(prevPrices => {
+            const updatedPrices = {
+                ...prevPrices,
+                [combination]: numericValue
+            };
+            
+            // Actualiza el campo prices en data
+            setData('prices', updatedPrices); // Asegúrate de que esto esté aquí
+            
+            console.log(updatedPrices); // Imprime los precios actualizados
+            return updatedPrices;
+        });
     };
 
     return (
@@ -165,6 +198,23 @@ export default function ProductsForm({ data, taxes, categories, stores, addAttri
                         </div>
                     </div>
                 </DivSection>
+
+                <DivSection className='my-4'>
+                <h3 className="font-semibold">Combinaciones y Precios</h3>
+                <ul>
+    {Object.entries(combinations).map(([combination]) => (
+        <li key={combination}>
+            {combination}: 
+            <input 
+                type="number" 
+                value={prices[combination] || ''} 
+                onChange={(e) => handlePriceChange(combination, e.target.value)} 
+                placeholder="Definir precio" 
+            />
+        </li>
+    ))}
+</ul>
+            </DivSection>
             </div>
 
             <div className="col-span-1 sm:col-span-1">
@@ -207,7 +257,6 @@ export default function ProductsForm({ data, taxes, categories, stores, addAttri
                             name="quantity"
                             value={data.quantity}
                             className="mt-1 block w-full"
-                            isFocused={true}
                             onChange={(e) => setData('quantity', e.target.value)}
                         />
                         <InputError message={errors.quantity} />
