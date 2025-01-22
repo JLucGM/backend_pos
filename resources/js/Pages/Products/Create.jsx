@@ -5,99 +5,33 @@ import ProductsForm from './ProductsForm';
 import { toast } from 'sonner';
 
 export default function Create({ taxes, categories, stores }) {
-    const { data, setData, errors, post } = useForm({
+    const { data, setData, errors, post, processing } = useForm({
         product_name: "",
         product_description: "",
         product_price: "",
         product_price_discount: "",
         status: 0,
-
-        // Datos de categorías
         categories: categories.length > 0 ? [categories[0].id] : [],
-        // Datos de atributos
         attribute_names: [""],
-        attribute_values: [[]], // Inicializa como un array de arrays
-        // Datos de impuestos
-        tax_id: taxes[0].id,
-        // Datos de stock
+        attribute_values: [[]],
+        tax_id: taxes.length > 0 ? taxes[0].id : null,
         quantity: 0,
-        store_id: stores.length > 0 ? stores[0].id : null, // Cambia a null si no hay tiendas
+        store_id: stores.length > 0 ? stores[0].id : null,
         prices: {}
     });
 
-    const addAttribute = () => {
-        if (data.attribute_names.length < 3) {
-            setData('attribute_names', [...data.attribute_names, ""]);
-            setData('attribute_values', [...data.attribute_values, [""]]); // Inicializa un nuevo array para los valores
-        } else {
-            toast("No puedes agregar más de 3 atributos.", {
-                description: "Límite alcanzado.",
-            });
-        }
-    };
-
-    const handleAttributeChange = (index, value) => {
-        const newAttributes = [...data.attribute_names];
-        newAttributes[index] = value;
-        setData('attribute_names', newAttributes);
-    };
-
-    const handleAttributeValueChange = (attributeIndex, valueIndex, value) => {
-        const newValues = [...data.attribute_values];
-        newValues[attributeIndex][valueIndex] = value;
-        setData('attribute_values', newValues);
-    };
-
-    const addAttributeValue = (index) => {
-        const newValues = [...data.attribute_values];
-        newValues[index].push(""); // Agrega un nuevo valor vacío para el atributo
-        setData('attribute_values', newValues);
-    };
-
-    const generateCombinations = () => {
-        const { attribute_names, attribute_values } = data;
-        const combinations = [];
-
-        const generate = (prefix, index) => {
-            if (index === attribute_names.length) {
-                combinations.push(prefix);
-                return;
-            }
-            for (const value of attribute_values[index]) {
-                generate([...prefix, value], index + 1);
-            }
-        };
-
-        generate([], 0);
-        return combinations;
-    };
-
-    const calculatePrices = () => {
-        const combinations = generateCombinations();
-        const prices = {};
-    
-        combinations.forEach(combination => {
-            const key = combination.join(", ");
-            // Aquí puedes definir la lógica para calcular el precio
-            prices[key] = 0; // Inicializa el precio en 0
-        });
-    //console.log(prices)
-        return prices;
-    };
-
     const submit = (e) => {
         e.preventDefault();
-        const combinations = generateCombinations();
-        const prices = calculatePrices();
-    
-        const formattedCombinations = combinations.map((combination) => ({
-            ids: combination, // Lista de IDs
-            price: prices[combination.join(", ")], // Precio asociado
-        }));
-    
-        setData('combinations', formattedCombinations); // Enviar combinaciones formateadas
-        post(route('products.store'));
+        post(route('products.store'), {
+            onSuccess: () => {
+                toast("Producto creado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al crear el producto.");
+            }
+        });
     };
+
     return (
         <AuthenticatedLayout
             header={
@@ -108,7 +42,7 @@ export default function Create({ taxes, categories, stores }) {
                 </div>
             }
         >
-            <Head className="capitalize" title="Producto" />
+            <Head title="Crear Producto" />
 
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
@@ -120,29 +54,16 @@ export default function Create({ taxes, categories, stores }) {
                             taxes={taxes}
                             categories={categories}
                             stores={stores}
-                            addAttribute={addAttribute}
-                            handleAttributeChange={handleAttributeChange}
-                            handleAttributeValueChange={handleAttributeValueChange} // Asegúrate de pasar esto
-                            calculatePrices={calculatePrices} // Pasa la función para calcular precios
-                            addAttributeValue={addAttributeValue} // Asegúrate de pasar esto
                         />
                     </div>
 
                     <div className="flex justify-end p-2.5">
-                        <Button
-                            variant="default"
-                            onClick={() =>
-                                toast("Creado.", {
-                                    description: "Se ha creado con éxito.",
-                                })
-                            }
-                        >
-                            Guardar
+                        <Button variant="default" type="submit" disabled={processing}>
+                            {processing ? "Guardando..." : "Guardar"}
                         </Button>
                     </div>
                 </form>
             </div>
-
         </AuthenticatedLayout>
     );
 }

@@ -52,4 +52,9 @@ class Product extends Model
     {
         return $this->belongsToMany(Attribute::class, 'product_attributes', 'product_id', 'attribute_id');
     }
+
+    public function attributeCombinations()
+{
+    return $this->hasMany(ProductAttributeCombination::class);
+}
 }
