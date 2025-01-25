@@ -1,8 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import ProductsForm from './ProductsForm';
 import { toast } from 'sonner';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 export default function Create({ taxes, categories, stores }) {
     const { data, setData, errors, post, processing } = useForm({
@@ -19,9 +20,9 @@ export default function Create({ taxes, categories, stores }) {
         store_id: stores.length > 0 ? stores[0].id : null,
         prices: {}
     });
-
     const submit = (e) => {
         e.preventDefault();
+        console.log(data); // Verifica el contenido de data aquí
         post(route('products.store'), {
             onSuccess: () => {
                 toast("Producto creado con éxito.");
@@ -35,8 +36,11 @@ export default function Create({ taxes, categories, stores }) {
     return (
         <AuthenticatedLayout
             header={
-                <div className='flex justify-between items-center'>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                <div className='flex justify-start items-center'>
+                    <Link href={route('products.index')} >
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
+                    <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Crear Producto
                     </h2>
                 </div>

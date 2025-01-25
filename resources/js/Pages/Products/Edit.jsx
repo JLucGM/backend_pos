@@ -4,79 +4,61 @@ import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import ProductsForm from './ProductsForm';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
+import { Badge } from '@/Components/ui/badge';
 
-export default function Edit({ product, taxes, categories, stores }) {
-    // Extraer las categorías asociadas al producto
-    // console.log(product);
+export default function Edit({ product, taxes, categories, stores, combinationsWithPrices }) {
     const selectedCategories = product.categories.map(category => category.id);
+    // console.log(product);
 
-    // Extraer los atributos y sus valores asociados al producto
-    const attributeData = product.attributes.reduce((acc, attribute) => {
-        // Verificar si el atributo ya existe en el acumulador
-        const existingAttribute = acc.find(item => item.name === attribute.attribute_name);
+    const attributeMap = {};
 
-        // Si existe, agregar los valores únicos
-        if (existingAttribute) {
-            const uniqueValues = new Set(existingAttribute.values);
-            attribute.attribute_values.forEach(value => uniqueValues.add(value.attribute_value_name));
-            existingAttribute.values = Array.from(uniqueValues); // Convertir de nuevo a array
-        } else {
-            // Si no existe, crear un nuevo objeto para el atributo
-            acc.push({
-                name: attribute.attribute_name,
-                values: attribute.attribute_values.map(value => value.attribute_value_name)
-            });
-        }
-        return acc;
-    }, []);
-    // console.log(attributeData);
+    // Agrupar atributos y valores
+    product.combinations.forEach(combination => {
+        combination.combination_attribute_value.forEach(attrValue => {
+            const attributeName = attrValue.attribute_value.attribute.attribute_name;
+            const valueName = attrValue.attribute_value.attribute_value_name;
+
+            // Si el atributo no existe en el mapa, inicialízalo
+            if (!attributeMap[attributeName]) {
+                attributeMap[attributeName] = [];
+            }
+
+            // Agregar el valor si no está ya en la lista
+            if (!attributeMap[attributeName].includes(valueName)) {
+                attributeMap[attributeName].push(valueName);
+            }
+        });
+    });
+
     const initialValues = {
         product_name: product.product_name,
         product_description: product.product_description,
         product_price: product.product_price,
+        product_price_discount: product.product_price_discount,
         tax_id: product.tax_id,
         status: product.status,
-        product_price_discount: product.product_price_discount,
         categories: selectedCategories,
-        attribute_names: attributeData.map(attr => attr.name),
-        attribute_values: attributeData.map(attr => attr.values),
-        quantity: product.stocks[0]?.quantity || 0, // Inicializa la cantidad de stock
-        store_id: product.stocks[0]?.store_id, // Inicializa el store_id
-
+        quantity: (product.stocks && product.stocks.length > 0) ? product.stocks[0].quantity : 0,
+        store_id: (product.stocks && product.stocks.length > 0) ? product.stocks[0].store_id : null,
+        attribute_names: Object.keys(attributeMap), // Nombres de atributos únicos
+        attribute_values: Object.values(attributeMap),
+        prices: combinationsWithPrices,
     };
 
-    const { data, setData, errors, post } = useForm(initialValues);
-
-    const handleAttributeChange = (index, value) => {
-        const newAttributes = [...data.attribute_names];
-        newAttributes[index] = value;
-        setData('attribute_names', newAttributes);
-    };
-
-    const handleAttributeValueChange = (attributeIndex, valueIndex, value) => {
-        const newValues = [...data.attribute_values];
-        newValues[attributeIndex][valueIndex] = value;
-        setData('attribute_values', newValues);
-    };
-
-    const addAttribute = () => {
-        setData('attribute_names', [...data.attribute_names, ""]); // Agrega un nuevo campo vacío
-        setData('attribute_values', [...data.attribute_values, [""]]); // Inicializa un nuevo array para los valores
-    };
-
-    const addAttributeValue = (index) => {
-        const newValues = [...data.attribute_values];
-        newValues[index].push(""); // Agrega un nuevo valor vacío para el atributo
-        setData('attribute_values', newValues);
-    };
+    const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('products.update', product)); // Asegúrate de enviar el ID del producto
+        post(route('products.update', product), {
+            onSuccess: () => {
+                toast("Producto actualizado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al actualizar el producto.");
+            }
+        });
     };
-
-    console.log(product);
-
+    console.log(data)
     return (
         <AuthenticatedLayout
             header={
@@ -84,13 +66,16 @@ export default function Edit({ product, taxes, categories, stores }) {
                     <Link href={route('products.index')} >
                         <ArrowLongLeftIcon className='size-6' />
                     </Link>
-                    <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                    <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         {product.product_name}
                     </h2>
+                    <Badge className={` ${product.status === 1 ? 'bg-primary' : 'bg-destructive '}`}>
+                    {product.status === 1 ? 'Activo' : 'Inactivo'}
+                </Badge>
                 </div>
             }
         >
-            <Head title="Productos" />
+            <Head title="Editar Producto" />
 
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
@@ -102,23 +87,13 @@ export default function Edit({ product, taxes, categories, stores }) {
                             taxes={taxes}
                             categories={categories}
                             stores={stores}
-                            addAttribute={addAttribute}
-                            handleAttributeChange={handleAttributeChange}
-                            handleAttributeValueChange={handleAttributeValueChange}
-                            addAttributeValue={addAttributeValue}
+                            combinationsWithPrices={combinationsWithPrices}
                         />
                     </div>
 
                     <div className="flex justify-end p-2.5">
-                        <Button
-                            variant="default"
-                            onClick={() =>
-                                toast("Actualizado.", {
-                                    description: "Se ha actualizado con éxito.",
-                                })
-                            }
-                        >
-                            Guardar
+                    <Button variant="default" type="submit" disabled={processing}>
+                            {processing ? "Guardando..." : "Guardar"}
                         </Button>
                     </div>
                 </form>

@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         $this->call(StatesSeeder::class);
         $this->call(CitiesSeeder::class);
         $this->call(PaymentsMethodsSeeder::class);
+        $this->call(StoreSeeder::class);
 
         User::create([
             'name' => 'Jean Gouirand',

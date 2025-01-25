@@ -8,42 +8,8 @@ import { ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { Plus } from 'lucide-react';
 import DivSection from '@/Components/ui/div-section';
 
-export default function Index({ product, taxes, categories, permission }) {
-    // let [isOpen, setIsOpen] = useState(false)
-    // const { data, setData, errors, post } = useForm({
-    //     product_name: "",
-    //     product_description: "",
-    //     product_price: "",
-    //     tax_id: taxes[0].id,
-    //     categories: categories.length > 0 ? [categories[0].id] : [], // Establece el primer valor por defecto si hay categorías
-    //     attribute_names: [""],
-    // });
+export default function Index({ product, permission }) {
 
-    // const addAttribute = () => {
-    //     setData('attribute_names', [...data.attribute_names, ""]);
-    // };
-
-    // // Función para manejar el cambio en los campos de atributo
-    // const handleAttributeChange = (index, value) => {
-    //     const newAttributes = [...data.attribute_names];
-    //     newAttributes[index] = value;
-    //     setData('attribute_names', newAttributes);
-    // };
-
-    // const submit = (e) => {
-    //     e.preventDefault();
-    //     post(route('products.store'))
-    //     // console.log(data)
-    //     setData({
-    //         product_name: "",
-    //         product_description: "",
-    //         product_price: "",
-    //         tax_id: taxes[0].id,
-    //         categories: categories.length > 0 ? [categories[0].id] : [], // Establece el primer valor por defecto si hay categorías
-    //         attribute_names: [""],
-    //     });
-    // }
-    // console.log(data)
     return (
         <AuthenticatedLayout
             header={

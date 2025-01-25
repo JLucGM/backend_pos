@@ -18,5 +18,8 @@ class AttributeValue extends Model
         return $this->belongsTo(Attribute::class);
     }
 
-    
+    public function combinationAttributeValues()
+    {
+        return $this->hasMany(CombinationAttributeValue::class);
+    }
 }

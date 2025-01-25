@@ -48,13 +48,9 @@ class Product extends Model
         return $this->hasMany(Stock::class);
     }
 
-    public function attributes()
+    public function combinations()
     {
-        return $this->belongsToMany(Attribute::class, 'product_attributes', 'product_id', 'attribute_id');
+        return $this->hasMany(Combination::class);
     }
 
-    public function attributeCombinations()
-{
-    return $this->hasMany(ProductAttributeCombination::class);
-}
 }

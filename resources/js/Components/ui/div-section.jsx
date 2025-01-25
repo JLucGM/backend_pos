@@ -7,7 +7,7 @@ export default function DivSection({
         <div
             {...props}
             className={
-                `bg-white dark:bg-gray-800 border shadow rounded-2xl p-4 ` + className
+                `bg-white dark:bg-gray-800 border shadow rounded-2xl p-4 mb-4 ` + className
             }
         >
             {children}

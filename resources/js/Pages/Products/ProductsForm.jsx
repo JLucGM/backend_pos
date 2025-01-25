@@ -7,16 +7,21 @@ import DivSection from '@/Components/ui/div-section';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
-export default function ProductsForm({ data, taxes, categories, stores, setData, errors }) {
-    // Mapeamos las categorías para que sean compatibles con react-select
+export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", setData, errors }) {
     const categoryOptions = categories.map(category => ({
         value: category.id,
         label: category.category_name
     }));
 
     const [prices, setPrices] = useState({});
+    // Inicializa el estado de precios con los valores existentes
+    useEffect(() => {
+        setPrices(combinationsWithPrices);
+        // console.log("Combinaciones con precios antes de la asignación:", combinationsWithPrices);
+    }, [combinationsWithPrices]);
 
-    // Función para manejar el cambio en las categorías
+    
+
     const handleCategoryChange = (selectedOptions) => {
         const selectedValues = selectedOptions ? selectedOptions.map(option => option.value) : [];
         setData('categories', selectedValues);
@@ -52,20 +57,25 @@ export default function ProductsForm({ data, taxes, categories, stores, setData,
     };
 
     // Calcular combinaciones y precios
+    // Calcular combinaciones y precios
     useEffect(() => {
-        // Lógica para calcular precios o combinaciones
         const calculatePrices = () => {
             const combinations = generateCombinations();
             const prices = {};
+
+            // Si combinationsWithPrices tiene valores, los usamos
             combinations.forEach(combination => {
-                const key = combination.join(", ");
-                prices[key] = 0; // Inicializa el precio en 0
+                const key = combination.join(", "); // Formato de clave
+                // Si hay un precio existente en combinationsWithPrices, lo usamos, de lo contrario, inicializamos en 0
+                prices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : 0;
             });
+
             setPrices(prices); // Actualiza el estado de precios
+            setData('prices', prices); // Guarda los precios en el estado de data
         };
-    
+
         calculatePrices(); // Llama a la función para calcular precios
-    }, [data.attribute_names, data.attribute_values]); // Dependencias para el efecto
+    }, [data.attribute_names, data.attribute_values, combinationsWithPrices]); // Dependencias
 
     const generateCombinations = () => {
         const { attribute_names, attribute_values } = data;
@@ -85,9 +95,9 @@ export default function ProductsForm({ data, taxes, categories, stores, setData,
         return combinations;
     };
 
-    // Manejar cambios en el input de precio
     const handlePriceChange = (combination, value) => {
         const numericValue = parseFloat(value);
+        // console.log("Cambio de precio para combinación:", combination, "Nuevo valor:", numericValue); // Agrega este log
         if (isNaN(numericValue) || numericValue < 0) {
             toast("Por favor, ingresa un precio válido.", {
                 description: "El precio debe ser un número positivo.",
@@ -95,22 +105,19 @@ export default function ProductsForm({ data, taxes, categories, stores, setData,
             return;
         }
 
-        // Actualiza el estado de prices
         setPrices(prevPrices => {
             const updatedPrices = {
                 ...prevPrices,
                 [combination]: numericValue
             };
-
-            // Actualiza el campo prices en data
-            setData('prices', updatedPrices);
-            return updatedPrices;
+            setData('prices', updatedPrices); // Actualiza el campo prices en data
+            return updatedPrices; // Devuelve el nuevo estado
         });
     };
 
-    // Mapeamos las categorías seleccionadas para react-select
     const selectedCategories = categoryOptions.filter(option => data.categories.includes(option.value));
-
+    // console.log("Current Prices State:", prices);
+    // console.log(combinationsWithPrices)
     return (
         <>
             <div className="col-span-1 md:col-span-2 ">
@@ -186,28 +193,31 @@ export default function ProductsForm({ data, taxes, categories, stores, setData,
 
                 <DivSection>
                     <p className='font-semibold'>Atributos</p>
-                    {data.attribute_names.map((attribute, index) => (
+                    {data.attribute_names.map((attributeName, index) => (
                         <div key={index} className="mb-2">
                             <InputLabel value="Atributo" />
                             <TextInput
                                 type="text"
-                                value={attribute}
+                                value={attributeName} // Muestra el nombre del atributo
                                 onChange={(e) => handleAttributeChange(index, e.target.value)}
                                 placeholder="Nombre del atributo"
                             />
                             <InputError message={errors.attribute_names?.[index]} />
-                            {data.attribute_values[index]?.map((value, valueIndex) => (
+
+                            {/* Renderiza los valores correspondientes a este atributo */}
+                            {Array.isArray(data.attribute_values[index]) && data.attribute_values[index].map((value, valueIndex) => (
                                 <div key={valueIndex} className="my-2">
                                     <InputLabel value="Valor" />
                                     <TextInput
                                         type="text"
-                                        value={value}
+                                        value={value} // Muestra el valor correspondiente
                                         onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
-                                        placeholder="Valor del atributo"
+                                        placeholder={`Valor de ${attributeName}`} // Muestra el nombre del atributo en el placeholder
                                     />
                                     <InputError message={errors.attribute_values?.[index]?.[valueIndex]} />
                                 </div>
                             ))}
+
                             <Button variant="link" type="button" onClick={() => addAttributeValue(index)}>
                                 Agregar Valor
                             </Button>
@@ -218,20 +228,23 @@ export default function ProductsForm({ data, taxes, categories, stores, setData,
                     </Button>
                 </DivSection>
 
-                <DivSection className='my-4'>
+                <DivSection>
                     <h3 className="font-semibold">Combinaciones y Precios</h3>
                     <ul>
-                        {Object.entries(prices).map(([combination]) => (
-                            <li key={combination}>
-                                {combination}: 
-                                <input 
-                                    type="number" 
-                                    value={prices[combination] || ''} 
-                                    onChange={(e) => handlePriceChange(combination, e.target.value)} 
-                                    placeholder="Definir precio" 
-                                />
-                            </li>
-                        ))}
+                        {Object.entries(prices).map(([combination, price]) => {
+                            // console.log(prices); // Verifica el precio aquí
+                            return (
+                                <li key={combination}>
+                                    {combination}:
+                                    <input
+                                        type="number"
+                                        value={price || ''} // Asegúrate de que el valor se muestre correctamente
+                                        onChange={(e) => handlePriceChange(combination, e.target.value)}
+                                        placeholder="Definir precio"
+                                    />
+                                </li>
+                            );
+                        })}
                     </ul>
                 </DivSection>
             </div>

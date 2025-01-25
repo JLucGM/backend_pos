@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_attribute_combinations', function (Blueprint $table) {
+        Schema::create('combinations', function (Blueprint $table) {
             $table->id();
+            $table->string('combination_price');
             $table->foreignId('product_id')->nullable()->constrained();
-            $table->string('attribute_value_ids')->nullable();
-            $table->string('price')->nullable()->constrained();
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_attribute_combinations');
+        Schema::dropIfExists('combinations');
     }
 };
