@@ -9,7 +9,7 @@ import { Button } from './ui/button';
 // import { PDFDownloadLink } from '@react-pdf/renderer';
 // import PDFDocuments from './PDF/PDFDocuments';
 
-export default function DataTable({ className = '', data, columns, routeEdit = null, routeDestroy = null, PDFComponent, editPermission, deletePermission, downloadPdfPermission, permissions }) {
+export default function DataTable({ data, columns, routeEdit = null, routeDestroy = null, PDFComponent, editPermission, deletePermission, downloadPdfPermission, permissions }) {
     const [filtering, setFiltering] = useState("");
     const [sorting, setSorting] = useState([]);
     const table = useReactTable({

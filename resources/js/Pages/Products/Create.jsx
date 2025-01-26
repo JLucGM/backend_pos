@@ -22,7 +22,7 @@ export default function Create({ taxes, categories, stores }) {
     });
     const submit = (e) => {
         e.preventDefault();
-        console.log(data); // Verifica el contenido de data aquí
+        // console.log(data); // Verifica el contenido de data aquí
         post(route('products.store'), {
             onSuccess: () => {
                 toast("Producto creado con éxito.");

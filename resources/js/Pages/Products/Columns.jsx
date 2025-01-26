@@ -24,9 +24,12 @@ export const ProductColumns = [
         accessorKey: "status",
         cell: ({ row }) => {
             return (
-                <Badge className={` ${row.original.status === 1 ? 'bg-primary' : 'bg-destructive '}`}>
-                    {row.original.status === 1 ? 'Activo' : 'Inactivo'}
-                </Badge>
+                // <Badge className={` ${row.original.status === 1 ? 'bg-success' : 'bg-destructive '}`}>
+                    // {row.original.status === 1 ? 'Activo' : 'Inactivo'}
+                // </Badge>
+                <Badge variant={row.original.status === 1 ? 'success' : 'info'}>
+                {row.original.status === 1 ? 'Publicado' : 'Borrador'}
+            </Badge>
             )
         },
     },

@@ -69,9 +69,9 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                     <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         {product.product_name}
                     </h2>
-                    <Badge className={` ${product.status === 1 ? 'bg-primary' : 'bg-destructive '}`}>
-                    {product.status === 1 ? 'Activo' : 'Inactivo'}
-                </Badge>
+                    <Badge variant={product.status === 1 ? 'success' : 'muted'}>
+                        {product.status === 1 ? 'Publicado' : 'Borrador'}
+                    </Badge>
                 </div>
             }
         >
@@ -92,7 +92,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                     </div>
 
                     <div className="flex justify-end p-2.5">
-                    <Button variant="default" type="submit" disabled={processing}>
+                        <Button variant="default" type="submit" disabled={processing}>
                             {processing ? "Guardando..." : "Guardar"}
                         </Button>
                     </div>

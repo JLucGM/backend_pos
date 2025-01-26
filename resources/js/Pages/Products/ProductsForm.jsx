@@ -1,4 +1,5 @@
-import Select from 'react-select';
+import SelectMulti from 'react-select';
+import makeAnimated from 'react-select/animated';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -6,8 +7,14 @@ import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
+import { PlusCircle } from 'lucide-react';
+import { Separator } from '@/Components/ui/separator';
+import { customStyles } from '@/hooks/custom-select';
 
 export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", setData, errors }) {
+    const animatedComponents = makeAnimated();
+
     const categoryOptions = categories.map(category => ({
         value: category.id,
         label: category.category_name
@@ -20,7 +27,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         // console.log("Combinaciones con precios antes de la asignación:", combinationsWithPrices);
     }, [combinationsWithPrices]);
 
-    
+
 
     const handleCategoryChange = (selectedOptions) => {
         const selectedValues = selectedOptions ? selectedOptions.map(option => option.value) : [];
@@ -115,6 +122,23 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         });
     };
 
+    // const customStyles = {
+    //     control: (base, { isFocused }) => ({
+    //         ...base,
+    //         borderRadius: '30px',
+
+    //     }),
+    //     option: (base, { isSelected, hover }) => ({
+    //         ...base,
+    //         backgroundColor: isSelected ? '#F7F7F7' : 'white', // Cambia el fondo de la opción seleccionada
+    //         color: isSelected ? 'black' : 'black', // Cambia el color de la opción seleccionada
+    //         '&.dark': {
+    //             backgroundColor: isSelected ? 'gray-700' : 'gray-900', // Cambia el fondo de la opción seleccionada en dark mode
+    //             color: isSelected ? 'white' : 'gray-300', // Cambia el color de la opción seleccionada en dark mode
+    //         },
+    //     }),
+    // };
+
     const selectedCategories = categoryOptions.filter(option => data.categories.includes(option.value));
     // console.log("Current Prices State:", prices);
     // console.log(combinationsWithPrices)
@@ -173,79 +197,107 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="tax_id" value="Impuesto" />
-                        <select
-                            name="tax_id"
-                            id="tax_id"
-                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-3xl border shadow-sm"
-                            value={data.tax_id}
-                            onChange={(e) => setData('tax_id', parseInt(e.target.value))}
-                        >
-                            {taxes.map((tax) => (
-                                <option value={tax.id} key={tax.id}>
-                                    {tax.tax_name}
-                                </option>
-                            ))}
-                        </select>
-                        <InputError message={errors.tax_id} className="mt-2" />
+                        <InputLabel value="Categorías" />
+                        <SelectMulti
+                            isMulti
+                            closeMenuOnSelect={false}
+                            styles={customStyles}
+                            options={categoryOptions}
+                            onChange={handleCategoryChange}
+                            components={animatedComponents}
+                            value={categoryOptions.filter(option => data.categories.includes(option.value))}
+                        />
+                        <InputError message={errors.categories} />
                     </div>
+
+
                 </DivSection>
 
                 <DivSection>
-                    <p className='font-semibold'>Atributos</p>
-                    {data.attribute_names.map((attributeName, index) => (
-                        <div key={index} className="mb-2">
-                            <InputLabel value="Atributo" />
-                            <TextInput
-                                type="text"
-                                value={attributeName} // Muestra el nombre del atributo
-                                onChange={(e) => handleAttributeChange(index, e.target.value)}
-                                placeholder="Nombre del atributo"
-                            />
-                            <InputError message={errors.attribute_names?.[index]} />
-
-                            {/* Renderiza los valores correspondientes a este atributo */}
-                            {Array.isArray(data.attribute_values[index]) && data.attribute_values[index].map((value, valueIndex) => (
-                                <div key={valueIndex} className="my-2">
-                                    <InputLabel value="Valor" />
+                    <div className="border rounded-xl mb-4">
+                        <div className="flex justify-between px-4 pt-4">
+                            <p className='font-semibold'>Atributos</p>
+                        </div>
+                        <div className="p-4">
+                            {data.attribute_names.map((attributeName, index) => (
+                                <div key={index} className="mb-">
+                                    <InputLabel value="Nombre de opción" />
                                     <TextInput
                                         type="text"
-                                        value={value} // Muestra el valor correspondiente
-                                        onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
-                                        placeholder={`Valor de ${attributeName}`} // Muestra el nombre del atributo en el placeholder
+                                        value={attributeName} // Muestra el nombre del atributo
+                                        onChange={(e) => handleAttributeChange(index, e.target.value)}
+                                        placeholder="Nombre del atributo"
                                     />
-                                    <InputError message={errors.attribute_values?.[index]?.[valueIndex]} />
+                                    <InputError message={errors.attribute_names?.[index]} />
+
+                                    <div className="my-2">
+
+                                        {/* Renderiza los valores correspondientes a este atributo */}
+                                        {Array.isArray(data.attribute_values[index]) && data.attribute_values[index].map((value, valueIndex) => (
+                                            <div key={valueIndex} className="mb-2">
+                                                <InputLabel value="Valor de opciones" />
+                                                {/* <InputLabel value="Valor" /> */}
+                                                <TextInput
+                                                    type="text"
+                                                    value={value} // Muestra el valor correspondiente
+                                                    onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
+                                                    placeholder={`Valor de ${attributeName}`} // Muestra el nombre del atributo en el placeholder
+                                                />
+                                                <InputError message={errors.attribute_values?.[index]?.[valueIndex]} />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <Button variant="link" type="button" onClick={() => addAttributeValue(index)}>
+                                        Agregar Valor
+                                    </Button>
                                 </div>
                             ))}
-
-                            <Button variant="link" type="button" onClick={() => addAttributeValue(index)}>
-                                Agregar Valor
-                            </Button>
                         </div>
-                    ))}
-                    <Button variant="link" type="button" onClick={addAttribute}>
-                        Agregar Atributo
-                    </Button>
-                </DivSection>
+                        <Separator />
+                        {/* data.attribute_names.length < 3 */}
+                        {/* <Button className="w-full justify-start" variant="link" size="sm" type="button" onClick={addAttribute}>
+                            <PlusCircle className="size-4" />
+                            Agregar opción
+                        </Button> */}
 
-                <DivSection>
-                    <h3 className="font-semibold">Combinaciones y Precios</h3>
-                    <ul>
-                        {Object.entries(prices).map(([combination, price]) => {
-                            // console.log(prices); // Verifica el precio aquí
-                            return (
-                                <li key={combination}>
-                                    {combination}:
-                                    <input
-                                        type="number"
-                                        value={price || ''} // Asegúrate de que el valor se muestre correctamente
-                                        onChange={(e) => handlePriceChange(combination, e.target.value)}
-                                        placeholder="Definir precio"
-                                    />
-                                </li>
-                            );
-                        })}
-                    </ul>
+                        {data.attribute_names.length < 3 ? (
+                            <Button className="w-full justify-start" variant="link" size="sm" type="button" onClick={addAttribute}>
+                                <PlusCircle className="size-4" />
+                                Agregar opción
+                            </Button>
+                        ) : (
+                            null
+                        )}
+                    </div>
+
+                    <Table >
+                        <TableCaption>A list of your recent invoices.</TableCaption>
+                        <TableHeader className="bg-gray-100">
+                            <TableRow>
+                                <TableHead className="w-[100px]">combination</TableHead>
+                                <TableHead className="text-right">Precio</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Object.entries(prices).map(([combination, price]) => {
+                                // console.log(prices); // Verifica el precio aquí
+                                return (
+                                    <TableRow key={combination}>
+                                        <TableCell className="font-medium">{combination}</TableCell>
+                                        <TableCell className="text-right">
+                                            <TextInput
+                                                type="number"
+                                                value={price || ''} // Asegúrate de que el valor se muestre correctamente
+                                                onChange={(e) => handlePriceChange(combination, e.target.value)}
+                                                placeholder="Definir precio"
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
                 </DivSection>
             </div>
 
@@ -267,14 +319,21 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     </div>
 
                     <div>
-                        <InputLabel value="Categorías" />
-                        <Select
-                            isMulti
-                            options={categoryOptions}
-                            onChange={handleCategoryChange}
-                            value={categoryOptions.filter(option => data.categories.includes(option.value))}
-                        />
-                        <InputError message={errors.categories} />
+                        <InputLabel htmlFor="tax_id" value="Impuesto" />
+                        <select
+                            name="tax_id"
+                            id="tax_id"
+                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-3xl border shadow-sm"
+                            value={data.tax_id}
+                            onChange={(e) => setData('tax_id', parseInt(e.target.value))}
+                        >
+                            {taxes.map((tax) => (
+                                <option value={tax.id} key={tax.id}>
+                                    {tax.tax_name}
+                                </option>
+                            ))}
+                        </select>
+                        <InputError message={errors.tax_id} className="mt-2" />
                     </div>
 
                     <div>

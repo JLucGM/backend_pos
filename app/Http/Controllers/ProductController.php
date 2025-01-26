@@ -156,7 +156,8 @@ class ProductController extends Controller
             }
         }
 
-        return to_route('products.index')->with('success', 'Producto creado con éxito.');
+        return to_route('products.edit', $product->slug)->with('success', 'Producto creado con éxito.');
+        // return to_route('products.index')->with('success', 'Producto creado con éxito.');
     }
 
     // Método para generar combinaciones
@@ -225,114 +226,114 @@ class ProductController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, Product $product)
-{
-    // Validar los datos de entrada
-    $request->validate([
-        'product_name' => 'required|string|max:255',
-        'product_description' => 'nullable|string',
-        'product_price' => 'required|numeric',
-        'product_price_discount' => 'nullable|numeric',
-        'tax_id' => 'required|exists:taxes,id',
-        'categories' => 'required|array',
-        'categories.*' => 'exists:categories,id',
-        'quantity' => 'required|integer|min:0',
-        'attribute_names' => 'nullable|array',
-        'attribute_names.*' => 'nullable|string|max:255',
-        'attribute_values' => 'nullable|array',
-        'attribute_values.*.*' => 'nullable|string|max:255',
-    ]);
-
-    // Extraer los datos del producto
-    $data = $request->only('product_name', 'product_description', 'product_price', 'product_price_discount', 'status', 'tax_id');
-
-    // Actualizar el producto
-    $product->update($data);
-
-    // Actualizar las categorías asociadas
-    $product->categories()->sync($request->categories);
-
-    // Actualizar el stock
-    $product->stocks()->update([
-        'quantity' => $request->quantity,
-        'store_id' => $request->store_id,
-    ]);
-
-    // Primero, eliminar las combinaciones existentes
-    foreach ($product->combinations as $combination) {
-        // Eliminar los valores de atributos asociados a la combinación
-        $combination->combinationAttributeValue()->delete(); // Eliminar valores de atributos
-
-        // Luego, eliminar la combinación
-        $combination->delete();
-    }
-
-    // Obtener atributos existentes
-    $existingAttributes = Attribute::with('attribute_values')->get()->keyBy('id');
-
-    // Crear o actualizar atributos y sus valores
-    $attributeValueMap = []; // Mapa para almacenar los IDs de los valores de atributos organizados por atributo
-    $attributeValueNames = []; // Mapa para almacenar los nombres de los valores de atributos
-
-    foreach ($request->attribute_names as $index => $attributeName) {
-        // Verificar si el atributo ya existe
-        $attribute = Attribute::firstOrCreate(
-            ['attribute_name' => $attributeName],
-            ['attribute_name' => $attributeName] // Puedes agregar más campos si es necesario
-        );
-
-        // Crear o actualizar los valores del atributo
-        foreach ($request->attribute_values[$index] as $value) {
-            if (!empty($value)) {
-                // Verificar si el valor de atributo ya existe
-                $attributeValue = AttributeValue::firstOrCreate(
-                    ['attribute_value_name' => $value, 'attribute_id' => $attribute->id],
-                    ['attribute_value_name' => $value] // Puedes agregar más campos si es necesario
-                );
-
-                // Agregar el ID y el nombre del valor de atributo al mapa
-                $attributeValueMap[$index][] = $attributeValue->id; // Mapeo de valor a ID
-                $attributeValueNames[$attributeValue->id] = $value; // Mapeo de ID a nombre
-            }
-        }
-    }
-
-    // Eliminar atributos que no están en la solicitud
-    foreach ($existingAttributes as $existingAttribute) {
-        if (!in_array($existingAttribute->attribute_name, $request->attribute_names)) {
-            $existingAttribute->delete();
-        }
-    }
-
-    // Generar combinaciones de valores de atributos
-    $combinations = $this->generateCombinations($attributeValueMap);
-
-    // Guardar combinaciones y sus precios
-    foreach ($combinations as $combination) {
-        // Generar la clave usando los nombres de los atributos
-        $combinationKey = implode(", ", array_map(function ($id) use ($attributeValueNames) {
-            return $attributeValueNames[$id]; // Mapea el ID al nombre
-        }, $combination));
-
-        // Obtener el precio de la combinación
-        $price = $request->prices[$combinationKey] ?? 0;
-
-        // Crear la combinación
-        $combinationModel = Combination::create([
-            'product_id' => $product->id,
-            'combination_price' => $price,
+    {
+        // Validar los datos de entrada
+        $request->validate([
+            'product_name' => 'required|string|max:255',
+            'product_description' => 'nullable|string',
+            'product_price' => 'required|numeric',
+            'product_price_discount' => 'nullable|numeric',
+            'tax_id' => 'required|exists:taxes,id',
+            'categories' => 'required|array',
+            'categories.*' => 'exists:categories,id',
+            'quantity' => 'required|integer|min:0',
+            'attribute_names' => 'nullable|array',
+            'attribute_names.*' => 'nullable|string|max:255',
+            'attribute_values' => 'nullable|array',
+            'attribute_values.*.*' => 'nullable|string|max:255',
         ]);
 
-        // Guardar los valores de atributos de la combinación
-        foreach ($combination as $attributeValueId) {
-            CombinationAttributeValue::create([
-                'combination_id' => $combinationModel->id,
-                'attribute_value_id' => $attributeValueId,
-            ]);
-        }
-    }
+        // Extraer los datos del producto
+        $data = $request->only('product_name', 'product_description', 'product_price', 'product_price_discount', 'status', 'tax_id');
 
-    return to_route('products.index')->with('success', 'Producto actualizado con éxito.');
-}
+        // Actualizar el producto
+        $product->update($data);
+
+        // Actualizar las categorías asociadas
+        $product->categories()->sync($request->categories);
+
+        // Actualizar el stock
+        $product->stocks()->update([
+            'quantity' => $request->quantity,
+            'store_id' => $request->store_id,
+        ]);
+
+        // Primero, eliminar las combinaciones existentes
+        foreach ($product->combinations as $combination) {
+            // Eliminar los valores de atributos asociados a la combinación
+            $combination->combinationAttributeValue()->delete(); // Eliminar valores de atributos
+
+            // Luego, eliminar la combinación
+            $combination->delete();
+        }
+
+        // Obtener atributos existentes
+        $existingAttributes = Attribute::with('attribute_values')->get()->keyBy('id');
+
+        // Crear o actualizar atributos y sus valores
+        $attributeValueMap = []; // Mapa para almacenar los IDs de los valores de atributos organizados por atributo
+        $attributeValueNames = []; // Mapa para almacenar los nombres de los valores de atributos
+
+        foreach ($request->attribute_names as $index => $attributeName) {
+            // Verificar si el atributo ya existe
+            $attribute = Attribute::firstOrCreate(
+                ['attribute_name' => $attributeName],
+                ['attribute_name' => $attributeName] // Puedes agregar más campos si es necesario
+            );
+
+            // Crear o actualizar los valores del atributo
+            foreach ($request->attribute_values[$index] as $value) {
+                if (!empty($value)) {
+                    // Verificar si el valor de atributo ya existe
+                    $attributeValue = AttributeValue::firstOrCreate(
+                        ['attribute_value_name' => $value, 'attribute_id' => $attribute->id],
+                        ['attribute_value_name' => $value] // Puedes agregar más campos si es necesario
+                    );
+
+                    // Agregar el ID y el nombre del valor de atributo al mapa
+                    $attributeValueMap[$index][] = $attributeValue->id; // Mapeo de valor a ID
+                    $attributeValueNames[$attributeValue->id] = $value; // Mapeo de ID a nombre
+                }
+            }
+        }
+
+        // Eliminar atributos que no están en la solicitud
+        foreach ($existingAttributes as $existingAttribute) {
+            if (!in_array($existingAttribute->attribute_name, $request->attribute_names)) {
+                $existingAttribute->delete();
+            }
+        }
+
+        // Generar combinaciones de valores de atributos
+        $combinations = $this->generateCombinations($attributeValueMap);
+
+        // Guardar combinaciones y sus precios
+        foreach ($combinations as $combination) {
+            // Generar la clave usando los nombres de los atributos
+            $combinationKey = implode(", ", array_map(function ($id) use ($attributeValueNames) {
+                return $attributeValueNames[$id]; // Mapea el ID al nombre
+            }, $combination));
+
+            // Obtener el precio de la combinación
+            $price = $request->prices[$combinationKey] ?? 0;
+
+            // Crear la combinación
+            $combinationModel = Combination::create([
+                'product_id' => $product->id,
+                'combination_price' => $price,
+            ]);
+
+            // Guardar los valores de atributos de la combinación
+            foreach ($combination as $attributeValueId) {
+                CombinationAttributeValue::create([
+                    'combination_id' => $combinationModel->id,
+                    'attribute_value_id' => $attributeValueId,
+                ]);
+            }
+        }
+
+        return to_route('products.index')->with('success', 'Producto actualizado con éxito.');
+    }
 
     /**
      * Remove the specified resource from storage.
