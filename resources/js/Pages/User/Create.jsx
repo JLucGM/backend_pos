@@ -1,7 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import UserForm from './UserForm';
 import { Button } from '@/Components/ui/button';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 export default function Create({ roles, role }) {
 
@@ -20,12 +21,15 @@ export default function Create({ roles, role }) {
     const submit = (e) => {
         e.preventDefault();
         post(route('user.store'))
-        console.log(data)
+        // console.log(data)
     }
     return (
         <AuthenticatedLayout
             header={
-                <div className='flex justify-between items-center px-6'>
+                <div className='flex justify-start items-center'>
+                    <Link href={route('user.index')} >
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Crear Usuario
                     </h2>

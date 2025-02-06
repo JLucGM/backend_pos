@@ -17,6 +17,7 @@ class RolesSeeder extends Seeder
     {
         $rolSuperAdmin = Role::create(['name' => 'super admin', 'slug' => 'super-admin']);
         $rolAdmin = Role::create(['name' => 'admin', 'slug' => 'admin']);
+        $rolAdmin = Role::create(['name' => 'client', 'slug' => 'client']);
 
         Permission::create(['name' => 'admin.dashboard.charts', 'description' => 'Ver graficos del dashboard'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
 

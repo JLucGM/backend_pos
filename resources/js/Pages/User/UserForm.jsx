@@ -23,8 +23,9 @@ export default function UserForm({ data, setData, errors, roles, role, user = ""
             )} */}
 
             <div className="col-span-full flex justify-center">
+                
                 <Avatar className="h-56 w-56 ">
-                    <AvatarImage className="h-56 w-56 object-cover" src={user.avatar} />
+                    <AvatarImage className="h-56 w-56 object-cover" src={user.avatar_url} />
                     <AvatarFallback className="h-56 w-56 object-cover bg-slate-200 border-2 border-slate-400">
                         <p className='text-3xl' >CN</p>
                     </AvatarFallback>

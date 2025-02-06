@@ -2,6 +2,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { Input } from '@/Components/ui/input';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -11,6 +12,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        avatar: '',
     });
 
     const submit = (e) => {
@@ -25,7 +27,22 @@ export default function Register() {
         <GuestLayout>
             <Head title="Register" />
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} encType="multipart/form-data">
+
+                <div>
+                    <InputLabel htmlFor="avatar" value="avatar" />
+
+                    <Input
+                        id="avatar"
+                        className="mt-1 block w-full"
+                        name="avatar"
+                        onChange={(e) => setData('avatar', e.target.files[0])} // Cambia esto
+                        type="file"
+                    />
+
+                    <InputError className="mt-2" message={errors.avatar} />
+                </div>
+
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
 

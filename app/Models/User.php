@@ -10,11 +10,15 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasSlug, HasRoles, HasApiTokens;
+    use InteractsWithMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -25,7 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'phone', 
+        'phone',
         'status',
         'avatar',
     ];
@@ -58,10 +62,17 @@ class User extends Authenticatable
         ];
     }
 
-    public function getSlugOptions() : SlugOptions
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('avatars')
+              ->width(500)
+              ->height(500);
     }
 }

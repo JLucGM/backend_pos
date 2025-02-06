@@ -53,7 +53,7 @@ export default function Index({ users, roles, role, permission }) {
             avatar: null,
         });
     }
-
+// console.log(users)
     return (
         <AuthenticatedLayout
             header={

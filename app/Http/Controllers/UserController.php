@@ -29,16 +29,21 @@ class UserController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $users = User::all();
-        $roles = Role::all();
+{
+    $users = User::with('media')->get(); // Asegúrate de cargar la relación media
+    $roles = Role::all();
 
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
+    $user = Auth::user();
+    $role = $user->getRoleNames();
+    $permission = $user->getAllPermissions();
 
-        return Inertia::render('User/Index', compact('users', 'roles','role','permission'));
+    // Agregar la URL del avatar a cada usuario
+    foreach ($users as $user) {
+        $user->avatar_url = $user->getFirstMediaUrl('avatars'); // 'avatars' es el nombre de la colección
     }
+
+    return Inertia::render('User/Index', compact('users', 'roles', 'role', 'permission'));
+}
 
     /**
      * Show the form for creating a new resource.
@@ -46,7 +51,7 @@ class UserController extends Controller
     public function create()
     {
         $user = Auth::user();
-        $roles = Role::all();
+        $roles = Role::where('name', '!=', 'client')->get();
         $role = $user->getRoleNames();
 
         return Inertia::render('User/Create', compact('roles','role'));
@@ -62,19 +67,23 @@ class UserController extends Controller
         $data['password'] = bcrypt($request['password']);
 
         // AGREGAR AVATAR
-        if ($request->hasFile('avatar')) {
-            $image = $request->file('avatar');
-            $nombreImagen = time() . '_' . $image->getClientOriginalName(); // Asegúrate de que el nombre sea único
-            $image->move(public_path('img/profile'), $nombreImagen);
+        // if ($request->hasFile('avatar')) {
+        //     $image = $request->file('avatar');
+        //     $nombreImagen = time() . '_' . $image->getClientOriginalName(); // Asegúrate de que el nombre sea único
+        //     $image->move(public_path('img/profile'), $nombreImagen);
 
-            // Guardar la ruta completa del avatar
-            $data['avatar'] = asset('img/profile/' . $nombreImagen); // Guarda la URL completa
-        } else {
-            $data['avatar'] = asset('img/profile/default.jpg'); // Guarda la URL por defecto
-        }
+        //     // Guardar la ruta completa del avatar
+        //     $data['avatar'] = asset('img/profile/' . $nombreImagen); // Guarda la URL completa
+        // } else {
+        //     $data['avatar'] = asset('img/profile/default.jpg'); // Guarda la URL por defecto
+        // }
 
+        
         $user = User::create($data); // Crear el nuevo usuario
-
+        
+        if ($request->hasFile('avatar')) {
+            $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
+        }
         // Asignar el rol al usuario
         if ($request->filled('role')) {
             $user->assignRole($request->input('role'));
@@ -96,9 +105,10 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $user->load('roles');
+        $user->load('roles', 'media');
+        $user->avatar_url = $user->getFirstMediaUrl('avatars'); // Asegúrate de que 'avatars' sea el nombre de la colección
 
-        $roles = Role::all();
+        $roles = Role::where('name', '!=', 'client')->get();
 
         $users = Auth::user();
         $role = $users->getRoleNames();
@@ -118,25 +128,32 @@ class UserController extends Controller
             $data['password'] = bcrypt($request['password']);
         }
 
-        if ($request->hasFile('avatar')) {
-            $image = $request->file('avatar');
-            $nombreImagen = time() . '_' . $image->getClientOriginalName(); // Asegúrate de que el nombre sea único
-            $image->move(public_path('img/profile'), $nombreImagen);
+        // if ($request->hasFile('avatar')) {
+        //     $image = $request->file('avatar');
+        //     $nombreImagen = time() . '_' . $image->getClientOriginalName(); // Asegúrate de que el nombre sea único
+        //     $image->move(public_path('img/profile'), $nombreImagen);
 
-            // Guardar la ruta completa del avatar
-            $data['avatar'] = asset('img/profile/' . $nombreImagen); // Guarda la URL completa
+        //     // Guardar la ruta completa del avatar
+        //     $data['avatar'] = asset('img/profile/' . $nombreImagen); // Guarda la URL completa
 
-            // Eliminar la imagen existente si no es el por defecto
-            if ($user->avatar != 'default.jpg') {
-                // Eliminar la imagen existente
-                unlink(public_path('img/profile/' . basename($user->avatar)));
-            }
-        } else {
-            // Si no se sube una nueva imagen, conservar la existente
-            $data['avatar'] = $user->avatar; // Mantener la URL existente
-        }
+        //     // Eliminar la imagen existente si no es el por defecto
+        //     if ($user->avatar != 'default.jpg') {
+        //         // Eliminar la imagen existente
+        //         unlink(public_path('img/profile/' . basename($user->avatar)));
+        //     }
+        // } else {
+        //     // Si no se sube una nueva imagen, conservar la existente
+        //     $data['avatar'] = $user->avatar; // Mantener la URL existente
+        // }
 
         $user->update($data); // Actualizar el usuario con los nuevos datos
+
+        if ($request->hasFile('avatar')) {
+            // Eliminar el avatar anterior si existe
+            $user->clearMediaCollection('avatars'); // Elimina todos los avatares anteriores
+            // Agregar el nuevo avatar
+            $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
+        }
 
         // Actualizar el rol del usuario
         if ($request->filled('role')) {

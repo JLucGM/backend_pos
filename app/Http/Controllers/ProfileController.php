@@ -18,9 +18,13 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
+            'avatarUrl' => $user->getFirstMediaUrl('avatars'), // Obtener la URL del avatar
+            'user' => $user, // Pasar el usuario completo si es necesario
         ]);
     }
 
@@ -28,17 +32,25 @@ class ProfileController extends Controller
      * Update the user's profile information.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+{
+    $user = $request->user();
+    
+    // Llenar el modelo con los datos validados
+    $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit');
+    // Manejar la actualización del avatar
+    if ($request->hasFile('avatar')) {
+        // Eliminar el avatar anterior si existe
+        $user->clearMediaCollection('avatars'); // Elimina todos los avatares anteriores
+        // Agregar el nuevo avatar
+        $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
     }
+
+    // Guardar los cambios
+    $user->save();
+
+    return Redirect::route('profile.edit');
+}
 
     /**
      * Delete the user's account.

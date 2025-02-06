@@ -30,10 +30,13 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // dd($request->all());
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'avatar' => 'nullable', // Validación para el avatar
+
         ]);
 
         $user = User::create([
@@ -41,6 +44,11 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Si se ha subido un avatar, se guarda en la biblioteca de medios
+        if ($request->hasFile('avatar')) {
+            $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
+        }
 
         event(new Registered($user));
 
