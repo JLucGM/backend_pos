@@ -18,7 +18,8 @@ export default function Create({ taxes, categories, stores }) {
         tax_id: taxes.length > 0 ? taxes[0].id : null,
         quantity: 0,
         store_id: stores.length > 0 ? stores[0].id : null,
-        prices: {}
+        prices: {},
+        images: []
     });
     const submit = (e) => {
         e.preventDefault();

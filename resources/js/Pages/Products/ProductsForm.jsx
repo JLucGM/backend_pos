@@ -11,9 +11,13 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { PlusCircle } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { customStyles } from '@/hooks/custom-select';
+import { Input } from '@/Components/ui/input';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { useForm } from '@inertiajs/react';
 
-export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", setData, errors }) {
+export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", product = "", setData, errors }) {
     const animatedComponents = makeAnimated();
+    const { delete: deleteImage } = useForm(); // Desestructura la función delete de useForm
 
     const categoryOptions = categories.map(category => ({
         value: category.id,
@@ -24,10 +28,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
     // Inicializa el estado de precios con los valores existentes
     useEffect(() => {
         setPrices(combinationsWithPrices);
-        // console.log("Combinaciones con precios antes de la asignación:", combinationsWithPrices);
     }, [combinationsWithPrices]);
-
-
 
     const handleCategoryChange = (selectedOptions) => {
         const selectedValues = selectedOptions ? selectedOptions.map(option => option.value) : [];
@@ -63,7 +64,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         setData('attribute_values', newValues);
     };
 
-    // Calcular combinaciones y precios
     // Calcular combinaciones y precios
     useEffect(() => {
         const calculatePrices = () => {
@@ -122,26 +122,21 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         });
     };
 
-    // const customStyles = {
-    //     control: (base, { isFocused }) => ({
-    //         ...base,
-    //         borderRadius: '30px',
+    // const selectedCategories = categoryOptions.filter(option => data.categories.includes(option.value));
 
-    //     }),
-    //     option: (base, { isSelected, hover }) => ({
-    //         ...base,
-    //         backgroundColor: isSelected ? '#F7F7F7' : 'white', // Cambia el fondo de la opción seleccionada
-    //         color: isSelected ? 'black' : 'black', // Cambia el color de la opción seleccionada
-    //         '&.dark': {
-    //             backgroundColor: isSelected ? 'gray-700' : 'gray-900', // Cambia el fondo de la opción seleccionada en dark mode
-    //             color: isSelected ? 'white' : 'gray-300', // Cambia el color de la opción seleccionada en dark mode
-    //         },
-    //     }),
-    // };
+    const handleDeleteImage = (imageId) => {
+        if (confirm("¿Estás seguro de que deseas eliminar esta imagen?")) {
+            deleteImage(route('products.images.destroy', { product: product.id, imageId }), {
+                onSuccess: () => {
+                    toast("Imagen eliminada con éxito.");
+                },
+                onError: () => {
+                    toast.error("Error al eliminar la imagen.");
+                }
+            });
+        }
+    };
 
-    const selectedCategories = categoryOptions.filter(option => data.categories.includes(option.value));
-    // console.log("Current Prices State:", prices);
-    // console.log(combinationsWithPrices)
     return (
         <>
             <div className="col-span-1 md:col-span-2 ">
@@ -194,6 +189,48 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             onChange={(e) => setData('product_description', e.target.value)}
                         />
                         <InputError message={errors.product_description} />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="images" value="Media" />
+                        <Input
+                            id="images"
+                            type="file"
+                            name="images[]"
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('images', Array.from(e.target.files))} // Almacena todos los archivos
+                            multiple
+                        />
+                        <InputError message={errors.images} className="mt-2" />
+                    </div>
+
+                    <div className="mt-4">
+                        <h3 className="font-semibold">Imágenes existentes:</h3>
+                        <div className="flex flex-wrap">
+                            {product.media && product.media.length > 0 ? (
+                                product.media.map((image) => {
+                                    // console.log(image); // Imprime el objeto image en la consola
+                                    return (
+                                        <div key={image.id} className="relative mr-2 mb-2">
+                                            <img
+                                                src={image.original_url} // Cambia esto si es necesario
+                                                alt={image.name}
+                                                className="w-32 h-32 object-cover rounded"
+                                            />
+                                            <button
+                                                className="text-left text-red-600 hover:bg-red-200 hover:rounded-md p-2"
+                                                onClick={() => handleDeleteImage(image.id)} // Llama a la función de eliminación
+                                                type="button" // Asegúrate de que el tipo sea "button"
+                                            >
+                                                <TrashIcon className='size-5' /> 
+                                            </button>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                null
+                            )}
+                        </div>
                     </div>
 
                     <div>

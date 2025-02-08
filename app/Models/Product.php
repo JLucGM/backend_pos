@@ -6,10 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Product extends Model
+class Product extends Model implements HasMedia
 {
     use HasFactory, HasSlug;
+    use InteractsWithMedia;
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('products');
+    }
 
     protected $fillable = [
         'product_name',
@@ -31,6 +40,17 @@ class Product extends Model
         return SlugOptions::create()
             ->generateSlugsFrom('product_name')
             ->saveSlugsTo('slug');
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(368)
+            ->height(232);
+
+            $this->addMediaConversion('gallery')
+            ->width(368)
+            ->height(232);
     }
 
     public function tax()

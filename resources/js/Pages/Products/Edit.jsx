@@ -8,25 +8,26 @@ import { Badge } from '@/Components/ui/badge';
 
 export default function Edit({ product, taxes, categories, stores, combinationsWithPrices }) {
     const selectedCategories = product.categories.map(category => category.id);
-    // console.log(product);
 
     const attributeMap = {};
-
     // Agrupar atributos y valores
     product.combinations.forEach(combination => {
         combination.combination_attribute_value.forEach(attrValue => {
-            const attributeName = attrValue.attribute_value.attribute.attribute_name;
-            const valueName = attrValue.attribute_value.attribute_value_name;
+            // Verificar si attribute_value y attribute están definidos
+            if (attrValue.attribute_value && attrValue.attribute_value.attribute) {
+                const attributeName = attrValue.attribute_value.attribute.attribute_name;
+                const valueName = attrValue.attribute_value.attribute_value_name;
 
-            // Si el atributo no existe en el mapa, inicialízalo
-            if (!attributeMap[attributeName]) {
-                attributeMap[attributeName] = [];
-            }
+                // Si el atributo no existe en el mapa, inicialízalo
+                if (!attributeMap[attributeName]) {
+                    attributeMap[attributeName] = [];
+                }
 
-            // Agregar el valor si no está ya en la lista
-            if (!attributeMap[attributeName].includes(valueName)) {
-                attributeMap[attributeName].push(valueName);
-            }
+                // Agregar el valor si no está ya en la lista
+                if (!attributeMap[attributeName].includes(valueName)) {
+                    attributeMap[attributeName].push(valueName);
+                }
+            } 
         });
     });
 
@@ -58,7 +59,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
             }
         });
     };
-    console.log(data)
+
     return (
         <AuthenticatedLayout
             header={
@@ -69,7 +70,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                     <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         {product.product_name}
                     </h2>
-                    <Badge variant={product.status === 1 ? 'success' : 'muted'}>
+                    <Badge variant={product.status === 1 ? 'success' : 'info'}>
                         {product.status === 1 ? 'Publicado' : 'Borrador'}
                     </Badge>
                 </div>
@@ -88,6 +89,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                             categories={categories}
                             stores={stores}
                             combinationsWithPrices={combinationsWithPrices}
+                            product={product}
                         />
                     </div>
 

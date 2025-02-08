@@ -90,6 +90,13 @@ class ProductController extends Controller
             'store_id',
         ));
 
+        if ($request->hasFile('images')) {
+            $product->addMultipleMediaFromRequest(['images'])
+                ->each(function ($fileAdder) {
+                    $fileAdder->toMediaCollection('products');
+                });
+        }
+
         // Asociar las categorías al producto
         $product->categories()->attach($request->categories);
 
@@ -160,7 +167,6 @@ class ProductController extends Controller
         // return to_route('products.index')->with('success', 'Producto creado con éxito.');
     }
 
-    // Método para generar combinaciones
     private function generateCombinations($attributeValueMap)
     {
         $combinations = [];
@@ -198,27 +204,30 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        // Cargar las relaciones necesarias
-        // $product->load(['tax', 'categories', 'stocks', 'combinations.attributeValues.attributeValue.attribute']);
-        $product->load([
+        // Cargar las relaciones necesarias, incluyendo las imágenes
+        $product->load(
             'tax',
             'categories',
             'stocks',
-            'combinations', // Cargar combinaciones
+            'combinations',
             'combinations.combinationAttributeValue', // Cargar valores de atributos de combinaciones
             'combinations.combinationAttributeValue.attributeValue', // Cargar valores de atributos relacionados
-            'combinations.combinationAttributeValue.attributeValue.attribute' // Cargar atributos relacionados
-        ]);
+            'combinations.combinationAttributeValue.attributeValue.attribute', // Cargar atributos relacionados
+            'media'
+        );
 
+        // Obtener la URL de la primera imagen de la colección 'products'
+        $product->image_url = $product->getFirstMediaUrl('products'); // Asegúrate de que 'products' sea el nombre de la colección
+
+        // Obtener combinaciones con precios
         $combinationsWithPrices = $product->combinations->mapWithKeys(function ($combination) {
             return [$combination->combinationAttributeValue->pluck('attributeValue.attribute_value_name')->join(', ') => $combination->combination_price];
         });
 
-        // dd($combinationsWithPrices);
         $taxes = Tax::all();
         $categories = Category::all();
         $stores = Store::all();
-
+        // dd($product);
         return Inertia::render('Products/Edit', compact('product', 'taxes', 'categories', 'stores', 'combinationsWithPrices'));
     }
 
@@ -248,6 +257,7 @@ class ProductController extends Controller
 
         // Actualizar el producto
         $product->update($data);
+
 
         // Actualizar las categorías asociadas
         $product->categories()->sync($request->categories);
@@ -332,7 +342,37 @@ class ProductController extends Controller
             }
         }
 
-        return to_route('products.index')->with('success', 'Producto actualizado con éxito.');
+        if ($request->hasFile('images')) {
+            $product->addMultipleMediaFromRequest(['images'])
+                ->each(function ($fileAdder) {
+                    $fileAdder->toMediaCollection('products');
+                });
+        }
+
+        // return to_route('products.index')->with('success', 'Producto actualizado con éxito.');
+        return to_route('products.edit', $product->slug)->with('success', 'Producto creado con éxito.');
+
+    }
+
+    public function destroyImage($productId, $imageId)
+    {
+        // Buscar el producto por su ID
+        $product = Product::findOrFail($productId);
+
+        // Buscar la imagen en la colección de medios del producto
+        $mediaItem = $product->getMedia('products')->find($imageId); // Asegúrate de que 'images' sea el nombre de tu colección
+
+        // Verificar si la imagen existe
+        if ($mediaItem) {
+            // Eliminar la imagen
+            $mediaItem->delete();
+
+            // Retornar una respuesta exitosa
+            // return response()->json(['message' => 'Imagen eliminada con éxito.'], 200);
+        }
+
+        // Si la imagen no se encuentra, retornar un error 404
+        // return response()->json(['message' => 'Imagen no encontrada.'], 404);
     }
 
     /**
