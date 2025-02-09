@@ -5,7 +5,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { PlusCircle } from 'lucide-react';
@@ -15,9 +15,11 @@ import { Input } from '@/Components/ui/input';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { useForm } from '@inertiajs/react';
 import Checkbox from '@/Components/Checkbox';
+import TextAreaRich from '@/Components/ui/TextAreaRich';
 
 export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", product = "", setData, errors }) {
-    const animatedComponents = makeAnimated();
+    const animatedComponents = makeAnimated(); //Animacion de multiselect
+    const textAreaRef = useRef(); // inicializacion de TextAreaRich
     const { delete: deleteImage } = useForm(); // Desestructura la función delete de useForm
 
     const categoryOptions = categories.map(category => ({
@@ -146,7 +148,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
     return (
         <>
             <div className="col-span-full md:col-span-2">
-                <DivSection>
+                <DivSection className='space-y-4'>
                     <div>
                         <InputLabel htmlFor="product_name" value="Nombre" />
                         <TextInput
@@ -163,13 +165,19 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
                     <div>
                         <InputLabel htmlFor="product_description" value="Descripción" />
-                        <TextInput
+                        {/* <TextInput
                             id="product_description"
                             type="text"
                             name="product_description"
                             value={data.product_description || ''}
                             className="mt-1 block w-full"
                             onChange={(e) => setData('product_description', e.target.value)}
+                        /> */}
+                        <TextAreaRich
+                            initialValue={data.product_description}
+                            ref={textAreaRef}
+                            name="product_description"
+                            onChange={(newText) => setData('product_description', newText)}
                         />
                         <InputError message={errors.product_description} />
                     </div>
@@ -196,7 +204,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                             <img
                                                 src={image.original_url}
                                                 alt={image.name}
-                                                className="w-44 h-44 object-cover rounded-xl"
+                                                className="w-44 h-44 object-cover rounded-xl aspect-square"
                                             />
                                             <Button
                                                 variant="link"
@@ -298,7 +306,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     <InputError message={errors.product_status_pos} className="mt-2" />
                 </DivSection>
 
-                <DivSection>
+                <DivSection className='space-y-4'>
                     <div className="border rounded-xl mb-4">
                         <div className="flex justify-between px-4 pt-4">
                             <p className='font-semibold'>Atributos</p>
@@ -388,7 +396,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             </div>
 
             <div className="col-span-full md:col-span-1">
-                <DivSection>
+                <DivSection className='space-y-4'>
                     <div className='md:col-span-2 lg:col-span-1'>
                         <InputLabel htmlFor="status" value="Publicar" />
                         <Select
@@ -403,7 +411,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     </div>
                 </DivSection>
 
-                <DivSection>
+                <DivSection className='space-y-4'>
                     <div>
                         <InputLabel htmlFor="tax_id" value="Impuesto" />
                         <Select

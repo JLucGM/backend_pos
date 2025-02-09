@@ -54,7 +54,7 @@ export default function Create({ taxes, categories, stores }) {
 
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <ProductsForm
                             data={data}
                             setData={setData}

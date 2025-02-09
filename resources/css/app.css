@@ -84,3 +84,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+.ql-toolbar{
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.ql-container {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  max-height: 400px;
+}
+.ql-container .ql-editor{
+  max-height: 400px;
+}
