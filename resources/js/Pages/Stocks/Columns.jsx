@@ -12,6 +12,15 @@ export const StocksColumns = [
         ),
     },
     {
+        header: "Producto",
+        accessorKey: "product_id",
+        cell: ({ row }) => {
+            return (
+                <p>{row.original.product.product_name}</p>
+            )
+        },
+    },
+    {
         header: "cantidad",
         accessorKey: "quantity",
     },
@@ -23,15 +32,6 @@ export const StocksColumns = [
                 <Badge className={` ${row.original.status === "1" ? 'bg-primary' : 'bg-primary'}`}>
                     {row.original.status === "1" ? 'Saliendo' : 'Entrando'}
                 </Badge>
-            )
-        },
-    },
-    {
-        header: "Producto",
-        accessorKey: "product_id",
-        cell: ({ row }) => {
-            return (
-                <p>{row.original.product.product_name}</p>
             )
         },
     },

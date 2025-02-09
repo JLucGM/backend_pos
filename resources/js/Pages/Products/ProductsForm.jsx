@@ -73,11 +73,14 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             const combinations = generateCombinations();
             const prices = {};
 
+            // Usa el precio base como valor por defecto
+            const basePrice = parseFloat(data.product_price) || 0; // Asegúrate de que sea un número
+
             // Si combinationsWithPrices tiene valores, los usamos
             combinations.forEach(combination => {
                 const key = combination.join(", "); // Formato de clave
-                // Si hay un precio existente en combinationsWithPrices, lo usamos, de lo contrario, inicializamos en 0
-                prices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : 0;
+                // Si hay un precio existente en combinationsWithPrices, lo usamos, de lo contrario, inicializamos en el precio base
+                prices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
             });
 
             setPrices(prices); // Actualiza el estado de precios
@@ -85,7 +88,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         };
 
         calculatePrices(); // Llama a la función para calcular precios
-    }, [data.attribute_names, data.attribute_values, combinationsWithPrices]); // Dependencias
+    }, [data.attribute_names, data.attribute_values, combinationsWithPrices, data.product_price]); // Dependencias
 
     const generateCombinations = () => {
         const { attribute_names, attribute_values } = data;
@@ -165,16 +168,8 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
                     <div>
                         <InputLabel htmlFor="product_description" value="Descripción" />
-                        {/* <TextInput
-                            id="product_description"
-                            type="text"
-                            name="product_description"
-                            value={data.product_description || ''}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('product_description', e.target.value)}
-                        /> */}
                         <TextAreaRich
-                            initialValue={data.product_description}
+                            initialValue={data.product_description || ''}
                             ref={textAreaRef}
                             name="product_description"
                             onChange={(newText) => setData('product_description', newText)}
@@ -272,7 +267,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             id="product_sku"
                             type="text"
                             name="product_sku"
-                            value={data.product_sku}
+                            value={data.product_sku || ''}
                             className="mt-1 block w-full"
                             onChange={(e) => setData('product_sku', e.target.value)}
                         />
@@ -285,7 +280,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             id="product_barcode"
                             type="text"
                             name="product_barcode"
-                            value={data.product_barcode}
+                            value={data.product_barcode || ''}
                             className="mt-1 block w-full"
                             onChange={(e) => setData('product_barcode', e.target.value)}
                         />
@@ -370,7 +365,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             </TableHeader>
                             <TableBody>
                                 {Object.entries(prices).map(([combination, price]) => {
-                                    // console.log(prices); // Verifica el precio aquí
                                     return (
                                         <TableRow key={combination}>
                                             <TableCell className="font-medium capitalize">{combination}</TableCell>

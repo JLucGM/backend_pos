@@ -1,9 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Button } from '@/Components/ui/button';
+import { Button, buttonVariants } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import ProductsForm from './ProductsForm';
-import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLongLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/Components/ui/badge';
 
 export default function Edit({ product, taxes, categories, stores, combinationsWithPrices }) {
@@ -27,7 +27,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                 if (!attributeMap[attributeName].includes(valueName)) {
                     attributeMap[attributeName].push(valueName);
                 }
-            } 
+            }
         });
     });
 
@@ -62,7 +62,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
             }
         });
     };
-    console.log(data);
+    // console.log(data);
 
     return (
         <AuthenticatedLayout
@@ -98,6 +98,12 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                     </div>
 
                     <div className="flex justify-end p-2.5">
+                        <Link
+                            className={buttonVariants({ variant: "outlineDestructive" })}
+                            href={route('products.destroy', [product])} method='delete' as="button">
+                            {/* <TrashIcon className='size-5' /> */}
+                            Eliminar producto
+                        </Link>
                         <Button variant="default" type="submit" disabled={processing}>
                             {processing ? "Guardando..." : "Guardar"}
                         </Button>

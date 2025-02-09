@@ -397,30 +397,40 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        // Iniciar una transacción
         DB::transaction(function () use ($product) {
-            // Eliminar los registros de stock asociados al producto
-            $product->stocks()->delete(); // Elimina todos los registros de stock relacionados
 
-            // Obtener todos los atributos asociados al producto
-            $attributes = $product->attributes()->with('attribute_values')->get();
+            $product->categories()->detach();
+            $product->stocks()->delete();
+            // 1. Eliminar combinaciones asociadas
+            $combinations = $product->combinations()->with('combinationAttributeValue')->get();
 
-            // Eliminar las relaciones en la tabla pivote product_attributes
-            $product->attributes()->detach(); // Esto elimina las relaciones en product_attributes
+            foreach ($combinations as $combination) {
+                // 2. Eliminar los valores de atributo asociados
+                foreach ($combination->combinationAttributeValue as $combinationAttributeValue) {
+                    $combinationAttributeValue->delete();
+                }
 
-            // Eliminar los valores de atributo y los atributos
-            foreach ($attributes as $attribute) {
-                // Eliminar los valores de atributo asociados
-                $attributeValueIds = $attribute->attribute_values()->pluck('id'); // Obtener los IDs de los valores de atributo
-                $attribute->attribute_values()->delete(); // Elimina los valores de atributo
-                $attribute->delete(); // Elimina el atributo
+                // 3. Eliminar la combinación
+                $combination->delete();
             }
 
-            // Eliminar las relaciones en la tabla pivote product_categories
-            $product->categories()->detach(); // Esto elimina las relaciones en product_categories
-
-            // Ahora puedes eliminar el producto
+            // 4. Eliminar el producto
             $product->delete();
+
+            // 5. Eliminar atributos y valores que no están en uso
+            $attributeValues = AttributeValue::whereIn('id', $combinations->pluck('combinationAttributeValue.*.attribute_value_id'))->get();
+
+            foreach ($attributeValues as $attributeValue) {
+                // Eliminar el valor de atributo
+                $attributeValue->delete();
+
+                // Verificar si el atributo tiene otros valores asociados
+                $attribute = $attributeValue->attribute;
+                if ($attribute->attribute_values()->count() === 0) {
+                    // Si no hay más valores, eliminar el atributo
+                    $attribute->delete();
+                }
+            }
         });
 
         return to_route('products.index')->with('success', 'Producto eliminado con éxito.');
