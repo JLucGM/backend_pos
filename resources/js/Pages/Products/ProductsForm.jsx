@@ -14,6 +14,7 @@ import { customStyles } from '@/hooks/custom-select';
 import { Input } from '@/Components/ui/input';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { useForm } from '@inertiajs/react';
+import Checkbox from '@/Components/Checkbox';
 
 export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", product = "", setData, errors }) {
     const animatedComponents = makeAnimated();
@@ -144,7 +145,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
     return (
         <>
-            <div className="col-span-1 md:col-span-2 ">
+            <div className="col-span-full md:col-span-2">
                 <DivSection>
                     <div>
                         <InputLabel htmlFor="product_name" value="Nombre" />
@@ -159,30 +160,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         />
                         <InputError message={errors.product_name} />
                     </div>
-                    <div>
-                        <InputLabel htmlFor="product_price" value="Precio" />
-                        <TextInput
-                            id="product_price"
-                            type="text"
-                            name="product_price"
-                            value={data.product_price}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('product_price', e.target.value)}
-                        />
-                        <InputError message={errors.product_price} />
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="product_price_discount" value="Precio de descuento" />
-                        <TextInput
-                            id="product_price_discount"
-                            type="text"
-                            name="product_price_discount"
-                            value={data.product_price_discount || ''}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('product_price_discount', e.target.value)}
-                        />
-                        <InputError message={errors.product_price_discount} />
-                    </div>
+
                     <div>
                         <InputLabel htmlFor="product_description" value="Descripción" />
                         <TextInput
@@ -249,8 +227,75 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         />
                         <InputError message={errors.categories} />
                     </div>
+                </DivSection>
 
+                <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <div>
+                        <InputLabel htmlFor="product_price" value="Precio" />
+                        <TextInput
+                            id="product_price"
+                            type="text"
+                            name="product_price"
+                            value={data.product_price}
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('product_price', e.target.value)}
+                        />
+                        <InputError message={errors.product_price} />
+                    </div>
 
+                    <div>
+                        <InputLabel htmlFor="product_price_discount" value="Precio de descuento" />
+                        <TextInput
+                            id="product_price_discount"
+                            type="text"
+                            name="product_price_discount"
+                            value={data.product_price_discount || ''}
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('product_price_discount', e.target.value)}
+                        />
+                        <InputError message={errors.product_price_discount} />
+                    </div>
+                </DivSection>
+
+                <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <div>
+                        <InputLabel htmlFor="product_sku" value="SKU (Stock Keeping Unit)" />
+                        <TextInput
+                            id="product_sku"
+                            type="text"
+                            name="product_sku"
+                            value={data.product_sku}
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('product_sku', e.target.value)}
+                        />
+                        <InputError message={errors.product_sku} />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="product_barcode" value="Código de barra (ISBN, UPC, etc.)" />
+                        <TextInput
+                            id="product_barcode"
+                            type="text"
+                            name="product_barcode"
+                            value={data.product_barcode}
+                            className="mt-1 block w-full"
+                            onChange={(e) => setData('product_barcode', e.target.value)}
+                        />
+                        <InputError message={errors.product_barcode} />
+                    </div>
+
+                    <div className="flex items-center mt-4">
+                        <Checkbox
+                            // type="checkbox"
+                            id="product_status_pos"
+                            name="product_status_pos"
+                            checked={data.product_status_pos === 1} // Marca el checkbox si el valor es 1
+                            onChange={(e) => setData('product_status_pos', e.target.checked ? 1 : 0)} // Establece 1 si está marcado, 0 si no
+                            className="mr-2" // Espaciado a la derecha
+                        />
+                        <InputLabel htmlFor="product_status_pos" value="Activar en POS" />
+                    </div>
+                    <InputError message={errors.product_status_pos} className="mt-2" />
                 </DivSection>
 
                 <DivSection>
@@ -306,7 +351,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         )}
                     </div>
 
-                    {data.attribute_names.length >= 1 ? (
+                    {data.attribute_values.length >= 1 ? (
                         <Table >
                             <TableCaption>Lista de combinaciones.</TableCaption>
                             <TableHeader className="bg-gray-100">
@@ -342,7 +387,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                 </DivSection>
             </div>
 
-            <div className="col-span-1 sm:col-span-1">
+            <div className="col-span-full md:col-span-1">
                 <DivSection>
                     <div className='md:col-span-2 lg:col-span-1'>
                         <InputLabel htmlFor="status" value="Publicar" />
@@ -394,7 +439,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             value={stores.length > 0 ? stores.map(store => ({ value: store.id, label: store.store_name })).find(option => option.value === data.store_id) : null}
                             onChange={(selectedOption) => setData('store_id', selectedOption ? selectedOption.value : null)}
                             styles={customStyles}
-                            // isClearable // Permite limpiar la selección
                         />
                         <InputError message={errors.store_id} className="mt-2" />
                     </div>

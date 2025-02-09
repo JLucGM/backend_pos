@@ -28,6 +28,9 @@ class Product extends Model implements HasMedia
         'product_price_discount',
         'status',
         'tax_id',
+        'product_status_pos',
+        'product_sku',
+        'product_barcode',
     ];
 
     public function getRouteKeyName()
