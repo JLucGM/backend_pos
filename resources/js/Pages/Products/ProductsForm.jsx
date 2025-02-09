@@ -1,4 +1,4 @@
-import SelectMulti from 'react-select';
+import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -137,6 +137,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         }
     };
 
+    const statusOptions = [
+        { value: 0, label: 'Borrador' },
+        { value: 1, label: 'Publicar' }
+    ];
+
     return (
         <>
             <div className="col-span-1 md:col-span-2 ">
@@ -147,7 +152,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             id="product_name"
                             type="text"
                             name="product_name"
-                            value={data.product_name}
+                            value={data.product_name || ''}
                             className="mt-1 block w-full"
                             isFocused={true}
                             onChange={(e) => setData('product_name', e.target.value)}
@@ -172,7 +177,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             id="product_price_discount"
                             type="text"
                             name="product_price_discount"
-                            value={data.product_price_discount}
+                            value={data.product_price_discount || ''}
                             className="mt-1 block w-full"
                             onChange={(e) => setData('product_price_discount', e.target.value)}
                         />
@@ -184,7 +189,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             id="product_description"
                             type="text"
                             name="product_description"
-                            value={data.product_description}
+                            value={data.product_description || ''}
                             className="mt-1 block w-full"
                             onChange={(e) => setData('product_description', e.target.value)}
                         />
@@ -204,38 +209,36 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         <InputError message={errors.images} className="mt-2" />
                     </div>
 
-                    <div className="mt-4">
-                        <h3 className="font-semibold">Imágenes existentes:</h3>
+                    <div className="my-4">
                         <div className="flex flex-wrap">
                             {product.media && product.media.length > 0 ? (
                                 product.media.map((image) => {
-                                    // console.log(image); // Imprime el objeto image en la consola
                                     return (
                                         <div key={image.id} className="relative mr-2 mb-2">
                                             <img
-                                                src={image.original_url} // Cambia esto si es necesario
+                                                src={image.original_url}
                                                 alt={image.name}
-                                                className="w-32 h-32 object-cover rounded"
+                                                className="w-44 h-44 object-cover rounded-xl"
                                             />
-                                            <button
-                                                className="text-left text-red-600 hover:bg-red-200 hover:rounded-md p-2"
-                                                onClick={() => handleDeleteImage(image.id)} // Llama a la función de eliminación
-                                                type="button" // Asegúrate de que el tipo sea "button"
+                                            <Button
+                                                variant="link"
+                                                onClick={() => handleDeleteImage(image.id)}
+                                                type="button"
                                             >
-                                                <TrashIcon className='size-5' /> 
-                                            </button>
+                                                <TrashIcon className='size-5' /> Eliminar
+                                            </Button>
                                         </div>
                                     );
-                                })
-                            ) : (
-                                null
-                            )}
+                                }
+                                )
+                            ) : (null)
+                            }
                         </div>
                     </div>
 
                     <div>
                         <InputLabel value="Categorías" />
-                        <SelectMulti
+                        <Select
                             isMulti
                             closeMenuOnSelect={false}
                             styles={customStyles}
@@ -292,11 +295,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             ))}
                         </div>
                         <Separator />
-                        {/* data.attribute_names.length < 3 */}
-                        {/* <Button className="w-full justify-start" variant="link" size="sm" type="button" onClick={addAttribute}>
-                            <PlusCircle className="size-4" />
-                            Agregar opción
-                        </Button> */}
 
                         {data.attribute_names.length < 3 ? (
                             <Button className="w-full justify-start" variant="link" size="sm" type="button" onClick={addAttribute}>
@@ -308,33 +306,39 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         )}
                     </div>
 
-                    <Table >
-                        <TableCaption>A list of your recent invoices.</TableCaption>
-                        <TableHeader className="bg-gray-100">
-                            <TableRow>
-                                <TableHead className="w-[100px]">combination</TableHead>
-                                <TableHead className="text-right">Precio</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {Object.entries(prices).map(([combination, price]) => {
-                                // console.log(prices); // Verifica el precio aquí
-                                return (
-                                    <TableRow key={combination}>
-                                        <TableCell className="font-medium">{combination}</TableCell>
-                                        <TableCell className="text-right">
-                                            <TextInput
-                                                type="number"
-                                                value={price || ''} // Asegúrate de que el valor se muestre correctamente
-                                                onChange={(e) => handlePriceChange(combination, e.target.value)}
-                                                placeholder="Definir precio"
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
+                    {data.attribute_names.length >= 1 ? (
+                        <Table >
+                            <TableCaption>Lista de combinaciones.</TableCaption>
+                            <TableHeader className="bg-gray-100">
+                                <TableRow>
+                                    <TableHead className="w-[100px]">Combinaciones</TableHead>
+                                    <TableHead className="text-right">Precio</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {Object.entries(prices).map(([combination, price]) => {
+                                    // console.log(prices); // Verifica el precio aquí
+                                    return (
+                                        <TableRow key={combination}>
+                                            <TableCell className="font-medium capitalize">{combination}</TableCell>
+                                            <TableCell className="text-right">
+                                                <TextInput
+                                                    type="number"
+                                                    value={price || ''} // Asegúrate de que el valor se muestre correctamente
+                                                    onChange={(e) => handlePriceChange(combination, e.target.value)}
+                                                    placeholder="Definir precio"
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        null
+                    )}
+
+
                 </DivSection>
             </div>
 
@@ -342,34 +346,29 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                 <DivSection>
                     <div className='md:col-span-2 lg:col-span-1'>
                         <InputLabel htmlFor="status" value="Publicar" />
-                        <select
+                        <Select
                             name="status"
                             id="status"
-                            value={data.status}
-                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-full shadow-sm"
-                            onChange={(e) => setData('status', e.target.value)}
-                        >
-                            <option value={0}>Borrador</option>
-                            <option value={1}>Publicar</option>
-                        </select>
+                            options={statusOptions}
+                            value={statusOptions.find(option => option.value === data.status)}
+                            onChange={(selectedOption) => setData('status', selectedOption.value)}
+                            styles={customStyles}
+                        />
                         <InputError message={errors.status} className="mt-2" />
                     </div>
+                </DivSection>
 
+                <DivSection>
                     <div>
                         <InputLabel htmlFor="tax_id" value="Impuesto" />
-                        <select
+                        <Select
                             name="tax_id"
                             id="tax_id"
-                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-3xl border shadow-sm"
-                            value={data.tax_id}
-                            onChange={(e) => setData('tax_id', parseInt(e.target.value))}
-                        >
-                            {taxes.map((tax) => (
-                                <option value={tax.id} key={tax.id}>
-                                    {tax.tax_name}
-                                </option>
-                            ))}
-                        </select>
+                            options={taxes.map(tax => ({ value: tax.id, label: tax.tax_name }))}
+                            value={taxes.length > 0 ? taxes.map(tax => ({ value: tax.id, label: tax.tax_name })).find(option => option.value === data.tax_id) : null}
+                            onChange={(selectedOption) => setData('tax_id', selectedOption.value)}
+                            styles={customStyles}
+                        />
                         <InputError message={errors.tax_id} className="mt-2" />
                     </div>
 
@@ -388,25 +387,15 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
                     <div>
                         <InputLabel htmlFor="store" value="Tiendas" />
-                        <select
+                        <Select
                             name="store_id"
                             id="store"
-                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-3xl shadow-sm"
-                            value={data.store_id}
-                            onChange={(e) => setData('store_id', parseInt(e.target.value))}
-                        >
-                            {stores.length === 0 ? (
-                                <option value="" disabled>
-                                    No hay tiendas disponibles
-                                </option>
-                            ) : (
-                                stores.map((store) => (
-                                    <option value={store.id} key={store.id}>
-                                        {store.store_name}
-                                    </option>
-                                ))
-                            )}
-                        </select>
+                            options={stores.length > 0 ? stores.map(store => ({ value: store.id, label: store.store_name })) : []}
+                            value={stores.length > 0 ? stores.map(store => ({ value: store.id, label: store.store_name })).find(option => option.value === data.store_id) : null}
+                            onChange={(selectedOption) => setData('store_id', selectedOption ? selectedOption.value : null)}
+                            styles={customStyles}
+                            // isClearable // Permite limpiar la selección
+                        />
                         <InputError message={errors.store_id} className="mt-2" />
                     </div>
                 </DivSection>

@@ -59,6 +59,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
             }
         });
     };
+    console.log(data);
 
     return (
         <AuthenticatedLayout
