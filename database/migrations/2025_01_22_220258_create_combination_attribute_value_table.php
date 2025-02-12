@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('combination_attribute_value', function (Blueprint $table) {
             $table->id();
             $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('attribute_value_id')->nullable()->constrained();
+            $table->foreignId('attribute_value_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
