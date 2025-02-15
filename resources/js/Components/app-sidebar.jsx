@@ -59,6 +59,23 @@ export function AppSidebar({
     ],
     navMain: [
       {
+        title: "Pedidos",
+        url: "#",
+        icon: ShoppingBag,
+        items: [
+          {
+            title: "pedidos",
+            url: "orders.index",
+          },
+          
+          // {
+          //   title: "Atributo",
+          //   url: "attribute.index",
+          // },
+          
+        ],
+      },
+      {
         title: "Inventario",
         url: "#",
         icon: ShoppingBag,
@@ -101,26 +118,6 @@ export function AppSidebar({
         ],
       },
       {
-        title: "Settings",
-        url: "",
-        icon: Cog,
-        // isActive: true,
-        items: [
-          {
-            title: "Tiendas",
-            url: "stores.index",
-          },
-          {
-            title: "Metodo de pago",
-            url: "paymentmethod.index",
-          },
-          {
-            title: "Taxes",
-            url: "tax.index",
-          },
-        ],
-      },
-      {
         title: "Locaciones",
         url: "#",
         icon: MapPinned,
@@ -141,6 +138,26 @@ export function AppSidebar({
           //   title: "Changelog",
           //   url: "#",
           // },
+        ],
+      },
+      {
+        title: "Settings",
+        url: "",
+        icon: Cog,
+        // isActive: true,
+        items: [
+          {
+            title: "Tiendas",
+            url: "stores.index",
+          },
+          {
+            title: "Metodo de pago",
+            url: "paymentmethod.index",
+          },
+          {
+            title: "Taxes",
+            url: "tax.index",
+          },
         ],
       },
       // {

@@ -153,7 +153,7 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                                                     </PDFDownloadLink>
                                                 )} */}
                                                 {hasPermission(editPermission) && (
-                                                    <Link href={route(routeEdit, [row.original.slug])} className="flex w-full text-left hover:bg-gray-200 hover:rounded-md p-2">
+                                                    <Link href={route(routeEdit, [row.original.slug ?? row.original.id])} className="flex w-full text-left hover:bg-gray-200 hover:rounded-md p-2">
                                                         <PencilSquareIcon className='size-5' /> Editar
                                                     </Link>
                                                 )}

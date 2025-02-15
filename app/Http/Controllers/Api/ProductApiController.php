@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductApiController extends Controller
 {
-    public function products()
+    public function show()
     {
         $products = Product::with(
             'tax',
