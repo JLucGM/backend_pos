@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('tax_name', 255);
             $table->string('slug');
             $table->string('tax_description', 100)->nullable();
-            $table->decimal('tax_rate', 5, 2);
+            $table->decimal('tax_rate', 5, 2)->nullable();
             $table->timestamps();
         });
     }

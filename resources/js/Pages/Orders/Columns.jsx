@@ -22,10 +22,10 @@ export const ordersColumns = [
     },
     {
         header: "Cliente",
-        accessorKey: "user_id",
+        accessorKey: "client_id",
         cell: ({ row }) => {
             return (
-                <p>{row.original.user.name}</p>
+                <p>{row.original.client.client_name}</p>
             )
         },
     },

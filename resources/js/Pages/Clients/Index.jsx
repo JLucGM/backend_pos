@@ -10,6 +10,7 @@ import { Button } from '@/Components/ui/button';
 import { clientColumns } from './Columns';
 import ClientsForm from './ClientForm';
 import DivSection from '@/Components/ui/div-section';
+import { UserCircle2 } from 'lucide-react';
 
 export default function Index({ client, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -81,8 +82,10 @@ export default function Index({ client, permission }) {
                         permissions={permission}
                     />
                 ) : (
-                    <p>no hay nada</p>
-                )}
+                    <div className="flex flex-col items-center justify-center h-96">
+                        <UserCircle2 size={64} />
+                        <p>No hay clientes registradas.</p>
+                    </div>)}
             </DivSection>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">

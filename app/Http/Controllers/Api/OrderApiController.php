@@ -15,7 +15,7 @@ class OrderApiController extends Controller
 {
     // Validar la solicitud
     $validator = Validator::make($request->all(), [
-        'user_id' => 'required|exists:users,id',
+        'client_id' => 'required|exists:clients,id',
         'payments_method_id' => 'required|exists:payments_methods,id', // Cambiado aquí
         'total' => 'required|string',
         'direction_delivery' => 'nullable|string',
@@ -33,7 +33,7 @@ class OrderApiController extends Controller
         'status' => 'Finalizado',
         'total' => $request->total,
         'direction_delivery' => $request->direction_delivery,
-        'user_id' => $request->user_id,
+        'client_id' => $request->client_id,
         'payments_method_id' => $request->payments_method_id,
     ]);
 

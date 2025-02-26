@@ -16,7 +16,7 @@ export const taxesColumns = [
         accessorKey: "tax_name",
     },
     {
-        header: "tax_rate",
+        header: "Tasa impositiva %",
         accessorKey: "tax_rate",
     },
 ];

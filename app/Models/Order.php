@@ -15,7 +15,7 @@ class Order extends Model
         'direction_delivery',
         'payments_method_id',
         'user_id',
-        // 'client_id', 
+        'client_id', 
     ];
 
     public function orderItems()
@@ -26,6 +26,10 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 
     public function paymentMethod()

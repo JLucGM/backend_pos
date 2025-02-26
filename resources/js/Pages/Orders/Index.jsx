@@ -1,15 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
-import { useState } from 'react'
-import { useForm } from '@inertiajs/react';
-import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
-import { Button } from '@/Components/ui/button';
 import { ordersColumns } from './Columns';
-import OrdersForm from './OrdersForm';
 import DivSection from '@/Components/ui/div-section';
+import { Store } from 'lucide-react';
 
 export default function Index({ orders, permission }) {
 
@@ -49,7 +44,7 @@ export default function Index({ orders, permission }) {
             header={
                 <div className='flex justify-between items-center'>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Paises
+                        Ordenes
                     </h2>
                     {/* {permission.some(perm => perm.name === 'admin.orders.create') && (
                         <Button variant="default" size="sm"
@@ -62,7 +57,7 @@ export default function Index({ orders, permission }) {
         >
             {/* <Breadcrumb items={items} /> */}
 
-            <Head className="capitalize" title="Paises" />
+            <Head className="capitalize" title="Ordenes" />
 
             <DivSection>
                 {orders.length > 0 ? (
@@ -77,39 +72,12 @@ export default function Index({ orders, permission }) {
                         permissions={permission}
                     />
                 ) : (
-                    <p>no hay nada</p>
+                    <div className="flex flex-col items-center justify-center h-96">
+                        <Store size={64} />
+                        <p>No hay órdenes registradas.</p>
+                    </div>
                 )}
             </DivSection>
-
-
-            {/* <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
-                <DialogBackdrop className="fixed inset-0 bg-black/40" />
-
-                <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
-                    <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
-                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear pais</DialogTitle>
-                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del pais</Description>
-                        <form onSubmit={submit} className='space-y-4'>
-
-                            <OrdersForm data={data} setData={setData} errors={errors} />
-
-                            <div className="flex justify-end p-2.5">
-                                <Button
-                                    variant="default"
-                                    size="sm"
-                                    onClick={() =>
-                                        toast("Creado.", {
-                                            description: "Se ha creado con éxito.",
-                                        })
-                                    }
-                                >
-                                    Guardar
-                                </Button>
-                            </div>
-                        </form>
-                    </DialogPanel>
-                </div>
-            </Dialog> */}
         </AuthenticatedLayout>
     )
 }

@@ -16,13 +16,13 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with('user')->get();
+        $orders = Order::with('user','client')->get();
         
         $user = Auth::user();
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
         
-        // dd($orders, $role, $permission);
+        // dd($orders);
         return Inertia::render('Orders/Index', compact('orders', 'role', 'permission'));
     }
 
@@ -55,15 +55,15 @@ class OrderController extends Controller
      */
     public function edit(Order $orders)
     {
-        $orders->load('user','orderItems','paymentMethod');
+        $orders->load('user','client','orderItems','paymentMethod');
         $paymentMethods = PaymentMethod::all();
         // dd($orders->load('user'));
 
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
+        // $user = Auth::user();
+        // $role = $user->getRoleNames();
+        // $permission = $user->getAllPermissions();
 
-        return Inertia::render('Orders/Edit', compact('orders', 'paymentMethods', 'role', 'permission'));
+        return Inertia::render('Orders/Edit', compact('orders', 'paymentMethods'));
     }
 
     /**
@@ -71,19 +71,19 @@ class OrderController extends Controller
      */
     public function update(Request $request, Order $orders)
     {
-        // dd($request->all());
+        // dd($request->all(), $orders);
         // Validar los datos del formulario
         $request->validate([
             'status' => 'required|string|max:255',
             'total' => 'required|numeric',
             'direction_delivery' => 'required|string|max:255',
             'payments_method_id' => 'required|exists:payments_methods,id', // Asegúrate de que este campo exista
-            'user_id' => 'required|exists:users,id', // Asegúrate de que este campo exista
+            'client_id' => 'required|exists:clients,id', // Asegúrate de que este campo exista
             // Agrega más validaciones según sea necesario
         ]);
 
         // Actualizar la orden
-        $orders->update($request->only(['status', 'total', 'direction_delivery', 'payments_method_id', 'user_id']));
+        $orders->update($request->only(['status', 'total', 'direction_delivery', 'payments_method_id', 'client_id']));
 
 
         // Actualizar los elementos de la orden si se envían

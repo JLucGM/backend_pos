@@ -8,7 +8,7 @@ import DivSection from '@/Components/ui/div-section';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { PlusCircle } from 'lucide-react';
+import { AlertCircleIcon, PlusCircle } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { customStyles } from '@/hooks/custom-select';
 import { Input } from '@/Components/ui/input';
@@ -205,6 +205,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                                 variant="link"
                                                 onClick={() => handleDeleteImage(image.id)}
                                                 type="button"
+                                                className="text-red-600"
                                             >
                                                 <TrashIcon className='size-5' /> Eliminar
                                             </Button>
@@ -257,6 +258,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             onChange={(e) => setData('product_price_discount', e.target.value)}
                         />
                         <InputError message={errors.product_price_discount} />
+                    </div>
+                    <div className="flex items-center">
+
+                        <AlertCircleIcon />
+                        <p className="ms-2 text-gray-500 text-sm">Recuerda colocar el impuesto al producto.</p>
                     </div>
                 </DivSection>
 
@@ -417,6 +423,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             styles={customStyles}
                         />
                         <InputError message={errors.tax_id} className="mt-2" />
+                        <div className="flex items-center">
+
+                            <AlertCircleIcon />
+                            <p className="ms-2 text-gray-500 text-sm">Deje la opción "Sin impuesto" si colocara el precio con el impuesto agregado.</p>
+                        </div>
                     </div>
 
                     <div>

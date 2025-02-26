@@ -12,7 +12,7 @@ export default function Edit({ orders, paymentMethods }) {
         status: orders.status,
         total: orders.total,
         direction_delivery: orders.direction_delivery,
-        user_id: orders.user,
+        client_id: orders.client.id, // Cambiado para que solo contenga el ID
         payments_method_id: orders.payments_method_id, // Agrega este campo
 
     }
@@ -56,7 +56,7 @@ export default function Edit({ orders, paymentMethods }) {
                             <ArrowLongLeftIcon className='size-6' />
                         </Link>
                         <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            Actualizar {orders.id} error en la actualizacion de datos y en mostrar los datos de orderItems
+                            Actualizar #{orders.id}
                         </h2>
                     </div>
                     {/* <Link href={route('orders.create')}
@@ -69,7 +69,7 @@ export default function Edit({ orders, paymentMethods }) {
         >
             {/* <Breadcrumb items={items} /> */}
 
-            <Head className="capitalize" title="Pais" />
+            <Head className="capitalize" title={`Orden #${orders.id}`} />
 
             <div className="max-w-7xl mx-auto ">
                 <div className=" overflow-hidden">
@@ -77,15 +77,16 @@ export default function Edit({ orders, paymentMethods }) {
                         <form onSubmit={submit} className='space-y-4'>
 
                             <div className="grid grid-cols-1 gap-4">
-                                <DivSection>
+                                {/* <DivSection> */}
 
                                     <OrdersForm
                                         data={data}
+                                        orders={orders}
                                         paymentMethods={paymentMethods}
                                         setData={setData}
                                         errors={errors}
                                     />
-                                </DivSection>
+                                {/* </DivSection> */}
                             </div>
 
 
