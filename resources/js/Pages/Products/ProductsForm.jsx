@@ -259,11 +259,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         />
                         <InputError message={errors.product_price_discount} />
                     </div>
-                    <div className="flex items-center">
+                    {/* <div className="flex items-center">
 
                         <AlertCircleIcon />
                         <p className="ms-2 text-gray-500 text-sm">Recuerda colocar el impuesto al producto.</p>
-                    </div>
+                    </div> */}
                 </DivSection>
 
                 <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -412,7 +412,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                 </DivSection>
 
                 <DivSection className='space-y-4'>
-                    <div>
+                    {/* <div>
                         <InputLabel htmlFor="tax_id" value="Impuesto" />
                         <Select
                             name="tax_id"
@@ -426,9 +426,10 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         <div className="flex items-center">
 
                             <AlertCircleIcon />
-                            <p className="ms-2 text-gray-500 text-sm">Deje la opción "Sin impuesto" si colocara el precio con el impuesto agregado.</p>
+                            <p className="ms-2 text-gray-500 text-sm">Deje la opción "Sin impuesto" si colocara el precio con el impuesto agregado. </p>
+                            <p className="ms-2 text-gray-500 text-sm">Si coloca un producto sin impuesto, se recomienda colocarlo en todos los productos. </p>
                         </div>
-                    </div>
+                    </div> */}
 
                     <div>
                         <InputLabel htmlFor="quantity" value="Stock" />

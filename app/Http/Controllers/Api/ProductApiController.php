@@ -24,8 +24,11 @@ class ProductApiController extends Controller
         )
         ->where('status', 1)
         ->where('product_status_pos', 1)
+        ->whereHas('stocks', function ($query) {
+            $query->where('quantity', '>', 0); // Filtrar solo stocks con cantidad mayor a 0
+        })
         ->get();
-
+    
         return response()->json([
             "message" => "success",
             "products" => $products
