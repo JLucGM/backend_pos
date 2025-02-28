@@ -67,16 +67,25 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
     return (
         <AuthenticatedLayout
             header={
-                <div className='flex justify-start items-center '>
-                    <Link href={route('products.index')} >
-                        <ArrowLongLeftIcon className='size-6' />
+                <div className='flex justify-between items-center '>
+                    <div className="flex items-center space-x-2">
+
+                        <Link href={route('products.index')} >
+                            <ArrowLongLeftIcon className='size-6' />
+                        </Link>
+                        <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                            {product.product_name}
+                        </h2>
+                        <Badge variant={product.status === 1 ? 'success' : 'info'}>
+                            {product.status === 1 ? 'Publicado' : 'Borrador'}
+                        </Badge>
+                    </div>
+                    <Link
+                        className={buttonVariants({ variant: "outlineDestructive" })}
+                        href={route('products.destroy', [product])} method='delete' as="button">
+                        <TrashIcon className='size-6' />
+                        Eliminar producto
                     </Link>
-                    <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        {product.product_name}
-                    </h2>
-                    <Badge variant={product.status === 1 ? 'success' : 'info'}>
-                        {product.status === 1 ? 'Publicado' : 'Borrador'}
-                    </Badge>
                 </div>
             }
         >
@@ -98,11 +107,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                     </div>
 
                     <div className="flex justify-end p-2.5">
-                        <Link
-                            className={buttonVariants({ variant: "outlineDestructive" })}
-                            href={route('products.destroy', [product])} method='delete' as="button">
-                            Eliminar producto
-                        </Link>
+
                         <Button variant="default" type="submit" disabled={processing}>
                             {processing ? "Guardando..." : "Guardar"}
                         </Button>
