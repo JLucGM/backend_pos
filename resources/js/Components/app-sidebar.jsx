@@ -13,6 +13,7 @@ import {
   PieChart,
   Settings2,
   ShoppingBag,
+  ShoppingBasket,
   SquareTerminal,
 } from "lucide-react"
 
@@ -61,10 +62,10 @@ export function AppSidebar({
       {
         title: "Pedidos",
         url: "#",
-        icon: ShoppingBag,
+        icon: ShoppingBasket,
         items: [
           {
-            title: "pedidos",
+            title: "Pedidos",
             url: "orders.index",
           },
           
@@ -154,10 +155,10 @@ export function AppSidebar({
             title: "Metodo de pago",
             url: "paymentmethod.index",
           },
-          {
-            title: "Taxes",
-            url: "tax.index",
-          },
+          // {
+          //   title: "Taxes",
+          //   url: "tax.index",
+          // },
         ],
       },
       // {

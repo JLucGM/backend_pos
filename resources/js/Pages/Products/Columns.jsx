@@ -1,5 +1,4 @@
 import { Badge } from '@/Components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const ProductColumns = [
     {
@@ -7,7 +6,7 @@ export const ProductColumns = [
         accessorKey: "id",
         cell: ({ row }) => (
             <div className="flex items-center">
-                <p className='me-2'>{row.original.id}</p>  
+                <p className='me-2'>{row.original.id}</p>
             </div>
         ),
     },
@@ -18,19 +17,36 @@ export const ProductColumns = [
     {
         header: "price",
         accessorKey: "product_price",
+        cell: ({ row }) => {
+            return (
+                <p>
+                    ${row.original.product_price }
+                </p>
+            )
+        },
     },
     {
         header: "Estado",
         accessorKey: "status",
         cell: ({ row }) => {
             return (
-                // <Badge className={` ${row.original.status === 1 ? 'bg-success' : 'bg-destructive '}`}>
-                    // {row.original.status === 1 ? 'Activo' : 'Inactivo'}
-                // </Badge>
                 <Badge variant={row.original.status === 1 ? 'success' : 'info'}>
-                {row.original.status === 1 ? 'Publicado' : 'Borrador'}
-            </Badge>
+                    {row.original.status === 1 ? 'Publicado' : 'Borrador'}
+                </Badge>
             )
         },
     },
+    {
+        header: "Inventario",
+        accessorKey: "stocks",
+        cell: ({ row }) => {
+            const stock = row.original.stocks[0]; // Accede al primer elemento del array de stocks
+            const stockQuantity = stock ? stock.quantity : 0; // Obtiene la cantidad de stock o 0 si no existe
+            return (
+                <p className={stockQuantity === "0" ? 'text-destructive' : 'text-primary'}>
+                    {stockQuantity} en stock
+                </p>
+            )
+        },
+    }
 ];

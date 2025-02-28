@@ -1,10 +1,9 @@
-import { Badge } from '@/Components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const customStyles = {
         control: (base, { isFocused }) => ({
             ...base,
             borderRadius: '30px',
+            borderColor: isFocused ? '#9ca3af' : '#9ca3af',
             
         }),
         option: (base, { isSelected, hover }) => ({

@@ -36,5 +36,10 @@ export const ordersColumns = [
     {
         header: "total",
         accessorKey: "total",
+        cell: ({ row }) => {
+            return (
+                <p>${row.original.total}</p>
+            )
+        },
     },
 ];

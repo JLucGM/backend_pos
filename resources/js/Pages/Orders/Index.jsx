@@ -44,7 +44,7 @@ export default function Index({ orders, permission }) {
             header={
                 <div className='flex justify-between items-center'>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Ordenes
+                        Pedidos
                     </h2>
                     {/* {permission.some(perm => perm.name === 'admin.orders.create') && (
                         <Button variant="default" size="sm"
@@ -57,7 +57,7 @@ export default function Index({ orders, permission }) {
         >
             {/* <Breadcrumb items={items} /> */}
 
-            <Head className="capitalize" title="Ordenes" />
+            <Head className="capitalize" title="Pedidos" />
 
             <DivSection>
                 {orders.length > 0 ? (

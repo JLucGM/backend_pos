@@ -98,11 +98,11 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                     </div>
 
                     <div className="flex justify-end p-2.5">
-                        {/* <Link
+                        <Link
                             className={buttonVariants({ variant: "outlineDestructive" })}
                             href={route('products.destroy', [product])} method='delete' as="button">
                             Eliminar producto
-                        </Link> */}
+                        </Link>
                         <Button variant="default" type="submit" disabled={processing}>
                             {processing ? "Guardando..." : "Guardar"}
                         </Button>

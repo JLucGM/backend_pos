@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import OrdersForm from './OrdersForm';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
+import { Badge } from '@/Components/ui/badge';
 
 export default function Edit({ orders, paymentMethods }) {
     console.log(orders)
@@ -58,7 +59,11 @@ export default function Edit({ orders, paymentMethods }) {
                         <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                             Actualizar #{orders.id}
                         </h2>
+                        {/* <Badge className='mx-2'>{orders.total}</Badge> */}
+                        <Badge className='mx-2'>{orders.status}</Badge>
+                        {/* <p className='mx-2 rou border border-gray-500'>{orders.status}</p> */}
                     </div>
+                    
                     {/* <Link href={route('orders.create')}
                         className="capitalize py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                     >

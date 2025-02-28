@@ -27,35 +27,14 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
             <div className="grid grid-cols-3 gap-4">
                 <div className="col-span-full md:col-span-2">
                     <DivSection >
-
                         <div>
-                            <InputLabel htmlFor="status" value="Estado" />
-                            <TextInput
-                                id="status"
-                                type="text"
-                                name="status"
-                                value={data.status}
-                                className="mt-1 block w-full disabled:bg-gray-100 cursor-not-allowed"
-                                isFocused={true}
-                                onChange={(e) => setData('status', e.target.value)}
-                                disabled={true} // Deshabilitar el campo
-
-                            />
-                            <InputError message={errors.status} className="mt-2" />
-                        </div>
-
-                        <div>
-                            <InputLabel htmlFor="total" value="Total" />
-                            <TextInput
-                                id="total"
-                                type="text"
-                                name="total"
-                                value={data.total}
-                                className="mt-1 block w-full disabled:bg-gray-100 cursor-not-allowed"
-                                onChange={(e) => setData('total', e.target.value)}
-                                disabled={true} // Deshabilitar el campo
-                            />
-                            <InputError message={errors.total} className="mt-2" />
+                            <p className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                                Pedido recibido</p>
+                                 {formatDate(orders.created_at)}
+                            <p className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                                Actualizado
+                            </p>
+                                 {formatDate(orders.updated_at)}
                         </div>
 
                         <div>
@@ -90,52 +69,44 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                 <div className="col-span-full md:col-span-1 ">
                     <DivSection >
                         <div>
-                            <h2>Detalles del Pedido</h2>
-                            <p>Realizado: {formatDate(orders.created_at)}</p>
-                            <p>Actualizado: {formatDate(orders.updated_at)}</p>
-                        </div>
-                        <div>
-                            <h2>Detalles del Usuario</h2>
-                            <p>Nombre: {orders.client.client_name}</p> {/* Asegúrate de que orders tenga el objeto del cliente */}
-                            <p>C.I: {orders.client.client_identification}</p>
-                            <p>Teléfono: {orders.client.client_phone}</p>
+                            <h2 className='font-semibold'>Cliente</h2>
+                            <p>{orders.client.client_name}</p> {/* Asegúrate de que orders tenga el objeto del cliente */}
+                            <p>{orders.client.client_identification}</p>
+                            <p>{orders.client.client_phone}</p>
                         </div>
 
                     </DivSection>
                 </div>
                 <DivSection className='col-span-full'>
-                        <div>
-                            <h2>Detalles de la Orden</h2>
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {orders.order_items.map(detail => (
+                                    <tr key={detail.id}>
+                                        <td className="capitalize px-6 py-4 whitespace-nowrap">{detail.name_product}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{detail.quantity}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">${detail.price_product}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">${detail.subtotal}</td>
                                     </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {orders.order_items.map(detail => (
-                                        <tr key={detail.id}>
-                                            <td className="capitalize px-6 py-4 whitespace-nowrap">{detail.name_product}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{detail.quantity}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{detail.price_product}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{detail.subtotal}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colSpan="3" className="px-6 py-4 text-right font-bold">Total</td>
-                                        <td className="px-6 py-4 whitespace-nowrap font-bold">
-                                            {orders.total}
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                        </DivSection>
+                                ))}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colSpan="3" className="px-6 py-4 text-right font-bold">Total</td>
+                                    <td className="px-6 py-4 whitespace-nowrap font-bold">
+                                        {orders.total}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                </DivSection>
             </div>
 
         </>
