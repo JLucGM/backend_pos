@@ -38,6 +38,18 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                         </div>
 
                         <div>
+                            <InputLabel htmlFor="status" value="Dirección de Entrega" />
+                            <TextInput
+                                id="status"
+                                type="text"
+                                name="status"
+                                value={data.status}
+                                className="mt-1 block w-full"
+                                onChange={(e) => setData('status', e.target.value)}
+                            />
+                            <InputError message={errors.status} className="mt-2" />
+                        </div>
+                        <div>
                             <InputLabel htmlFor="direction_delivery" value="Dirección de Entrega" />
                             <TextInput
                                 id="direction_delivery"
