@@ -1,4 +1,5 @@
 import { Badge } from "@/Components/ui/badge";
+import { Link } from "@inertiajs/react";
 
 
 export const StocksColumns = [
@@ -7,7 +8,7 @@ export const StocksColumns = [
         accessorKey: "id",
         cell: ({ row }) => (
             <div className="flex items-center">
-                <p className='me-2'>{row.original.id}</p>  
+                <p className='me-2'>{row.original.id}</p>
             </div>
         ),
     },
@@ -16,7 +17,12 @@ export const StocksColumns = [
         accessorKey: "product_id",
         cell: ({ row }) => {
             return (
-                <p>{row.original.product.product_name}</p>
+                <Link 
+                href={route('products.edit', row.original.product.slug)}
+                buttonVariants={{ variant: 'link' }}
+                >
+                    {row.original.product.product_name}
+                </Link>
             )
         },
     },

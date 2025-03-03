@@ -64,8 +64,15 @@ class ClientController extends Controller
      */
     public function edit(Client $client)
     {
-        return Inertia::render('Clients/Edit', compact('client'));
+        $client->load('orders');
 
+        // Contar la cantidad de órdenes
+    $orderCount = $client->orders->count();
+    // Sumar el total de las órdenes
+    $orderTotal = $client->orders->sum('total');
+    // dd($orderCount, $orderTotal);
+
+        return Inertia::render('Clients/Edit', compact('client','orderCount','orderTotal'));
     }
 
     /**

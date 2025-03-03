@@ -19,10 +19,12 @@ class DashboardController extends Controller
         $user = Auth::user();
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
-        $products = Product::with('stocks')->get(); // Asegúrate de cargar la relación de stocks
+        $products = Product::with('stocks', 'media')->get(); // Asegúrate de cargar la relación de stocks
 
         $ordersCount = Order::all()->count();
         $clientsCount = Client::all()->count();
+        $totalTodayOrdersAmount = Order::whereDate('created_at', Carbon::today())->sum('total'); // Sumar el campo 'total' de las órdenes del día
+        // dd($totalTodayOrdersAmount);
 
         // Establecer el locale a español
         Carbon::setLocale('Es');
@@ -54,9 +56,9 @@ class DashboardController extends Controller
 
         // Obtener productos con bajo stock
         // Obtener productos con bajo stock
-$lowStockProducts = $products->filter(function ($product) {
-    return $product->stocks->sum('quantity') < "5"; // Cambia 'quantity' por el nombre del campo que almacena la cantidad en stock
-})->values(); // Asegúrate de que sea un array
+        $lowStockProducts = $products->filter(function ($product) {
+            return $product->stocks->sum('quantity') < "5"; // Cambia 'quantity' por el nombre del campo que almacena la cantidad en stock
+        })->values(); // Asegúrate de que sea un array
 
 
         // dd($lowStockProducts);
@@ -68,6 +70,7 @@ $lowStockProducts = $products->filter(function ($product) {
             'todayOrdersCount' => $todayOrdersCount,
             'ordersByPaymentMethod' => $ordersByPaymentMethod,
             'lowStockProducts' => $lowStockProducts, // Pasar los productos con bajo stock
+            'totalTodayOrdersAmount' => $totalTodayOrdersAmount,
             'role' => $role,
             'permission' => $permission,
         ]);

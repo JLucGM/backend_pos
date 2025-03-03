@@ -5,9 +5,10 @@ import { toast } from 'sonner';
 import CategoriesForm from './ClientForm';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
+import { Separator } from '@/Components/ui/separator';
 
-export default function Edit({ client }) {
-    //  console.log(client)
+export default function Edit({ client, orderCount, orderTotal }) {
+    console.log(client)
     const initialValues = {
         client_name: client.client_name,
         client_identification: client.client_identification,
@@ -67,11 +68,22 @@ export default function Edit({ client }) {
         >
             {/* <Breadcrumb items={items} /> */}
 
-            <Head className="capitalize" title="clientes" />
+            <Head className="capitalize" title="Clientes" />
 
             <div className="max-w-7xl mx-auto ">
                 <div className=" overflow-hidden">
                     <div className=" text-gray-900 dark:text-gray-100">
+                        <DivSection className='flex flex-csol justify-around'>
+
+                            <div className="text-center">
+                                <p className='text-lg font-semibold capitalize'>Total gastado</p>
+                                ${orderTotal}
+                            </div>
+                            <div className="text-center">
+                                <p className='text-lg font-semibold capitalize'>Pedidos</p>
+                                {orderCount}
+                            </div>
+                        </DivSection>
                         <form onSubmit={submit} className='space-y-4'>
 
                             <div className="grid grid-cols-1 gap-4">

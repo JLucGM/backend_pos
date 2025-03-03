@@ -3,10 +3,10 @@ import DivSection from '@/Components/ui/div-section';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Separator } from '@/Components/ui/separator';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
-export default function Dashboard({ client, orders, ordersCount, clientsCount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod }) {
+export default function Dashboard({ client, orders, ordersCount, clientsCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod }) {
     const user = usePage().props.auth.user;
 
     console.log(lowStockProducts);
@@ -49,27 +49,35 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
             <Head title="Dashboard" />
 
             <div className="flex flex-1 flex-col gap-4 p- pt-0">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-6">
+                <div className="grid auto-rows-min gap-4 lg:grid-cols-6">
 
                     <DivSection className="col-span-2">
-                        {ordersCount} Ordenes totales
+                        <span className='block font-medium text-2xl'>
+                            {ordersCount}
+                        </span>
+                        Ordenes totales
                     </DivSection>
-                    <DivSection className="col-span-2">
-                        {clientsCount} Clientes totales
+                    <DivSection className="col-span-1">
+                        <span className='block font-medium text-2xl'>
+
+                            {clientsCount}
+                        </span>
+                        Clientes totales
                     </DivSection>
-                    <DivSection className="col-span-2">
-                        {todayOrdersCount} Órdenes del día
+                    <DivSection className="col-span-1">
+                        <span className='block font-medium text-2xl'>
+
+                            {todayOrdersCount}
+                        </span>
+                        Órdenes del día
 
                     </DivSection>
-                    {/*<DivSection className="col-span-1">
-                        {ordersCount}
+                    <DivSection className="col-span-2">
+                        <span className='block font-medium text-2xl'>
+                            ${totalTodayOrdersAmount}
+                        </span>
+                        Recaudado de hoy
                     </DivSection>
-                    <DivSection className="col-span-1">
-                        {ordersCount}
-                    </DivSection>
-                    <DivSection className="col-span-1">
-                        {ordersCount}
-                    </DivSection> */}
 
                     <DivSection className="col-span-3">
 
@@ -110,39 +118,64 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
                         </ChartContainer>
                     </DivSection>
 
-                    <DivSection className="col-span-2">
-                        <div className="aspect-video rounded-xl col-span-2">
+                    <DivSection className="col-span-3">
+                        {/* Mostrar el contador de órdenes por método de pago */}
+                        <h3 className="text-md font-medium">Ordenes y Método de pago del dia</h3>
+                        <ScrollArea className="h-60 max-h-52 ">
+                            <ul className="mt-2">
+                                {Object.entries(ordersByPaymentMethod).map(([paymentMethod, count]) => (
+                                    <div className="">
 
-                            {/* Mostrar el contador de órdenes por método de pago */}
-                            <ScrollArea className="h-52 max-h-52 ">
-                                <h3 className="text-md font-semibold">Órdenes del dia por método de pago:</h3>
-                                <ul>
-                                    {Object.entries(ordersByPaymentMethod).map(([paymentMethod, count]) => (
-                                        <div className="">
-
-                                            <li key={paymentMethod}>
-                                                {count} órdenes con {paymentMethod}
-                                            </li>
-                                            <Separator />
-                                        </div>
-                                    ))}
-                                </ul>
-                            </ScrollArea>
-                        </div>
+                                        <li key={paymentMethod} className="flex justify-start items-center py-2 p-3 mb-2">
+                                            <span className='font-semibold mr-2'>{count}</span> órdenes con <span className='font-semibold mx-1 capitalize'>{paymentMethod}</span>
+                                        </li>
+                                        <Separator />
+                                    </div>
+                                ))}
+                            </ul>
+                        </ScrollArea>
                     </DivSection>
 
-                    <DivSection className="col-span-2">
-                        <h3 className="text-lg font-semibold">Productos con bajo stock:</h3>
-                        <ScrollArea className="h-52 max-h-52 ">
+                    <DivSection className="col-span-3">
+                        <h3 className="text-md font-medium">Productos con bajo stock:</h3>
+                        <ScrollArea className="h-60">
 
                             <ul className="mt-2">
                                 {lowStockProducts.length > 0 ? (
                                     lowStockProducts.map(product => (
                                         <div className="">
 
-                                            <li key={product.id} className="flex justify-between py-2">
-                                                <p>{product.product_name}</p>
-                                                <p>{product.stocks.reduce((total, stock) => total + stock.quantity, 0)}</p>
+                                            <li key={product.id} className="flex justify-between items-center py-2 p-3">
+                                                <div className="flex items-center">
+                                                    {product.media && product.media.length > 0 ? (
+                                                        product.media.map((image) => {
+                                                            return (
+                                                                <div key={image.id} className="relative mr-2 mb-2">
+                                                                    <img
+                                                                        src={image.original_url}
+                                                                        alt={image.name}
+                                                                        className="w-10 h-10 object-cover rounded-xl aspect-square"
+                                                                    />
+                                                                </div>
+                                                            );
+                                                        }
+                                                        )
+                                                    ) : (
+                                                        <div className="mr-2">
+                                                            <img
+                                                                src="https://placehold.co/10x10"
+                                                                alt="https://placehold.co/10x10"
+                                                                className="w-10 h-10 object-cover rounded-xl aspect-square"
+                                                            />
+                                                        </div>
+                                                    )
+                                                    }
+                                                    <Link href={route('products.edit', product.slug)}
+                                                        className='capitalize'>
+                                                        {product.product_name}
+                                                    </Link>
+                                                </div>
+                                                <p className='text-destructive font-semibold'>{product.stocks.reduce((total, stock) => total + stock.quantity, 0)}</p>
                                             </li>
                                             <Separator />
                                         </div>
@@ -154,10 +187,10 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
                         </ScrollArea>
                     </DivSection>
 
-                    <div className="aspect-video rounded-xl bg-red-400/50" />
-                    <div className="aspect-video rounded-xl bg-red-400/50" />
+                    {/* <div className="aspect-video rounded-xl bg-red-400/50" />
+                    <div className="aspect-video rounded-xl bg-red-400/50" /> */}
                 </div>
-                <div className="min-h-[100vh] flex-1 rounded-xl bg-red-400/50 md:min-h-min" />
+                {/* <div className="min-h-[100vh] flex-1 rounded-xl bg-red-400/50 md:min-h-min" /> */}
             </div>
 
         </AuthenticatedLayout>

@@ -19,7 +19,7 @@ export default function ClientsForm({ data, setData, errors }) {
                 <InputError message={errors.client_name} className="mt-2" />
             </div>
             <div>
-                <InputLabel htmlFor="client_identification" value="client_identification" />
+                <InputLabel htmlFor="client_identification" value="Identificación" />
                 <TextInput
                     id="client_identification"
                     type="text"
@@ -32,7 +32,7 @@ export default function ClientsForm({ data, setData, errors }) {
                 <InputError message={errors.client_identification} className="mt-2" />
             </div>
             <div>
-                <InputLabel htmlFor="client_phone" value="client_phone" />
+                <InputLabel htmlFor="client_phone" value="Teléfono" />
                 <TextInput
                     id="client_phone"
                     type="text"

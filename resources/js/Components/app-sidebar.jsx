@@ -7,6 +7,7 @@ import {
   Command,
   Frame,
   GalleryVerticalEnd,
+  HomeIcon,
   Map,
   MapPin,
   MapPinned,
@@ -25,10 +26,10 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { usePage } from "@inertiajs/react"
+import { Link, usePage } from "@inertiajs/react"
+import { NavSingle } from "./nav-single"
 
 export function AppSidebar({
   ...props
@@ -59,23 +60,23 @@ export function AppSidebar({
       },
     ],
     navMain: [
-      {
-        title: "Pedidos",
-        url: "#",
-        icon: ShoppingBasket,
-        items: [
-          {
-            title: "Pedidos",
-            url: "orders.index",
-          },
-          
-          // {
-          //   title: "Atributo",
-          //   url: "attribute.index",
-          // },
-          
-        ],
-      },
+      // {
+      //   title: "Pedidos",
+      //   url: "#",
+      //   icon: ShoppingBasket,
+      //   items: [
+      //     {
+      //       title: "Pedidos",
+      //       url: "orders.index",
+      //     },
+
+      //     {
+      //      title: "Atributo",
+      //      url: "attribute.index",
+      //     },
+
+      //   ],
+      // },
       {
         title: "Inventario",
         url: "#",
@@ -203,13 +204,29 @@ export function AppSidebar({
       },
     ],
   }
-  // console.log( user)
+  const datasingle = {
+    navMain: [
+      {
+        title: "Inicio",
+        url: "dashboard",
+        icon: HomeIcon,  
+      },
+      {
+        title: "Pedidos",
+        url: "orders.index",
+        icon: ShoppingBasket,  
+      },
+      
+    ],
+  }
+
   return (
     (<Sidebar collapsible="icon" {...props}>
       {/* <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader> */}
       <SidebarContent>
+        <NavSingle items={datasingle.navMain} />
         <NavMain items={data.navMain} />
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>

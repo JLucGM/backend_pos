@@ -29,4 +29,9 @@ class Client extends Model
             ->generateSlugsFrom('client_name')
             ->saveSlugsTo('slug');
     }
+
+    public function orders()
+{
+    return $this->hasMany(Order::class);
+}
 }
