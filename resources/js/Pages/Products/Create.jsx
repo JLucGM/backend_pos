@@ -23,6 +23,7 @@ export default function Create({ taxes, categories, stores }) {
         quantity: 0,
         store_id: stores.length > 0 ? stores[0].id : null,
         prices: {},
+        stocks: {},
         images: []
     });
     const submit = (e) => {
@@ -37,7 +38,7 @@ export default function Create({ taxes, categories, stores }) {
             }
         });
     };
-
+console.log(data);
     return (
         <AuthenticatedLayout
             header={

@@ -18,9 +18,12 @@ import Checkbox from '@/Components/Checkbox';
 import TextAreaRich from '@/Components/ui/TextAreaRich';
 
 export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", product = "", setData, errors }) {
+    
+    // console.log(data)
     const animatedComponents = makeAnimated(); //Animacion de multiselect
     const textAreaRef = useRef(); // inicializacion de TextAreaRich
     const { delete: deleteImage } = useForm(); // Desestructura la función delete de useForm
+    const [stocks, setStocks] = useState({});
 
     const categoryOptions = categories.map(category => ({
         value: category.id,
@@ -71,24 +74,52 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
     useEffect(() => {
         const calculatePrices = () => {
             const combinations = generateCombinations();
-            const prices = {};
+            const newPrices = {};
+            const basePrice = parseFloat(data.product_price) || 0;
 
-            // Usa el precio base como valor por defecto
-            const basePrice = parseFloat(data.product_price) || 0; // Asegúrate de que sea un número
-
-            // Si combinationsWithPrices tiene valores, los usamos
             combinations.forEach(combination => {
-                const key = combination.join(", "); // Formato de clave
-                // Si hay un precio existente en combinationsWithPrices, lo usamos, de lo contrario, inicializamos en el precio base
-                prices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
+                const key = combination.join(", ");
+                newPrices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
             });
 
-            setPrices(prices); // Actualiza el estado de precios
-            setData('prices', prices); // Guarda los precios en el estado de data
+            setPrices(newPrices);
+            setData('prices', newPrices); // Actualiza el campo prices en data
         };
 
-        calculatePrices(); // Llama a la función para calcular precios
-    }, [data.attribute_names, data.attribute_values, combinationsWithPrices, data.product_price]); // Dependencias
+        calculatePrices();
+    }, [data.attribute_names, data.attribute_values, combinationsWithPrices, data.product_price]);
+
+    useEffect(() => {
+        const calculateCombinations = () => {
+            const combinations = generateCombinations();
+            const newPrices = {};
+            const newStocks = {};
+    
+            const basePrice = parseFloat(data.product_price) || 0;
+    
+            combinations.forEach(combination => {
+                const key = combination.join(", ");
+                newPrices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
+    
+                // Mantener el stock existente si ya existe, de lo contrario inicializar a 0
+                newStocks[key] = stocks[key] ; 
+            });
+    
+            // console.log("New Prices:", newPrices);
+            // console.log("New Stocks:", newStocks);
+            // console.log("Existing Stocks:", stocks);
+    
+            setPrices(newPrices);
+            setStocks(newStocks);
+            setData('prices', newPrices); // Actualiza el campo prices en data
+            setData('stocks', newStocks); // Actualiza el campo stocks en data
+        };
+    
+        // Solo recalcular si hay cambios en los atributos o valores
+        if (data.attribute_names.length > 0 && data.attribute_values.length > 0) {
+            calculateCombinations();
+        }
+    }, [data.attribute_names, data.attribute_values, combinationsWithPrices, data.product_price]);
 
     const generateCombinations = () => {
         const { attribute_names, attribute_values } = data;
@@ -128,6 +159,58 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         });
     };
 
+    // useEffect(() => {
+    //     // Inicializa el estado de stocks con los valores existentes
+    //     const initialStocks = {};
+    //     for (const combination in combinationsWithPrices) {
+    //         initialStocks[combination] = combinationsWithPrices[combination].stock || 0; // Asigna el stock correspondiente
+    //     }
+    //     setStocks(initialStocks);
+    // }, [combinationsWithPrices]);
+    useEffect(() => {
+        const initialStocks = {};
+        for (const combination in combinationsWithPrices) {
+            initialStocks[combination] = combinationsWithPrices[combination].stock || 0; // Asigna el stock correspondiente
+        }
+        setData('stocks', initialStocks); // Actualiza el campo stocks en data
+    }, [combinationsWithPrices]);
+
+    // const handleStockChange = (combination, value) => {
+    //     const numericValue = parseFloat(value);
+    //     if (isNaN(numericValue) || numericValue < 0) {
+    //         toast("Por favor, ingresa un stock válido.", {
+    //             description: "El stock debe ser un número positivo.",
+    //         });
+    //         return;
+    //     }
+
+    //     setStocks(prevStocks => {
+    //         const updatedStocks = {
+    //             ...prevStocks,
+    //             [combination]: numericValue
+    //         };
+    //         setData('stocks', updatedStocks); // Actualiza el campo stocks en data
+    //         return updatedStocks; // Devuelve el nuevo estado
+    //     });
+    // };
+
+    const handleStockChange = (combination, value) => {
+        const numericValue = parseFloat(value);
+        if (isNaN(numericValue) || numericValue < 0) {
+            toast("Por favor, ingresa un stock válido.", {
+                description: "El stock debe ser un número positivo.",
+            });
+            return;
+        }
+
+        // Actualiza directamente el objeto de datos
+        setData('stocks', {
+            ...data.stocks,
+            [combination]: numericValue
+        });
+    };
+
+
     // const selectedCategories = categoryOptions.filter(option => data.categories.includes(option.value));
 
     const handleDeleteImage = (imageId) => {
@@ -142,6 +225,15 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             });
         }
     };
+
+    useEffect(() => {
+        const initialPrices = {};
+        for (const combination in combinationsWithPrices) {
+            initialPrices[combination] = combinationsWithPrices[combination].price || 0; // Asegúrate de que esto esté correcto
+        }
+        setPrices(initialPrices);
+        setData('prices', initialPrices); // Actualiza el campo prices en data
+    }, [combinationsWithPrices]);
 
     const statusOptions = [
         { value: 0, label: 'Borrador' },
@@ -361,30 +453,35 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     </div>
 
                     {data.attribute_values.length >= 1 ? (
-                        <Table >
+                        <Table>
                             <TableCaption>Lista de combinaciones.</TableCaption>
                             <TableHeader className="bg-gray-100">
                                 <TableRow>
                                     <TableHead className="w-[100px]">Combinaciones</TableHead>
                                     <TableHead className="text-right">Precio</TableHead>
+                                    <TableHead className="text-right">Canto Stock</TableHead> {/* Nueva columna */}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {Object.entries(prices).map(([combination, price]) => {
-                                    return (
-                                        <TableRow key={combination}>
-                                            <TableCell className="font-medium capitalize">{combination}</TableCell>
-                                            <TableCell className="text-right">
-                                                <TextInput
-                                                    type="number"
-                                                    value={price || ''} // Asegúrate de que el valor se muestre correctamente
-                                                    onChange={(e) => handlePriceChange(combination, e.target.value)}
-                                                    placeholder="Definir precio"
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
+                                {Object.entries(data.prices).map(([combination, price]) => (
+                        <TableRow key={combination}>
+                            <TableCell>{combination}</TableCell>
+                            <TableCell>
+                                <TextInput
+                                    type="number"
+                                    value={price || ''}
+                                    onChange={(e) => handlePriceChange(combination, e.target.value)}
+                                />
+                            </TableCell>
+                            <TableCell>
+                                <TextInput
+                                    type="number"
+                                    value={data.stocks[combination] || ''} // Usa directamente data.stocks
+                                    onChange={(e) => handleStockChange(combination, e.target.value)}
+                                />
+                            </TableCell>
+                        </TableRow>
+                    ))}
                             </TableBody>
                         </Table>
                     ) : (

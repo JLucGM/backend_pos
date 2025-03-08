@@ -13,17 +13,14 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
     // Agrupar atributos y valores
     product.combinations.forEach(combination => {
         combination.combination_attribute_value.forEach(attrValue => {
-            // Verificar si attribute_value y attribute están definidos
             if (attrValue.attribute_value && attrValue.attribute_value.attribute) {
                 const attributeName = attrValue.attribute_value.attribute.attribute_name;
                 const valueName = attrValue.attribute_value.attribute_value_name;
 
-                // Si el atributo no existe en el mapa, inicialízalo
                 if (!attributeMap[attributeName]) {
                     attributeMap[attributeName] = [];
                 }
 
-                // Agregar el valor si no está ya en la lista
                 if (!attributeMap[attributeName].includes(valueName)) {
                     attributeMap[attributeName].push(valueName);
                 }
@@ -31,6 +28,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
         });
     });
 
+    // Inicializar valores
     const initialValues = {
         product_name: product.product_name,
         product_description: product.product_description,
@@ -44,11 +42,19 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
         categories: selectedCategories,
         quantity: (product.stocks && product.stocks.length > 0) ? product.stocks[0].quantity : 0,
         store_id: (product.stocks && product.stocks.length > 0) ? product.stocks[0].store_id : null,
-        attribute_names: Object.keys(attributeMap), // Nombres de atributos únicos
+        attribute_names: Object.keys(attributeMap),
         attribute_values: Object.values(attributeMap),
         prices: combinationsWithPrices,
+        stocks: {}, // Inicializa stocks como un objeto vacío
     };
-
+    // Asigna el stock correspondiente
+    for (const combination in combinationsWithPrices) {
+        initialValues.stocks[combination] = combinationsWithPrices[combination].stock || 0; // Asigna el stock correspondiente
+    }
+    
+    console.log(initialValues.stocks)
+    
+    // Usar useForm para manejar el estado del formulario
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
@@ -62,14 +68,16 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
             }
         });
     };
-    // console.log(data);
-
+    
+    // console.log("initialValues:", initialValues); // Verifica los valores iniciales
+    // console.log("Form Data:", initialValues.stocks); // Verifica los datos del formulario
+    // console.log("Initial Stocks:", initialValues.stocks); // Verifica los valores iniciales
+console.log(data)
     return (
         <AuthenticatedLayout
             header={
                 <div className='flex justify-between items-center '>
                     <div className="flex items-center space-x-2">
-
                         <Link href={route('products.index')} >
                             <ArrowLongLeftIcon className='size-6' />
                         </Link>
@@ -107,7 +115,6 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                     </div>
 
                     <div className="flex justify-end p-2.5">
-
                         <Button variant="default" type="submit" disabled={processing}>
                             {processing ? "Guardando..." : "Guardar"}
                         </Button>

@@ -56,10 +56,11 @@ class ProductController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage.s
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         // Validar los datos de entrada
         $request->validate([
             'product_name' => 'required|string|max:255',
@@ -74,6 +75,7 @@ class ProductController extends Controller
             'attribute_values.*' => 'nullable|array',
             'attribute_values.*.*' => 'nullable|string|max:255',
             'prices' => 'nullable|array',
+            'stocks' => 'nullable|array', // Asegúrate de validar el stock
             'quantity' => 'required|integer|min:0',
             'store_id' => 'required|exists:stores,id',
         ]);
@@ -165,11 +167,19 @@ class ProductController extends Controller
                         'attribute_value_id' => $attributeValueId,
                     ]);
                 }
+
+                // Crear el stock para la combinación
+                $stockQuantity = $request->stocks[$combinationKey] ?? 0; // Obtener el stock para esta combinación
+                Stock::create([
+                    'quantity' => $stockQuantity,
+                    'product_id' => $product->id,
+                    'store_id' => $request->store_id,
+                    'combination_id' => $combinationModel->id, // Relacionar el stock con la combinación
+                ]);
             }
         }
 
         return to_route('products.edit', $product->slug)->with('success', 'Producto creado con éxito.');
-        // return to_route('products.index')->with('success', 'Producto creado con éxito.');
     }
 
     private function generateCombinations($attributeValueMap)
@@ -224,15 +234,27 @@ class ProductController extends Controller
         // Obtener la URL de la primera imagen de la colección 'products'
         $product->image_url = $product->getFirstMediaUrl('products'); // Asegúrate de que 'products' sea el nombre de la colección
 
-        // Obtener combinaciones con precios
-        $combinationsWithPrices = $product->combinations->mapWithKeys(function ($combination) {
-            return [$combination->combinationAttributeValue->pluck('attributeValue.attribute_value_name')->join(', ') => $combination->combination_price];
+        // Obtener combinaciones con precios y stock
+        $combinationsWithPrices = $product->combinations->mapWithKeys(function ($combination) use ($product) {
+            // Obtener el stock correspondiente a la combinación
+            $stock = $product->stocks->where('combination_id', $combination->id)->first();
+            $stockQuantity = $stock ? $stock->quantity : 0; // Si no hay stock, asignar 0
+
+            // Crear la clave de combinación y devolver el precio y el stock
+            return [
+                $combination->combinationAttributeValue->pluck('attributeValue.attribute_value_name')->join(', ') => [
+                    'price' => $combination->combination_price,
+                    'stock' => $stockQuantity,
+                ]
+            ];
         });
+
+        // dd($combinationsWithPrices);
 
         $taxes = Tax::all();
         $categories = Category::all();
         $stores = Store::all();
-        // dd($product);
+
         return Inertia::render('Products/Edit', compact('product', 'taxes', 'categories', 'stores', 'combinationsWithPrices'));
     }
 
@@ -241,6 +263,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        // dd($request->all());
         // Validar los datos de entrada
         $request->validate([
             'product_name' => 'required|string|max:255',
@@ -278,17 +301,10 @@ class ProductController extends Controller
         // Actualizar las categorías asociadas
         $product->categories()->sync($request->categories);
 
-        // Actualizar el stock
-        $product->stocks()->update([
-            'quantity' => $request->quantity,
-            'store_id' => $request->store_id,
-        ]);
-
         // Primero, eliminar las combinaciones existentes
         foreach ($product->combinations as $combination) {
             // Eliminar los valores de atributos asociados a la combinación
             $combination->combinationAttributeValue()->delete(); // Eliminar valores de atributos
-
             // Luego, eliminar la combinación
             $combination->delete();
         }
@@ -358,6 +374,19 @@ class ProductController extends Controller
                         'attribute_value_id' => $attributeValueId,
                     ]);
                 }
+
+                // Actualizar el stock de la combinación
+                $stockQuantity = $request->stocks[$combinationKey] ?? 0; // Obtener el stock de la combinación
+                Stock::updateOrCreate(
+                    [
+                        'combination_id' => $combinationModel->id,
+                        'product_id' => $product->id,
+                    ],
+                    [
+                        'quantity' => $stockQuantity,
+                        'store_id' => $request->store_id, // Asumiendo que el stock está relacionado con una tienda
+                    ]
+                );
             }
         }
 

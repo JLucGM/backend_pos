@@ -12,6 +12,7 @@ class Stock extends Model
         'status',
         'product_id',
         'store_id',
+        'combination_id',
     ];
 
     // public function getRouteKeyName()
@@ -34,5 +35,9 @@ class Stock extends Model
     public function store()
     {
         return $this->belongsTo(Store::class);
+    }
+    public function combination()
+    {
+        return $this->belongsTo(Combination::class);
     }
 }
