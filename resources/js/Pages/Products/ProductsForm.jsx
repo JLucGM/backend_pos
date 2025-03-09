@@ -235,6 +235,25 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         setData('prices', initialPrices); // Actualiza el campo prices en data
     }, [combinationsWithPrices]);
 
+
+    const removeAttribute = (index) => {
+        const newAttributes = [...data.attribute_names];
+        const newAttributeValues = [...data.attribute_values];
+
+        newAttributes.splice(index, 1);
+        newAttributeValues.splice(index, 1);
+
+        setData('attribute_names', newAttributes);
+        setData('attribute_values', newAttributeValues);
+    };
+
+    const removeAttributeValue = (attributeIndex, valueIndex) => {
+        const newAttributeValues = [...data.attribute_values];
+        newAttributeValues[attributeIndex].splice(valueIndex, 1);
+
+        setData('attribute_values', newAttributeValues);
+    };
+
     const statusOptions = [
         { value: 0, label: 'Borrador' },
         { value: 1, label: 'Publicar' }
@@ -402,12 +421,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                 <DivSection className='space-y-4'>
                     <div className="border rounded-xl mb-4">
                         <div className="flex justify-between px-4 pt-4">
-                            <p className='font-semibold'>Atributos</p>
+                            <p className='font-semibold'>Opciones</p>
                         </div>
                         <div className="p-4">
-                            {data.attribute_names.map((attributeName, index) => (
+                        {data.attribute_names.map((attributeName, index) => (
                                 <div key={index} className="mb-">
-                                    <InputLabel value="Nombre de opción" />
                                     <TextInput
                                         type="text"
                                         value={attributeName} // Muestra el nombre del atributo
@@ -417,26 +435,32 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                     <InputError message={errors.attribute_names?.[index]} />
 
                                     <div className="my-2">
-
                                         {/* Renderiza los valores correspondientes a este atributo */}
                                         {Array.isArray(data.attribute_values[index]) && data.attribute_values[index].map((value, valueIndex) => (
-                                            <div key={valueIndex} className="mb-2">
-                                                <InputLabel value="Valor de opciones" />
-                                                {/* <InputLabel value="Valor" /> */}
+                                            <div key={valueIndex} className="mb-2 flex justify-between items-center">
+                                                {/* <InputLabel value="Valor de opciones" /> */}
                                                 <TextInput
                                                     type="text"
                                                     value={value} // Muestra el valor correspondiente
                                                     onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
                                                     placeholder={`Valor de ${attributeName}`} // Muestra el nombre del atributo en el placeholder
                                                 />
+                                                <Button variant="link" type="button" onClick={() => removeAttributeValue(index, valueIndex)}>
+                                                    <TrashIcon className="size-4" />
+                                                </Button>
                                                 <InputError message={errors.attribute_values?.[index]?.[valueIndex]} />
                                             </div>
                                         ))}
                                     </div>
 
+                                    <div className="flex justify-between items-center">
                                     <Button variant="link" type="button" onClick={() => addAttributeValue(index)}>
                                         Agregar Valor
                                     </Button>
+                                        <Button variant="link" type="button" onClick={() => removeAttribute(index)}>
+                                            Eliminar opción
+                                        </Button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
