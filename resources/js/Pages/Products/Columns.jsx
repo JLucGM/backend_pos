@@ -11,11 +11,11 @@ export const ProductColumns = [
         ),
     },
     {
-        header: "Nombre",
+        header: "Producto",
         accessorKey: "product_name",
     },
     {
-        header: "price",
+        header: "Precio",
         accessorKey: "product_price",
         cell: ({ row }) => {
             return (

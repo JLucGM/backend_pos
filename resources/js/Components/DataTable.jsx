@@ -38,6 +38,8 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
         return permissions.some(permission => permission.name === perm);
     };
 
+    const expandedColumn = columns.find((column) => column.accessorKey === 'id') || columns[0];
+
     return (
         <>
             <div className="relative mt-2 rounded-md shadow-sm ">
@@ -79,10 +81,12 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                                         </th>
                                     ))
                                 }
+                                {(hasPermission(editPermission) || hasPermission(deletePermission)) && (
 
-                                <th key="acciones" className="border-slate-300 border px-6 py-3 w-20">
-                                    Acciones
-                                </th>
+                                    <th key="acciones" className="border-slate-300 border px-6 py-3 w-20">
+                                        Acciones
+                                    </th>
+                                )}
                             </tr>
                         ))
                     }
@@ -101,17 +105,18 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                                             </td>
                                         ))
                                     }
+                                    {(hasPermission(editPermission) || hasPermission(deletePermission)) && (
 
-                                    <td key="acciones" className="flex justify-end space-x-4 capitalize border-slate-200 px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {columns.find((column) => column.accessorKey === 'id').expanded && (
-                                            <Button
-                                                className="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                                onClick={() => row.toggleExpanded()}
-                                            >
-                                                {row.getIsExpanded() ? <MinusIcon className='size-4' /> : <PlusIcon className='size-4' />}
-                                            </Button>
-                                        )}
-                                        {/* {PDFComponent && (
+                                        <td key="acciones" className="flex justify-end space-x-4 capitalize border-slate-200 px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            {expandedColumn.expanded && (
+                                                <Button
+                                                    className="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                                                    onClick={() => row.toggleExpanded()}
+                                                >
+                                                    {row.getIsExpanded() ? <MinusIcon className='size-4' /> : <PlusIcon className='size-4' />}
+                                                </Button>
+                                            )}
+                                            {/* {PDFComponent && (
                                             <PDFDownloadLink onClick={console.log(row)} document={<PDFComponent data={row.original} />} fileName='pfdprueba1.pdf'>
                                                 <Button
                                                     className='inline-flex items-center px-4 py-2 bg-orange-800 dark:bg-orange-500 border border-transparent rounded-full font-semibold text-xs text-white dark:text-gray-200 uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-white focus:bg-gray-700 dark:focus:bg-white active:bg-gray-900 dark:active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150'
@@ -136,39 +141,38 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                                                 <TrashIcon className='size-4' />
                                             </Link>
                                         )} */}
-    {(hasPermission(editPermission) || hasPermission(deletePermission)) && (
 
-                                        <Popover className="relative">
-                                            <PopoverButton
-                                                className="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                            >
-                                                Opciones
-                                            </PopoverButton>
-                                            <PopoverPanel anchor="bottom" className="flex flex-col space-y-2 p-1 rounded-xl border border-gray-200 bg-white dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 ">
-                                                {/* {hasPermission(downloadPdfPermission) && PDFComponent && (
+                                            <Popover className="relative">
+                                                <PopoverButton
+                                                    className="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                                                >
+                                                    Opciones
+                                                </PopoverButton>
+                                                <PopoverPanel anchor="bottom" className="flex flex-col space-y-2 p-1 rounded-xl border border-gray-200 bg-white dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 ">
+                                                    {/* {hasPermission(downloadPdfPermission) && PDFComponent && (
                                                     <PDFDownloadLink onClick={console.log(row)} document={<PDFComponent data={row.original} />} fileName='pfdprueba1.pdf'>
                                                         <Button className="w-full text-left">
                                                             Descargar PDF
                                                         </Button>
                                                     </PDFDownloadLink>
                                                 )} */}
-                                                {hasPermission(editPermission) && (
-                                                    <Link href={route(routeEdit, [row.original.slug ?? row.original.id])} className="flex w-full text-left hover:bg-gray-200 hover:rounded-md p-2">
-                                                        <PencilSquareIcon className='size-5' /> Editar
-                                                    </Link>
-                                                )}
-                                                {hasPermission(deletePermission) && (
-                                                    <Link
-                                                        className="flex w-full text-left text-red-600 hover:bg-red-200 hover:rounded-md p-2"
-                                                        // onClick={() => console.log('Delete clicked for:', row.original.slug)}
-                                                        href={route(routeDestroy, [row.original.slug])} method='delete' as="button">
-                                                        <TrashIcon className='size-5' /> Eliminar 
-                                                    </Link>
-                                                )}
-                                            </PopoverPanel>
-                                        </Popover>
-    )}
-                                    </td>
+                                                    {hasPermission(editPermission) && (
+                                                        <Link href={route(routeEdit, [row.original.slug ?? row.original.id])} className="flex w-full text-left hover:bg-gray-200 hover:rounded-md p-2">
+                                                            <PencilSquareIcon className='size-5' /> Editar
+                                                        </Link>
+                                                    )}
+                                                    {hasPermission(deletePermission) && (
+                                                        <Link
+                                                            className="flex w-full text-left text-red-600 hover:bg-red-200 hover:rounded-md p-2"
+                                                            // onClick={() => console.log('Delete clicked for:', row.original.slug)}
+                                                            href={route(routeDestroy, [row.original.slug])} method='delete' as="button">
+                                                            <TrashIcon className='size-5' /> Eliminar
+                                                        </Link>
+                                                    )}
+                                                </PopoverPanel>
+                                            </Popover>
+                                        </td>
+                                    )}
                                 </tr>
                                 {
                                     row.getIsExpanded() && (

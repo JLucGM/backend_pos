@@ -1,43 +1,46 @@
 import { Badge } from "@/Components/ui/badge";
 import { Link } from "@inertiajs/react";
 
-
 export const StocksColumns = [
-    {
-        header: "#id",
-        accessorKey: "id",
-        cell: ({ row }) => (
-            <div className="flex items-center">
-                <p className='me-2'>{row.original.id}</p>
-            </div>
-        ),
-    },
     {
         header: "Producto",
         accessorKey: "product_id",
         cell: ({ row }) => {
+            const product = row.original.product;
+            const combination = row.original.combination;
+            let combinationText = "Producto sencillo";
+
+            if (combination && combination.combination_attribute_value) {
+                const attributeValues = combination.combination_attribute_value.map(cav => cav.attribute_value.attribute_value_name).join(', ');
+                combinationText = attributeValues;
+            }
+
             return (
-                <Link 
-                href={route('products.edit', row.original.product.slug)}
-                buttonVariants={{ variant: 'link' }}
-                >
-                    {row.original.product.product_name}
-                </Link>
+                <div className="">
+                    <Link
+                        href={route('products.edit', product.slug)}
+                        buttonVariants={{ variant: 'link' }}
+                    >
+                        {product.product_name}
+                    </Link>
+                    <div className="">
+                        <Badge>{combinationText}</Badge>
+                    </div>
+                </div>
             )
         },
     },
     {
-        header: "cantidad",
+        header: "Inventario",
         accessorKey: "quantity",
-    },
-    {
-        header: "Estado",
-        accessorKey: "status",
         cell: ({ row }) => {
+            const stockQuantity = row.original.quantity;
             return (
-                <Badge className={` ${row.original.status === "1" ? 'bg-primary' : 'bg-primary'}`}>
-                    {row.original.status === "1" ? 'Saliendo' : 'Entrando'}
-                </Badge>
+                <p
+                    className={stockQuantity === "0" ? 'text-destructive' : 'text-primary'}
+                >
+                    {stockQuantity} en stock
+                </p>
             )
         },
     },
@@ -46,7 +49,7 @@ export const StocksColumns = [
         accessorKey: "store_id",
         cell: ({ row }) => {
             return (
-                <p>{row.original.store.store_name}</p>
+                <p>{row.original.store.store_name} </p>
             )
         },
     },

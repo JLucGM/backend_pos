@@ -60,23 +60,6 @@ export function AppSidebar({
       },
     ],
     navMain: [
-      // {
-      //   title: "Pedidos",
-      //   url: "#",
-      //   icon: ShoppingBasket,
-      //   items: [
-      //     {
-      //       title: "Pedidos",
-      //       url: "orders.index",
-      //     },
-
-      //     {
-      //      title: "Atributo",
-      //      url: "attribute.index",
-      //     },
-
-      //   ],
-      // },
       {
         title: "Inventario",
         url: "#",
@@ -90,12 +73,8 @@ export function AppSidebar({
             title: "Categoria",
             url: "category.index",
           },
-          // {
-          //   title: "Atributo",
-          //   url: "attribute.index",
-          // },
           {
-            title: "Stock",
+            title: "Inventarios",
             url: "stocks.index",
           },
         ],
@@ -113,10 +92,6 @@ export function AppSidebar({
             title: "Clientes",
             url: "clients.index",
           },
-          // {
-          //   title: "Quantum",
-          //   url: "#",
-          // },
         ],
       },
       {
@@ -136,10 +111,6 @@ export function AppSidebar({
             title: "Ciudades",
             url: "cities.index",
           },
-          // {
-          //   title: "Changelog",
-          //   url: "#",
-          // },
         ],
       },
       {

@@ -24,15 +24,24 @@ class StockController extends Controller
      */
     public function index()
     {
-        $stock = Stock::with('product', 'store')->get();
-        $products = Product::all();
+        $productsWithCombinations = Product::whereHas('combinations')->pluck('id');
+
+        // Obtener los registros de stock, excluyendo aquellos con combination_id nulo para productos con combinaciones
+        $stock = Stock::with(['product', 'combination.combinationAttributeValue.attributeValue.attribute', 'store'])
+            ->where(function ($query) use ($productsWithCombinations) {
+                $query->whereNotNull('combination_id')
+                    ->orWhereNotIn('product_id', $productsWithCombinations);
+            })
+            ->get();
+
+        // $products = Product::all();
         $stores = Store::all();
-        
+
         $user = Auth::user();
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
-        return Inertia::render('Stocks/Index', compact('stock', 'products', 'stores', 'role','permission'));
+        return Inertia::render('Stocks/Index', compact('stock', 'stores', 'role', 'permission'));
     }
 
     /**
@@ -48,11 +57,11 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->only('quantity', 'status', 'product_id', 'store_id'); 
+        $data = $request->only('quantity', 'status', 'product_id', 'store_id');
 
-        Stock::create($data); 
+        Stock::create($data);
 
-        return to_route('stocks.index'); 
+        return to_route('stocks.index');
     }
 
     /**
