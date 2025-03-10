@@ -24,7 +24,7 @@ export const StocksColumns = [
                         {product.product_name}
                     </Link>
                     <div className="">
-                        <Badge>{combinationText}</Badge>
+                        <Badge className={'bg-gray-300 text-black'}>{combinationText}</Badge>
                     </div>
                 </div>
             )

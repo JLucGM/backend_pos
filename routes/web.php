@@ -116,7 +116,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::delete('/dashboard/products/{product}/images/{imageId}', [ProductController::class, 'destroyImage'])->name('products.images.destroy');
-    
+    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
+
     Route::get('stocks', [StockController::class, 'index'])->name('stocks.index');
     Route::get('stocks/create', [StockController::class, 'create'])->name('stocks.create');
     Route::post('stocks', [StockController::class, 'store'])->name('stocks.store');

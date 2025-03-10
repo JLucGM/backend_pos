@@ -464,4 +464,65 @@ class ProductController extends Controller
 
         return to_route('products.index')->with('success', 'Producto eliminado con éxito.');
     }
+
+
+public function duplicate($product)
+{
+    // Obtener el producto original con todas sus relaciones
+    $originalProduct = Product::with([
+        'categories',
+        'stocks',
+        'combinations.combinationAttributeValue.attributeValue',
+        'media'
+    ])->findOrFail($product);
+
+    // Crear una copia del producto
+    $newProduct = $originalProduct->replicate();
+    $newProduct->product_name = $originalProduct->product_name . ' (Copia)';
+    $newProduct->slug = null; // Asegúrate de que el slug sea único
+    $newProduct->save();
+
+    // Duplicar las categorías asociadas
+    $newProduct->categories()->attach($originalProduct->categories->pluck('id'));
+
+    // Duplicar los stocks que no están asociados a combinaciones
+    foreach ($originalProduct->stocks as $stock) {
+        if ($stock->combination_id === null) {
+            $newStock = $stock->replicate();
+            $newStock->product_id = $newProduct->id;
+            $newStock->save();
+        }
+    }
+
+    // Duplicar las combinaciones y sus valores de atributos
+    foreach ($originalProduct->combinations as $combination) {
+        $newCombination = $combination->replicate();
+        $newCombination->product_id = $newProduct->id;
+        $newCombination->save();
+
+        foreach ($combination->combinationAttributeValue as $combinationAttributeValue) {
+            $newCombinationAttributeValue = $combinationAttributeValue->replicate();
+            $newCombinationAttributeValue->combination_id = $newCombination->id;
+            $newCombinationAttributeValue->save();
+        }
+
+        // Duplicar el stock de la combinación
+        $originalStock = $originalProduct->stocks->where('combination_id', $combination->id)->first();
+        if ($originalStock) {
+            $newStock = $originalStock->replicate();
+            $newStock->product_id = $newProduct->id;
+            $newStock->combination_id = $newCombination->id;
+            $newStock->save();
+        }
+    }
+
+    // Duplicar las imágenes asociadas
+    foreach ($originalProduct->getMedia('products') as $mediaItem) {
+        $newProduct->addMedia($mediaItem->getPath())
+            ->preservingOriginal()
+            ->toMediaCollection('products');
+    }
+
+    return to_route('products.edit', $newProduct->slug)->with('success', 'Producto duplicado con éxito.');
+}
 }

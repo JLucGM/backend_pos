@@ -51,9 +51,9 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
     for (const combination in combinationsWithPrices) {
         initialValues.stocks[combination] = combinationsWithPrices[combination].stock || 0; // Asigna el stock correspondiente
     }
-    
+
     console.log(initialValues.stocks)
-    
+
     // Usar useForm para manejar el estado del formulario
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
@@ -68,11 +68,22 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
             }
         });
     };
-    
+
+    const handleDuplicate = () => {
+        post(route('products.duplicate', product), {
+            onSuccess: () => {
+                toast("Producto actualizado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al actualizar el producto.");
+            }
+        });
+    };
+
     // console.log("initialValues:", initialValues); // Verifica los valores iniciales
     // console.log("Form Data:", initialValues.stocks); // Verifica los datos del formulario
     // console.log("Initial Stocks:", initialValues.stocks); // Verifica los valores iniciales
-console.log(data)
+    console.log(data)
     return (
         <AuthenticatedLayout
             header={
@@ -88,12 +99,19 @@ console.log(data)
                             {product.status === 1 ? 'Publicado' : 'Borrador'}
                         </Badge>
                     </div>
+
+                    <div className="">
+                    <Button variant="ghost" onClick={handleDuplicate} >
+                        Duplicar
+                    </Button>
+
                     <Link
                         className={buttonVariants({ variant: "outlineDestructive" })}
                         href={route('products.destroy', [product])} method='delete' as="button">
                         <TrashIcon className='size-6' />
                         Eliminar producto
                     </Link>
+                    </div>
                 </div>
             }
         >
