@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Combination;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -22,6 +23,7 @@ class OrderApiController extends Controller
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'items.*.combination_id' => 'nullable|exists:combinations,id', // Asegúrate de incluir esto
         ]);
 
         if ($validator->fails()) {
@@ -44,8 +46,24 @@ class OrderApiController extends Controller
                 return response()->json(['error' => 'Product not found'], 404);
             }
 
-            // Obtener el stock del producto
-            $stock = $product->stocks()->first(); // Asumiendo que solo hay un stock por producto
+            $combination = null;
+            if (isset($item['combination_id'])) {
+                $combination = Combination::find($item['combination_id']); // Buscar la combinación
+                if (!$combination) {
+                    return response()->json(['error' => 'Combination not found'], 404);
+                }
+            }
+
+            // Obtener el stock del producto o de su combinación, si existe
+            if ($combination) {
+                // Si hay combinación, buscar el stock de la combinación
+                $stock = $product->stocks()->where('combination_id', $combination->id)->first();
+            } else {
+                // Si no hay combinación, buscar el stock del producto
+                $stock = $product->stocks()->first();
+            }
+
+            // Verificar si hay stock y si es suficiente
             if (!$stock || $stock->quantity < $item['quantity']) {
                 return response()->json(['error' => 'Not enough stock for product ' . $product->product_name], 400);
             }
@@ -57,6 +75,7 @@ class OrderApiController extends Controller
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
+                'combination_id' => $item['combination_id'], // Guarda el combination_id
                 'name_product' => $product->product_name,
                 'price_product' => $product->product_price,
                 'subtotal' => $subtotal,

@@ -60,7 +60,6 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
         // Validar los datos de entrada
         $request->validate([
             'product_name' => 'required|string|max:255',
@@ -132,13 +131,6 @@ class ProductController extends Controller
             }
         }
 
-        // Crear el stock del producto
-        Stock::create([
-            'quantity' => $request->quantity,
-            'product_id' => $product->id,
-            'store_id' => $request->store_id,
-        ]);
-
         // Generar combinaciones de valores de atributos
         if (!empty($attributeValueMap)) {
             // Generar combinaciones de valores de atributos
@@ -177,6 +169,13 @@ class ProductController extends Controller
                     'combination_id' => $combinationModel->id, // Relacionar el stock con la combinación
                 ]);
             }
+        } else {
+            // Crear el stock del producto solo si no hay combinaciones
+            Stock::create([
+                'quantity' => $request->quantity,
+                'product_id' => $product->id,
+                'store_id' => $request->store_id,
+            ]);
         }
 
         return to_route('products.edit', $product->slug)->with('success', 'Producto creado con éxito.');
@@ -263,7 +262,6 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        // dd($request->all());
         // Validar los datos de entrada
         $request->validate([
             'product_name' => 'required|string|max:255',
@@ -280,6 +278,7 @@ class ProductController extends Controller
             'attribute_values.*.*' => 'nullable|string|max:255',
             'product_barcode' => 'nullable|numeric',
             'product_sku' => 'nullable',
+            'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
         ]);
 
         // Extraer los datos del producto
@@ -342,7 +341,10 @@ class ProductController extends Controller
         // Eliminar atributos que no están en la solicitud
         foreach ($existingAttributes as $existingAttribute) {
             if (!in_array($existingAttribute->attribute_name, $request->attribute_names)) {
-                $existingAttribute->delete();
+                // Solo eliminar si no hay valores asociados
+                if ($existingAttribute->attribute_values->isEmpty()) {
+                    $existingAttribute->delete();
+                }
             }
         }
 
@@ -381,10 +383,10 @@ class ProductController extends Controller
                     [
                         'combination_id' => $combinationModel->id,
                         'product_id' => $product->id,
+                        'store_id' => $request->store_id, // Asegúrate de que el stock esté relacionado con la tienda
                     ],
                     [
                         'quantity' => $stockQuantity,
-                        'store_id' => $request->store_id, // Asumiendo que el stock está relacionado con una tienda
                     ]
                 );
             }
@@ -466,63 +468,63 @@ class ProductController extends Controller
     }
 
 
-public function duplicate($product)
-{
-    // Obtener el producto original con todas sus relaciones
-    $originalProduct = Product::with([
-        'categories',
-        'stocks',
-        'combinations.combinationAttributeValue.attributeValue',
-        'media'
-    ])->findOrFail($product);
+    public function duplicate($product)
+    {
+        // Obtener el producto original con todas sus relaciones
+        $originalProduct = Product::with([
+            'categories',
+            'stocks',
+            'combinations.combinationAttributeValue.attributeValue',
+            'media'
+        ])->findOrFail($product);
 
-    // Crear una copia del producto
-    $newProduct = $originalProduct->replicate();
-    $newProduct->product_name = $originalProduct->product_name . ' (Copia)';
-    $newProduct->slug = null; // Asegúrate de que el slug sea único
-    $newProduct->save();
+        // Crear una copia del producto
+        $newProduct = $originalProduct->replicate();
+        $newProduct->product_name = $originalProduct->product_name . ' (Copia)';
+        $newProduct->slug = null; // Asegúrate de que el slug sea único
+        $newProduct->save();
 
-    // Duplicar las categorías asociadas
-    $newProduct->categories()->attach($originalProduct->categories->pluck('id'));
+        // Duplicar las categorías asociadas
+        $newProduct->categories()->attach($originalProduct->categories->pluck('id'));
 
-    // Duplicar los stocks que no están asociados a combinaciones
-    foreach ($originalProduct->stocks as $stock) {
-        if ($stock->combination_id === null) {
-            $newStock = $stock->replicate();
-            $newStock->product_id = $newProduct->id;
-            $newStock->save();
-        }
-    }
-
-    // Duplicar las combinaciones y sus valores de atributos
-    foreach ($originalProduct->combinations as $combination) {
-        $newCombination = $combination->replicate();
-        $newCombination->product_id = $newProduct->id;
-        $newCombination->save();
-
-        foreach ($combination->combinationAttributeValue as $combinationAttributeValue) {
-            $newCombinationAttributeValue = $combinationAttributeValue->replicate();
-            $newCombinationAttributeValue->combination_id = $newCombination->id;
-            $newCombinationAttributeValue->save();
+        // Duplicar los stocks que no están asociados a combinaciones
+        foreach ($originalProduct->stocks as $stock) {
+            if ($stock->combination_id === null) {
+                $newStock = $stock->replicate();
+                $newStock->product_id = $newProduct->id;
+                $newStock->save();
+            }
         }
 
-        // Duplicar el stock de la combinación
-        $originalStock = $originalProduct->stocks->where('combination_id', $combination->id)->first();
-        if ($originalStock) {
-            $newStock = $originalStock->replicate();
-            $newStock->product_id = $newProduct->id;
-            $newStock->combination_id = $newCombination->id;
-            $newStock->save();
+        // Duplicar las combinaciones y sus valores de atributos
+        foreach ($originalProduct->combinations as $combination) {
+            $newCombination = $combination->replicate();
+            $newCombination->product_id = $newProduct->id;
+            $newCombination->save();
+
+            foreach ($combination->combinationAttributeValue as $combinationAttributeValue) {
+                $newCombinationAttributeValue = $combinationAttributeValue->replicate();
+                $newCombinationAttributeValue->combination_id = $newCombination->id;
+                $newCombinationAttributeValue->save();
+            }
+
+            // Duplicar el stock de la combinación
+            $originalStock = $originalProduct->stocks->where('combination_id', $combination->id)->first();
+            if ($originalStock) {
+                $newStock = $originalStock->replicate();
+                $newStock->product_id = $newProduct->id;
+                $newStock->combination_id = $newCombination->id;
+                $newStock->save();
+            }
         }
-    }
 
-    // Duplicar las imágenes asociadas
-    foreach ($originalProduct->getMedia('products') as $mediaItem) {
-        $newProduct->addMedia($mediaItem->getPath())
-            ->preservingOriginal()
-            ->toMediaCollection('products');
-    }
+        // Duplicar las imágenes asociadas
+        foreach ($originalProduct->getMedia('products') as $mediaItem) {
+            $newProduct->addMedia($mediaItem->getPath())
+                ->preservingOriginal()
+                ->toMediaCollection('products');
+        }
 
-    return to_route('products.edit', $newProduct->slug)->with('success', 'Producto duplicado con éxito.');
-}
+        return to_route('products.edit', $newProduct->slug)->with('success', 'Producto duplicado con éxito.');
+    }
 }

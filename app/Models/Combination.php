@@ -14,12 +14,18 @@ class Combination extends Model
     ];
 
     public function combinationAttributeValue()
-{
-    return $this->hasMany(CombinationAttributeValue::class);
-}
+    {
+        return $this->hasMany(CombinationAttributeValue::class);
+    }
 
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    // Relación inversa con OrderItem
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'combination_id');
     }
 }
