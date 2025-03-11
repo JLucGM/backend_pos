@@ -20,6 +20,7 @@ return new class extends Migration
             // $table->string('tax'); 
             $table->foreignId('order_id')->nullable()->constrained();
             $table->foreignId('product_id')->nullable()->constrained();
+            $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade'); //id del producto
             $table->timestamps();
         });
     }
