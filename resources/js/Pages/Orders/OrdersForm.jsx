@@ -13,6 +13,7 @@ import {
     TableHeader,
     TableRow,
   } from "@/components/ui/table"
+import { Separator } from '@/Components/ui/separator';
   
 
 export default function OrdersForm({ data, orders = "", paymentMethods, setData, errors, isDisabled = false }) {
@@ -114,12 +115,14 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                             {orders.order_items.map(detail => (
                                 <TableRow key={detail.id}>
                                     <TableCell className="capitalize flex flex-col">
+                                        <p className='font-bold'>
                                         {detail.name_product}
+                                        </p>
                                         {detail.combination ? (
                                             detail.combination.attribute_values && detail.combination.attribute_values.length > 0 ? (
                                                 detail.combination.attribute_values.map(attrValue => (
-                                                    <div className='flex flex-col' key={attrValue.id}>
-                                                        <span className="font-bold">
+                                                    <div className='flex flex-col mt-2' key={attrValue.id}>
+                                                        <span className="font-semibold">
                                                             {attrValue.attribute_value.attribute.attribute_name}
                                                         </span>
                                                         {attrValue.attribute_value.attribute_value_name}  {/* Mostrar el nombre del atributo y su valor */}
@@ -129,7 +132,7 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                                                 'Sin atributos' // Mensaje si no hay atributos
                                             )
                                         ) : (
-                                            'Sin combinación' // Mensaje si no hay combinación
+                                            null // Mensaje si no hay combinación
                                         )}
                                     </TableCell>
                                     <TableCell>{detail.quantity}</TableCell>

@@ -6,6 +6,7 @@ import { Link } from '@inertiajs/react';
 import { Popover, PopoverButton, PopoverPanel, Select } from '@headlessui/react';
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, MagnifyingGlassIcon, MinusIcon, PencilSquareIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from './ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 // import { PDFDownloadLink } from '@react-pdf/renderer';
 // import PDFDocuments from './PDF/PDFDocuments';
 
@@ -56,18 +57,18 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                 />
             </div>
 
-            <table className="w-full  border-collapse border text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 hover:border-collapse my-2">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+            <Table className="my-4">
+                <TableHeader className="">
                     {
                         table.getHeaderGroups().map(headerGroup => (
-                            <tr key={headerGroup.id}>
+                            <TableRow key={headerGroup.id}>
                                 {
                                     headerGroup.headers.map(header => (
-                                        <th key={header.id}
-                                            className="cursor-pointer border-slate-300 border px-6 py-3 "
+                                        <TableHead key={header.id}
+                                            className="cursor-pointer px-6 py-3 "
                                             onClick={header.column.getToggleSortingHandler()}
                                         >
-                                            <span className="flex items-center">
+                                            <div className="flex items-center">
                                                 {header.column.columnDef.header}
                                                 {{
                                                     'asc': <ChevronUpIcon className=" size-4" />,
@@ -76,38 +77,35 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                                                 [
                                                     header.column.getIsSorted() ?? null
                                                 ]}
-                                            </span>
+                                            </div>
 
-                                        </th>
+                                        </TableHead>
                                     ))
                                 }
                                 {(hasPermission(editPermission) || hasPermission(deletePermission)) && (
-
-                                    <th key="acciones" className="border-slate-300 border px-6 py-3 w-20">
+                                    <TableHead key="acciones" className=" px-6 py-3 w-20">
                                         Acciones
-                                    </th>
+                                    </TableHead>
                                 )}
-                            </tr>
+                            </TableRow>
                         ))
                     }
-                </thead>
+                </TableHeader>
 
-                <tbody>
+                <TableBody>
                     {
                         table.getRowModel().rows?.map((row) => (
                             <React.Fragment key={row.original.id}>
-                                <tr className="bg-white border dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-900">
-
+                                <TableRow>
                                     {
                                         row.getVisibleCells().map((cell, index) => (
-                                            <td key={index} className="capitalize  border-slate-200 px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            <TableCell key={index} className="capitalize px-6 py-4">
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </td>
+                                            </TableCell>
                                         ))
                                     }
                                     {(hasPermission(editPermission) || hasPermission(deletePermission)) && (
-
-                                        <td key="acciones" className="flex justify-end space-x-4 capitalize border-slate-200 px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                        <TableCell key="acciones" className="flex justify-end space-x-4 capitalize border-slate-200s px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                             {expandedColumn.expanded && (
                                                 <Button
                                                     className="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
@@ -171,23 +169,23 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                                                     )}
                                                 </PopoverPanel>
                                             </Popover>
-                                        </td>
+                                        </TableCell>
                                     )}
-                                </tr>
+                                </TableRow>
                                 {
                                     row.getIsExpanded() && (
-                                        <tr key={`expanded-${row.original.id}`}>
-                                            <td colSpan={row.getVisibleCells().length + 1} className="p-4">
+                                        <TableRow key={`expanded-${row.original.id}`}>
+                                            <TableCell colSpan={row.getVisibleCells().length + 1} className="p-4">
                                                 {columns.find((column) => column.accessorKey === 'id').expanded(row)}
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     )
                                 }
                             </React.Fragment>
                         ))
                     }
-                </tbody>
-            </table>
+                </TableBody>
+            </Table>
 
             <div className="flex justify-between ">
                 <Select
@@ -198,7 +196,6 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                     }}
                 >
                     {[5, 10, 20, 30].map((pageSize) => (
-
                         <option key={pageSize} value={pageSize}>
                             {pageSize}
                         </option>
@@ -228,7 +225,7 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                         />
                     </Button>
 
-                    <span className='flex items-center mx-1'>
+                    <div className='flex items-center mx-1'>
                         <TextInput
                             min={1}
                             max={table.getPageCount()}
@@ -240,9 +237,8 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                             }}
                             className={'w-16 border'}
                         />
-                        <span className='w-16 ml-1'>of {table.getPageCount()}</span>
-                    </span>
-
+                        <div className='w-16 ml-1'>of {table.getPageCount()}</div>
+                    </div>
 
                     <Button
                         variant="ghost"
@@ -267,8 +263,6 @@ export default function DataTable({ data, columns, routeEdit = null, routeDestro
                     </Button>
                 </div>
             </div>
-
-
 
         </>
     );

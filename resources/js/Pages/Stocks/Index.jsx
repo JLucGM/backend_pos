@@ -25,7 +25,7 @@ export default function Index({ stock, permission }) {
     //         },
     //     },
     // ];
-    console.log(stock)
+    // console.log(stock)
 
     return (
         <AuthenticatedLayout

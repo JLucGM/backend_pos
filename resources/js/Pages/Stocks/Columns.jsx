@@ -19,7 +19,7 @@ export const StocksColumns = [
                 <div className="">
                     <Link
                         href={route('products.edit', product.slug)}
-                        buttonVariants={{ variant: 'link' }}
+                        // buttonVariants={{ variant: 'link' }}
                     >
                         {product.product_name}
                     </Link>
