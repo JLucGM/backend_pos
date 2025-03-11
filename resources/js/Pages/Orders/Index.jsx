@@ -8,8 +8,6 @@ import { Store } from 'lucide-react';
 
 export default function Index({ orders, permission }) {
 
-    // console.log(orders)
-    // let [isOpen, setIsOpen] = useState(false)
     // const { data, setData, errors, post } = useForm({
     //     country_name: "",
     // });
@@ -30,15 +28,6 @@ export default function Index({ orders, permission }) {
     //     },
     // ];
 
-    // const submit = (e) => {
-    //     e.preventDefault();
-    //     post(route('orders.store'))
-    //     // console.log(data)
-    //     setData({
-    //         country_name: "",
-    //     });
-    // }
-
     return (
         <AuthenticatedLayout
             header={
@@ -46,12 +35,6 @@ export default function Index({ orders, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Pedidos
                     </h2>
-                    {/* {permission.some(perm => perm.name === 'admin.orders.create') && (
-                        <Button variant="default" size="sm"
-                            onClick={() => setIsOpen(true)}>
-                            Añadir pais
-                        </Button>
-                    )} */}
                 </div>
             }
         >

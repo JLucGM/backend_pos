@@ -28,4 +28,9 @@ class Combination extends Model
     {
         return $this->hasMany(OrderItem::class, 'combination_id');
     }
+
+    public function attributeValues()
+    {
+        return $this->hasMany(CombinationAttributeValue::class);
+    }
 }

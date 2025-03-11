@@ -4,11 +4,10 @@ import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import OrdersForm from './OrdersForm';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
-import DivSection from '@/Components/ui/div-section';
 import { Badge } from '@/Components/ui/badge';
 
 export default function Edit({ orders, paymentMethods }) {
-    console.log(orders)
+
     const initialValues = {
         status: orders.status,
         total: orders.total,
@@ -80,10 +79,7 @@ export default function Edit({ orders, paymentMethods }) {
                 <div className=" overflow-hidden">
                     <div className=" text-gray-900 dark:text-gray-100">
                         <form onSubmit={submit} className='space-y-4'>
-
                             <div className="grid grid-cols-1 gap-4">
-                                {/* <DivSection> */}
-
                                     <OrdersForm
                                         data={data}
                                         orders={orders}
@@ -91,10 +87,7 @@ export default function Edit({ orders, paymentMethods }) {
                                         setData={setData}
                                         errors={errors}
                                     />
-                                {/* </DivSection> */}
                             </div>
-
-
 
                             <div className="flex justify-end p-2.5">
                                 <Button

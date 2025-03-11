@@ -4,6 +4,16 @@ import TextInput from '@/Components/TextInput';
 import DivSection from '@/Components/ui/div-section';
 import { customStyles } from '@/hooks/custom-select';
 import Select from 'react-select';
+import {
+    Table,
+    TableBody,
+    TableCaption,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from "@/components/ui/table"
+  
 
 export default function OrdersForm({ data, orders = "", paymentMethods, setData, errors, isDisabled = false }) {
 
@@ -30,11 +40,11 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                         <div>
                             <p className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
                                 Pedido recibido</p>
-                                 {formatDate(orders.created_at)}
+                            {formatDate(orders.created_at)}
                             <p className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
                                 Actualizado
                             </p>
-                                 {formatDate(orders.updated_at)}
+                            {formatDate(orders.updated_at)}
                         </div>
 
                         <div>
@@ -90,34 +100,53 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                     </DivSection>
                 </div>
                 <DivSection className='col-span-full'>
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {orders.order_items.map(detail => (
-                                    <tr key={detail.id}>
-                                        <td className="capitalize px-6 py-4 whitespace-nowrap">{detail.name_product}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">{detail.quantity}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">${detail.price_product}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">${detail.subtotal}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colSpan="3" className="px-6 py-4 text-right font-bold">Total</td>
-                                    <td className="px-6 py-4 whitespace-nowrap font-bold">
-                                        {orders.total}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                    <Table>
+                        <TableCaption>Detalles de la Orden</TableCaption>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Producto</TableHead>
+                                <TableHead>Cantidad</TableHead>
+                                <TableHead>Precio</TableHead>
+                                <TableHead>Subtotal</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {orders.order_items.map(detail => (
+                                <TableRow key={detail.id}>
+                                    <TableCell className="capitalize flex flex-col">
+                                        {detail.name_product}
+                                        {detail.combination ? (
+                                            detail.combination.attribute_values && detail.combination.attribute_values.length > 0 ? (
+                                                detail.combination.attribute_values.map(attrValue => (
+                                                    <div className='flex flex-col' key={attrValue.id}>
+                                                        <span className="font-bold">
+                                                            {attrValue.attribute_value.attribute.attribute_name}
+                                                        </span>
+                                                        {attrValue.attribute_value.attribute_value_name}  {/* Mostrar el nombre del atributo y su valor */}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                'Sin atributos' // Mensaje si no hay atributos
+                                            )
+                                        ) : (
+                                            'Sin combinación' // Mensaje si no hay combinación
+                                        )}
+                                    </TableCell>
+                                    <TableCell>{detail.quantity}</TableCell>
+                                    <TableCell>${detail.price_product}</TableCell>
+                                    <TableCell>${detail.subtotal}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                        <tfoot>
+                            <TableRow>
+                                <TableCell colSpan="3" className="text-right font-bold">Total</TableCell>
+                                <TableCell className="font-bold">
+                                    {orders.total}
+                                </TableCell>
+                            </TableRow>
+                        </tfoot>
+                    </Table>
                 </DivSection>
             </div>
 
