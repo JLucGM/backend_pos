@@ -9,10 +9,12 @@ export default function Create({ taxes, categories, stores }) {
     const { data, setData, errors, post, processing } = useForm({
         product_name: "",
         product_description: "",
-        product_price: "",
+        product_price: "0",
         product_price_discount: "",
         product_sku: "",
         product_barcode: "",
+        barcodes: {}, // Nuevo campo para almacenar códigos de barras por combinación
+    skus: {}, // Nuevo campo para almacenar SKUs por combinación
         status: 0,
         product_status_pos: 0,
         categories: categories.length > 0 ? [categories[0].id] : [],
@@ -26,9 +28,10 @@ export default function Create({ taxes, categories, stores }) {
         stocks: {},
         images: []
     });
+
     const submit = (e) => {
         e.preventDefault();
-        // console.log(data); // Verifica el contenido de data aquí
+        console.log(data); // Verifica el contenido de data aquí
         post(route('products.store'), {
             onSuccess: () => {
                 toast("Producto creado con éxito.");

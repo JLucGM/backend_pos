@@ -32,13 +32,13 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
     const initialValues = {
         product_name: product.product_name,
         product_description: product.product_description,
-        product_price: product.product_price,
+        product_price: product.product_price || "0",
         product_price_discount: product.product_price_discount,
         tax_id: product.tax_id,
         status: product.status,
         product_status_pos: product.product_status_pos,
-        product_sku: product.product_sku,
-        product_barcode: product.product_barcode,
+        product_sku: (product.stocks[0].combination_id == null) ? product.stocks[0].product_sku : '', // Asegúrate de que este valor se asigne
+        product_barcode: (product.stocks[0].combination_id == null) ? product.stocks[0].product_barcode : '', // Asegúrate de que este valor se asigne
         categories: selectedCategories,
         quantity: (product.stocks && product.stocks.length > 0) ? product.stocks[0].quantity : 0,
         store_id: (product.stocks && product.stocks.length > 0) ? product.stocks[0].store_id : null,
@@ -46,10 +46,14 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
         attribute_values: Object.values(attributeMap),
         prices: combinationsWithPrices,
         stocks: {}, // Inicializa stocks como un objeto vacío
+        barcodes: {}, // Nuevo campo para almacenar códigos de barras por combinación
+        skus: {}, // Nuevo campo para almacenar SKUs por combinación
     };
     // Asigna el stock correspondiente
     for (const combination in combinationsWithPrices) {
         initialValues.stocks[combination] = combinationsWithPrices[combination].stock || 0; // Asigna el stock correspondiente
+        initialValues.barcodes[combination] = combinationsWithPrices[combination].product_barcode || ''; // Asigna el código de barras correspondiente
+        initialValues.skus[combination] = combinationsWithPrices[combination].product_sku || ''; // Asigna el SKU correspondiente
     }
 
     console.log(initialValues.stocks)
@@ -101,16 +105,16 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                     </div>
 
                     <div className="">
-                    <Button variant="ghost" onClick={handleDuplicate} >
-                        Duplicar
-                    </Button>
+                        <Button variant="ghost" onClick={handleDuplicate} >
+                            Duplicar
+                        </Button>
 
-                    <Link
-                        className={buttonVariants({ variant: "outlineDestructive" })}
-                        href={route('products.destroy', [product])} method='delete' as="button">
-                        <TrashIcon className='size-6' />
-                        Eliminar producto
-                    </Link>
+                        <Link
+                            className={buttonVariants({ variant: "outlineDestructive" })}
+                            href={route('products.destroy', [product])} method='delete' as="button">
+                            <TrashIcon className='size-6' />
+                            Eliminar producto
+                        </Link>
                     </div>
                 </div>
             }

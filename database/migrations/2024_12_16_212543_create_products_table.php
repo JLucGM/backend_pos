@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('slug');
             $table->text('product_description')->nullable();
             $table->string('product_price');
-            $table->integer('product_barcode')->nullable();
-            $table->string('product_sku')->nullable();
+            // $table->integer('product_barcode')->nullable();
+            // $table->string('product_sku')->nullable();
             $table->string('product_price_discount')->nullable();
             $table->tinyInteger('status')->default(1);
             $table->tinyInteger('product_status_pos')->default(0);

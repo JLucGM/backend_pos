@@ -77,6 +77,8 @@ class ProductController extends Controller
             'stocks' => 'nullable|array', // Asegúrate de validar el stock
             'quantity' => 'required|integer|min:0',
             'store_id' => 'required|exists:stores,id',
+            'product_barcode' => 'nullable|string|max:255', // Validación para el barcode
+            'product_sku' => 'nullable|string|max:255', // Validación para el SKU
         ]);
 
         // Crear el producto
@@ -87,22 +89,19 @@ class ProductController extends Controller
             'product_price_discount',
             'status',
             'tax_id',
-            'quantity',
-            'store_id',
             'product_status_pos',
-            'product_sku',
-            'product_barcode',
         ));
 
+        // Asociar las categorías al producto
+        $product->categories()->attach($request->categories);
+
+        // Manejar la carga de imágenes
         if ($request->hasFile('images')) {
             $product->addMultipleMediaFromRequest(['images'])
                 ->each(function ($fileAdder) {
                     $fileAdder->toMediaCollection('products');
                 });
         }
-
-        // Asociar las categorías al producto
-        $product->categories()->attach($request->categories);
 
         // Crear atributos y sus valores
         $attributeValueMap = []; // Mapa para almacenar los IDs de los valores de atributos organizados por atributo
@@ -150,6 +149,8 @@ class ProductController extends Controller
                 $combinationModel = Combination::create([
                     'product_id' => $product->id,
                     'combination_price' => $price,
+                    // 'product_barcode' => $request->barcodes[$combinationKey] ?? null, // Guardar en combinaciones
+                    // 'product_sku' => $request->skus[$combinationKey] ?? null, // Guardar en combinaciones
                 ]);
 
                 // Guardar los valores de atributos de la combinación
@@ -167,14 +168,18 @@ class ProductController extends Controller
                     'product_id' => $product->id,
                     'store_id' => $request->store_id,
                     'combination_id' => $combinationModel->id, // Relacionar el stock con la combinación
+                    'product_barcode' => $request->barcodes[$combinationKey] ?? null, // Guardar en stock
+                    'product_sku' => $request->skus[$combinationKey] ?? null, // Guardar en stock
                 ]);
             }
         } else {
-            // Crear el stock del producto solo si no hay combinaciones
+            // Si no hay combinaciones, crear un stock para el producto
             Stock::create([
                 'quantity' => $request->quantity,
                 'product_id' => $product->id,
                 'store_id' => $request->store_id,
+                'product_barcode' => $request->product_barcode, // Guardar el barcode en stock
+                'product_sku' => $request->product_sku, // Guardar el SKU en stock
             ]);
         }
 
@@ -230,6 +235,8 @@ class ProductController extends Controller
             'media'
         );
 
+        // dd($product);
+
         // Obtener la URL de la primera imagen de la colección 'products'
         $product->image_url = $product->getFirstMediaUrl('products'); // Asegúrate de que 'products' sea el nombre de la colección
 
@@ -244,11 +251,11 @@ class ProductController extends Controller
                 $combination->combinationAttributeValue->pluck('attributeValue.attribute_value_name')->join(', ') => [
                     'price' => $combination->combination_price,
                     'stock' => $stockQuantity,
+                    'product_barcode' => $stock ? $stock->product_barcode : '', // Obtener el barcode
+                    'product_sku' => $stock ? $stock->product_sku : '', // Obtener el SKU
                 ]
             ];
         });
-
-        // dd($combinationsWithPrices);
 
         $taxes = Tax::all();
         $categories = Category::all();
@@ -276,8 +283,6 @@ class ProductController extends Controller
             'attribute_names.*' => 'nullable|string|max:255',
             'attribute_values' => 'nullable|array',
             'attribute_values.*.*' => 'nullable|string|max:255',
-            'product_barcode' => 'nullable|numeric',
-            'product_sku' => 'nullable',
             'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
         ]);
 
@@ -289,9 +294,7 @@ class ProductController extends Controller
             'product_price_discount',
             'status',
             'tax_id',
-            'product_status_pos',
-            'product_sku',
-            'product_barcode',
+            'product_status_pos'
         );
 
         // Actualizar el producto
@@ -367,6 +370,8 @@ class ProductController extends Controller
                 $combinationModel = Combination::create([
                     'product_id' => $product->id,
                     'combination_price' => $price,
+                    // 'product_barcode' => $request->barcodes[$combinationKey] ?? null, // Guardar el barcode
+                    // 'product_sku' => $request->skus[$combinationKey] ?? null, // Guardar el SKU
                 ]);
 
                 // Guardar los valores de atributos de la combinación
@@ -387,9 +392,25 @@ class ProductController extends Controller
                     ],
                     [
                         'quantity' => $stockQuantity,
+                        'product_barcode' => $request->barcodes[$combinationKey] ?? null, // Guardar el barcode en stock
+                        'product_sku' => $request->skus[$combinationKey] ?? null, // Guardar el SKU en stock
                     ]
                 );
             }
+        } else {
+            // Si no hay combinaciones, crear un stock para el producto
+            Stock::updateOrCreate(
+                [
+                    'product_id' => $product->id,
+                    'store_id' => $request->store_id, // Asegúrate de que el stock esté relacionado con la tienda
+                    'combination_id' => null, // No hay combinación
+                ],
+                [
+                    'quantity' => $request->quantity,
+                    'product_barcode' => $request->product_barcode, // Guardar el barcode en stock
+                    'product_sku' => $request->product_sku, // Guardar el SKU en stock
+                ]
+            );
         }
 
         if ($request->hasFile('images')) {
@@ -449,7 +470,11 @@ class ProductController extends Controller
             $product->delete();
 
             // 5. Eliminar atributos y valores que no están en uso
-            $attributeValues = AttributeValue::whereIn('id', $combinations->pluck('combinationAttributeValue.*.attribute_value_id'))->get();
+            // $attributeValues = AttributeValue::whereIn('id', $combinations->pluck('combinationAttributeValue.*.attribute_value_id'))->get();
+
+            $attributeValues = AttributeValue::whereIn('id', $combinations->flatMap(function ($combination) {
+                return $combination->combinationAttributeValue->pluck('attribute_value_id');
+            }))->get();
 
             foreach ($attributeValues as $attributeValue) {
                 // Eliminar el valor de atributo

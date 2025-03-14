@@ -18,7 +18,7 @@ import Checkbox from '@/Components/Checkbox';
 import TextAreaRich from '@/Components/ui/TextAreaRich';
 
 export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", product = "", setData, errors }) {
-    
+
     // console.log(data)
     const animatedComponents = makeAnimated(); //Animacion de multiselect
     const textAreaRef = useRef(); // inicializacion de TextAreaRich
@@ -94,27 +94,27 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             const combinations = generateCombinations();
             const newPrices = {};
             const newStocks = {};
-    
+
             const basePrice = parseFloat(data.product_price) || 0;
-    
+
             combinations.forEach(combination => {
                 const key = combination.join(", ");
                 newPrices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
-    
+
                 // Mantener el stock existente si ya existe, de lo contrario inicializar a 0
-                newStocks[key] = stocks[key] ; 
+                newStocks[key] = stocks[key];
             });
-    
+
             // console.log("New Prices:", newPrices);
             // console.log("New Stocks:", newStocks);
             // console.log("Existing Stocks:", stocks);
-    
+
             setPrices(newPrices);
             setStocks(newStocks);
             setData('prices', newPrices); // Actualiza el campo prices en data
             setData('stocks', newStocks); // Actualiza el campo stocks en data
         };
-    
+
         // Solo recalcular si hay cambios en los atributos o valores
         if (data.attribute_names.length > 0 && data.attribute_values.length > 0) {
             calculateCombinations();
@@ -254,6 +254,20 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         setData('attribute_values', newAttributeValues);
     };
 
+    const handleBarcodeChange = (combination, value) => {
+        setData('barcodes', {
+            ...data.barcodes,
+            [combination]: value
+        });
+    };
+
+    const handleSkuChange = (combination, value) => {
+        setData('skus', {
+            ...data.skus,
+            [combination]: value
+        });
+    };
+
     const statusOptions = [
         { value: 0, label: 'Borrador' },
         { value: 1, label: 'Publicar' }
@@ -344,38 +358,37 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     </div>
                 </DivSection>
 
-                <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                    <div>
-                        <InputLabel htmlFor="product_price" value="Precio" />
-                        <TextInput
-                            id="product_price"
-                            type="text"
-                            name="product_price"
-                            value={data.product_price}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('product_price', e.target.value)}
-                        />
-                        <InputError message={errors.product_price} />
-                    </div>
+                {/* {data.attribute_names.length === 0 && data.attribute_values.length === 0 ? ( */}
+                    <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 
-                    <div>
-                        <InputLabel htmlFor="product_price_discount" value="Precio de descuento" />
-                        <TextInput
-                            id="product_price_discount"
-                            type="text"
-                            name="product_price_discount"
-                            value={data.product_price_discount || ''}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('product_price_discount', e.target.value)}
-                        />
-                        <InputError message={errors.product_price_discount} />
-                    </div>
-                    {/* <div className="flex items-center">
+                        <div>
+                            <InputLabel htmlFor="product_price" value="Precio" />
+                            <TextInput
+                                id="product_price"
+                                type="text"
+                                name="product_price"
+                                value={data.product_price}
+                                className="mt-1 block w-full"
+                                onChange={(e) => setData('product_price', e.target.value)}
+                            />
+                            <InputError message={errors.product_price} />
+                        </div>
 
-                        <AlertCircleIcon />
-                        <p className="ms-2 text-gray-500 text-sm">Recuerda colocar el impuesto al producto.</p>
-                    </div> */}
-                </DivSection>
+                        <div>
+                            <InputLabel htmlFor="product_price_discount" value="Precio de descuento" />
+                            <TextInput
+                                id="product_price_discount"
+                                type="text"
+                                name="product_price_discount"
+                                value={data.product_price_discount || ''}
+                                className="mt-1 block w-full"
+                                onChange={(e) => setData('product_price_discount', e.target.value)}
+                            />
+                            <InputError message={errors.product_price_discount} />
+                        </div>
+
+                    </DivSection>
+                {/* ) : null} */}
 
                 <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     <div>
@@ -384,7 +397,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             id="product_sku"
                             type="text"
                             name="product_sku"
-                            value={data.product_sku || ''}
+                            value={data.product_sku || ''} // Asegúrate de que este valor se asigne
                             className="mt-1 block w-full"
                             onChange={(e) => setData('product_sku', e.target.value)}
                         />
@@ -397,7 +410,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             id="product_barcode"
                             type="text"
                             name="product_barcode"
-                            value={data.product_barcode || ''}
+                            value={data.product_barcode || ''} // Asegúrate de que este valor se asigne
                             className="mt-1 block w-full"
                             onChange={(e) => setData('product_barcode', e.target.value)}
                         />
@@ -424,7 +437,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             <p className='font-semibold'>Opciones</p>
                         </div>
                         <div className="p-4">
-                        {data.attribute_names.map((attributeName, index) => (
+                            {data.attribute_names.map((attributeName, index) => (
                                 <div key={index} className="mb-">
                                     <TextInput
                                         type="text"
@@ -454,9 +467,9 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                     </div>
 
                                     <div className="flex justify-between items-center">
-                                    <Button variant="link" type="button" onClick={() => addAttributeValue(index)}>
-                                        Agregar Valor
-                                    </Button>
+                                        <Button variant="link" type="button" onClick={() => addAttributeValue(index)}>
+                                            Agregar Valor
+                                        </Button>
                                         <Button variant="link" type="button" onClick={() => removeAttribute(index)}>
                                             Eliminar opción
                                         </Button>
@@ -483,34 +496,48 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                 <TableRow>
                                     <TableHead className="w-[100px]">Combinaciones</TableHead>
                                     <TableHead className="text-right">Precio</TableHead>
-                                    <TableHead className="text-right">Canto Stock</TableHead> {/* Nueva columna */}
+                                    <TableHead className="text-right">Stock</TableHead>
+                                    <TableHead className="text-right">Código de Barras</TableHead> {/* Nueva columna */}
+                                    <TableHead className="text-right">SKU</TableHead> {/* Nueva columna */}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {Object.entries(data.prices).map(([combination, price]) => (
-                        <TableRow key={combination}>
-                            <TableCell>{combination}</TableCell>
-                            <TableCell>
-                                <TextInput
-                                    type="number"
-                                    value={price || ''}
-                                    onChange={(e) => handlePriceChange(combination, e.target.value)}
-                                />
-                            </TableCell>
-                            <TableCell>
-                                <TextInput
-                                    type="number"
-                                    value={data.stocks[combination] || ''} // Usa directamente data.stocks
-                                    onChange={(e) => handleStockChange(combination, e.target.value)}
-                                />
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                                    <TableRow key={combination}>
+                                        <TableCell>{combination}</TableCell>
+                                        <TableCell>
+                                            <TextInput
+                                                type="number"
+                                                value={price || ''}
+                                                onChange={(e) => handlePriceChange(combination, e.target.value)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextInput
+                                                type="number"
+                                                value={data.stocks[combination] || ''}
+                                                onChange={(e) => handleStockChange(combination, e.target.value)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextInput
+                                                type="text"
+                                                value={data.barcodes[combination] || ''} // Usa directamente data.barcodes
+                                                onChange={(e) => handleBarcodeChange(combination, e.target.value)}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextInput
+                                                type="text"
+                                                value={data.skus[combination] || ''} // Usa directamente data.skus
+                                                onChange={(e) => handleSkuChange(combination, e.target.value)}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
                             </TableBody>
                         </Table>
-                    ) : (
-                        null
-                    )}
+                    ) : null}
 
 
                 </DivSection>
