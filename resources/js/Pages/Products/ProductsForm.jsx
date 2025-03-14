@@ -24,13 +24,16 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
     const textAreaRef = useRef(); // inicializacion de TextAreaRich
     const { delete: deleteImage } = useForm(); // Desestructura la función delete de useForm
     const [stocks, setStocks] = useState({});
+    const [showAttributes, setShowAttributes] = useState(data.attribute_names.length > 0);
+    const [showCombinations, setShowCombinations] = useState(data.attribute_values.length > 0);
+    const [hidePriceFields, setHidePriceFields] = useState(data.attribute_names.length > 0);
+    const [prices, setPrices] = useState({});
 
     const categoryOptions = categories.map(category => ({
         value: category.id,
         label: category.category_name
     }));
 
-    const [prices, setPrices] = useState({});
     // Inicializa el estado de precios con los valores existentes
     useEffect(() => {
         setPrices(combinationsWithPrices);
@@ -45,6 +48,9 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         if (data.attribute_names.length < 3) {
             setData('attribute_names', [...data.attribute_names, ""]);
             setData('attribute_values', [...data.attribute_values, [""]]);
+            setShowAttributes(true); // Mostrar los inputs cuando se agrega un atributo
+            setShowCombinations(true); // Mostrar la lista de combinaciones cuando se agrega un atributo
+            setHidePriceFields(true); // Ocultar los campos de precio y descuento cuando se agrega un atributo
         } else {
             toast("No puedes agregar más de 3 atributos.", {
                 description: "Límite alcanzado.",
@@ -105,10 +111,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                 newStocks[key] = stocks[key];
             });
 
-            // console.log("New Prices:", newPrices);
-            // console.log("New Stocks:", newStocks);
-            // console.log("Existing Stocks:", stocks);
-
             setPrices(newPrices);
             setStocks(newStocks);
             setData('prices', newPrices); // Actualiza el campo prices en data
@@ -159,14 +161,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         });
     };
 
-    // useEffect(() => {
-    //     // Inicializa el estado de stocks con los valores existentes
-    //     const initialStocks = {};
-    //     for (const combination in combinationsWithPrices) {
-    //         initialStocks[combination] = combinationsWithPrices[combination].stock || 0; // Asigna el stock correspondiente
-    //     }
-    //     setStocks(initialStocks);
-    // }, [combinationsWithPrices]);
     useEffect(() => {
         const initialStocks = {};
         for (const combination in combinationsWithPrices) {
@@ -174,25 +168,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         }
         setData('stocks', initialStocks); // Actualiza el campo stocks en data
     }, [combinationsWithPrices]);
-
-    // const handleStockChange = (combination, value) => {
-    //     const numericValue = parseFloat(value);
-    //     if (isNaN(numericValue) || numericValue < 0) {
-    //         toast("Por favor, ingresa un stock válido.", {
-    //             description: "El stock debe ser un número positivo.",
-    //         });
-    //         return;
-    //     }
-
-    //     setStocks(prevStocks => {
-    //         const updatedStocks = {
-    //             ...prevStocks,
-    //             [combination]: numericValue
-    //         };
-    //         setData('stocks', updatedStocks); // Actualiza el campo stocks en data
-    //         return updatedStocks; // Devuelve el nuevo estado
-    //     });
-    // };
 
     const handleStockChange = (combination, value) => {
         const numericValue = parseFloat(value);
@@ -203,15 +178,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             return;
         }
 
-        // Actualiza directamente el objeto de datos
         setData('stocks', {
             ...data.stocks,
             [combination]: numericValue
         });
     };
-
-
-    // const selectedCategories = categoryOptions.filter(option => data.categories.includes(option.value));
 
     const handleDeleteImage = (imageId) => {
         if (confirm("¿Estás seguro de que deseas eliminar esta imagen?")) {
@@ -245,6 +216,31 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
         setData('attribute_names', newAttributes);
         setData('attribute_values', newAttributeValues);
+
+        // Si no hay más atributos, mostrar los campos de precio y descuento
+        if (newAttributes.length === 0) {
+            setHidePriceFields(false);
+            setShowAttributes(false);
+            setShowCombinations(false);
+        } else {
+            // Actualizar combinaciones y precios
+            const combinations = generateCombinations(newAttributes, newAttributeValues);
+            const newPrices = {};
+            const newStocks = {};
+
+            const basePrice = parseFloat(data.product_price) || 0;
+
+            combinations.forEach(combination => {
+                const key = combination.join(", ");
+                newPrices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
+                newStocks[key] = stocks[key] || 0;
+            });
+
+            setPrices(newPrices);
+            setStocks(newStocks);
+            setData('prices', newPrices); // Actualiza el campo prices en data
+            setData('stocks', newStocks); // Actualiza el campo stocks en data
+        }
     };
 
     const removeAttributeValue = (attributeIndex, valueIndex) => {
@@ -358,78 +354,68 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     </div>
                 </DivSection>
 
-                {/* {data.attribute_names.length === 0 && data.attribute_values.length === 0 ? ( */}
-                    <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                {!hidePriceFields && (
+                    <>
+                        <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                            <div>
+                                <InputLabel htmlFor="product_price" value="Precio" />
+                                <TextInput
+                                    id="product_price"
+                                    type="text"
+                                    name="product_price"
+                                    value={data.product_price}
+                                    className="mt-1 block w-full"
+                                    onChange={(e) => setData('product_price', e.target.value)}
+                                />
+                                <InputError message={errors.product_price} />
+                            </div>
 
-                        <div>
-                            <InputLabel htmlFor="product_price" value="Precio" />
-                            <TextInput
-                                id="product_price"
-                                type="text"
-                                name="product_price"
-                                value={data.product_price}
-                                className="mt-1 block w-full"
-                                onChange={(e) => setData('product_price', e.target.value)}
-                            />
-                            <InputError message={errors.product_price} />
-                        </div>
+                            <div>
+                                <InputLabel htmlFor="product_price_discount" value="Precio de descuento" />
+                                <TextInput
+                                    id="product_price_discount"
+                                    type="text"
+                                    name="product_price_discount"
+                                    value={data.product_price_discount || ''}
+                                    className="mt-1 block w-full"
+                                    onChange={(e) => setData('product_price_discount', e.target.value)}
+                                />
+                                <InputError message={errors.product_price_discount} />
+                            </div>
+                        </DivSection>
 
-                        <div>
-                            <InputLabel htmlFor="product_price_discount" value="Precio de descuento" />
-                            <TextInput
-                                id="product_price_discount"
-                                type="text"
-                                name="product_price_discount"
-                                value={data.product_price_discount || ''}
-                                className="mt-1 block w-full"
-                                onChange={(e) => setData('product_price_discount', e.target.value)}
-                            />
-                            <InputError message={errors.product_price_discount} />
-                        </div>
 
-                    </DivSection>
-                {/* ) : null} */}
+                        <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                            <div>
+                                <InputLabel htmlFor="product_sku" value="SKU (Stock Keeping Unit)" />
+                                <TextInput
+                                    id="product_sku"
+                                    type="text"
+                                    name="product_sku"
+                                    value={data.product_sku || ''} // Asegúrate de que este valor se asigne
+                                    className="mt-1 block w-full"
+                                    onChange={(e) => setData('product_sku', e.target.value)}
+                                />
+                                <InputError message={errors.product_sku} />
+                            </div>
 
-                <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                    <div>
-                        <InputLabel htmlFor="product_sku" value="SKU (Stock Keeping Unit)" />
-                        <TextInput
-                            id="product_sku"
-                            type="text"
-                            name="product_sku"
-                            value={data.product_sku || ''} // Asegúrate de que este valor se asigne
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('product_sku', e.target.value)}
-                        />
-                        <InputError message={errors.product_sku} />
-                    </div>
+                            <div>
+                                <InputLabel htmlFor="product_barcode" value="Código de barra (ISBN, UPC, etc.)" />
+                                <TextInput
+                                    id="product_barcode"
+                                    type="text"
+                                    name="product_barcode"
+                                    value={data.product_barcode || ''} // Asegúrate de que este valor se asigne
+                                    className="mt-1 block w-full"
+                                    onChange={(e) => setData('product_barcode', e.target.value)}
+                                />
+                                <InputError message={errors.product_barcode} />
+                            </div>
 
-                    <div>
-                        <InputLabel htmlFor="product_barcode" value="Código de barra (ISBN, UPC, etc.)" />
-                        <TextInput
-                            id="product_barcode"
-                            type="text"
-                            name="product_barcode"
-                            value={data.product_barcode || ''} // Asegúrate de que este valor se asigne
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('product_barcode', e.target.value)}
-                        />
-                        <InputError message={errors.product_barcode} />
-                    </div>
 
-                    <div className="flex items-center mt-4">
-                        <Checkbox
-                            // type="checkbox"
-                            id="product_status_pos"
-                            name="product_status_pos"
-                            checked={data.product_status_pos === 1} // Marca el checkbox si el valor es 1
-                            onChange={(e) => setData('product_status_pos', e.target.checked ? 1 : 0)} // Establece 1 si está marcado, 0 si no
-                            className="mr-2" // Espaciado a la derecha
-                        />
-                        <InputLabel htmlFor="product_status_pos" value="Activar en POS" />
-                    </div>
-                    <InputError message={errors.product_status_pos} className="mt-2" />
-                </DivSection>
+                        </DivSection>
+                    </>
+                )}
 
                 <DivSection className='space-y-4'>
                     <div className="border rounded-xl mb-4">
@@ -437,7 +423,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             <p className='font-semibold'>Opciones</p>
                         </div>
                         <div className="p-4">
-                            {data.attribute_names.map((attributeName, index) => (
+                            {showAttributes && data.attribute_names.map((attributeName, index) => (
                                 <div key={index} className="mb-">
                                     <TextInput
                                         type="text"
@@ -451,7 +437,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                         {/* Renderiza los valores correspondientes a este atributo */}
                                         {Array.isArray(data.attribute_values[index]) && data.attribute_values[index].map((value, valueIndex) => (
                                             <div key={valueIndex} className="mb-2 flex justify-between items-center">
-                                                {/* <InputLabel value="Valor de opciones" /> */}
                                                 <TextInput
                                                     type="text"
                                                     value={value} // Muestra el valor correspondiente
@@ -489,7 +474,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         )}
                     </div>
 
-                    {data.attribute_values.length >= 1 ? (
+                    {showCombinations && data.attribute_values.length >= 1 ? (
                         <Table>
                             <TableCaption>Lista de combinaciones.</TableCaption>
                             <TableHeader className="bg-gray-100">
@@ -538,8 +523,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             </TableBody>
                         </Table>
                     ) : null}
-
-
                 </DivSection>
             </div>
 
@@ -557,6 +540,19 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         />
                         <InputError message={errors.status} className="mt-2" />
                     </div>
+
+                    <div className="flex items-center mt-4">
+                        <Checkbox
+                            // type="checkbox"
+                            id="product_status_pos"
+                            name="product_status_pos"
+                            checked={data.product_status_pos === 1} // Marca el checkbox si el valor es 1
+                            onChange={(e) => setData('product_status_pos', e.target.checked ? 1 : 0)} // Establece 1 si está marcado, 0 si no
+                            className="mr-2" // Espaciado a la derecha
+                        />
+                        <InputLabel htmlFor="product_status_pos" value="Activar en POS" />
+                    </div>
+                    <InputError message={errors.product_status_pos} className="mt-2" />
                 </DivSection>
 
                 <DivSection className='space-y-4'>

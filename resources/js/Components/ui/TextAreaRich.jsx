@@ -15,8 +15,6 @@ const TextAreaRich = forwardRef(({ initialValue = '', onChange, name }, ref) => 
     useImperativeHandle(ref, () => ({
         getValue: () => text,
     }));
-    
-
 
     return (
         <div className='rounded-3xl'>
