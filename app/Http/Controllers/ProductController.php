@@ -303,6 +303,10 @@ class ProductController extends Controller
         // Actualizar las categorías asociadas
         $product->categories()->sync($request->categories);
 
+        // Proporcionar valores predeterminados para attribute_names y attribute_values
+        $attributeNames = $request->input('attribute_names', []);
+        $attributeValues = $request->input('attribute_values', []);
+
         // Primero, eliminar las combinaciones existentes
         foreach ($product->combinations as $combination) {
             // Eliminar los valores de atributos asociados a la combinación
@@ -318,7 +322,7 @@ class ProductController extends Controller
         $attributeValueMap = []; // Mapa para almacenar los IDs de los valores de atributos organizados por atributo
         $attributeValueNames = []; // Mapa para almacenar los nombres de los valores de atributos
 
-        foreach ($request->attribute_names as $index => $attributeName) {
+        foreach ($attributeNames as $index => $attributeName) {
             // Verificar si el atributo ya existe
             $attribute = Attribute::firstOrCreate(
                 ['attribute_name' => $attributeName],
@@ -326,7 +330,7 @@ class ProductController extends Controller
             );
 
             // Crear o actualizar los valores del atributo
-            foreach ($request->attribute_values[$index] as $value) {
+            foreach ($attributeValues[$index] as $value) {
                 if (!empty($value)) {
                     // Verificar si el valor de atributo ya existe
                     $attributeValue = AttributeValue::firstOrCreate(
@@ -343,7 +347,7 @@ class ProductController extends Controller
 
         // Eliminar atributos que no están en la solicitud
         foreach ($existingAttributes as $existingAttribute) {
-            if (!in_array($existingAttribute->attribute_name, $request->attribute_names)) {
+            if (!in_array($existingAttribute->attribute_name, $attributeNames)) {
                 // Solo eliminar si no hay valores asociados
                 if ($existingAttribute->attribute_values->isEmpty()) {
                     $existingAttribute->delete();

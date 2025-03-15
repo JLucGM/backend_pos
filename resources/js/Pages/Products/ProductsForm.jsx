@@ -24,10 +24,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
     const textAreaRef = useRef(); // inicializacion de TextAreaRich
     const { delete: deleteImage } = useForm(); // Desestructura la función delete de useForm
     const [stocks, setStocks] = useState({});
-    const [showAttributes, setShowAttributes] = useState(data.attribute_names.length > 0);
-    const [showCombinations, setShowCombinations] = useState(data.attribute_values.length > 0);
-    const [hidePriceFields, setHidePriceFields] = useState(data.attribute_names.length > 0);
     const [prices, setPrices] = useState({});
+    // const [showAttributes, setShowAttributes] = useState(false);
+    // const [showCombinations, setShowCombinations] = useState(false);
+    // const [hidePriceFields, setHidePriceFields] = useState(false);
+
 
     const categoryOptions = categories.map(category => ({
         value: category.id,
@@ -48,9 +49,9 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         if (data.attribute_names.length < 3) {
             setData('attribute_names', [...data.attribute_names, ""]);
             setData('attribute_values', [...data.attribute_values, [""]]);
-            setShowAttributes(true); // Mostrar los inputs cuando se agrega un atributo
-            setShowCombinations(true); // Mostrar la lista de combinaciones cuando se agrega un atributo
-            setHidePriceFields(true); // Ocultar los campos de precio y descuento cuando se agrega un atributo
+            // setShowAttributes(true); // Mostrar los inputs cuando se agrega un atributo
+            // setShowCombinations(true); // Mostrar la lista de combinaciones cuando se agrega un atributo
+            // setHidePriceFields(true); // Ocultar los campos de precio y descuento cuando se agrega un atributo
         } else {
             toast("No puedes agregar más de 3 atributos.", {
                 description: "Límite alcanzado.",
@@ -218,11 +219,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         setData('attribute_values', newAttributeValues);
 
         // Si no hay más atributos, mostrar los campos de precio y descuento
-        if (newAttributes.length === 0) {
-            setHidePriceFields(false);
-            setShowAttributes(false);
-            setShowCombinations(false);
-        } else {
+        // if (newAttributes.length === 0) {
+        //     setHidePriceFields(false);
+        //     setShowAttributes(false);
+        //     setShowCombinations(false);
+        // } else {
             // Actualizar combinaciones y precios
             const combinations = generateCombinations(newAttributes, newAttributeValues);
             const newPrices = {};
@@ -240,7 +241,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             setStocks(newStocks);
             setData('prices', newPrices); // Actualiza el campo prices en data
             setData('stocks', newStocks); // Actualiza el campo stocks en data
-        }
+        // }
     };
 
     const removeAttributeValue = (attributeIndex, valueIndex) => {
@@ -268,6 +269,10 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         { value: 0, label: 'Borrador' },
         { value: 1, label: 'Publicar' }
     ];
+
+    const calculateTotalStock = () => {
+        return Object.values(data.stocks).reduce((total, stock) => total + (parseFloat(stock) || 0), 0);
+    };
 
     return (
         <>
@@ -354,7 +359,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     </div>
                 </DivSection>
 
-                {!hidePriceFields && (
+                {/* {!hidePriceFields && ( */}
                     <>
                         <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                             <div>
@@ -415,7 +420,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
                         </DivSection>
                     </>
-                )}
+                {/* )} */}
 
                 <DivSection className='space-y-4'>
                     <div className="border rounded-xl mb-4">
@@ -423,7 +428,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             <p className='font-semibold'>Opciones</p>
                         </div>
                         <div className="p-4">
-                            {showAttributes && data.attribute_names.map((attributeName, index) => (
+                            {data.attribute_names.map((attributeName, index) => (
                                 <div key={index} className="mb-">
                                     <TextInput
                                         type="text"
@@ -474,9 +479,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         )}
                     </div>
 
-                    {showCombinations && data.attribute_values.length >= 1 ? (
+                    {data.attribute_values.length >= 1 ? (
                         <Table>
-                            <TableCaption>Lista de combinaciones.</TableCaption>
+                            <TableCaption>
+                                Inventario total en la ubicación de la tienda: {calculateTotalStock()} disponibles
+                            </TableCaption>
                             <TableHeader className="bg-gray-100">
                                 <TableRow>
                                     <TableHead className="w-[100px]">Combinaciones</TableHead>
