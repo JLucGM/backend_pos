@@ -69,15 +69,16 @@ class OrderApiController extends Controller
             }
 
             // Calcular el subtotal
-            $subtotal = $product->product_price * $item['quantity'];
+            $subtotal = $item['price'] * $item['quantity'];
 
             // Crear el item de la orden
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
                 'combination_id' => $item['combination_id'], // Guarda el combination_id
+                'price_product' => $item['price'], // Guarda el combination_id
                 'name_product' => $product->product_name,
-                'price_product' => $product->product_price,
+                // 'price_product' => $product->product_price,
                 'subtotal' => $subtotal,
                 'quantity' => $item['quantity'],
             ]);
