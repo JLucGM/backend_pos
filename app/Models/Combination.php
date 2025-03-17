@@ -33,4 +33,9 @@ class Combination extends Model
     {
         return $this->hasMany(CombinationAttributeValue::class);
     }
+
+public function stocks()
+{
+    return $this->hasMany(Stock::class)->where('quantity', '>', 0);
+}
 }

@@ -12,27 +12,33 @@ class ProductApiController extends Controller
 {
     public function show()
     {
-        $products = Product::with(
+        $products = Product::with([
             'tax',
             'categories',
             'stocks',
-            'combinations',
-            'combinations.combinationAttributeValue', // Cargar valores de atributos de combinaciones
-            'combinations.combinationAttributeValue.attributeValue', // Cargar valores de atributos relacionados
-            'combinations.combinationAttributeValue.attributeValue.attribute', // Cargar atributos relacionados
+            'combinations' => function ($query) {
+                $query->whereHas('stocks', function ($stockQuery) {
+                    $stockQuery->where('quantity', '>', 0); // Solo combinaciones con stock > 0
+                });
+            },
+            'combinations.combinationAttributeValue',
+            'combinations.combinationAttributeValue.attributeValue',
+            'combinations.combinationAttributeValue.attributeValue.attribute',
             'media'
-        )
-        ->where('status', 1)
-        ->where('product_status_pos', 1)
-        ->whereHas('stocks', function ($query) {
-            $query->where('quantity', '>', 0); // Filtrar solo stocks con cantidad mayor a 0
-        })
-        ->get();
-    
+        ])
+            ->where('status', 1)
+            ->where('product_status_pos', 1)
+            ->whereHas('stocks', function ($query) {
+                $query->where('quantity', '>', 0); // Solo productos con stock > 0
+            })
+            ->orWhereHas('combinations.stocks', function ($query) {
+                $query->where('quantity', '>', 0); // O productos con combinaciones con stock > 0
+            })
+            ->get();
+
         return response()->json([
             "message" => "success",
             "products" => $products
         ], Response::HTTP_OK);
     }
-
 }
