@@ -15,8 +15,9 @@ class OrderItem extends Model
         'subtotal',
         'quantity',
         'order_id',
-        'product_id',
-        'combination_id',
+        // 'product_id',
+        // 'combination_id',
+        'product_details'
     ];
 
     public function order()
@@ -24,13 +25,13 @@ class OrderItem extends Model
         return $this->belongsTo(Order::class);
     }
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class, 'product_id');
-    }
+    // public function product()
+    // {
+    //     return $this->belongsTo(Product::class, 'product_id');
+    // }
 
-    public function combination()
-    {
-        return $this->belongsTo(Combination::class, 'combination_id');
-    }
+    // public function combination()
+    // {
+    //     return $this->belongsTo(Combination::class, 'combination_id');
+    // }
 }

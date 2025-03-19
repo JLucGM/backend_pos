@@ -7,7 +7,7 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/Components/ui/badge';
 
 export default function Edit({ orders, paymentMethods }) {
-
+console.log(orders)
     const initialValues = {
         status: orders.status,
         total: orders.total,

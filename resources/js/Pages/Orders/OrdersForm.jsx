@@ -12,9 +12,9 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-  } from "@/components/ui/table"
+} from "@/components/ui/table"
 import { Separator } from '@/Components/ui/separator';
-  
+
 
 export default function OrdersForm({ data, orders = "", paymentMethods, setData, errors, isDisabled = false }) {
 
@@ -66,7 +66,7 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                                 id="direction_delivery"
                                 type="text"
                                 name="direction_delivery"
-                                value={data.direction_delivery}
+                                value={data.direction_delivery || null}
                                 className="mt-1 block w-full"
                                 onChange={(e) => setData('direction_delivery', e.target.value)}
                             />
@@ -112,40 +112,42 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {orders.order_items.map(detail => (
-                                <TableRow key={detail.id}>
-                                    <TableCell className="capitalize flex flex-col">
-                                        <p className='font-bold'>
-                                        {detail.name_product}
-                                        </p>
-                                        {detail.combination ? (
-                                            detail.combination.attribute_values && detail.combination.attribute_values.length > 0 ? (
-                                                detail.combination.attribute_values.map(attrValue => (
-                                                    <div className='flex flex-col mt-2' key={attrValue.id}>
-                                                        <span className="font-semibold">
-                                                            {attrValue.attribute_value.attribute.attribute_name}
-                                                        </span>
-                                                        {attrValue.attribute_value.attribute_value_name}  {/* Mostrar el nombre del atributo y su valor */}
+                            {orders.order_items && orders.order_items.length > 0 ? (
+                                orders.order_items.map(detail => (
+                                    <TableRow key={detail.id}>
+                                        <TableCell className="capitalize flex flex-col">
+                                            <p className='font-bold'>
+                                                {detail.name_product}
+                                            </p>
+                                            {/* Mostrar los detalles del producto desde product_details */}
+                                            {detail.product_details ? (
+                                                Object.entries(JSON.parse(detail.product_details)).map(([key, value]) => (
+                                                    <div className='flex flex-col mt-2' key={key}>
+                                                        <span className="font-semibold">{key}:</span> {value}
                                                     </div>
                                                 ))
                                             ) : (
-                                                'Sin atributos' // Mensaje si no hay atributos
-                                            )
-                                        ) : (
-                                            null // Mensaje si no hay combinación
-                                        )}
+                                                null // Mensaje si no hay detalles
+                                            )}
+                                        </TableCell>
+                                        <TableCell>{detail.quantity}</TableCell>
+                                        <TableCell>${detail.price_product}</TableCell>
+                                        <TableCell>${detail.subtotal}</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan="4" className="text-center">
+                                        No hay detalles de la orden disponibles.
                                     </TableCell>
-                                    <TableCell>{detail.quantity}</TableCell>
-                                    <TableCell>${detail.price_product}</TableCell>
-                                    <TableCell>${detail.subtotal}</TableCell>
                                 </TableRow>
-                            ))}
+                            )}
                         </TableBody>
                         <tfoot>
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-bold">Total</TableCell>
                                 <TableCell className="font-bold">
-                                    {orders.total}
+                                    ${orders.total}
                                 </TableCell>
                             </TableRow>
                         </tfoot>

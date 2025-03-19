@@ -14,7 +14,6 @@ class OrderApiController extends Controller
 {
     public function store(Request $request)
     {
-        // Validar la solicitud
         $validator = Validator::make($request->all(), [
             'client_id' => 'required|exists:clients,id',
             'payments_method_id' => 'required|exists:payments_methods,id',
@@ -23,14 +22,15 @@ class OrderApiController extends Controller
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
-            'items.*.combination_id' => 'nullable|exists:combinations,id', // Asegúrate de incluir esto
+            'items.*.combination_id' => 'nullable|exists:combinations,id',
+            'items.*.price' => 'required|numeric',
+            'items.*.details' => 'nullable|array' // Validar que los detalles sean un arreglo
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        // Crear la orden
         $order = Order::create([
             'status' => 'Finalizado',
             'total' => $request->total,
@@ -39,7 +39,6 @@ class OrderApiController extends Controller
             'payments_method_id' => $request->payments_method_id,
         ]);
 
-        // Crear los items de la orden
         foreach ($request->items as $item) {
             $product = Product::find($item['product_id']);
             if (!$product) {
@@ -48,44 +47,38 @@ class OrderApiController extends Controller
 
             $combination = null;
             if (isset($item['combination_id'])) {
-                $combination = Combination::find($item['combination_id']); // Buscar la combinación
+                $combination = Combination::find($item['combination_id']);
                 if (!$combination) {
                     return response()->json(['error' => 'Combination not found'], 404);
                 }
             }
 
-            // Obtener el stock del producto o de su combinación, si existe
+            // Verificar el stock
             if ($combination) {
-                // Si hay combinación, buscar el stock de la combinación
                 $stock = $product->stocks()->where('combination_id', $combination->id)->first();
             } else {
-                // Si no hay combinación, buscar el stock del producto
                 $stock = $product->stocks()->first();
             }
 
-            // Verificar si hay stock y si es suficiente
             if (!$stock || $stock->quantity < $item['quantity']) {
                 return response()->json(['error' => 'Not enough stock for product ' . $product->product_name], 400);
             }
 
-            // Calcular el subtotal
             $subtotal = $item['price'] * $item['quantity'];
 
-            // Crear el item de la orden
+            // Crear el registro en order_items sin product_id ni combination_id
             OrderItem::create([
                 'order_id' => $order->id,
-                'product_id' => $item['product_id'],
-                'combination_id' => $item['combination_id'], // Guarda el combination_id
-                'price_product' => $item['price'], // Guarda el combination_id
+                'price_product' => $item['price'],
                 'name_product' => $product->product_name,
-                // 'price_product' => $product->product_price,
                 'subtotal' => $subtotal,
                 'quantity' => $item['quantity'],
+                'product_details' => isset($item['details']) ? json_encode($item['details']) : null // Guardar los detalles como JSON
             ]);
 
-            // Restar la cantidad del stock
+            // Actualizar el stock
             $stock->quantity -= $item['quantity'];
-            $stock->save(); // Guardar los cambios en el stock
+            $stock->save();
         }
 
         return response()->json($order->load('orderItems'), 201);

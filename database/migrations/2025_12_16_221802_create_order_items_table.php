@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->string('name_product'); 
-            $table->string('price_product'); 
-            $table->string('quantity'); 
-            $table->string('subtotal'); 
-            // $table->string('tax'); 
+            $table->string('name_product');
+            $table->string('price_product');
+            $table->string('quantity');
+            $table->string('subtotal');
+            // $table->string('tax');
             $table->foreignId('order_id')->nullable()->constrained();
-            $table->foreignId('product_id')->nullable()->constrained();
-            $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade'); //id del producto
+            // Eliminar las siguientes líneas:
+            // $table->foreignId('product_id')->nullable()->constrained();
+            // $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade');
+            $table->json('product_details')->nullable(); // Nuevo campo para detalles del producto y combinación
             $table->timestamps();
         });
     }
