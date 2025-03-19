@@ -14,10 +14,12 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('status'); 
+            $table->string('totaldiscounts');
+            $table->string('subtotal');
             $table->string('total');
             $table->string('direction_delivery')->nullable();
             // $table->string('payment_status')->nullable();
-            // $table->string('order_origin')->nullable();
+            $table->string('order_origin')->nullable();
             $table->foreignId('payments_method_id')->nullable()->constrained();
             $table->foreignId('user_id')->nullable()->constrained();
             $table->foreignId('client_id')->nullable()->constrained();

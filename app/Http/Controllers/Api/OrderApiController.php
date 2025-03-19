@@ -17,6 +17,8 @@ class OrderApiController extends Controller
         $validator = Validator::make($request->all(), [
             'client_id' => 'required|exists:clients,id',
             'payments_method_id' => 'required|exists:payments_methods,id',
+            'totaldiscounts' => 'required|string',
+            'subtotal' => 'required|string',
             'total' => 'required|string',
             'direction_delivery' => 'nullable|string',
             'items' => 'required|array',
@@ -33,8 +35,11 @@ class OrderApiController extends Controller
 
         $order = Order::create([
             'status' => 'Finalizado',
+            'totaldiscounts' => $request->totaldiscounts,
+            'subtotal' => $request->subtotal,
             'total' => $request->total,
             'direction_delivery' => $request->direction_delivery,
+            'order_origin' => $request->order_origin,
             'client_id' => $request->client_id,
             'payments_method_id' => $request->payments_method_id,
         ]);

@@ -5,9 +5,10 @@ import { toast } from 'sonner';
 import OrdersForm from './OrdersForm';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/Components/ui/badge';
+import { WalletCards } from 'lucide-react';
 
 export default function Edit({ orders, paymentMethods }) {
-console.log(orders)
+    console.log(orders)
     const initialValues = {
         status: orders.status,
         total: orders.total,
@@ -40,34 +41,43 @@ console.log(orders)
     //     },
     // ];
 
-    const { data, setData, errors, post, recentlySuccessful } = useForm(initialValues)
+    const { data, setData, errors, post, processing } = useForm(initialValues)
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('orders.update', orders))
+        post(route('orders.update', orders)), {
+            onSuccess: () => {
+                toast("Producto actualizado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al actualizar el producto.");
+            }
+        }
         // console.log(data)
     }
     return (
         <AuthenticatedLayout
             header={
-                <div className='flex justify-between items-center '>
-                    <div className="flex justify-start items-center">
-                        <Link href={route('orders.index')} >
-                            <ArrowLongLeftIcon className='size-6' />
-                        </Link>
-                        <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            Actualizar #{orders.id}
-                        </h2>
-                        {/* <Badge className='mx-2'>{orders.total}</Badge> */}
-                        <Badge className='mx-2'>{orders.status}</Badge>
-                        {/* <p className='mx-2 rou border border-gray-500'>{orders.status}</p> */}
+                <div>
+
+                    <div className='flex justify-between items-center '>
+                        <div className="flex justify-start items-center">
+                            <Link href={route('orders.index')} >
+                                <ArrowLongLeftIcon className='size-6' />
+                            </Link>
+                            <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                                #{orders.id}
+                            </h2>
+                            <Badge className='mx-2'>{orders.status}</Badge>
+                        </div>
+
                     </div>
-                    
-                    {/* <Link href={route('orders.create')}
-                        className="capitalize py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                    >
-                        Crear
-                    </Link> */}
+                    <div className="flex bg-red- items-center justify-start space-x-1 ps-7 mt-1">
+                        <WalletCards className='size-4 text-gray-700' />
+                        <p className='capitalize text-sm font-medium text-gray-700 dark:text-gray-300'>
+                            {orders.order_origin}
+                        </p>
+                    </div>
                 </div>
             }
         >
@@ -80,26 +90,28 @@ console.log(orders)
                     <div className=" text-gray-900 dark:text-gray-100">
                         <form onSubmit={submit} className='space-y-4'>
                             <div className="grid grid-cols-1 gap-4">
-                                    <OrdersForm
-                                        data={data}
-                                        orders={orders}
-                                        paymentMethods={paymentMethods}
-                                        setData={setData}
-                                        errors={errors}
-                                    />
+                                <OrdersForm
+                                    data={data}
+                                    orders={orders}
+                                    paymentMethods={paymentMethods}
+                                    setData={setData}
+                                    errors={errors}
+                                />
                             </div>
 
                             <div className="flex justify-end p-2.5">
                                 <Button
                                     variant="default"
                                     size="sm"
-                                    onClick={() =>
-                                        toast("Actualizado.", {
-                                            description: "Se ha actualizado con éxito.",
-                                        })
-                                    }
+                                    disabled={processing}
+type="submit"
+                                // onClick={() =>
+                                //     toast("Actualizado.", {
+                                //         description: "Se ha actualizado con éxito.",
+                                //     })
+                                // }
                                 >
-                                    Guardar
+                                    {processing ? "Guardando..." : "Guardar"}
                                 </Button>
                             </div>
 

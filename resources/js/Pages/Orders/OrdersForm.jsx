@@ -39,9 +39,14 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                 <div className="col-span-full md:col-span-2">
                     <DivSection >
                         <div>
-                            <p className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
-                                Pedido recibido</p>
-                            {formatDate(orders.created_at)}
+                            <div className="">
+                                <p className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                                    Pedido recibido
+                                </p>
+
+                                {formatDate(orders.created_at)}
+                                
+                            </div>
                             <p className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
                                 Actualizado
                             </p>
@@ -49,7 +54,7 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                         </div>
 
                         <div>
-                            <InputLabel htmlFor="status" value="Dirección de Entrega" />
+                            <InputLabel htmlFor="status" value="Status" />
                             <TextInput
                                 id="status"
                                 type="text"
@@ -144,6 +149,18 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                             )}
                         </TableBody>
                         <tfoot>
+                            <TableRow>
+                                <TableCell colSpan="3" className="text-right font-bold">Subtotal</TableCell>
+                                <TableCell className="font-bold">
+                                    ${orders.subtotal}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell colSpan="3" className="text-right font-bold">Descuento</TableCell>
+                                <TableCell className="font-bold">
+                                    ${orders.totaldiscounts}
+                                </TableCell>
+                            </TableRow>
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-bold">Total</TableCell>
                                 <TableCell className="font-bold">

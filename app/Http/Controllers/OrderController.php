@@ -76,7 +76,7 @@ class OrderController extends Controller
         $request->validate([
             'status' => 'required|string|max:255',
             'total' => 'required|numeric',
-            'direction_delivery' => 'required|string|max:255',
+            'direction_delivery' => 'nullable|string|max:255',
             'payments_method_id' => 'required|exists:payments_methods,id', // Asegúrate de que este campo exista
             'client_id' => 'required|exists:clients,id', // Asegúrate de que este campo exista
             // Agrega más validaciones según sea necesario
@@ -103,7 +103,7 @@ class OrderController extends Controller
         // }
 
         // Redirigir o devolver una respuesta
-        return redirect()->route('orders.index')->with('success', 'Orden actualizada con éxito.');
+        return redirect()->route('orders.edit',$orders)->with('success', 'Orden actualizada con éxito.');
     }
 
 
