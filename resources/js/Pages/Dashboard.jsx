@@ -4,7 +4,7 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Separator } from '@/Components/ui/separator';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 export default function Dashboard({ client, orders, ordersCount, clientsCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod }) {
     const user = usePage().props.auth.user;
@@ -91,6 +91,12 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
                                     axisLine={false}
                                     tickFormatter={(value) => value.slice(0, 3)}
                                 />
+                                <YAxis
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                    tickCount={10}
+                                />
                                 <ChartLegend content={<ChartLegendContent />} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
 
@@ -109,6 +115,12 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
                                     tickMargin={10}
                                     axisLine={false}
                                     tickFormatter={(value) => value.slice(0, 3)}
+                                />
+                                <YAxis
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                    tickCount={10}
                                 />
                                 <ChartLegend content={<ChartLegendContent />} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
