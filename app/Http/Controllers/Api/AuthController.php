@@ -26,24 +26,19 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
         ]);
-        // return response()->json([$credentials], 200);
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($request->only('email', 'password'))) {
             $user = Auth::user();
-            $token = $user->createToken('token')->plainTextToken;
-            $cookie = cookie('cookie_token', $token, 60 * 24);
+            $token = $user->createToken('YourAppName')->plainTextToken;
 
-            // return response()->json(['token' => $token], 200);
-            return response(["token" => $token], Response::HTTP_OK)->withoutCookie($cookie);
-        } else {
-            return response(["message" => "credentials invalid"], Response::HTTP_UNAUTHORIZED);
+            return response()->json(['token' => $token, 'user' => $user]);
         }
 
-        return response()->json(['message' => 'Unauthenticated'], 401);
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 
     public function profile(Request $request)
@@ -54,9 +49,10 @@ class AuthController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        $cookie = Cookie::forget('cookie_token');
-        return response(["message" => "cierre de sesion ok"], Response::HTTP_OK)->withCookie($cookie);
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Logged out successfully']);
     }
 }
