@@ -10,6 +10,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\StatesController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StoreController;
@@ -20,11 +21,11 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+    return Inertia::render('Auth/Login', [
+        // 'canLogin' => Route::has('login'),
+        // 'canRegister' => Route::has('register'),
+        // 'laravelVersion' => Application::VERSION,
+        // 'phpVersion' => PHP_VERSION,
     ]);
 });
 
@@ -126,6 +127,10 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{orders}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::post('orders/{orders}', [OrderController::class, 'update'])->name('orders.update');
+    
+    Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
+    // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
+    Route::post('setting/{setting}', [SettingController::class, 'update'])->name('setting.update');
 
 });
 

@@ -120,6 +120,10 @@ export function AppSidebar({
         // isActive: true,
         items: [
           {
+            title: "Configuración",
+            url: "setting.index",
+          },
+          {
             title: "Tiendas",
             url: "stores.index",
           },
