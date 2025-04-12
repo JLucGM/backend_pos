@@ -7,7 +7,7 @@ import DivSection from '@/Components/ui/div-section';
 import { Store } from 'lucide-react';
 
 export default function Index({ orders, permission }) {
-
+console.log(orders);
     // const { data, setData, errors, post } = useForm({
     //     country_name: "",
     // });

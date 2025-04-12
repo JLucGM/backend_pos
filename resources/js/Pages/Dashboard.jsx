@@ -152,50 +152,44 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
                         <h3 className="text-md font-medium">Productos con bajo stock:</h3>
                         <ScrollArea className="h-60">
 
-                            <ul className="mt-2">
-                                {lowStockProducts.length > 0 ? (
-                                    lowStockProducts.map(product => (
-                                        <div className="">
-
-                                            <li key={product.id} className="flex justify-between items-center py-2 p-3">
-                                                <div className="flex items-center">
-                                                    {product.media && product.media.length > 0 ? (
-                                                        product.media.map((image) => {
-                                                            return (
-                                                                <div key={image.id} className="relative mr-2 mb-2">
-                                                                    <img
-                                                                        src={image.original_url}
-                                                                        alt={image.name}
-                                                                        className="w-10 h-10 object-cover rounded-xl aspect-square"
-                                                                    />
-                                                                </div>
-                                                            );
-                                                        }
-                                                        )
-                                                    ) : (
-                                                        <div className="mr-2">
-                                                            <img
-                                                                src="https://placehold.co/10x10"
-                                                                alt="https://placehold.co/10x10"
-                                                                className="w-10 h-10 object-cover rounded-xl aspect-square"
-                                                            />
-                                                        </div>
-                                                    )
-                                                    }
-                                                    <Link href={route('products.edit', product.slug)}
-                                                        className='capitalize'>
-                                                        {product.product_name}
-                                                    </Link>
-                                                </div>
-                                                <p className='text-destructive font-semibold'>{product.stocks.reduce((total, stock) => total + stock.quantity, 0)}</p>
-                                            </li>
-                                            <Separator />
-                                        </div>
-                                    ))
-                                ) : (
-                                    <li>No hay productos con bajo stock.</li>
-                                )}
-                            </ul>
+                        <ul className="mt-2">
+    {lowStockProducts.length > 0 ? (
+        lowStockProducts.map(product => (
+            <div key={product.id}>
+                <li className="flex justify-between items-center py-2 p-3">
+                    <div className="flex items-center">
+                        {product.media && product.media.length > 0 ? (
+                            <div className="relative mr-2 mb-2">
+                                <img
+                                    src={product.media[0].original_url} // Accede a la primera imagen
+                                    alt={product.media[0].name} // Usa el nombre de la primera imagen
+                                    className="w-10 h-10 object-cover rounded-xl aspect-square"
+                                />
+                            </div>
+                        ) : (
+                            <div className="mr-2">
+                                <img
+                                    src="https://placehold.co/10x10"
+                                    alt="Placeholder"
+                                    className="w-10 h-10 object-cover rounded-xl aspect-square"
+                                />
+                            </div>
+                        )}
+                        <Link href={route('products.edit', product.slug)} className='capitalize'>
+                            {product.product_name}
+                        </Link>
+                    </div>
+                    <p className='text-destructive font-semibold'>
+                        {product.stocks.reduce((total, stock) => total + parseInt(stock.quantity, 10), 0)}
+                    </p>
+                </li>
+                <Separator />
+            </div>
+        ))
+    ) : (
+        <li>No hay productos con bajo stock.</li>
+    )}
+</ul>
                         </ScrollArea>
                     </DivSection>
 

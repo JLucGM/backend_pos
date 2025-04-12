@@ -4,17 +4,7 @@ import TextInput from '@/Components/TextInput';
 import DivSection from '@/Components/ui/div-section';
 import { customStyles } from '@/hooks/custom-select';
 import Select from 'react-select';
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import { Separator } from '@/Components/ui/separator';
-
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
 
 export default function OrdersForm({ data, orders = "", paymentMethods, setData, errors, isDisabled = false }) {
 
@@ -71,7 +61,7 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                                 id="direction_delivery"
                                 type="text"
                                 name="direction_delivery"
-                                value={data.direction_delivery || null}
+                                value={data.direction_delivery || ""}
                                 className="mt-1 block w-full"
                                 onChange={(e) => setData('direction_delivery', e.target.value)}
                             />
@@ -98,9 +88,32 @@ export default function OrdersForm({ data, orders = "", paymentMethods, setData,
                     <DivSection >
                         <div>
                             <h2 className='font-semibold'>Cliente</h2>
-                            <p>{orders.client.client_name}</p> {/* Asegúrate de que orders tenga el objeto del cliente */}
+                            {orders.client_id ? (
+                                <>
+                            <p>{orders.client.client_name}</p> 
                             <p>{orders.client.client_identification}</p>
                             <p>{orders.client.client_phone}</p>
+                                </>
+                        ) : (
+                            <>
+                                <p>{orders.user.name}</p>
+                                <p>{orders.user.identification}</p>
+                                <p>{orders.user.phone}</p>
+                            </>
+                        )}
+
+{/* {initialValues.client_id ? (
+        <>
+            <p>ID del Cliente: {initialValues.client_id}</p>
+            <p>Nombre del Cliente: {orders.client.client_name}</p>
+            <p>Identificación del Cliente: {orders.client.client_identification}</p>
+            <p>Teléfono del Cliente: {orders.client.client_phone}</p>
+        </>
+    ) : (
+        <>
+            <p>ID del Usuario: {initialValues.user_id}</p>
+        </>
+    )} */}
                         </div>
 
                     </DivSection>

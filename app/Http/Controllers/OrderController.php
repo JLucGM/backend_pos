@@ -55,7 +55,7 @@ class OrderController extends Controller
      */
     public function edit(Order $orders)
     {
-        $orders->load('user', 'client', 'orderItems', 'paymentMethod');
+        $orders->load('user', 'client', 'user', 'orderItems', 'paymentMethod');
         $paymentMethods = PaymentMethod::all();
         // dd($orders->load('user'));
 

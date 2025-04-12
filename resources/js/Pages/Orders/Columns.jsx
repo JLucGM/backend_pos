@@ -1,4 +1,3 @@
-
 export const ordersColumns = [
     {
         header: "#id",
@@ -24,9 +23,11 @@ export const ordersColumns = [
         header: "Cliente",
         accessorKey: "client_id",
         cell: ({ row }) => {
+            const clientName = row.original.client?.client_name;
+            const userName = row.original.user?.name;
             return (
-                <p>{row.original.client.client_name}</p>
-            )
+                <p>{clientName || userName || "N/A"}</p>
+            );
         },
     },
     {

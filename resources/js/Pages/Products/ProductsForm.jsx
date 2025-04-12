@@ -25,7 +25,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
     const { delete: deleteImage } = useForm(); // Desestructura la función delete de useForm
     const [stocks, setStocks] = useState({});
     const [prices, setPrices] = useState({});
-    // const [showAttributes, setShowAttributes] = useState(false);
+    const [showAttributes, setShowAttributes] = useState(false);
     // const [showCombinations, setShowCombinations] = useState(false);
     // const [hidePriceFields, setHidePriceFields] = useState(false);
 
@@ -40,6 +40,13 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         setPrices(combinationsWithPrices);
     }, [combinationsWithPrices]);
 
+    useEffect(() => {
+        // Si se está en la vista de edición y hay atributos existentes, mostrar los atributos
+        if (product && data.attribute_names.length > 0) {
+            setShowAttributes(true);
+        }
+    }, [data.attribute_names, product]);
+
     const handleCategoryChange = (selectedOptions) => {
         const selectedValues = selectedOptions ? selectedOptions.map(option => option.value) : [];
         setData('categories', selectedValues);
@@ -49,7 +56,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         if (data.attribute_names.length < 3) {
             setData('attribute_names', [...data.attribute_names, ""]);
             setData('attribute_values', [...data.attribute_values, [""]]);
-            // setShowAttributes(true); // Mostrar los inputs cuando se agrega un atributo
+            setShowAttributes(true); // Mostrar los inputs cuando se agrega un atributo
             // setShowCombinations(true); // Mostrar la lista de combinaciones cuando se agrega un atributo
             // setHidePriceFields(true); // Ocultar los campos de precio y descuento cuando se agrega un atributo
         } else {
@@ -219,11 +226,9 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         setData('attribute_values', newAttributeValues);
 
         // Si no hay más atributos, mostrar los campos de precio y descuento
-        // if (newAttributes.length === 0) {
-        //     setHidePriceFields(false);
-        //     setShowAttributes(false);
-        //     setShowCombinations(false);
-        // } else {
+        if (newAttributes.length === 0) {
+            setShowAttributes(false); // Ocultar los atributos
+        } else {
             // Actualizar combinaciones y precios
             const combinations = generateCombinations(newAttributes, newAttributeValues);
             const newPrices = {};
@@ -241,7 +246,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             setStocks(newStocks);
             setData('prices', newPrices); // Actualiza el campo prices en data
             setData('stocks', newStocks); // Actualiza el campo stocks en data
-        // }
+        }
     };
 
     const removeAttributeValue = (attributeIndex, valueIndex) => {
@@ -359,7 +364,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     </div>
                 </DivSection>
 
-                {/* {!hidePriceFields && ( */}
+                {!showAttributes && (
                     <>
                         <DivSection className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                             <div>
@@ -420,66 +425,78 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
                         </DivSection>
                     </>
-                {/* )} */}
+                )}
 
                 <DivSection className='space-y-4'>
-                    <div className="border rounded-xl mb-4">
+                    <div className="borders rounded-xl mb-4">
                         <div className="flex justify-between px-4 pt-4">
                             <p className='font-semibold'>Opciones</p>
                         </div>
-                        <div className="p-4">
-                            {data.attribute_names.map((attributeName, index) => (
-                                <div key={index} className="mb-">
-                                    <TextInput
-                                        type="text"
-                                        value={attributeName} // Muestra el nombre del atributo
-                                        onChange={(e) => handleAttributeChange(index, e.target.value)}
-                                        placeholder="Nombre del atributo"
-                                    />
-                                    <InputError message={errors.attribute_names?.[index]} />
-
-                                    <div className="my-2">
-                                        {/* Renderiza los valores correspondientes a este atributo */}
-                                        {Array.isArray(data.attribute_values[index]) && data.attribute_values[index].map((value, valueIndex) => (
-                                            <div key={valueIndex} className="mb-2 flex justify-between items-center">
+                        <div className="border rounded-xl mb-4">
+                            {showAttributes && (
+                                <>
+                                    <div className="p-4">
+                                        {data.attribute_names.map((attributeName, index) => (
+                                            <div key={index}>
                                                 <TextInput
                                                     type="text"
-                                                    value={value} // Muestra el valor correspondiente
-                                                    onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
-                                                    placeholder={`Valor de ${attributeName}`} // Muestra el nombre del atributo en el placeholder
+                                                    value={attributeName} // Muestra el nombre del atributo
+                                                    onChange={(e) => handleAttributeChange(index, e.target.value)}
+                                                    placeholder="Nombre del atributo"
                                                 />
-                                                <Button variant="link" type="button" onClick={() => removeAttributeValue(index, valueIndex)}>
-                                                    <TrashIcon className="size-4" />
-                                                </Button>
-                                                <InputError message={errors.attribute_values?.[index]?.[valueIndex]} />
+                                                <InputError message={errors.attribute_names?.[index]} />
+
+                                                {data.attribute_values[index] && data.attribute_values[index].length > 0 && (
+                                                    <div className="my-2">
+                                                        {/* Renderiza los valores correspondientes a este atributo */}
+                                                        {data.attribute_values[index].map((value, valueIndex) => (
+                                                            <div key={valueIndex} className="mb-2 flex justify-between items-center">
+                                                                <TextInput
+                                                                    type="text"
+                                                                    value={value} // Muestra el valor correspondiente
+                                                                    onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
+                                                                    placeholder={`Valor de ${attributeName}`} // Muestra el nombre del atributo en el placeholder
+                                                                />
+                                                                <Button variant="link" type="button" onClick={() => removeAttributeValue(index, valueIndex)}>
+                                                                    <TrashIcon className="size-4" />
+                                                                </Button>
+                                                                <InputError message={errors.attribute_values?.[index]?.[valueIndex]} />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                <div className="flex justify-between items-center">
+                                                    <Button variant="link" type="button" onClick={() => addAttributeValue(index)}>
+                                                        Agregar Valor
+                                                    </Button>
+                                                    <Button variant="link" type="button" onClick={() => removeAttribute(index)}>
+                                                        Eliminar opción
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
-
-                                    <div className="flex justify-between items-center">
-                                        <Button variant="link" type="button" onClick={() => addAttributeValue(index)}>
-                                            Agregar Valor
+                                    {/* <Separator /> */}
+                                    {data.attribute_names.length < 3 ? (
+                                        <Button className="w-full justify-start" variant="link" size="sm" type="button" onClick={addAttribute}>
+                                            <PlusCircle className="size-4" />
+                                            Agregar otro opción
                                         </Button>
-                                        <Button variant="link" type="button" onClick={() => removeAttribute(index)}>
-                                            Eliminar opción
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
+                                    ) : (null)}
+                                </>
+                            )}
+                            {!showAttributes && data.attribute_names.length < 3 ? (
+                                <Button className="w-full justify-start" variant="link" size="sm" type="button" onClick={() => setShowAttributes(true)}>
+                                    <PlusCircle className="size-4" />
+                                    Agregar opción
+                                </Button>
+                            ) : (null)}
                         </div>
-                        <Separator />
-
-                        {data.attribute_names.length < 3 ? (
-                            <Button className="w-full justify-start" variant="link" size="sm" type="button" onClick={addAttribute}>
-                                <PlusCircle className="size-4" />
-                                Agregar opción
-                            </Button>
-                        ) : (
-                            null
-                        )}
+                        {/* <Separator /> */}
                     </div>
 
-                    {data.attribute_values.length >= 1 ? (
+                    {data.attribute_values.some(values => values.length > 0) ? (
                         <Table>
                             <TableCaption>
                                 Inventario total en la ubicación de la tienda: {calculateTotalStock()} disponibles
@@ -489,8 +506,8 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                     <TableHead className="w-[100px]">Combinaciones</TableHead>
                                     <TableHead className="text-right">Precio</TableHead>
                                     <TableHead className="text-right">Stock</TableHead>
-                                    <TableHead className="text-right">Código de Barras</TableHead> {/* Nueva columna */}
-                                    <TableHead className="text-right">SKU</TableHead> {/* Nueva columna */}
+                                    <TableHead className="text-right">Código de Barras</TableHead>
+                                    <TableHead className="text-right">SKU</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -514,14 +531,14 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                         <TableCell>
                                             <TextInput
                                                 type="text"
-                                                value={data.barcodes[combination] || ''} // Usa directamente data.barcodes
+                                                value={data.barcodes[combination] || ''}
                                                 onChange={(e) => handleBarcodeChange(combination, e.target.value)}
                                             />
                                         </TableCell>
                                         <TableCell>
                                             <TextInput
                                                 type="text"
-                                                value={data.skus[combination] || ''} // Usa directamente data.skus
+                                                value={data.skus[combination] || ''}
                                                 onChange={(e) => handleSkuChange(combination, e.target.value)}
                                             />
                                         </TableCell>
@@ -582,18 +599,20 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         </div>
                     </div> */}
 
-                    <div>
-                        <InputLabel htmlFor="quantity" value="Stock" />
-                        <TextInput
-                            id="quantity"
-                            type="number"
-                            name="quantity"
-                            value={data.quantity}
-                            className="mt-1 block w-full"
-                            onChange={(e) => setData('quantity', e.target.value)}
-                        />
-                        <InputError message={errors.quantity} />
-                    </div>
+                    {!showAttributes && (
+                        <div>
+                            <InputLabel htmlFor="quantity" value="Stock" />
+                            <TextInput
+                                id="quantity"
+                                type="number"
+                                name="quantity"
+                                value={data.quantity}
+                                className="mt-1 block w-full"
+                                onChange={(e) => setData('quantity', e.target.value)}
+                            />
+                            <InputError message={errors.quantity} />
+                        </div>
+                    )}
 
                     <div>
                         <InputLabel htmlFor="store" value="Tiendas" />

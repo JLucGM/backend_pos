@@ -13,10 +13,16 @@ export default function Edit({ orders, paymentMethods }) {
         status: orders.status,
         total: orders.total,
         direction_delivery: orders.direction_delivery,
-        client_id: orders.client.id, // Cambiado para que solo contenga el ID
+        // client_id: orders.client.id, // Cambiado para que solo contenga el ID
         payments_method_id: orders.payments_method_id, // Agrega este campo
 
     }
+
+    // if (orders.client_id !== null) {
+    //     initialValues.client_id = orders.client.id;
+    // } else {
+    //     initialValues.user_id = orders.user_id; // Asigna user_id si client_id es nulo
+    // }
 
     // const items = [
     //     {
