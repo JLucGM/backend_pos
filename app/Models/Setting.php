@@ -15,11 +15,6 @@ class Setting extends Model implements HasMedia
     use HasFactory, HasSlug;
     use InteractsWithMedia;
 
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('setting');
-    }
-
     protected $fillable = [
         'app_name',
         'default_currency',
@@ -38,6 +33,13 @@ class Setting extends Model implements HasMedia
         return SlugOptions::create()
             ->generateSlugsFrom('app_name')
             ->saveSlugsTo('slug');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('favicon');
+        $this->addMediaCollection('logo');
+        $this->addMediaCollection('logofooter');
     }
 
     public function registerMediaConversions(?Media $media = null): void

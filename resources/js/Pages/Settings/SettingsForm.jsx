@@ -2,11 +2,27 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Input } from '@/Components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function SettingsForm({ data, setting, setData, errors }) {
+
+    const favicon = setting.media.find(mediaItem => mediaItem.collection_name === 'favicon');
+    const logo = setting.media.find(mediaItem => mediaItem.collection_name === 'logo');
+    const logofooter = setting.media.find(mediaItem => mediaItem.collection_name === 'logofooter');
+
     return (
         <>
+            {/* <Tabs defaultValue="account" className="flex">
+                <TabsList className="flex flex-col h-full">
+                    <TabsTrigger value="account" className="w-full text-wrap">Account</TabsTrigger>
+                    <TabsTrigger value="password" className="w-full text-wrap">Password</TabsTrigger>
+                </TabsList>
+                <TabsContent value="account">Make changes to your account here.</TabsContent>
+                <TabsContent value="password">Change your password here.</TabsContent>
+            </Tabs> */}
+
             <div>
+                {/* setting{setting.app_name} */}
                 <InputLabel htmlFor="app_name" value="Nombre" />
                 <TextInput
                     id="app_name"
@@ -74,8 +90,8 @@ export default function SettingsForm({ data, setting, setData, errors }) {
                 <InputError message={errors.default_currency} className="mt-2" />
             </div>
 
-            {/* <div>
-                <InputLabel htmlFor="logo" value="Media" />
+            <div>
+                <InputLabel htmlFor="logo" value="Logo" />
                 <Input
                     id="logo"
                     type="file"
@@ -85,16 +101,67 @@ export default function SettingsForm({ data, setting, setData, errors }) {
                     multiple
                 />
                 <InputError message={errors.logo} className="mt-2" />
-            </div> */}
+            </div>
 
-            {/* {setting.media && setting.media.length > 0 && (
-                // <p>{setting.media[0].original_url}</p>
-                <img
-                    src={setting.media[0].original_url} // Asegúrate de que esto sea correcto
-                    alt={setting.media[0].name} // Asegúrate de que esto sea correcto
-                    className="w-44 h-44 object-cover rounded-xl aspect-square"
+            <div>
+                <InputLabel htmlFor="favicon" value="favicon" />
+                <Input
+                    id="favicon"
+                    type="file"
+                    name="favicon"
+                    className="mt-1 block w-full"
+                    onChange={(e) => setData('favicon', Array.from(e.target.files))} // Almacena todos los archivos
+                    multiple
                 />
-            )} */}
+                <InputError message={errors.favicon} className="mt-2" />
+            </div>
+
+            <div>
+                <InputLabel htmlFor="logofooter" value="logofooter" />
+                <Input
+                    id="logofooter"
+                    type="file"
+                    name="logofooter"
+                    className="mt-1 block w-full"
+                    onChange={(e) => setData('logofooter', Array.from(e.target.files))} // Almacena todos los archivos
+                    multiple
+                />
+                <InputError message={errors.logofooter} className="mt-2" />
+            </div>
+
+
+            <div>
+                <h2>Favicon</h2>
+                {favicon && (
+                    <img
+                        src={favicon.original_url} // URL del favicon
+                        alt={favicon.name} // Nombre del favicon
+                        className="w-10 h-10 object-cover rounded-full"
+                    />
+                )}
+            </div>
+
+            <div>
+                <h2>Logo</h2>
+                {logo && (
+                    <img
+                        src={logo.original_url} // URL del logo
+                        alt={logo.name} // Nombre del logo
+                        className="w-44 h-44 object-cover rounded-xl"
+                    />
+                )}
+            </div>
+
+            <div>
+                <h2>logofooter</h2>
+                {logofooter && (
+                    <img
+                        src={logofooter.original_url} // URL del logofooter
+                        alt={logofooter.name} // Nombre del logofooter
+                        className="w-44 h-44 object-cover rounded-xl"
+                    />
+                )}
+            </div>
         </>
     );
 }

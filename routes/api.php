@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ClientApiController;
 use App\Http\Controllers\Api\OrderApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\PaymentMethodApiController;
+use App\Http\Controllers\Api\SettingApiController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\StoreProductController;
 use Illuminate\Support\Facades\Route;
@@ -41,3 +42,5 @@ Route::get('/stores/{store}/products', [StoreProductController::class, 'showProd
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
+
+Route::get('settings', [SettingApiController::class, 'index']);

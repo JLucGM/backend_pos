@@ -16,7 +16,7 @@ class SettingController extends Controller
     {
         $setting = Setting::with('media')->first();
         // $currencies = Currency::all();
-        
+
         $user = Auth::user();
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
@@ -70,14 +70,43 @@ class SettingController extends Controller
         );
 
         // Actualizar los ajustes
-        $setting->update($data); // Asegúrate de que $data contiene las rutas correctas
+        $setting->update($data);
 
-        // if ($request->hasFile('logo')) {
-        //     $setting->addMultipleMediaFromRequest(['logo'])
-        //         ->each(function ($fileAdder) {
-        //             $fileAdder->toMediaCollection('setting');
-        //         });
-        // }
+        // Verificar si se ha subido un nuevo logo
+        if ($request->hasFile('logo')) {
+            // Eliminar la imagen anterior de la colección 'logo'
+            $setting->clearMediaCollection('logo');
+
+            // Agregar la nueva imagen a la colección 'logo'
+            $setting->addMultipleMediaFromRequest(['logo'])
+                ->each(function ($fileAdder) {
+                    $fileAdder->toMediaCollection('logo');
+                });
+        }
+
+        // Verificar si se ha subido un nuevo favicon
+        if ($request->hasFile('favicon')) {
+            // Eliminar la imagen anterior de la colección 'favicon'
+            $setting->clearMediaCollection('favicon');
+
+            // Agregar la nueva imagen a la colección 'favicon'
+            $setting->addMultipleMediaFromRequest(['favicon'])
+                ->each(function ($fileAdder) {
+                    $fileAdder->toMediaCollection('favicon');
+                });
+        }
+
+        // Verificar si se ha subido un nuevo logofooter
+        if ($request->hasFile('logofooter')) {
+            // Eliminar la imagen anterior de la colección 'logofooter'
+            $setting->clearMediaCollection('logofooter');
+
+            // Agregar la nueva imagen a la colección 'logofooter'
+            $setting->addMultipleMediaFromRequest(['logofooter'])
+                ->each(function ($fileAdder) {
+                    $fileAdder->toMediaCollection('logofooter');
+                });
+        }
 
         return to_route('setting.index', $setting);
     }
