@@ -77,7 +77,7 @@ export default function Edit({ store, countries, states, cities, }) {
                         <form onSubmit={submit} >
 
                             <div className="grid grid-cols-1 gap-4">
-                                <DivSection>
+                                <DivSection className='space-y-4'>
                                     <StoresForm
                                         data={data}
                                         setData={setData}

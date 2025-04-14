@@ -12,7 +12,7 @@ import UserForm from './UserForm';
 import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ users, roles, role, permission }) {
-    //console.log(users)
+    console.log(users)
     let [isOpen, setIsOpen] = useState(false)
     const { data, setData, errors, post } = useForm({
         name: "",

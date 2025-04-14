@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import UserForm from './UserForm';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
-export default function Edit({ user, roles, role, permission }) {
+export default function Edit({ user, stores, roles, role, permission }) {
     // console.log(user)
     const initialValues = {
         name: user.name,
@@ -15,7 +15,8 @@ export default function Edit({ user, roles, role, permission }) {
         phone: user.phone,
         status: user.status,
         avatar: null,
-        role: user.roles.length > 0 ? user.roles[0].name : "", // Verifica si hay roles
+        role: user.roles.length > 0 ? user.roles[0].id : "", // Cambiado a ID del rol
+        store_id: user.stores.length > 0 ? user.stores[0].id : "",
     }
 
     // const items = [
@@ -45,7 +46,14 @@ export default function Edit({ user, roles, role, permission }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('user.update', user))
+        post(route('user.update', user)), {
+            onSuccess: () => {
+                toast("Usuario actualizado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al actualizar el usuario.");
+            }
+        }
         // console.log(data)
     }
     return (
@@ -79,7 +87,15 @@ export default function Edit({ user, roles, role, permission }) {
                 <form onSubmit={submit} className='space-y-4'>
 
                     <div className="grid grid-cols-3 gap-4">
-                        <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} user={user} />
+                        <UserForm
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                            stores={stores}
+                            roles={roles}
+                            role={role}
+                            user={user}
+                        />
                     </div>
 
                     <div className="flex justify-end p-2.5">

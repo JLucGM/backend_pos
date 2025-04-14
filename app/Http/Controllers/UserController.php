@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 // use App\Http\Requests\Users\UpdateRequest;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -29,21 +30,21 @@ class UserController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-{
-    $users = User::with('media')->get(); // Asegúrate de cargar la relación media
-    $roles = Role::all();
+    {
+        $users = User::with('media','roles')->get(); // Asegúrate de cargar la relación media
+        $roles = Role::all();
 
-    $user = Auth::user();
-    $role = $user->getRoleNames();
-    $permission = $user->getAllPermissions();
+        $user = Auth::user();
+        $role = $user->getRoleNames();
+        $permission = $user->getAllPermissions();
 
-    // Agregar la URL del avatar a cada usuario
-    foreach ($users as $user) {
-        $user->avatar_url = $user->getFirstMediaUrl('avatars'); // 'avatars' es el nombre de la colección
+        // Agregar la URL del avatar a cada usuario
+        foreach ($users as $user) {
+            $user->avatar_url = $user->getFirstMediaUrl('avatars'); // 'avatars' es el nombre de la colección
+        }
+
+        return Inertia::render('User/Index', compact('users', 'roles', 'role', 'permission'));
     }
-
-    return Inertia::render('User/Index', compact('users', 'roles', 'role', 'permission'));
-}
 
     /**
      * Show the form for creating a new resource.
@@ -51,10 +52,12 @@ class UserController extends Controller
     public function create()
     {
         $user = Auth::user();
+        $stores = Store::all();
+
         $roles = Role::where('name', '!=', 'client')->get();
         $role = $user->getRoleNames();
 
-        return Inertia::render('User/Create', compact('roles','role'));
+        return Inertia::render('User/Create', compact('stores', 'roles', 'role'));
     }
 
     /**
@@ -62,34 +65,51 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->only('name', 'email', 'phone', 'status', 'role');
+        // Validar la solicitud
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'nullable|string|max:15',
+            'status' => 'required|boolean',
+            'role' => 'required|exists:roles,id', // Validar que el rol existe
+            'store_id' => 'required|exists:stores,id', // Validar que el store_id existe
+            'password' => 'required|string|min:8', // Validar la contraseña
+            'avatar' => 'nullable|image|max:2048', // Validación para el avatar
+        ]);
 
+        // Obtener los datos de la solicitud
+        $data = $request->only('name', 'email', 'phone', 'status', 'store_id');
+
+        // Encriptar la contraseña
         $data['password'] = bcrypt($request['password']);
 
-        // AGREGAR AVATAR
-        // if ($request->hasFile('avatar')) {
-        //     $image = $request->file('avatar');
-        //     $nombreImagen = time() . '_' . $image->getClientOriginalName(); // Asegúrate de que el nombre sea único
-        //     $image->move(public_path('img/profile'), $nombreImagen);
+        // Crear el nuevo usuario
+        $user = User::create($data);
 
-        //     // Guardar la ruta completa del avatar
-        //     $data['avatar'] = asset('img/profile/' . $nombreImagen); // Guarda la URL completa
-        // } else {
-        //     $data['avatar'] = asset('img/profile/default.jpg'); // Guarda la URL por defecto
-        // }
-
-        
-        $user = User::create($data); // Crear el nuevo usuario
-        
+        // Manejar la carga del avatar
         if ($request->hasFile('avatar')) {
             $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
         }
+
         // Asignar el rol al usuario
         if ($request->filled('role')) {
-            $user->assignRole($request->input('role'));
+            // Obtener el nombre del rol usando el ID
+            $roleId = $request->input('role');
+            $role = Role::find($roleId); // Asegúrate de importar el modelo Role
+
+            if ($role) {
+                $user->assignRole($role->name); // Asignar el rol usando el nombre
+            }
         }
 
-        return to_route('user.index'); // Redirigir a la lista de usuarios
+        // Relacionar el usuario con la tienda
+        if ($request->filled('store_id')) {
+            $user->stores()->attach($request->input('store_id'));
+        }
+
+        // return to_route('user.index'); // Redirigir a la lista de usuarios
+        return to_route('user.edit', $user->slug)->with('success', 'Producto creado con éxito.');
+
     }
 
     /**
@@ -105,16 +125,17 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $user->load('roles', 'media');
+        $user->load('stores', 'roles', 'media');
         $user->avatar_url = $user->getFirstMediaUrl('avatars'); // Asegúrate de que 'avatars' sea el nombre de la colección
 
         $roles = Role::where('name', '!=', 'client')->get();
+        $stores = Store::all();
 
         $users = Auth::user();
         $role = $users->getRoleNames();
         $permission = $users->getAllPermissions();
 
-        return Inertia::render('User/Edit', compact('user', 'roles','role','permission'));
+        return Inertia::render('User/Edit', compact('user', 'stores', 'roles', 'role', 'permission'));
     }
 
     /**
@@ -122,32 +143,30 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        $data = $request->only('name', 'email', 'phone', 'status', 'role');
+        // Validar la solicitud
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:15',
+            'status' => 'required|boolean',
+            'role' => 'required|exists:roles,id',
+            'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
+            'password' => 'nullable|string|min:8', // La contraseña es opcional
+            'avatar' => 'nullable|image|max:2048', // Validación para el avatar
+        ]);
 
+        // Obtener los datos de la solicitud
+        $data = $request->only('name', 'email', 'phone', 'status', 'store_id');
+
+        // Encriptar la contraseña si se proporciona
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request['password']);
         }
 
-        // if ($request->hasFile('avatar')) {
-        //     $image = $request->file('avatar');
-        //     $nombreImagen = time() . '_' . $image->getClientOriginalName(); // Asegúrate de que el nombre sea único
-        //     $image->move(public_path('img/profile'), $nombreImagen);
+        // Actualizar el usuario con los nuevos datos
+        $user->update($data);
 
-        //     // Guardar la ruta completa del avatar
-        //     $data['avatar'] = asset('img/profile/' . $nombreImagen); // Guarda la URL completa
-
-        //     // Eliminar la imagen existente si no es el por defecto
-        //     if ($user->avatar != 'default.jpg') {
-        //         // Eliminar la imagen existente
-        //         unlink(public_path('img/profile/' . basename($user->avatar)));
-        //     }
-        // } else {
-        //     // Si no se sube una nueva imagen, conservar la existente
-        //     $data['avatar'] = $user->avatar; // Mantener la URL existente
-        // }
-
-        $user->update($data); // Actualizar el usuario con los nuevos datos
-
+        // Manejar la carga del avatar
         if ($request->hasFile('avatar')) {
             // Eliminar el avatar anterior si existe
             $user->clearMediaCollection('avatars'); // Elimina todos los avatares anteriores
@@ -159,6 +178,12 @@ class UserController extends Controller
         if ($request->filled('role')) {
             // Sincronizar roles
             $user->syncRoles([$request->input('role')]);
+        }
+
+        // Relacionar el usuario con la tienda
+        if ($request->filled('store_id')) {
+            // Sincronizar tiendas
+            $user->stores()->sync([$request->input('store_id')]);
         }
 
         return to_route('user.edit', $user); // Redirigir a la edición del usuario

@@ -5,9 +5,11 @@ import { AspectRatio } from '@/Components/ui/aspect-ratio';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import DivSection from '@/Components/ui/div-section';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Select from 'react-select';
+import { customStyles } from '@/hooks/custom-select';
 
-export default function UserForm({ data, setData, errors, roles, role, user = "" }) {
+export default function UserForm({ data, setData, errors, stores, roles, role, user = "" }) {
     return (
         <>
             {/* {user.avatar ? ( */}
@@ -23,7 +25,7 @@ export default function UserForm({ data, setData, errors, roles, role, user = ""
             )} */}
 
             <div className="col-span-full flex justify-center">
-                
+
                 <Avatar className="h-56 w-56 ">
                     <AvatarImage className="h-56 w-56 object-cover" src={user.avatar_url} />
                     <AvatarFallback className="h-56 w-56 object-cover bg-slate-200 border-2 border-slate-400">
@@ -126,19 +128,28 @@ export default function UserForm({ data, setData, errors, roles, role, user = ""
 
                     <div>
                         <InputLabel htmlFor="role" value="Rol" />
-                        <Select value={data.role} onValueChange={(value) => setData('role', value)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Seleccione un rol" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {roles.map((role) => (
-                                    <SelectItem key={role.id} value={role.name}>
-                                        {role.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Select
+                            name="role"
+                            id="role"
+                            options={roles.map(role => ({ value: role.id, label: role.name }))}
+                            value={roles.length > 0 ? roles.map(role => ({ value: role.id, label: role.name })).find(option => option.value === data.role) : null}
+                            onChange={(selectedOption) => setData('role', selectedOption ? selectedOption.value : null)}
+                            styles={customStyles}
+                        />
                         <InputError message={errors.role} className="mt-2" />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="store" value="Tiendas" />
+                        <Select
+                            name="store_id"
+                            id="store"
+                            options={stores.length > 0 ? stores.map(store => ({ value: store.id, label: store.store_name })) : []}
+                            value={stores.length > 0 ? stores.map(store => ({ value: store.id, label: store.store_name })).find(option => option.value === data.store_id) : null}
+                            onChange={(selectedOption) => setData('store_id', selectedOption ? selectedOption.value : null)}
+                            styles={customStyles}
+                        />
+                        <InputError message={errors.store_id} className="mt-2" />
                     </div>
                 </DivSection>
 

@@ -75,4 +75,9 @@ class User extends Authenticatable implements HasMedia
               ->width(500)
               ->height(500);
     }
+
+    public function stores()
+    {
+        return $this->belongsToMany(Store::class, 'user_stores');
+    }
 }

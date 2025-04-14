@@ -14,15 +14,15 @@ class OrderApiController extends Controller
 {
     public function index(Request $request)
     {
-        $orders = Order::with('orderItems', 'client','user', 'paymentMethod')
-        ->get();
+        $orders = Order::with('orderItems', 'client', 'user', 'paymentMethod')
+            ->get();
 
         return response()->json($orders);
     }
 
     public function show($id)
     {
-        $order = Order::with('orderItems', 'client','user', 'paymentMethod')->find($id);
+        $order = Order::with('orderItems', 'client', 'user', 'paymentMethod')->find($id);
 
         if (!$order) {
             return response()->json(['error' => 'Order not found'], 404);
@@ -149,6 +149,7 @@ class OrderApiController extends Controller
 
     public function store(Request $request)
     {
+        // Validar la solicitud
         $validator = Validator::make($request->all(), [
             'client_id' => 'required|exists:clients,id',
             'payments_method_id' => 'required|exists:payments_methods,id',
@@ -156,6 +157,8 @@ class OrderApiController extends Controller
             'subtotal' => 'required|string',
             'total' => 'required|string',
             'direction_delivery' => 'nullable|string',
+            'order_origin' => 'nullable|string',
+            'store_id' => 'required|exists:stores,id', // Asegúrate de que este ID exista
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -168,6 +171,7 @@ class OrderApiController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
+        // Crear la orden
         $order = Order::create([
             'status' => 'Finalizado',
             'totaldiscounts' => $request->totaldiscounts,
@@ -179,6 +183,10 @@ class OrderApiController extends Controller
             'payments_method_id' => $request->payments_method_id,
         ]);
 
+        // Asociar la orden con la tienda
+    $order->stores()->attach($request->store_id); // Usa la relación definida
+        
+    // Crear los items de la orden
         foreach ($request->items as $item) {
             $product = Product::find($item['product_id']);
             if (!$product) {
@@ -206,7 +214,7 @@ class OrderApiController extends Controller
 
             $subtotal = $item['price'] * $item['quantity'];
 
-            // Crear el registro en order_items sin product_id ni combination_id
+            // Crear el registro en order_items
             OrderItem::create([
                 'order_id' => $order->id,
                 'price_product' => $item['price'],
@@ -221,9 +229,10 @@ class OrderApiController extends Controller
             $stock->save();
         }
 
+        // Retornar la orden creada con los items
         return response()->json($order->load('orderItems'), 201);
     }
-    
+
     public function storeUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -233,6 +242,8 @@ class OrderApiController extends Controller
             'subtotal' => 'required|string',
             'total' => 'required|string',
             'direction_delivery' => 'nullable|string',
+            'order_origin' => 'nullable|string',
+            'store_id' => 'required|exists:stores,id', // Asegúrate de que este ID exista
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -255,6 +266,9 @@ class OrderApiController extends Controller
             'user_id' => $request->user_id,
             'payments_method_id' => $request->payments_method_id,
         ]);
+
+        // Asociar la orden con la tienda
+    $order->stores()->attach($request->store_id); // Usa la relación definida
 
         foreach ($request->items as $item) {
             $product = Product::find($item['product_id']);

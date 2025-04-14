@@ -18,7 +18,7 @@ class Order extends Model
         'order_origin',
         'payments_method_id',
         'user_id',
-        'client_id', 
+        'client_id',
     ];
 
     public function orderItems()
@@ -38,5 +38,10 @@ class Order extends Model
     public function paymentMethod()
     {
         return $this->belongsTo(PaymentMethod::class, 'payments_method_id');
+    }
+
+    public function stores()
+    {
+        return $this->belongsToMany(Store::class, 'store_orders');
     }
 }

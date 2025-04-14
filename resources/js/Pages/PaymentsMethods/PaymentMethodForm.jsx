@@ -3,7 +3,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
-import { Trash } from 'lucide-react';
+import { PlusCircle, Trash } from 'lucide-react';
 
 export default function PaymentMethodForm({ data, setData, errors, addPaymentDetail, removePaymentDetail }) {
     return (
@@ -58,8 +58,13 @@ export default function PaymentMethodForm({ data, setData, errors, addPaymentDet
                             <InputError message={errors.payment_details?.[index]?.value} className="mt-2" />
                         </div>
                         <div className="flex justify-center items-end col-span-1">
-                            <Button type="button" variant="outlineDestructive" size="icon" onClick={() => removePaymentDetail(index)}>
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                onClick={() => removePaymentDetail(index)}
+                            >
                                 <Trash size={24} />
+                                Eliminar dato
                             </Button>
                         </div>
                     </div>
@@ -67,7 +72,8 @@ export default function PaymentMethodForm({ data, setData, errors, addPaymentDet
 
                 <div className="flex justify-center">
                     <Button variant="link" size="sm" type="button" onClick={addPaymentDetail}>
-                        Agregar Detalle
+                        <PlusCircle className="size-4" />
+                        Agregar dato
                     </Button>
                 </div>
             </div>

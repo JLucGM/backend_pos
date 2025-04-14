@@ -8,14 +8,13 @@ import { Badge } from '@/Components/ui/badge';
 import { WalletCards } from 'lucide-react';
 
 export default function Edit({ orders, paymentMethods }) {
-    console.log(orders)
+    // console.log(orders)
     const initialValues = {
         status: orders.status,
         total: orders.total,
         direction_delivery: orders.direction_delivery,
         // client_id: orders.client.id, // Cambiado para que solo contenga el ID
         payments_method_id: orders.payments_method_id, // Agrega este campo
-
     }
 
     // if (orders.client_id !== null) {
@@ -53,10 +52,10 @@ export default function Edit({ orders, paymentMethods }) {
         e.preventDefault();
         post(route('orders.update', orders)), {
             onSuccess: () => {
-                toast("Producto actualizado con éxito.");
+                toast("Pedido actualizado con éxito.");
             },
             onError: () => {
-                toast.error("Error al actualizar el producto.");
+                toast.error("Error al actualizar el pedido.");
             }
         }
         // console.log(data)
@@ -81,7 +80,7 @@ export default function Edit({ orders, paymentMethods }) {
                     <div className="flex bg-red- items-center justify-start space-x-1 ps-7 mt-1">
                         <WalletCards className='size-4 text-gray-700' />
                         <p className='capitalize text-sm font-medium text-gray-700 dark:text-gray-300'>
-                            {orders.order_origin}
+                            {orders.order_origin} - {orders.stores[0].store_name}
                         </p>
                     </div>
                 </div>
@@ -110,7 +109,7 @@ export default function Edit({ orders, paymentMethods }) {
                                     variant="default"
                                     size="sm"
                                     disabled={processing}
-type="submit"
+                                    type="submit"
                                 // onClick={() =>
                                 //     toast("Actualizado.", {
                                 //         description: "Se ha actualizado con éxito.",

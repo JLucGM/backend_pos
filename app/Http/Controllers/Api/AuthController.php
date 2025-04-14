@@ -13,15 +13,34 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        // return response()->json($request->all());
+        // Validar la solicitud
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8',
+            'phone' => 'nullable|string|max:15',
+        ]);
 
-        $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = $request->password;
-        $user->status = 1;
-        $user->save();
+        try {
+            // Crear el usuario
+            $user = new User();
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->password = bcrypt($request->password);
+            $user->phone = $request->phone;
+            $user->status = 1;
+            $user->save();
 
-        return response()->json(['message' => 'registered user'], 200);
+            // Asignar el rol "cliente"
+        $user->assignRole('client'); // Asegúrate de que el rol "cliente" exista
+
+
+            return response()->json(['message' => 'Registered user'], 201);
+        } catch (\Exception $e) {
+            // Manejar el error
+            return response()->json(['error' => 'Error al registrar el usuario: ' . $e->getMessage()], 500);
+        }
     }
 
     public function login(Request $request)

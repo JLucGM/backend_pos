@@ -4,7 +4,7 @@ import UserForm from './UserForm';
 import { Button } from '@/Components/ui/button';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
-export default function Create({ roles, role }) {
+export default function Create({ stores, roles, role }) {
 
     const initialValues = {
         name: "",
@@ -13,7 +13,8 @@ export default function Create({ roles, role }) {
         password: "",
         status: 0, // o 1, dependiendo del valor predeterminado que desees
         avatar: null,
-        role: "",
+        role: roles.length > 0 ? roles[0].id : null,
+        store_id: stores.length > 0 ? stores[0].id : null,
     }
 
     const { data, setData, errors, post } = useForm(initialValues)
@@ -21,8 +22,8 @@ export default function Create({ roles, role }) {
     const submit = (e) => {
         e.preventDefault();
         post(route('user.store'))
-        // console.log(data)
     }
+    
     return (
         <AuthenticatedLayout
             header={
@@ -43,17 +44,23 @@ export default function Create({ roles, role }) {
                 <form onSubmit={submit} className='space-y-4'>
 
                     <div className="grid grid-cols-3 gap-4">
-                        <UserForm data={data} setData={setData} errors={errors} roles={roles} role={role} />
+                        <UserForm 
+                        data={data} 
+                        setData={setData}
+                        errors={errors} 
+                        stores={stores} 
+                        roles={roles} 
+                        role={role} />
                     </div>
 
                     <div className="flex justify-end p-2.5">
                         <Button
-                            variant="outline"
-                            onClick={() =>
-                                toast("Creado.", {
-                                    description: "Se ha creado con éxito.",
-                                })
-                            }
+                            
+                            // onClick={() =>
+                            //     toast("Creado.", {
+                            //         description: "Se ha creado con éxito.",
+                            //     })
+                            // }
                         >
                             Guardar
                         </Button>

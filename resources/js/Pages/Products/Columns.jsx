@@ -1,12 +1,23 @@
+import { Avatar } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
-
 export const ProductColumns = [
     {
-        header: "#id",
+        header: "",
         accessorKey: "id",
         cell: ({ row }) => (
             <div className="flex items-center">
-                <p className='me-2'>{row.original.id}</p>
+                {row.original.media.length > 0 && (
+                    <img
+                        src={row.original.media[0]?.original_url} // URL de la imagen o del placeholder
+                        alt={row.original.product_name}
+                        className="h-8 w-8 rounded-lg me-2 object-cover content-center"
+                        onError={(e) => {
+                            e.target.onerror = null; // Evita bucles infinitos
+                            e.target.src = "https://placehold.co/32"; // URL del placeholder
+                        }}
+                    />
+                )}
+
             </div>
         ),
     },
@@ -20,7 +31,7 @@ export const ProductColumns = [
         cell: ({ row }) => {
             return (
                 <p>
-                    ${row.original.product_price }
+                    ${row.original.product_price}
                 </p>
             )
         },

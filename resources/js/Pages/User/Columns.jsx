@@ -3,11 +3,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const userColumns = [
     {
-        header: "#id",
+        header: "",
         accessorKey: "id",
         cell: ({ row }) => (
             <div className="flex items-center">
-                <p className='me-2'>{row.original.id}</p>
+                {/* <p className='me-2'>{row.original.id}</p> */}
                 <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={row.original.avatar_url} alt={row.original.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>

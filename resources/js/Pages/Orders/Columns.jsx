@@ -4,7 +4,7 @@ export const ordersColumns = [
         accessorKey: "id",
         cell: ({ row }) => (
             <div className="flex items-center">
-                <p className='me-2'>{row.original.id}</p>  
+                <p className='me-2'>{row.original.id}</p>
             </div>
         ),
     },
@@ -20,7 +20,7 @@ export const ordersColumns = [
         },
     },
     {
-        header: "status",
+        header: "Status",
         accessorKey: "status",
     },
     {
@@ -28,12 +28,22 @@ export const ordersColumns = [
         accessorKey: "order_origin",
     },
     {
-        header: "total",
+        header: "Total",
         accessorKey: "total",
         cell: ({ row }) => {
             return (
                 <p>${row.original.total}</p>
-            )
+            );
+        },
+    },
+    {
+        header: "Tienda",
+        accessorKey: "stores",
+        cell: ({ row }) => {
+            const storeName = row.original.stores.length > 0 ? row.original.stores[0].store_name : "N/A";
+            return (
+                <p>{storeName}</p>
+            );
         },
     },
     {

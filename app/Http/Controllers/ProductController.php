@@ -33,7 +33,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product = Product::with('tax', 'stocks', 'categories')->get();
+        $product = Product::with('tax', 'stocks', 'categories','media')->get();
 
 
         $user = Auth::user();

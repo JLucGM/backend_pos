@@ -16,7 +16,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with('user','client')->get();
+        $orders = Order::with('user','client','stores')->get();
         
         $user = Auth::user();
         $role = $user->getRoleNames();
@@ -55,7 +55,7 @@ class OrderController extends Controller
      */
     public function edit(Order $orders)
     {
-        $orders->load('user', 'client', 'user', 'orderItems', 'paymentMethod');
+        $orders->load('user', 'client', 'user', 'orderItems', 'paymentMethod','stores');
         $paymentMethods = PaymentMethod::all();
         // dd($orders->load('user'));
 

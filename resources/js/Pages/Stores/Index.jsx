@@ -12,7 +12,11 @@ import StoresForm from './storesForm';
 import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ stores, countries, states, cities, permission }) {
-    let [isOpen, setIsOpen] = useState(false)
+    const [isOpen, setIsOpen] = useState(false)
+    // console.log('pais',countries)
+    // console.log('estado',states)
+    // console.log('ciudad',cities)
+
     const { data, setData, errors, post } = useForm({
         store_name: "",
         store_phone: "",
@@ -96,7 +100,9 @@ export default function Index({ stores, countries, states, cities, permission })
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
                     <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
                         <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear tiendas</DialogTitle>
-                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del tiendas</Description>
+                        <Description className={'text-sm text-gray-700 dark:text-gray-300'}>
+                            Estos datos podrían estar disponibles públicamente. No utilice su información personal.
+                        </Description>
                         <form onSubmit={submit} className='space-y-4'>
 
                             <StoresForm data={data} setData={setData} errors={errors} countries={countries} states={states} cities={cities} />

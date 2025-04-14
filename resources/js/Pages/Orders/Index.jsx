@@ -57,7 +57,7 @@ console.log(orders);
                 ) : (
                     <div className="flex flex-col items-center justify-center h-96">
                         <Store size={64} />
-                        <p>No hay órdenes registradas.</p>
+                        <p>No hay pedidos registradas.</p>
                     </div>
                 )}
             </DivSection>

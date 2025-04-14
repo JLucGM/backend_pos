@@ -13,7 +13,7 @@ class SettingApiController extends Controller
      */
     public function index()
     {
-try {
+        try {
             $setting = Setting::with('media')->first();
             return response()->json($setting, 200);
         } catch (\Exception $e) {
