@@ -7,6 +7,7 @@ use App\Models\Combination;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -154,11 +155,12 @@ class OrderApiController extends Controller
             'client_id' => 'required|exists:clients,id',
             'payments_method_id' => 'required|exists:payments_methods,id',
             'totaldiscounts' => 'required|string',
+            'status' => 'required|string',
             'subtotal' => 'required|string',
             'total' => 'required|string',
             'direction_delivery' => 'nullable|string',
             'order_origin' => 'nullable|string',
-            'store_id' => 'required|exists:stores,id', // Asegúrate de que este ID exista
+            'store_id' => 'nullable|exists:stores,id',
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -173,7 +175,7 @@ class OrderApiController extends Controller
 
         // Crear la orden
         $order = Order::create([
-            'status' => 'Finalizado',
+            'status' => $request->status,
             'totaldiscounts' => $request->totaldiscounts,
             'subtotal' => $request->subtotal,
             'total' => $request->total,
@@ -184,9 +186,10 @@ class OrderApiController extends Controller
         ]);
 
         // Asociar la orden con la tienda
-    $order->stores()->attach($request->store_id); // Usa la relación definida
-        
-    // Crear los items de la orden
+        $order->stores()->attach($request->store_id); // Usa la relación definida
+        // Si no se proporciona store_id, se puede omitir esta parte
+
+        // Crear los items de la orden
         foreach ($request->items as $item) {
             $product = Product::find($item['product_id']);
             if (!$product) {
@@ -239,11 +242,12 @@ class OrderApiController extends Controller
             'user_id' => 'required|exists:users,id',
             'payments_method_id' => 'required|exists:payments_methods,id',
             'totaldiscounts' => 'required|string',
+            'status' => 'required|string',
             'subtotal' => 'required|string',
             'total' => 'required|string',
             'direction_delivery' => 'nullable|string',
             'order_origin' => 'nullable|string',
-            'store_id' => 'required|exists:stores,id', // Asegúrate de que este ID exista
+            'store_id' => 'required|exists:stores,id',
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -257,7 +261,7 @@ class OrderApiController extends Controller
         }
 
         $order = Order::create([
-            'status' => 'Finalizado',
+            'status' => $request->status,
             'totaldiscounts' => $request->totaldiscounts,
             'subtotal' => $request->subtotal,
             'total' => $request->total,
@@ -268,7 +272,7 @@ class OrderApiController extends Controller
         ]);
 
         // Asociar la orden con la tienda
-    $order->stores()->attach($request->store_id); // Usa la relación definida
+        $order->stores()->attach($request->store_id); // Usa la relación definida
 
         foreach ($request->items as $item) {
             $product = Product::find($item['product_id']);

@@ -80,7 +80,7 @@ export default function Edit({ orders, paymentMethods }) {
                     <div className="flex bg-red- items-center justify-start space-x-1 ps-7 mt-1">
                         <WalletCards className='size-4 text-gray-700' />
                         <p className='capitalize text-sm font-medium text-gray-700 dark:text-gray-300'>
-                            {orders.order_origin} - {orders.stores[0].store_name}
+                        {orders.order_origin} - {(orders.stores && orders.stores.length > 0 ? orders.stores[0].store_name : "Sin tienda")}
                         </p>
                     </div>
                 </div>
