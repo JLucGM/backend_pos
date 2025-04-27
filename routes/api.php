@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\PaymentMethodApiController;
 use App\Http\Controllers\Api\SettingApiController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\StoreProductController;
+use App\Http\Controllers\Api\UsersApiController;
 use Illuminate\Support\Facades\Route;
 
 // middleware auth
@@ -27,6 +28,7 @@ Route::get('products/{id}', [ProductApiController::class, 'show']);
 Route::get('orders', [OrderApiController::class, 'index']);
 Route::post('orders', [OrderApiController::class, 'store']);
 Route::get('orders/{id}', [OrderApiController::class, 'show']);
+Route::get('orders-list/{id}', [OrderApiController::class, 'indexUser']);
 Route::post('orders-user', [OrderApiController::class, 'storeUser']);
 // Route::get('orders', [OrderApiController::class, 'index']);
 // Route::get('orders/{id}', [OrderApiController::class, 'show']);
@@ -44,3 +46,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 
 Route::get('settings', [SettingApiController::class, 'index']);
+
+Route::get('users/{id}', [UsersApiController::class, 'show']);
+Route::put('users/{id}', [UsersApiController::class, 'update']);
+Route::delete('users/{id}', [UsersApiController::class, 'destroy']);

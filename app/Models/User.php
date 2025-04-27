@@ -32,6 +32,7 @@ class User extends Authenticatable implements HasMedia
         'phone',
         'status',
         'avatar',
+        'identification',
     ];
 
     public function getRouteKeyName()

@@ -23,13 +23,27 @@ class OrderApiController extends Controller
 
     public function show($id)
     {
-        $order = Order::with('orderItems', 'client', 'user', 'paymentMethod')->find($id);
+        $order = Order::with('orderItems', 'client', 'user', 'paymentMethod','stores')->find($id);
 
         if (!$order) {
             return response()->json(['error' => 'Order not found'], 404);
         }
 
         return response()->json($order);
+    }
+
+    public function indexUser ($id) {
+        // Obtener todos los pedidos del usuario con el ID proporcionado
+        $orders = Order::with('orderItems', 'client', 'user', 'paymentMethod','stores')
+            ->where('user_id', $id) // Asegúrate de que 'user_id' es el nombre correcto de la columna en tu tabla de pedidos
+            ->get();
+    
+        // Verificar si se encontraron pedidos
+        if ($orders->isEmpty()) {
+            return response()->json(['error' => 'No orders found for this user'], 404);
+        }
+    
+        return response()->json($orders);
     }
 
     // public function destroy($id)

@@ -36,7 +36,7 @@ class AuthController extends Controller
         $user->assignRole('client'); // Asegúrate de que el rol "cliente" exista
 
 
-            return response()->json(['message' => 'Registered user'], 201);
+            return response()->json(['message' => 'Usuario registrado'], 201);
         } catch (\Exception $e) {
             // Manejar el error
             return response()->json(['error' => 'Error al registrar el usuario: ' . $e->getMessage()], 500);
