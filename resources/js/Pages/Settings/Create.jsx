@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import CategoriesForm from './SettingsForm';
+import CategoriesForm from './settingsForm';
 import { Button } from '@/Components/ui/button';
 
 export default function Create({ }) {

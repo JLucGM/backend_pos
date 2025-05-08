@@ -33,7 +33,7 @@ class AuthController extends Controller
             $user->save();
 
             // Asignar el rol "cliente"
-        $user->assignRole('client'); // Asegúrate de que el rol "cliente" exista
+            $user->assignRole('client'); // Asegúrate de que el rol "cliente" exista
 
 
             return response()->json(['message' => 'Usuario registrado'], 201);
@@ -71,7 +71,6 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-
         return response()->json(['message' => 'Logged out successfully']);
     }
 }
