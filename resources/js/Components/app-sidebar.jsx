@@ -1,7 +1,7 @@
 import * as React from "react"
 import {
   AudioWaveform,
-  BookOpen,
+  // BookOpen,
   Bot,
   Cog,
   Command,
@@ -9,26 +9,26 @@ import {
   GalleryVerticalEnd,
   HomeIcon,
   Map,
-  MapPin,
+  // MapPin,
   MapPinned,
   PieChart,
-  Settings2,
+  // Settings2,
   ShoppingBag,
   ShoppingBasket,
-  SquareTerminal,
+  // SquareTerminal,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
+// import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+// import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { Link, usePage } from "@inertiajs/react"
+import { usePage } from "@inertiajs/react"
 import { NavSingle } from "./nav-single"
 
 export function AppSidebar({
