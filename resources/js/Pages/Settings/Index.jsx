@@ -8,7 +8,7 @@ import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
 import { Button } from '@/Components/ui/button';
 import { StoresColumns } from './Columns';
-import StoresForm from './settingsForm';
+import SettingsForm from './settingsForm';
 import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ stores, countries, states, cities, permission }) {
@@ -99,7 +99,7 @@ export default function Index({ stores, countries, states, cities, permission })
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del tiendas</Description>
                         <form onSubmit={submit} className='space-y-4'>
 
-                            <StoresForm data={data} setData={setData} errors={errors} countries={countries} states={states} cities={cities} />
+                            <SettingsForm data={data} setData={setData} errors={errors} countries={countries} states={states} cities={cities} />
 
                             <div className="flex justify-end p-2.5">
                                 <Button
