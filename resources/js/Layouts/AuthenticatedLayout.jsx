@@ -1,5 +1,6 @@
 // import { usePage } from '@inertiajs/react';
 import { AppSidebar } from "@/Components/app-sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/Components/ui/sidebar";
 // import {
 //   Breadcrumb,
 //   BreadcrumbItem,
@@ -9,11 +10,11 @@ import { AppSidebar } from "@/Components/app-sidebar";
 //   BreadcrumbSeparator,
 // } from "@/components/ui/breadcrumb"
 // import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
+// import {
+//   SidebarInset,
+//   SidebarProvider,
+//   SidebarTrigger,
+// } from "@/Components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 
 export default function AuthenticatedLayout({ header, children }) {
