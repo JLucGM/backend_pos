@@ -20,7 +20,7 @@ import {
 
 // import { NavMain } from "@/components/nav-main"
 // import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
+// import { NavUser } from "@/components/nav-user"
 // import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
@@ -31,6 +31,7 @@ import {
 import { usePage } from "@inertiajs/react"
 import { NavSingle } from "./nav-single"
 import { NavMain } from "@/Components/nav-main"
+import { NavUser } from "@/Components/nav-user"
 
 export function AppSidebar({
   ...props
