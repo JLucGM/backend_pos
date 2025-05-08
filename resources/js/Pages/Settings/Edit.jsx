@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
-import SettingsForm from './settingsForm';
+import SettingsForm from '@/Pages/Settings/SettingsForm';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
 
