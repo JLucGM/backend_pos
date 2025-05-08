@@ -27,7 +27,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/Components/ui/sidebar"
 import { usePage } from "@inertiajs/react"
 import { NavSingle } from "./nav-single"
 
