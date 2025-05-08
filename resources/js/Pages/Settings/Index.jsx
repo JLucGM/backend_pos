@@ -8,7 +8,7 @@ import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
 import { Button } from '@/Components/ui/button';
 import { StoresColumns } from './Columns';
-import SettingsForm from './settingsForm';
+import SettingsForm from '@/Pages/Settings/SettingsForm';
 import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ stores, countries, states, cities, permission }) {
