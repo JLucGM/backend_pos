@@ -4,7 +4,7 @@ import TextInput from '@/Components/TextInput';
 import DivSection from '@/Components/ui/div-section';
 import { customStyles } from '@/hooks/custom-select';
 import Select from 'react-select';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow,} from "@/Components/ui/table"
 
 export default function OrdersForm({ data, orders = "", paymentMethods, setData, errors, isDisabled = false }) {
 
