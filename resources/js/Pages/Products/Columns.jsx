@@ -1,5 +1,5 @@
-import { Avatar } from '@/Components/ui/avatar';
 import { Badge } from '@/Components/ui/badge';
+
 export const ProductColumns = [
     {
         header: "",

@@ -1,5 +1,3 @@
-import { Badge } from '@/Components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const StoresColumns = [
     {
