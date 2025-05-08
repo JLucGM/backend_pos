@@ -18,7 +18,7 @@ import {
   // SquareTerminal,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
+// import { NavMain } from "@/components/nav-main"
 // import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 // import { TeamSwitcher } from "@/components/team-switcher"
@@ -30,6 +30,7 @@ import {
 } from "@/Components/ui/sidebar"
 import { usePage } from "@inertiajs/react"
 import { NavSingle } from "./nav-single"
+import { NavMain } from "@/Components/nav-main"
 
 export function AppSidebar({
   ...props
