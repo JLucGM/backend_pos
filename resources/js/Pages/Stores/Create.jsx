@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import CategoriesForm from './StoresForm';
+// import CategoriesForm from './StoresForm';
 import { Button } from '@/Components/ui/button';
 
 export default function Create({ }) {
@@ -34,7 +34,7 @@ export default function Create({ }) {
                         <form onSubmit={submit} className='space-y-4'>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <CategoriesForm data={data} setData={setData} errors={errors} />
+                                {/* <CategoriesForm data={data} setData={setData} errors={errors} /> */}
                             </div>
 
                             <div className="flex justify-end p-2.5">
