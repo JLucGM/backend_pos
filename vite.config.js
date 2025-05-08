@@ -13,7 +13,7 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            '@': resolve(__dirname, 'resources/js'), // Agrega esta línea
+            '@': resolve(__dirname, 'resources/js'), // Asegúrate de que esto esté configurado
         },
     },
 });
