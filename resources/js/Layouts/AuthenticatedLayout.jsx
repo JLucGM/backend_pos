@@ -1,6 +1,7 @@
 // import { usePage } from '@inertiajs/react';
 import { AppSidebar } from "@/Components/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/Components/ui/sidebar";
+import { Toaster } from "@/Components/ui/sonner";
 // import {
 //   Breadcrumb,
 //   BreadcrumbItem,
@@ -15,7 +16,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/Components/ui/s
 //   SidebarProvider,
 //   SidebarTrigger,
 // } from "@/Components/ui/sidebar"
-import { Toaster } from "@/components/ui/sonner"
+// import { Toaster } from "@/components/ui/sonner"
 
 export default function AuthenticatedLayout({ header, children }) {
   // const user = usePage().props.auth.user;
