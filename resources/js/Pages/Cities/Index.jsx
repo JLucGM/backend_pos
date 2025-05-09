@@ -1,14 +1,15 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
-import { useState } from 'react'
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Description } from '@headlessui/react'
+import { useState, lazy, Suspense } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
 import { Button } from '@/Components/ui/button';
 import { CitiesColumns } from './Columns';
-import CitiesForm from './CitiesForm';
+// import CitiesForm from './CitiesForm';
+const CitiesForm = lazy(() => import('./CitiesForm'));
 import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ cities, state, permission }) {
@@ -18,32 +19,14 @@ export default function Index({ cities, state, permission }) {
         state_id: state[0].id,
     });
 
-    // const items = [
-    //     {
-    //         name: 'Dashboard',
-    //         href: 'dashboard',
-    //         icon: {
-    //             path: 'M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z',
-    //         },
-    //     },
-    //     {
-    //         name: 'Lista de usuarios',
-    //         icon: {
-    //             path: 'M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z',
-    //         },
-    //     },
-    // ];
-
     const submit = (e) => {
         e.preventDefault();
         post(route('cities.store'))
-        // console.log(data)
         setData({
             city_name: "",
             state_id: state[0].id,
         });
     }
-    // console.log(data)
     return (
         <AuthenticatedLayout
             header={
@@ -60,25 +43,22 @@ export default function Index({ cities, state, permission }) {
                 </div>
             }
         >
-            {/* <Breadcrumb items={items} /> */}
-
             <Head title="Ciudades" />
 
             <DivSection>
-            {cities.length > 0 ? (
-                <DataTable
-                    columns={CitiesColumns}
-                    data={cities}
-                    routeEdit={'cities.edit'}
-                    routeDestroy={'cities.destroy'}
-                    editPermission={'admin.cities.edit'} // Pasa el permiso de editar
-                    deletePermission={'admin.cities.delete'} // Pasa el permiso de eliminar
-                    // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                    permissions={permission}
-                />
-            ) : (
-                null
-            )}
+                {cities.length > 0 ? (
+                    <DataTable
+                        columns={CitiesColumns}
+                        data={cities}
+                        routeEdit={'cities.edit'}
+                        routeDestroy={'cities.destroy'}
+                        editPermission={'admin.cities.edit'}
+                        deletePermission={'admin.cities.delete'}
+                        permissions={permission}
+                    />
+                ) : (
+                    null
+                )}
             </DivSection>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
@@ -89,9 +69,9 @@ export default function Index({ cities, state, permission }) {
                         <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear ciudad</DialogTitle>
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del ciudad</Description>
                         <form onSubmit={submit} className='space-y-4'>
-
-                            <CitiesForm data={data} setData={setData} errors={errors} states={state} />
-
+                            <Suspense fallback={<div>Cargando formulario...</div>}>
+                                <CitiesForm data={data} setData={setData} errors={errors} states={state} />
+                            </Suspense>
                             <div className="flex justify-end p-2.5">
                                 <Button
                                     variant="default" size="sm"

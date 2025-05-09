@@ -2,21 +2,24 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
-import StatesForm from './StatesForm';
-import DivSection from '@/Components/ui/div-section';
+import { lazy, Suspense } from 'react';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
+import DivSection from '@/Components/ui/div-section';
 
-export default function Edit({ state, countries }) { // Asegúrate de recibir 'countries'
+// Define StatesForm como un componente cargado de forma lazy
+const StatesForm = lazy(() => import('./StatesForm'));
+
+export default function Edit({ state, countries }) {
     const initialValues = {
         state_name: state.state_name,
-        country_id: state.country_id, // Cambia esto para usar el ID del estado
+        country_id: state.country_id,
     };
 
     const { data, setData, errors, post } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('states.update', state)); // Asegúrate de usar el ID del estado
+        post(route('states.update', state));
     };
 
     return (
@@ -41,15 +44,16 @@ export default function Edit({ state, countries }) { // Asegúrate de recibir 'c
                     <div className=" text-gray-900 dark:text-gray-100">
                         <form onSubmit={submit} className='space-y-4'>
                             <DivSection>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <StatesForm data={data} setData={setData} errors={errors} countries={countries} />
-                            </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Suspense fallback={<div>Cargando formulario...</div>}>
+                                        <StatesForm data={data} setData={setData} errors={errors} countries={countries} />
+                                    </Suspense>
+                                </div>
                             </DivSection>
 
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                 variant="default" size="sm"
+                                    variant="default" size="sm"
                                     onClick={() =>
                                         toast("Actualizado.", {
                                             description: "Se ha actualizado con éxito.",

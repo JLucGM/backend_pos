@@ -1,10 +1,13 @@
+import React, { Suspense, lazy } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button, buttonVariants } from '@/Components/ui/button';
 import { toast } from 'sonner';
-import ProductsForm from './ProductsForm';
 import { ArrowLongLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/Components/ui/badge';
+// Lazy load ProductsForm
+const ProductsForm = lazy(() => import('./ProductsForm'));
+
 
 export default function Edit({ product, taxes, categories, stores, combinationsWithPrices }) {
     const selectedCategories = product.categories.map(category => category.id);
@@ -118,16 +121,18 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <ProductsForm
-                            data={data}
-                            setData={setData}
-                            errors={errors}
-                            taxes={taxes}
-                            categories={categories}
-                            stores={stores}
-                            combinationsWithPrices={combinationsWithPrices}
-                            product={product}
-                        />
+                        <Suspense fallback={<div>Cargando formulario...</div>}>
+                            <ProductsForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                                taxes={taxes}
+                                categories={categories}
+                                stores={stores}
+                                combinationsWithPrices={combinationsWithPrices}
+                                product={product}
+                            />
+                        </Suspense>
                     </div>
 
                     <div className="flex justify-end p-2.5">

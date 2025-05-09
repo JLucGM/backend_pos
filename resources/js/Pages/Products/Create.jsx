@@ -1,9 +1,12 @@
+import React, { Suspense, lazy } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
-import ProductsForm from './ProductsForm';
 import { toast } from 'sonner';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
+
+// Lazy load ProductsForm
+const ProductsForm = lazy(() => import('./ProductsForm'));
 
 export default function Create({ taxes, categories, stores }) {
     const { data, setData, errors, post, processing } = useForm({
@@ -60,14 +63,16 @@ export default function Create({ taxes, categories, stores }) {
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <ProductsForm
-                            data={data}
-                            setData={setData}
-                            errors={errors}
-                            taxes={taxes}
-                            categories={categories}
-                            stores={stores}
-                        />
+                        <Suspense fallback={<div>Cargando formulario...</div>}>
+                            <ProductsForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                                taxes={taxes}
+                                categories={categories}
+                                stores={stores}
+                            />
+                        </Suspense>
                     </div>
 
                     <div className="flex justify-end p-2.5">

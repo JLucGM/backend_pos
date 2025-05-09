@@ -1,14 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
-import { useState } from 'react'
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, DialogDescription } from '@headlessui/react'
+import { useState, lazy, Suspense } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
-// import Breadcrumb from '@/Components/Breadcrumb';
 import { Button } from '@/Components/ui/button';
 import { StatesColumns } from './Columns';
-import StatesForm from './StatesForm';
+// import StatesForm from './StatesForm';
+const StatesForm = lazy(() => import('./StatesForm'));
 import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ states, countries, permission }) {
@@ -18,32 +18,14 @@ export default function Index({ states, countries, permission }) {
         country_id: countries[0].id,
     });
 
-    // const items = [
-    //     {
-    //         name: 'Dashboard',
-    //         href: 'dashboard',
-    //         icon: {
-    //             path: 'M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z',
-    //         },
-    //     },
-    //     {
-    //         name: 'Lista de usuarios',
-    //         icon: {
-    //             path: 'M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z',
-    //         },
-    //     },
-    // ];
-
     const submit = (e) => {
         e.preventDefault();
         post(route('states.store'))
-        // console.log(data)
         setData({
             state_name: "",
             country_id: countries[0].id,
         });
     }
-    // console.log(data)
     return (
         <AuthenticatedLayout
             header={
@@ -60,8 +42,6 @@ export default function Index({ states, countries, permission }) {
                 </div>
             }
         >
-            {/* <Breadcrumb items={items} /> */}
-
             <Head className="capitalize" title="Estados" />
 
             <DivSection>
@@ -71,9 +51,8 @@ export default function Index({ states, countries, permission }) {
                         data={states}
                         routeEdit={'states.edit'}
                         routeDestroy={'states.destroy'}
-                        editPermission={'admin.states.edit'} // Pasa el permiso de editar
-                        deletePermission={'admin.states.delete'} // Pasa el permiso de eliminar
-                        // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
+                        editPermission={'admin.states.edit'}
+                        deletePermission={'admin.states.delete'}
                         permissions={permission}
                     />
                 ) : (
@@ -87,11 +66,11 @@ export default function Index({ states, countries, permission }) {
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
                     <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
                         <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear estado</DialogTitle>
-                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del estado</Description>
+                        <DialogDescription className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del estado</DialogDescription>
                         <form onSubmit={submit} className='space-y-4'>
-
-                            <StatesForm data={data} setData={setData} errors={errors} countries={countries} />
-
+                            <Suspense fallback={<div>Cargando formulario...</div>}>
+                                <StatesForm data={data} setData={setData} errors={errors} countries={countries} />
+                            </Suspense>
                             <div className="flex justify-end p-2.5">
                                 <Button
                                     variant="default"

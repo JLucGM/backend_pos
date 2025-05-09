@@ -1,21 +1,23 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import CategoriesForm from './CategoriesForm';
+import { Head, useForm } from '@inertiajs/react';
+import { lazy, Suspense } from 'react';
 import { Button } from '@/Components/ui/button';
 
-export default function Create({ }) {
+// Cargar el componente de forma diferida
+const CategoriesForm = lazy(() => import('./CategoriesForm'));
 
+export default function Create() {
     const initialValues = {
         name: "",
     }
 
-    const { data, setData, errors, post } = useForm(initialValues)
+    const { data, setData, errors, post } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('category.store'))
-        // console.log(data)
+        post(route('category.store'));
     }
+
     return (
         <AuthenticatedLayout
             header={
@@ -34,7 +36,9 @@ export default function Create({ }) {
                         <form onSubmit={submit} className='space-y-4'>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <CategoriesForm data={data} setData={setData} errors={errors} />
+                                <Suspense fallback={<div>Cargando formulario...</div>}>
+                                    <CategoriesForm data={data} setData={setData} errors={errors} />
+                                </Suspense>
                             </div>
 
                             <div className="flex justify-end p-2.5">
