@@ -1,11 +1,10 @@
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/Components/ui/chart';
 import DivSection from '@/Components/ui/div-section';
 import { ScrollArea } from '@/Components/ui/scroll-area';
-import { Separator } from '@/Components/ui/separator';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/Components/ui/badge"
 
 export default function Dashboard({ client, orders, ordersCount, clientsCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod }) {
     const user = usePage().props.auth.user;
