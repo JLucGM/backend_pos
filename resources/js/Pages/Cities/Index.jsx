@@ -77,7 +77,7 @@ export default function Index({ cities, state, permission }) {
                     permissions={permission}
                 />
             ) : (
-                <p>no hay nada</p>
+                null
             )}
             </DivSection>
 

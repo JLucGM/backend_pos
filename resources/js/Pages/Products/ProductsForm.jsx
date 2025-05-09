@@ -8,8 +8,7 @@ import DivSection from '@/Components/ui/div-section';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { AlertCircleIcon, PlusCircle } from 'lucide-react';
-import { Separator } from '@/Components/ui/separator';
+import { PlusCircle } from 'lucide-react';
 import { customStyles } from '@/hooks/custom-select';
 import { Input } from '@/Components/ui/input';
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -19,16 +18,12 @@ import TextAreaRich from '@/Components/ui/TextAreaRich';
 
 export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", product = "", setData, errors }) {
 
-    // console.log(data)
     const animatedComponents = makeAnimated(); //Animacion de multiselect
     const textAreaRef = useRef(); // inicializacion de TextAreaRich
     const { delete: deleteImage } = useForm(); // Desestructura la función delete de useForm
     const [stocks, setStocks] = useState({});
     const [prices, setPrices] = useState({});
     const [showAttributes, setShowAttributes] = useState(false);
-    // const [showCombinations, setShowCombinations] = useState(false);
-    // const [hidePriceFields, setHidePriceFields] = useState(false);
-
 
     const categoryOptions = categories.map(category => ({
         value: category.id,
@@ -57,8 +52,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             setData('attribute_names', [...data.attribute_names, ""]);
             setData('attribute_values', [...data.attribute_values, [""]]);
             setShowAttributes(true); // Mostrar los inputs cuando se agrega un atributo
-            // setShowCombinations(true); // Mostrar la lista de combinaciones cuando se agrega un atributo
-            // setHidePriceFields(true); // Ocultar los campos de precio y descuento cuando se agrega un atributo
         } else {
             toast("No puedes agregar más de 3 atributos.", {
                 description: "Límite alcanzado.",

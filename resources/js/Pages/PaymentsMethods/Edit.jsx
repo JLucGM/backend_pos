@@ -17,7 +17,7 @@ export default function Edit({ payment_method }) {
     };
 
     const { data, setData, errors, post } = useForm(initialValues);
-    console.log(data);
+
     const addPaymentDetail = () => {
         setData('payment_details', [...data.payment_details, { data_type: "", value: "" }]);
     };

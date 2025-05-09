@@ -1,14 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
-import { useState } from 'react'
-import { useForm } from '@inertiajs/react';
-import { toast } from 'sonner';
 import DataTable from '@/Components/DataTable';
 // import Breadcrumb from '@/Components/Breadcrumb';
-import { Button, buttonVariants } from '@/Components/ui/button';
+import { buttonVariants } from '@/Components/ui/button';
 import { PaymentMethodColumn } from './Columns';
-import PaymentMethodForm from './PaymentMethodForm';
 import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ paymentmethod, permission }) {

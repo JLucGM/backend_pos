@@ -1,6 +1,5 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { AspectRatio } from '@/Components/ui/aspect-ratio';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';

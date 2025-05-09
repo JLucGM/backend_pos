@@ -56,8 +56,6 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
         initialValues.skus[combination] = combinationsWithPrices[combination].product_sku || ''; // Asigna el SKU correspondiente
     }
 
-    console.log(initialValues.stocks)
-
     // Usar useForm para manejar el estado del formulario
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
@@ -84,10 +82,6 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
         });
     };
 
-    // console.log("initialValues:", initialValues); // Verifica los valores iniciales
-    // console.log("Form Data:", initialValues.stocks); // Verifica los datos del formulario
-    // console.log("Initial Stocks:", initialValues.stocks); // Verifica los valores iniciales
-    console.log(data)
     return (
         <AuthenticatedLayout
             header={

@@ -1,6 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import CategoriesForm from './PaymentMethodForm';
+import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import PaymentMethodForm from './PaymentMethodForm';
 import DivSection from '@/Components/ui/div-section';

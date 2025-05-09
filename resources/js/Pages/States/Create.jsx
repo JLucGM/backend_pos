@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import CategoriesForm from './StatesForm';
 import { Button } from '@/Components/ui/button';
 
@@ -16,6 +16,7 @@ export default function Create({ }) {
         post(route('category.store'))
         // console.log(data)
     }
+    
     return (
         <AuthenticatedLayout
             header={

@@ -1,22 +1,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import SettingsForm from '@/Pages/Settings/SettingsForm';
-import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
 
 export default function Edit({ setting }) {
-     console.log(setting)
-    const initialValues = {
 
+    const initialValues = {
         app_name: setting.app_name,
         default_currency: setting.default_currency,
         admin_email: setting.admin_email,
         admin_phone: setting.admin_phone,
         shipping_base_price: setting.shipping_base_price,
-        // logo: setting.logo || '',
-        // favicon: setting.favicon || '',
     }
 
     // const items = [
@@ -49,6 +45,7 @@ export default function Edit({ setting }) {
         post(route('setting.update', setting))
         // console.log(data)
     }
+    
     return (
         <AuthenticatedLayout
             header={

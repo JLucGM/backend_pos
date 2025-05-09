@@ -1,9 +1,7 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
-import { Transition } from '@headlessui/react';
 import { useForm } from '@inertiajs/react';
 import { useRef } from 'react';
 
@@ -18,7 +16,6 @@ export default function UpdatePasswordForm({ className = '' }) {
         put,
         reset,
         processing,
-        recentlySuccessful,
     } = useForm({
         current_password: '',
         password: '',

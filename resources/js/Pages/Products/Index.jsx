@@ -9,7 +9,7 @@ import { Plus } from 'lucide-react';
 import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ product, permission }) {
-console.log(product)
+
     return (
         <AuthenticatedLayout
             header={

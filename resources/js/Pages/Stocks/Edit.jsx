@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import CategoriesForm from './StocksForm';

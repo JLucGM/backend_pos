@@ -5,15 +5,13 @@ import { toast } from 'sonner';
 import CategoriesForm from './ClientForm';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
-import { Separator } from '@/Components/ui/separator';
 
 export default function Edit({ client, orderCount, orderTotal }) {
-    console.log(client)
+
     const initialValues = {
         client_name: client.client_name,
         client_identification: client.client_identification,
         client_phone: client.client_phone,
-
     }
 
     // const items = [
@@ -46,6 +44,7 @@ export default function Edit({ client, orderCount, orderTotal }) {
         post(route('clients.update', client))
         // console.log(data)
     }
+    
     return (
         <AuthenticatedLayout
             header={

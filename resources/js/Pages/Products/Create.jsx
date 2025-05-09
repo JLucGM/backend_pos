@@ -14,7 +14,7 @@ export default function Create({ taxes, categories, stores }) {
         product_sku: "",
         product_barcode: "",
         barcodes: {}, // Nuevo campo para almacenar códigos de barras por combinación
-    skus: {}, // Nuevo campo para almacenar SKUs por combinación
+        skus: {}, // Nuevo campo para almacenar SKUs por combinación
         status: 0,
         product_status_pos: 0,
         categories: categories.length > 0 ? [categories[0].id] : [],
@@ -31,7 +31,7 @@ export default function Create({ taxes, categories, stores }) {
 
     const submit = (e) => {
         e.preventDefault();
-        console.log(data); // Verifica el contenido de data aquí
+
         post(route('products.store'), {
             onSuccess: () => {
                 toast("Producto creado con éxito.");
@@ -41,7 +41,7 @@ export default function Create({ taxes, categories, stores }) {
             }
         });
     };
-console.log(data);
+
     return (
         <AuthenticatedLayout
             header={

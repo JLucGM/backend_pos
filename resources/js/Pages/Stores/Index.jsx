@@ -13,9 +13,6 @@ import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ stores, countries, states, cities, permission }) {
     const [isOpen, setIsOpen] = useState(false)
-    // console.log('pais',countries)
-    // console.log('estado',states)
-    // console.log('ciudad',cities)
 
     const { data, setData, errors, post } = useForm({
         store_name: "",
