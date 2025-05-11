@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import InputError from '@/Components/InputError';
@@ -5,10 +6,9 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
-import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { PlusCircle } from 'lucide-react';
+import { Info, PlusCircle } from 'lucide-react';
 import { customStyles } from '@/hooks/custom-select';
 import { Input } from '@/Components/ui/input';
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -17,26 +17,24 @@ import Checkbox from '@/Components/Checkbox';
 import TextAreaRich from '@/Components/ui/TextAreaRich';
 
 export default function ProductsForm({ data, taxes, categories, stores, combinationsWithPrices = "", product = "", setData, errors }) {
-
-    const animatedComponents = makeAnimated(); //Animacion de multiselect
-    const textAreaRef = useRef(); // inicializacion de TextAreaRich
-    const { delete: deleteImage } = useForm(); // Desestructura la función delete de useForm
+    const animatedComponents = makeAnimated();
+    const textAreaRef = useRef();
+    const { delete: deleteImage } = useForm();
     const [stocks, setStocks] = useState({});
     const [prices, setPrices] = useState({});
     const [showAttributes, setShowAttributes] = useState(false);
+    const [localErrors, setLocalErrors] = useState({}); // Nuevo estado para errores locales
 
     const categoryOptions = categories.map(category => ({
         value: category.id,
         label: category.category_name
     }));
 
-    // Inicializa el estado de precios con los valores existentes
     useEffect(() => {
         setPrices(combinationsWithPrices);
     }, [combinationsWithPrices]);
 
     useEffect(() => {
-        // Si se está en la vista de edición y hay atributos existentes, mostrar los atributos
         if (product && data.attribute_names.length > 0) {
             setShowAttributes(true);
         }
@@ -51,7 +49,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         if (data.attribute_names.length < 3) {
             setData('attribute_names', [...data.attribute_names, ""]);
             setData('attribute_values', [...data.attribute_values, [""]]);
-            setShowAttributes(true); // Mostrar los inputs cuando se agrega un atributo
+            setShowAttributes(true);
         } else {
             toast("No puedes agregar más de 3 atributos.", {
                 description: "Límite alcanzado.",
@@ -77,7 +75,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         setData('attribute_values', newValues);
     };
 
-    // Calcular combinaciones y precios
     useEffect(() => {
         const calculatePrices = () => {
             const combinations = generateCombinations();
@@ -90,7 +87,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             });
 
             setPrices(newPrices);
-            setData('prices', newPrices); // Actualiza el campo prices en data
+            setData('prices', newPrices);
         };
 
         calculatePrices();
@@ -107,18 +104,15 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             combinations.forEach(combination => {
                 const key = combination.join(", ");
                 newPrices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
-
-                // Mantener el stock existente si ya existe, de lo contrario inicializar a 0
                 newStocks[key] = stocks[key];
             });
 
             setPrices(newPrices);
             setStocks(newStocks);
-            setData('prices', newPrices); // Actualiza el campo prices en data
-            setData('stocks', newStocks); // Actualiza el campo stocks en data
+            setData('prices', newPrices);
+            setData('stocks', newStocks);
         };
 
-        // Solo recalcular si hay cambios en los atributos o valores
         if (data.attribute_names.length > 0 && data.attribute_values.length > 0) {
             calculateCombinations();
         }
@@ -144,41 +138,52 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
     const handlePriceChange = (combination, value) => {
         const numericValue = parseFloat(value);
-        // console.log("Cambio de precio para combinación:", combination, "Nuevo valor:", numericValue); // Agrega este log
         if (isNaN(numericValue) || numericValue < 0) {
-            toast("Por favor, ingresa un precio válido.", {
-                description: "El precio debe ser un número positivo.",
-            });
+            setLocalErrors(prevErrors => ({
+                ...prevErrors,
+                [`price_${combination}`]: "Por favor, ingresa un precio válido (número positivo).",
+            }));
             return;
         }
+        setLocalErrors(prevErrors => {
+            const newErrors = { ...prevErrors };
+            delete newErrors[`price_${combination}`];
+            return newErrors;
+        });
 
         setPrices(prevPrices => {
             const updatedPrices = {
                 ...prevPrices,
                 [combination]: numericValue
             };
-            setData('prices', updatedPrices); // Actualiza el campo prices en data
-            return updatedPrices; // Devuelve el nuevo estado
+            setData('prices', updatedPrices);
+            return updatedPrices;
         });
     };
 
     useEffect(() => {
         const initialStocks = {};
         for (const combination in combinationsWithPrices) {
-            initialStocks[combination] = combinationsWithPrices[combination].stock || 0; // Asigna el stock correspondiente
+            initialStocks[combination] = combinationsWithPrices[combination].stock || 0;
         }
-        setData('stocks', initialStocks); // Actualiza el campo stocks en data
+        setData('stocks', initialStocks);
     }, [combinationsWithPrices]);
 
     const handleStockChange = (combination, value) => {
         const numericValue = parseFloat(value);
         if (isNaN(numericValue) || numericValue < 0) {
-            toast("Por favor, ingresa un stock válido.", {
-                description: "El stock debe ser un número positivo.",
-            });
+            setLocalErrors(prevErrors => ({
+                ...prevErrors,
+                [`stock_${combination}`]: "Por favor, ingresa un stock válido (número positivo).",
+            }));
             return;
         }
 
+        setLocalErrors(prevErrors => {
+            const newErrors = { ...prevErrors };
+            delete newErrors[`stock_${combination}`];
+            return newErrors;
+        });
         setData('stocks', {
             ...data.stocks,
             [combination]: numericValue
@@ -201,10 +206,10 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
     useEffect(() => {
         const initialPrices = {};
         for (const combination in combinationsWithPrices) {
-            initialPrices[combination] = combinationsWithPrices[combination].price || 0; // Asegúrate de que esto esté correcto
+            initialPrices[combination] = combinationsWithPrices[combination].price || 0;
         }
         setPrices(initialPrices);
-        setData('prices', initialPrices); // Actualiza el campo prices en data
+        setData('prices', initialPrices);
     }, [combinationsWithPrices]);
 
 
@@ -218,11 +223,9 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         setData('attribute_names', newAttributes);
         setData('attribute_values', newAttributeValues);
 
-        // Si no hay más atributos, mostrar los campos de precio y descuento
         if (newAttributes.length === 0) {
-            setShowAttributes(false); // Ocultar los atributos
+            setShowAttributes(false);
         } else {
-            // Actualizar combinaciones y precios
             const combinations = generateCombinations(newAttributes, newAttributeValues);
             const newPrices = {};
             const newStocks = {};
@@ -237,8 +240,8 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
             setPrices(newPrices);
             setStocks(newStocks);
-            setData('prices', newPrices); // Actualiza el campo prices en data
-            setData('stocks', newStocks); // Actualiza el campo stocks en data
+            setData('prices', newPrices);
+            setData('stocks', newStocks);
         }
     };
 
@@ -308,7 +311,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             type="file"
                             name="images[]"
                             className="mt-1 block w-full"
-                            onChange={(e) => setData('images', Array.from(e.target.files))} // Almacena todos los archivos
+                            onChange={(e) => setData('images', Array.from(e.target.files))}
                             multiple
                         />
                         <InputError message={errors.images} className="mt-2" />
@@ -335,10 +338,8 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                             </Button>
                                         </div>
                                     );
-                                }
-                                )
-                            ) : (null)
-                            }
+                                })
+                            ) : (null)}
                         </div>
                     </div>
 
@@ -395,7 +396,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                     id="product_sku"
                                     type="text"
                                     name="product_sku"
-                                    value={data.product_sku || ''} // Asegúrate de que este valor se asigne
+                                    value={data.product_sku || ''}
                                     className="mt-1 block w-full"
                                     onChange={(e) => setData('product_sku', e.target.value)}
                                 />
@@ -408,7 +409,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                     id="product_barcode"
                                     type="text"
                                     name="product_barcode"
-                                    value={data.product_barcode || ''} // Asegúrate de que este valor se asigne
+                                    value={data.product_barcode || ''}
                                     className="mt-1 block w-full"
                                     onChange={(e) => setData('product_barcode', e.target.value)}
                                 />
@@ -433,7 +434,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                             <div key={index}>
                                                 <TextInput
                                                     type="text"
-                                                    value={attributeName} // Muestra el nombre del atributo
+                                                    value={attributeName}
                                                     onChange={(e) => handleAttributeChange(index, e.target.value)}
                                                     placeholder="Nombre del atributo"
                                                 />
@@ -441,14 +442,13 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
                                                 {data.attribute_values[index] && data.attribute_values[index].length > 0 && (
                                                     <div className="my-2">
-                                                        {/* Renderiza los valores correspondientes a este atributo */}
                                                         {data.attribute_values[index].map((value, valueIndex) => (
                                                             <div key={valueIndex} className="mb-2 flex justify-between items-center">
                                                                 <TextInput
                                                                     type="text"
-                                                                    value={value} // Muestra el valor correspondiente
+                                                                    value={value}
                                                                     onChange={(e) => handleAttributeValueChange(index, valueIndex, e.target.value)}
-                                                                    placeholder={`Valor de ${attributeName}`} // Muestra el nombre del atributo en el placeholder
+                                                                    placeholder={`Valor de ${attributeName}`}
                                                                 />
                                                                 <Button variant="link" type="button" onClick={() => removeAttributeValue(index, valueIndex)}>
                                                                     <TrashIcon className="size-4" />
@@ -470,7 +470,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                             </div>
                                         ))}
                                     </div>
-                                    {/* <Separator /> */}
                                     {data.attribute_names.length < 3 ? (
                                         <Button className="w-full justify-start" variant="link" size="sm" type="button" onClick={addAttribute}>
                                             <PlusCircle className="size-4" />
@@ -486,7 +485,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                 </Button>
                             ) : (null)}
                         </div>
-                        {/* <Separator /> */}
                     </div>
 
                     {data.attribute_values.some(values => values.length > 0) ? (
@@ -497,38 +495,52 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             <TableHeader className="bg-gray-100">
                                 <TableRow>
                                     <TableHead className="w-[100px]">Combinaciones</TableHead>
-                                    <TableHead className="text-right">Precio</TableHead>
-                                    <TableHead className="text-right">Stock</TableHead>
-                                    <TableHead className="text-right">Código de Barras</TableHead>
-                                    <TableHead className="text-right">SKU</TableHead>
+                                    <TableHead>
+                                        Precio
+                                    </TableHead>
+                                    <TableHead>
+                                        Stock
+                                    </TableHead>
+                                    <TableHead>
+                                        Código de Barras
+                                    </TableHead>
+                                    <TableHead>
+                                        SKU
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {Object.entries(data.prices).map(([combination, price]) => (
                                     <TableRow key={combination}>
                                         <TableCell>{combination}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="p-1">
                                             <TextInput
                                                 type="number"
                                                 value={price || ''}
                                                 onChange={(e) => handlePriceChange(combination, e.target.value)}
                                             />
+                                            {localErrors[`price_${combination}`] && (
+                                                <InputError message={localErrors[`price_${combination}`]} />
+                                            )}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="p-1">
                                             <TextInput
                                                 type="number"
                                                 value={data.stocks[combination] || ''}
                                                 onChange={(e) => handleStockChange(combination, e.target.value)}
                                             />
+                                            {localErrors[`stock_${combination}`] && (
+                                                <InputError message={localErrors[`stock_${combination}`]} />
+                                            )}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="p-1">
                                             <TextInput
                                                 type="text"
                                                 value={data.barcodes[combination] || ''}
                                                 onChange={(e) => handleBarcodeChange(combination, e.target.value)}
                                             />
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="p-1">
                                             <TextInput
                                                 type="text"
                                                 value={data.skus[combination] || ''}
@@ -560,12 +572,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
                     <div className="flex items-center mt-4">
                         <Checkbox
-                            // type="checkbox"
                             id="product_status_pos"
                             name="product_status_pos"
-                            checked={data.product_status_pos === 1} // Marca el checkbox si el valor es 1
-                            onChange={(e) => setData('product_status_pos', e.target.checked ? 1 : 0)} // Establece 1 si está marcado, 0 si no
-                            className="mr-2" // Espaciado a la derecha
+                            checked={data.product_status_pos === 1}
+                            onChange={(e) => setData('product_status_pos', e.target.checked ? 1 : 0)}
+                            className="mr-2"
                         />
                         <InputLabel htmlFor="product_status_pos" value="Activar en POS" />
                     </div>
@@ -624,3 +635,4 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         </>
     );
 }
+

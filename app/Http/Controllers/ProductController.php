@@ -77,7 +77,7 @@ class ProductController extends Controller
             'stocks' => 'nullable|array', // Asegúrate de validar el stock
             'quantity' => 'required|integer|min:0',
             'store_id' => 'required|exists:stores,id',
-            'product_barcode' => 'nullable|string|max:255', // Validación para el barcode
+            'product_barcode' => 'nullable|string|max:255',
             'product_sku' => 'nullable|string|max:255', // Validación para el SKU
         ]);
 

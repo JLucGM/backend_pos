@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('quantity', 255)->default(0); //cantidad de productos entrantes o salida
             // $table->string('slug');
             // $table->string('status'); //estado del stock (entrada o salida)
-            $table->integer('product_barcode')->nullable();
+            $table->string('product_barcode')->nullable();
             $table->string('product_sku')->nullable();
             $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade'); //id del producto
             $table->foreignId('product_id')->nullable()->constrained(); //id del producto
