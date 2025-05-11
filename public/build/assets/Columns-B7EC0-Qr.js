@@ -1,1 +1,0 @@
-import{j as e}from"./app-CYVY2MFy.js";const m=[{header:"#id",accessorKey:"id",cell:({row:s})=>e.jsx("div",{className:"flex items-center",children:e.jsx("p",{className:"me-2",children:s.original.id})})},{header:"Nombre",accessorKey:"payment_method_name"}];export{m as PaymentMethodColumn};

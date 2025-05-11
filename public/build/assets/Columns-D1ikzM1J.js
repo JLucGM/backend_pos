@@ -1,1 +1,0 @@
-import{j as e}from"./app-CYVY2MFy.js";const o=[{header:"#id",accessorKey:"id",cell:({row:s})=>e.jsx("div",{className:"flex items-center",children:e.jsx("p",{className:"me-2",children:s.original.id})})},{header:"Nombre",accessorKey:"store_name"}];export{o as StoresColumns};

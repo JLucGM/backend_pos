@@ -1,0 +1,1 @@
+import{j as e}from"./app-lsv2Jge4.js";const r=[{header:"#id",accessorKey:"id",cell:({row:s})=>e.jsx("div",{className:"flex items-center",children:e.jsx("p",{className:"me-2",children:s.original.id})})},{header:"Nombre",accessorKey:"tax_name"},{header:"Tasa impositiva %",accessorKey:"tax_rate"}];export{r as taxesColumns};
