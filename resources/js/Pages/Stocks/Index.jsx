@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import { ShoppingBagIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
 import { StocksColumns } from './Columns';
+import Loader from '@/Components/ui/loader';
 
 // Define DataTable and StocksColumns as lazy components
 const DataTable = lazy(() => import('@/Components/DataTable'));
