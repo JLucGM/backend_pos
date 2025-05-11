@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
+import Loader from '@/Components/ui/loader';
 
 // Define StatesForm como un componente cargado de forma lazy
 const StatesForm = lazy(() => import('./StatesForm'));
@@ -19,7 +20,14 @@ export default function Edit({ state, countries }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('states.update', state));
+        post(route('states.update', state), {
+            onSuccess: () => {
+                toast("Estadp actualizado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al actualizar el estado.");
+            }
+        });
     };
 
     return (
@@ -45,7 +53,7 @@ export default function Edit({ state, countries }) {
                         <form onSubmit={submit} className='space-y-4'>
                             <DivSection>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <Suspense fallback={<div>Cargando formulario...</div>}>
+                                    <Suspense fallback={<Loader />}>
                                         <StatesForm data={data} setData={setData} errors={errors} countries={countries} />
                                     </Suspense>
                                 </div>
@@ -53,12 +61,7 @@ export default function Edit({ state, countries }) {
 
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                    variant="default" size="sm"
-                                    onClick={() =>
-                                        toast("Actualizado.", {
-                                            description: "Se ha actualizado con éxito.",
-                                        })
-                                    }
+                                    variant="default"
                                 >
                                     Guardar
                                 </Button>

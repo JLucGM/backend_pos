@@ -5,6 +5,7 @@ import { buttonVariants } from '@/Components/ui/button';
 import { PaymentMethodColumn } from './Columns';
 import DivSection from '@/Components/ui/div-section';
 import { lazy, Suspense } from 'react';
+import Loader from '@/Components/ui/loader';
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
 export default function Index({ paymentmethod, permission }) {
@@ -30,7 +31,7 @@ export default function Index({ paymentmethod, permission }) {
 
             <Head className="capitalize" title="Método de pago" />
 
-            <Suspense fallback={<div>Cargando métodos de pago...</div>}>
+            <Suspense fallback={<Loader />}>
                 <DivSection>
                     {paymentmethod.length > 0 ? (
                         <DataTable

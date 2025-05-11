@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import DivSection from '@/Components/ui/div-section';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { lazy, Suspense } from 'react';
+import Loader from '@/Components/ui/loader';
 
 // Cargar el componente de forma diferida
 const CategoriesForm = lazy(() => import('./CategoriesForm'));
@@ -18,7 +19,14 @@ export default function Edit({ category }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('category.update', category));
+        post(route('category.update', category), {
+            onSuccess: () => {
+                toast("Categoría actualizada con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al actualizar el categoría.");
+            }
+        });
     }
 
     return (
@@ -43,7 +51,7 @@ export default function Edit({ category }) {
 
                     <div className="grid grid-cols-1 gap-4">
                         <DivSection>
-                            <Suspense fallback={<div>Cargando formulario...</div>}>
+                            <Suspense fallback={<Loader />}>
                                 <CategoriesForm data={data} setData={setData} errors={errors} />
                             </Suspense>
                         </DivSection>
@@ -52,11 +60,6 @@ export default function Edit({ category }) {
                     <div className="flex justify-end p-2.5">
                         <Button
                             variant="default"
-                            onClick={() =>
-                                toast("Actualizado.", {
-                                    description: "Se ha actualizado con éxito.",
-                                })
-                            }
                         >
                             Guardar
                         </Button>

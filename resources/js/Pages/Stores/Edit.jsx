@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
+import Loader from '@/Components/ui/loader';
 
 // Define StoresForm as a lazy component
 const StoresForm = lazy(() => import('@/Pages/Stores/StoresForm'));
@@ -56,7 +57,7 @@ export default function Edit({ store, countries, states, cities, }) {
                         <form onSubmit={submit} >
                             <div className="grid grid-cols-1 gap-4">
                                 <DivSection className='space-y-4'>
-                                    <Suspense fallback={<div>Cargando formulario de tienda...</div>}>
+                                    <Suspense fallback={<Loader />}>
                                         <StoresForm
                                             data={data}
                                             setData={setData}

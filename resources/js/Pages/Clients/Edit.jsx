@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
+import Loader from '@/Components/ui/loader';
 
 // Define ClientsForm como un componente cargado de forma lazy
 const ClientsForm = lazy(() => import('./ClientForm'));
@@ -20,7 +21,14 @@ export default function Edit({ client, orderCount, orderTotal }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('clients.update', client.id));
+        post(route('clients.update', client.id), {
+            onSuccess: () => {
+                toast("Cliente creado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al crear el cliente.");
+            }
+        });
     };
 
     return (
@@ -56,7 +64,7 @@ export default function Edit({ client, orderCount, orderTotal }) {
                         <form onSubmit={submit} className='space-y-4'>
                             <div className="grid grid-cols-1 gap-4">
                                 <DivSection>
-                                    <Suspense fallback={<div>Cargando formulario...</div>}>
+                                    <Suspense fallback={<Loader />}>
                                         <ClientsForm data={data} setData={setData} errors={errors} />
                                     </Suspense>
                                 </DivSection>

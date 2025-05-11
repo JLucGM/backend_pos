@@ -25,7 +25,7 @@ export default function Index({ stock, permission }) {
             <Head className="capitalize" title="Inventarios" />
 
             <DivSection>
-                <Suspense fallback={<div>Cargando inventario...</div>}>
+                <Suspense fallback={<Loader />}>
                     {stock.length > 0 ? (
                         <DataTable
                             columns={StocksColumns}

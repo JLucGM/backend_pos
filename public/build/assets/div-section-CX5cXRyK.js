@@ -1,0 +1,1 @@
+import{j as t}from"./app-CYVY2MFy.js";function s({className:r="",children:e,...o}){return t.jsx("div",{...o,className:"bg-white dark:bg-gray-800 border shadow rounded-3xl p-4 mb-4 "+r,children:e})}export{s as default};

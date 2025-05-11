@@ -28,7 +28,7 @@ class ClientController extends Controller
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
-        return Inertia::render('Clients/Index', compact('client','role','permission'));
+        return Inertia::render('Clients/Index', compact('client', 'role', 'permission'));
     }
 
     /**
@@ -44,7 +44,13 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->only('client_name','client_identification','client_phone');
+        $request->validate([
+            'client_name' => 'required|string|max:255',
+            'client_identification' => 'required|string|max:255',
+            'client_phone' => 'required|string|max:255',
+        ]);
+
+        $data = $request->only('client_name', 'client_identification', 'client_phone');
 
         Client::create($data); // Crear el nuevo usuario
 
@@ -67,12 +73,12 @@ class ClientController extends Controller
         $client->load('orders');
 
         // Contar la cantidad de órdenes
-    $orderCount = $client->orders->count();
-    // Sumar el total de las órdenes
-    $orderTotal = $client->orders->sum('total');
-    // dd($orderCount, $orderTotal);
+        $orderCount = $client->orders->count();
+        // Sumar el total de las órdenes
+        $orderTotal = $client->orders->sum('total');
+        // dd($orderCount, $orderTotal);
 
-        return Inertia::render('Clients/Edit', compact('client','orderCount','orderTotal'));
+        return Inertia::render('Clients/Edit', compact('client', 'orderCount', 'orderTotal'));
     }
 
     /**
@@ -80,7 +86,13 @@ class ClientController extends Controller
      */
     public function update(Request $request, Client $client)
     {
-        $data = $request->only('client_name','client_identification','client_phone');
+        $request->validate([
+            'client_name' => 'required|string|max:255',
+            'client_identification' => 'required|string|max:255',
+            'client_phone' => 'required|string|max:255',
+        ]);
+
+        $data = $request->only('client_name', 'client_identification', 'client_phone');
 
         $client->update($data); // Actualizar el usuario con los nuevos datos
 
@@ -93,6 +105,5 @@ class ClientController extends Controller
     public function destroy(Client $client)
     {
         $client->delete();
-
     }
 }

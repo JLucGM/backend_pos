@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
 import { Button } from '@/Components/ui/button';
+import { toast } from 'sonner';
 
 // Cargar el componente de forma diferida
 const CategoriesForm = lazy(() => import('./CategoriesForm'));
@@ -15,7 +16,14 @@ export default function Create() {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('category.store'));
+        post(route('category.store'), {
+            onSuccess: () => {
+                toast("Producto creado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al crear el producto.");
+            }
+        });
     }
 
     return (
@@ -44,11 +52,11 @@ export default function Create() {
                             <div className="flex justify-end p-2.5">
                                 <Button
                                     variant="outline"
-                                    onClick={() =>
-                                        toast("Creado.", {
-                                            description: "Se ha creado con éxito.",
-                                        })
-                                    }
+                                    // onClick={() =>
+                                    //     toast("Creado.", {
+                                    //         description: "Se ha creado con éxito.",
+                                    //     })
+                                    // }
                                 >
                                     Guardar
                                 </Button>

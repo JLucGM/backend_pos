@@ -4,6 +4,7 @@ import { Button, buttonVariants } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
+import Loader from '@/Components/ui/loader';
 
 // Define UserForm como un componente cargado de forma lazy
 const UserForm = lazy(() => import('./UserForm'));
@@ -61,7 +62,7 @@ export default function Edit({ user, stores, roles, role, permission }) {
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
                     <div className="grid grid-cols-3 gap-4">
-                        <Suspense fallback={<div>Cargando formulario...</div>}>
+                        <Suspense fallback={<Loader />}>
                             <UserForm
                                 data={data}
                                 setData={setData}

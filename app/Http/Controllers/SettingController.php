@@ -61,6 +61,18 @@ class SettingController extends Controller
      */
     public function update(Request $request, Setting $setting)
     {
+        // Validar los datos de entrada
+        $request->validate([
+            'app_name' => 'required|string|max:255',
+            'default_currency' => 'required|string|max:255',
+            'admin_email' => 'required|email|max:255',
+            'admin_phone' => 'required|string|max:255',
+            'shipping_base_price' => 'required|numeric|min:0',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20480',
+            'favicon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20480',
+            'logofooter' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20480',
+        ]);
+
         $data = $request->only(
             'app_name',
             'default_currency',

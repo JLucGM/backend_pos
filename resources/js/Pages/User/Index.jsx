@@ -4,12 +4,12 @@ import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@
 import { useState, lazy, Suspense } from 'react';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
-import DataTable from '@/Components/DataTable';
 import { Button, buttonVariants } from '@/Components/ui/button';
 import { userColumns } from './Columns';
 import DivSection from '@/Components/ui/div-section';
+import Loader from '@/Components/ui/loader';
 
-// Cargar el componente de forma diferida
+const DataTable = lazy(() => import('@/Components/DataTable'));
 const UserForm = lazy(() => import('./UserForm'));
 
 export default function Index({ users, roles, role, permission }) {
@@ -57,21 +57,23 @@ export default function Index({ users, roles, role, permission }) {
         >
             <Head className="capitalize" title="Usuarios" />
 
-            <DivSection>
-                {users.length > 0 ? (
-                    <DataTable
-                        columns={userColumns}
-                        data={users}
-                        routeEdit={'user.edit'}
-                        routeDestroy={'user.destroy'}
-                        editPermission={'admin.user.edit'}
-                        deletePermission={'admin.user.delete'}
-                        permissions={permission}
-                    />
-                ) : (
-                    <p>no hay nada</p>
-                )}
-            </DivSection>
+            <Suspense fallback={<Loader />}>
+                <DivSection>
+                    {users.length > 0 ? (
+                        <DataTable
+                            columns={userColumns}
+                            data={users}
+                            routeEdit={'user.edit'}
+                            routeDestroy={'user.destroy'}
+                            editPermission={'admin.user.edit'}
+                            deletePermission={'admin.user.delete'}
+                            permissions={permission}
+                        />
+                    ) : (
+                        <p>no hay nada</p>
+                    )}
+                </DivSection>
+            </Suspense>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
@@ -82,7 +84,7 @@ export default function Index({ users, roles, role, permission }) {
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del usuario</Description>
                         <form onSubmit={submit} className='space-y-4'>
 
-                            <Suspense fallback={<div>Cargando formulario...</div>}>
+                            <Suspense fallback={<Loader />}>
                                 <UserForm Form data={data} setData={setData} errors={errors} roles={roles} role={role} />
                             </Suspense>
 

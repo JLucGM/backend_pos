@@ -8,6 +8,7 @@ import { lazy, Suspense } from 'react';
 import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
 import { taxesColumns } from './Columns';
+import Loader from '@/Components/ui/loader';
 
 // Define DataTable and TaxesForm as lazy components
 const DataTable = lazy(() => import('@/Components/DataTable'));
@@ -57,8 +58,8 @@ export default function Index({ taxes, permission }) {
         >
             <Head className="capitalize" title="Impuestos" />
 
-            <DivSection>
-                <Suspense fallback={<div>Cargando impuestos...</div>}>
+            <Suspense fallback={<Loader />}>
+                <DivSection>
                     {taxes.length > 0 ? (
                         <DataTable
                             columns={taxesColumns}
@@ -72,8 +73,8 @@ export default function Index({ taxes, permission }) {
                     ) : (
                         <p>No hay impuestos registrados.</p>
                     )}
-                </Suspense>
-            </DivSection>
+                </DivSection>
+            </Suspense>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />

@@ -54,6 +54,11 @@ class CitiesController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'city_name' => 'required|string|max:255',
+            'state_id' => 'required|exists:states,id',
+        ]);
+
         //dd($request);
         $data = $request->only('city_name', 'state_id');
 
@@ -86,6 +91,10 @@ class CitiesController extends Controller
      */
     public function update(Request $request, City $city)
     {
+        $request->validate([
+            'city_name' => 'required|string|max:255',
+            'state_id' => 'required|exists:states,id',
+        ]);
         $data = $request->only('city_name', 'state_id');
 
         $city->update($data);

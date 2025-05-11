@@ -1,1 +1,0 @@
-import{j as e}from"./app-BHQVSHMc.js";const c=[{header:"#id",accessorKey:"id",cell:({row:s})=>e.jsx("div",{className:"flex items-center",children:e.jsx("p",{className:"me-2",children:s.original.id})})},{header:"Nombre",accessorKey:"country_name"}];export{c as countriesColumns};

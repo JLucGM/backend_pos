@@ -51,6 +51,10 @@ class CountriesController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'country_name' => 'required|string|max:255',
+        ]);
+
         $data = $request->only('country_name');
 
         Country::create($data);
@@ -83,6 +87,10 @@ class CountriesController extends Controller
      */
     public function update(Request $request, Country $country)
     {
+        $request->validate([
+            'country_name' => 'required|string|max:255',
+        ]);
+        
         $data = $request->only('country_name');
 
         $country->update($data);

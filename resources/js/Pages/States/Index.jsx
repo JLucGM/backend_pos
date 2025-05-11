@@ -1,15 +1,17 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, DialogDescription } from '@headlessui/react'
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Description } from '@headlessui/react'
 import { useState, lazy, Suspense } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
-import DataTable from '@/Components/DataTable';
 import { Button } from '@/Components/ui/button';
 import { StatesColumns } from './Columns';
 // import StatesForm from './StatesForm';
-const StatesForm = lazy(() => import('./StatesForm'));
 import DivSection from '@/Components/ui/div-section';
+import Loader from '@/Components/ui/loader';
+
+const DataTable = lazy(() => import('@/Components/DataTable'));
+const StatesForm = lazy(() => import('./StatesForm'));
 
 export default function Index({ states, countries, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -20,7 +22,14 @@ export default function Index({ states, countries, permission }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('states.store'))
+        post(route('states.store'), {
+            onSuccess: () => {
+                toast("Estado creado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al crear el estado.");
+            }
+        })
         setData({
             state_name: "",
             country_id: countries[0].id,
@@ -44,21 +53,23 @@ export default function Index({ states, countries, permission }) {
         >
             <Head className="capitalize" title="Estados" />
 
-            <DivSection>
-                {states.length > 0 ? (
-                    <DataTable
-                        columns={StatesColumns}
-                        data={states}
-                        routeEdit={'states.edit'}
-                        routeDestroy={'states.destroy'}
-                        editPermission={'admin.states.edit'}
-                        deletePermission={'admin.states.delete'}
-                        permissions={permission}
-                    />
-                ) : (
-                    <p>no hay nada</p>
-                )}
-            </DivSection>
+            <Suspense fallback={<Loader />}>
+                <DivSection>
+                    {states.length > 0 ? (
+                        <DataTable
+                            columns={StatesColumns}
+                            data={states}
+                            routeEdit={'states.edit'}
+                            routeDestroy={'states.destroy'}
+                            editPermission={'admin.states.edit'}
+                            deletePermission={'admin.states.delete'}
+                            permissions={permission}
+                        />
+                    ) : (
+                        null
+                    )}
+                </DivSection>
+            </Suspense>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
@@ -66,20 +77,14 @@ export default function Index({ states, countries, permission }) {
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
                     <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
                         <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear estado</DialogTitle>
-                        <DialogDescription className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del estado</DialogDescription>
+                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del estado</Description>
                         <form onSubmit={submit} className='space-y-4'>
-                            <Suspense fallback={<div>Cargando formulario...</div>}>
+                            <Suspense fallback={<Loader />}>
                                 <StatesForm data={data} setData={setData} errors={errors} countries={countries} />
                             </Suspense>
                             <div className="flex justify-end p-2.5">
                                 <Button
                                     variant="default"
-                                    size="sm"
-                                    onClick={() =>
-                                        toast("Creado.", {
-                                            description: "Se ha creado con éxito.",
-                                        })
-                                    }
                                 >
                                     Guardar
                                 </Button>

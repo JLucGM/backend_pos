@@ -1,1 +1,0 @@
-import{j as e}from"./app-BHQVSHMc.js";const i=[{header:"#id",accessorKey:"id",cell:({row:c})=>e.jsx("div",{className:"flex items-center",children:e.jsx("p",{className:"me-2",children:c.original.id})})},{header:"Nombre",accessorKey:"client_name"},{header:"cedula",accessorKey:"client_identification"},{header:"Telefono",accessorKey:"client_phone"}];export{i as clientColumns};

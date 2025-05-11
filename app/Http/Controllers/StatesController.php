@@ -56,6 +56,10 @@ class StatesController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'state_name' => 'required|string|max:255',
+            'country_id' => 'required|exists:countries,id',
+        ]);
 
         //dd($request);
         $data = $request->only('state_name', 'country_id');
@@ -89,6 +93,11 @@ class StatesController extends Controller
      */
     public function update(Request $request, State $state)
     {
+        $request->validate([
+            'state_name' => 'required|string|max:255',
+            'country_id' => 'required|exists:countries,id',
+        ]);
+        
         $data = $request->only('state_name', 'country_id');
 
         $state->update($data);

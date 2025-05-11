@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
+import Loader from '@/Components/ui/loader';
 
 // Define CountriesForm como un componente cargado de forma lazy
 const CountriesForm = lazy(() => import('./CountriesForm'));
@@ -18,7 +19,14 @@ export default function Edit({ country }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('countries.update', country));
+        post(route('countries.update', country), {
+            onSuccess: () => {
+                toast("País actualizado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al actualizar el país.");
+            }
+        });
     };
 
     return (
@@ -44,7 +52,7 @@ export default function Edit({ country }) {
                         <form onSubmit={submit} className='space-y-4'>
                             <DivSection>
                                 <div className="grid grid-cols-1 gap-4">
-                                    <Suspense fallback={<div>Cargando formulario...</div>}>
+                                    <Suspense fallback={<Loader />}>
                                         <CountriesForm data={data} setData={setData} errors={errors} />
                                     </Suspense>
                                 </div>
@@ -53,12 +61,6 @@ export default function Edit({ country }) {
                             <div className="flex justify-end p-2.5">
                                 <Button
                                     variant="default"
-                                    size="sm"
-                                    onClick={() =>
-                                        toast("Actualizado.", {
-                                            description: "Se ha actualizado con éxito.",
-                                        })
-                                    }
                                 >
                                     Guardar
                                 </Button>

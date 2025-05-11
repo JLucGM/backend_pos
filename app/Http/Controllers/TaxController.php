@@ -46,6 +46,12 @@ class TaxController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'tax_name' => 'required|string|max:255',
+            'tax_description' => 'required|string|max:255',
+            'tax_rate' => 'required|numeric|min:0|max:100',
+        ]);
+
         $data = $request->only('tax_name', 'tax_description', 'tax_rate');
 
         Tax::create($data); // Crear el nuevo usuario
@@ -75,6 +81,12 @@ class TaxController extends Controller
      */
     public function update(Request $request, Tax $tax)
     {
+        $request->validate([
+            'tax_name' => 'required|string|max:255',
+            'tax_description' => 'required|string|max:255',
+            'tax_rate' => 'required|numeric|min:0|max:100',
+        ]);
+        
         $data = $request->only('tax_name', 'tax_description', 'tax_rate');
 
         $tax->update($data); // Actualizar el usuario con los nuevos datos

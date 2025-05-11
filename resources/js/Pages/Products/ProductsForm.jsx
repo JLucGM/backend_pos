@@ -8,7 +8,7 @@ import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
-import { Info, PlusCircle } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { customStyles } from '@/hooks/custom-select';
 import { Input } from '@/Components/ui/input';
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -32,6 +32,15 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
     useEffect(() => {
         setPrices(combinationsWithPrices);
+        setStocks(prevStocks => {
+            const newStocks = { ...prevStocks };
+            if (combinationsWithPrices) {
+                for (const key in combinationsWithPrices) {
+                    newStocks[key] = combinationsWithPrices[key].stock || 0;
+                }
+            }
+            return newStocks;
+        });
     }, [combinationsWithPrices]);
 
     useEffect(() => {
@@ -71,40 +80,21 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
     const addAttributeValue = (index) => {
         const newValues = [...data.attribute_values];
-        newValues[index].push("");
+        newValues[index] = [...newValues[index], ""]; // Asegura que no se muta el estado directamente
         setData('attribute_values', newValues);
     };
 
     useEffect(() => {
-        const calculatePrices = () => {
-            const combinations = generateCombinations();
-            const newPrices = {};
-            const basePrice = parseFloat(data.product_price) || 0;
-
-            combinations.forEach(combination => {
-                const key = combination.join(", ");
-                newPrices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
-            });
-
-            setPrices(newPrices);
-            setData('prices', newPrices);
-        };
-
-        calculatePrices();
-    }, [data.attribute_names, data.attribute_values, combinationsWithPrices, data.product_price]);
-
-    useEffect(() => {
-        const calculateCombinations = () => {
+        const calculatePricesAndStocks = () => {
             const combinations = generateCombinations();
             const newPrices = {};
             const newStocks = {};
-
             const basePrice = parseFloat(data.product_price) || 0;
 
             combinations.forEach(combination => {
                 const key = combination.join(", ");
-                newPrices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
-                newStocks[key] = stocks[key];
+                newPrices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key].price) : basePrice;
+                newStocks[key] = stocks[key] || 0; // Mantiene el stock existente o lo inicializa en 0
             });
 
             setPrices(newPrices);
@@ -114,12 +104,20 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         };
 
         if (data.attribute_names.length > 0 && data.attribute_values.length > 0) {
-            calculateCombinations();
+            calculatePricesAndStocks();
+        } else {
+            // Si no hay atributos, inicializa los precios y stocks con el precio base.
+            const basePriceOnly = { 'default': parseFloat(data.product_price) || 0 };
+            setPrices(basePriceOnly);
+            setData('prices', basePriceOnly);
+            setData('stocks', { 'default': 0 });
         }
     }, [data.attribute_names, data.attribute_values, combinationsWithPrices, data.product_price]);
 
     const generateCombinations = () => {
         const { attribute_names, attribute_values } = data;
+        if (!attribute_names || attribute_names.length === 0) return [[]]; // Maneja el caso sin atributos
+
         const combinations = [];
 
         const generate = (prefix, index) => {
@@ -151,23 +149,16 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             return newErrors;
         });
 
-        setPrices(prevPrices => {
-            const updatedPrices = {
-                ...prevPrices,
-                [combination]: numericValue
-            };
-            setData('prices', updatedPrices);
-            return updatedPrices;
+        setPrices(prevPrices => ({
+            ...prevPrices,
+            [combination]: numericValue
+        }));
+
+        setData('prices', {
+            ...data.prices,
+            [combination]: numericValue
         });
     };
-
-    useEffect(() => {
-        const initialStocks = {};
-        for (const combination in combinationsWithPrices) {
-            initialStocks[combination] = combinationsWithPrices[combination].stock || 0;
-        }
-        setData('stocks', initialStocks);
-    }, [combinationsWithPrices]);
 
     const handleStockChange = (combination, value) => {
         const numericValue = parseFloat(value);
@@ -184,6 +175,12 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
             delete newErrors[`stock_${combination}`];
             return newErrors;
         });
+
+        setStocks(prevStocks => ({
+            ...prevStocks,
+            [combination]: numericValue
+        }));
+
         setData('stocks', {
             ...data.stocks,
             [combination]: numericValue
@@ -203,16 +200,6 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         }
     };
 
-    useEffect(() => {
-        const initialPrices = {};
-        for (const combination in combinationsWithPrices) {
-            initialPrices[combination] = combinationsWithPrices[combination].price || 0;
-        }
-        setPrices(initialPrices);
-        setData('prices', initialPrices);
-    }, [combinationsWithPrices]);
-
-
     const removeAttribute = (index) => {
         const newAttributes = [...data.attribute_names];
         const newAttributeValues = [...data.attribute_values];
@@ -225,16 +212,17 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
 
         if (newAttributes.length === 0) {
             setShowAttributes(false);
+            setData('prices', { 'default': parseFloat(data.product_price) || 0 });
+            setData('stocks', { 'default': 0 });
         } else {
             const combinations = generateCombinations(newAttributes, newAttributeValues);
             const newPrices = {};
             const newStocks = {};
-
             const basePrice = parseFloat(data.product_price) || 0;
 
             combinations.forEach(combination => {
                 const key = combination.join(", ");
-                newPrices[key] = combinationsWithPrices[key] ? parseFloat(combinationsWithPrices[key]) : basePrice;
+                newPrices[key] = prices[key] || basePrice; // Usa el precio existente o el precio base
                 newStocks[key] = stocks[key] || 0;
             });
 
@@ -250,6 +238,22 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
         newAttributeValues[attributeIndex].splice(valueIndex, 1);
 
         setData('attribute_values', newAttributeValues);
+
+        const combinations = generateCombinations();
+        const newPrices = {};
+        const newStocks = {};
+        const basePrice = parseFloat(data.product_price) || 0;
+
+        combinations.forEach(combination => {
+            const key = combination.join(", ");
+            newPrices[key] = prices[key] || basePrice; // Mantiene precios
+            newStocks[key] = stocks[key] || 0;  // Mantiene stocks
+        });
+
+        setPrices(newPrices);
+        setStocks(newStocks);
+        setData('prices', newPrices);
+        setData('stocks', newStocks);
     };
 
     const handleBarcodeChange = (combination, value) => {
@@ -272,6 +276,7 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
     ];
 
     const calculateTotalStock = () => {
+        if (!data.stocks) return 0;
         return Object.values(data.stocks).reduce((total, stock) => total + (parseFloat(stock) || 0), 0);
     };
 
@@ -510,45 +515,47 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {Object.entries(data.prices).map(([combination, price]) => (
-                                    <TableRow key={combination}>
-                                        <TableCell>{combination}</TableCell>
-                                        <TableCell className="p-1">
-                                            <TextInput
-                                                type="number"
-                                                value={price || ''}
-                                                onChange={(e) => handlePriceChange(combination, e.target.value)}
-                                            />
-                                            {localErrors[`price_${combination}`] && (
-                                                <InputError message={localErrors[`price_${combination}`]} />
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="p-1">
-                                            <TextInput
-                                                type="number"
-                                                value={data.stocks[combination] || ''}
-                                                onChange={(e) => handleStockChange(combination, e.target.value)}
-                                            />
-                                            {localErrors[`stock_${combination}`] && (
-                                                <InputError message={localErrors[`stock_${combination}`]} />
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="p-1">
-                                            <TextInput
-                                                type="text"
-                                                value={data.barcodes[combination] || ''}
-                                                onChange={(e) => handleBarcodeChange(combination, e.target.value)}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="p-1">
-                                            <TextInput
-                                                type="text"
-                                                value={data.skus[combination] || ''}
-                                                onChange={(e) => handleSkuChange(combination, e.target.value)}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {Object.entries(prices).map(([combination, price]) => {
+                                    return (
+                                        <TableRow key={combination}>
+                                            <TableCell>{combination}</TableCell>
+                                            <TableCell className="p-1">
+                                                <TextInput
+                                                    type="number"
+                                                    value={price || ''}
+                                                    onChange={(e) => handlePriceChange(combination, e.target.value)}
+                                                />
+                                                {localErrors[`price_${combination}`] && (
+                                                    <InputError message={localErrors[`price_${combination}`]} />
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="p-1">
+                                                <TextInput
+                                                    type="number"
+                                                    value={data.stocks[combination] || ''}
+                                                    onChange={(e) => handleStockChange(combination, e.target.value)}
+                                                />
+                                                {localErrors[`stock_${combination}`] && (
+                                                    <InputError message={localErrors[`stock_${combination}`]} />
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="p-1">
+                                                <TextInput
+                                                    type="text"
+                                                    value={data.barcodes[combination] || ''}
+                                                    onChange={(e) => handleBarcodeChange(combination, e.target.value)}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="p-1">
+                                                <TextInput
+                                                    type="text"
+                                                    value={data.skus[combination] || ''}
+                                                    onChange={(e) => handleSkuChange(combination, e.target.value)}
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })}
                             </TableBody>
                         </Table>
                     ) : null}
@@ -596,40 +603,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                         />
                         <InputError message={errors.tax_id} className="mt-2" />
                         <div className="flex items-center">
-
-                            <AlertCircleIcon />
+                            <AlertCircle />
                             <p className="ms-2 text-gray-500 text-sm">Deje la opción "Sin impuesto" si colocara el precio con el impuesto agregado. </p>
                             <p className="ms-2 text-gray-500 text-sm">Si coloca un producto sin impuesto, se recomienda colocarlo en todos los productos. </p>
                         </div>
                     </div> */}
-
-                    {!showAttributes && (
-                        <div>
-                            <InputLabel htmlFor="quantity" value="Stock" />
-                            <TextInput
-                                id="quantity"
-                                type="number"
-                                name="quantity"
-                                value={data.quantity}
-                                className="mt-1 block w-full"
-                                onChange={(e) => setData('quantity', e.target.value)}
-                            />
-                            <InputError message={errors.quantity} />
-                        </div>
-                    )}
-
-                    <div>
-                        <InputLabel htmlFor="store" value="Tiendas" />
-                        <Select
-                            name="store_id"
-                            id="store"
-                            options={stores.length > 0 ? stores.map(store => ({ value: store.id, label: store.store_name })) : []}
-                            value={stores.length > 0 ? stores.map(store => ({ value: store.id, label: store.store_name })).find(option => option.value === data.store_id) : null}
-                            onChange={(selectedOption) => setData('store_id', selectedOption ? selectedOption.value : null)}
-                            styles={customStyles}
-                        />
-                        <InputError message={errors.store_id} className="mt-2" />
-                    </div>
                 </DivSection>
             </div>
         </>

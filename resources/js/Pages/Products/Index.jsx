@@ -5,6 +5,7 @@ import { buttonVariants } from '@/Components/ui/button';
 import { ProductColumns } from './Columns';
 import { ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { Plus } from 'lucide-react';
+import Loader from '@/Components/ui/loader';
 
 // Lazy load components
 const DataTable = lazy(() => import('@/Components/DataTable'));
@@ -31,7 +32,7 @@ export default function Index({ product, permission }) {
         >
             <Head title="Productos" />
 
-            <Suspense fallback={<div>Cargando...</div>}>
+            <Suspense fallback={<Loader />}>
                 <DivSection>
                     {product.length > 0 ? ( // Verifica si hay productos
                         <DataTable

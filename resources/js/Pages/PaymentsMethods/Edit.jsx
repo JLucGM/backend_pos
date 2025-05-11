@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import DivSection from '@/Components/ui/div-section';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { lazy, Suspense } from 'react';
+import Loader from '@/Components/ui/loader';
 
 // Define PaymentMethodForm como un componente cargado de forma lazy
 const PaymentMethodForm = lazy(() => import('./PaymentMethodForm'));
@@ -63,7 +64,7 @@ export default function Edit({ payment_method }) {
                 <div className="relative overflow-x-auto">
                     <form onSubmit={submit} className='space-y-4'>
                         <DivSection>
-                            <Suspense fallback={<div>Cargando formulario...</div>}>
+                            <Suspense fallback={<Loader />}>
                                 <PaymentMethodForm
                                     data={data}
                                     setData={setData}

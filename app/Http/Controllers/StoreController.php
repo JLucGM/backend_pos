@@ -51,6 +51,15 @@ class StoreController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'store_name' => 'required|string|max:255',
+            'store_phone' => 'required|string|max:255',
+            'store_direction' => 'required|string|max:255',
+            'country_id' => 'required|exists:countries,id',
+            'state_id' => 'required|exists:states,id',
+            'city_id' => 'required|exists:cities,id',
+        ]);
+
         $data = $request->only('store_name', 'store_phone', 'store_direction', 'country_id', 'state_id', 'city_id');
 
         Store::create($data); // Crear el nuevo usuario
@@ -84,6 +93,15 @@ class StoreController extends Controller
      */
     public function update(Request $request, Store $store)
     {
+        $request->validate([
+            'store_name' => 'required|string|max:255',
+            'store_phone' => 'required|string|max:255',
+            'store_direction' => 'required|string|max:255',
+            'country_id' => 'required|exists:countries,id',
+            'state_id' => 'required|exists:states,id',
+            'city_id' => 'required|exists:cities,id',
+        ]);
+        
         $data = $request->only('store_name', 'store_phone', 'store_direction', 'country_id', 'state_id', 'city_id');
 
         $store->update($data); // Actualizar el usuario con los nuevos datos

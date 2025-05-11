@@ -4,13 +4,14 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Description } from '@
 import { useState, lazy, Suspense } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
-import DataTable from '@/Components/DataTable';
+import DivSection from '@/Components/ui/div-section';
 // import Breadcrumb from '@/Components/Breadcrumb';
 import { Button } from '@/Components/ui/button';
 import { CitiesColumns } from './Columns';
-// import CitiesForm from './CitiesForm';
+import Loader from '@/Components/ui/loader';
+
+const DataTable = lazy(() => import('@/Components/DataTable'));
 const CitiesForm = lazy(() => import('./CitiesForm'));
-import DivSection from '@/Components/ui/div-section';
 
 export default function Index({ cities, state, permission }) {
     let [isOpen, setIsOpen] = useState(false)
@@ -21,7 +22,14 @@ export default function Index({ cities, state, permission }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('cities.store'))
+        post(route('cities.store'), {
+            onSuccess: () => {
+                toast("Ciudad creado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al crear el ciudad.");
+            }
+        })
         setData({
             city_name: "",
             state_id: state[0].id,
@@ -45,21 +53,23 @@ export default function Index({ cities, state, permission }) {
         >
             <Head title="Ciudades" />
 
-            <DivSection>
-                {cities.length > 0 ? (
-                    <DataTable
-                        columns={CitiesColumns}
-                        data={cities}
-                        routeEdit={'cities.edit'}
-                        routeDestroy={'cities.destroy'}
-                        editPermission={'admin.cities.edit'}
-                        deletePermission={'admin.cities.delete'}
-                        permissions={permission}
-                    />
-                ) : (
-                    null
-                )}
-            </DivSection>
+            <Suspense fallback={<Loader />}>
+                <DivSection>
+                    {cities.length > 0 ? (
+                        <DataTable
+                            columns={CitiesColumns}
+                            data={cities}
+                            routeEdit={'cities.edit'}
+                            routeDestroy={'cities.destroy'}
+                            editPermission={'admin.cities.edit'}
+                            deletePermission={'admin.cities.delete'}
+                            permissions={permission}
+                        />
+                    ) : (
+                        null
+                    )}
+                </DivSection>
+            </Suspense>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
@@ -69,17 +79,12 @@ export default function Index({ cities, state, permission }) {
                         <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear ciudad</DialogTitle>
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del ciudad</Description>
                         <form onSubmit={submit} className='space-y-4'>
-                            <Suspense fallback={<div>Cargando formulario...</div>}>
+                            <Suspense fallback={<Loader />}>
                                 <CitiesForm data={data} setData={setData} errors={errors} states={state} />
                             </Suspense>
                             <div className="flex justify-end p-2.5">
                                 <Button
-                                    variant="default" size="sm"
-                                    onClick={() =>
-                                        toast("Creado.", {
-                                            description: "Se ha creado con éxito.",
-                                        })
-                                    }
+                                    variant="default"
                                 >
                                     Guardar
                                 </Button>

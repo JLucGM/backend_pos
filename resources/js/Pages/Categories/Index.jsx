@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import DivSection from '@/Components/ui/div-section';
 import { Button } from '@/Components/ui/button';
 import { categoriesColumns } from './Columns';
+import Loader from '@/Components/ui/loader';
 
 // Cargar los componentes de forma diferida
 const DataTable = lazy(() => import('@/Components/DataTable'));
@@ -20,7 +21,14 @@ export default function Index({ categories, permission }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('category.store'));
+        post(route('category.store'), {
+            onSuccess: () => {
+                toast("Categoría creado con éxito.");
+            },
+            onError: () => {
+                toast.error("Error al crear el categoría.");
+            }
+        });
         setData({
             category_name: "",
         });
@@ -45,7 +53,7 @@ export default function Index({ categories, permission }) {
 
             <DivSection>
                 {categories.length > 0 ? (
-                    <Suspense fallback={<div>Cargando tabla...</div>}>
+                    <Suspense fallback={<Loader />}>
                         <DataTable
                             columns={categoriesColumns}
                             data={categories}
@@ -77,11 +85,6 @@ export default function Index({ categories, permission }) {
                             <div className="flex justify-end p-2.5">
                                 <Button
                                     variant="default"
-                                    onClick={() =>
-                                        toast("Creado.", {
-                                            description: "Se ha creado con éxito.",
-                                        })
-                                    }
                                 >
                                     Guardar
                                 </Button>

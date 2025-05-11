@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import { Store } from 'lucide-react';
 import { ordersColumns } from './Columns';
+import Loader from '@/Components/ui/loader';
 
 // Define DataTable and ordersColumns as lazy components
 const DataTable = lazy(() => import('@/Components/DataTable'));
@@ -21,7 +22,7 @@ export default function Index({ orders, permission }) {
         >
             <Head className="capitalize" title="Pedidos" />
             <DivSection>
-                <Suspense fallback={<div>Cargando Pedidos...</div>}>
+                <Suspense fallback={<Loader />}>
                     {orders.length > 0 ? (
                         <DataTable
                             columns={ordersColumns}

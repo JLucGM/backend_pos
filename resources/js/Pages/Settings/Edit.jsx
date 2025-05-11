@@ -4,6 +4,7 @@ import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
+import Loader from '@/Components/ui/loader';
 
 // Define SettingsForm as a lazy component
 const SettingsForm = lazy(() => import('@/Pages/Settings/SettingsForm'));
@@ -51,7 +52,7 @@ export default function Edit({ setting }) {
                         <form onSubmit={submit} >
                             <div className="grid grid-cols-1 gap-4">
                                 <DivSection>
-                                    <Suspense fallback={<div>Cargando formulario de configuración...</div>}>
+                                    <Suspense fallback={<Loader />}>
                                         <SettingsForm
                                             data={data}
                                             setData={setData}

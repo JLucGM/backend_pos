@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import DivSection from '@/Components/ui/div-section';
+import Loader from '@/Components/ui/loader';
 
 // Define TaxesForm as a lazy component
 const TaxesForm = lazy(() => import('./TaxesForm'));
@@ -52,7 +53,7 @@ export default function Edit({ tax }) {
                     <div className=" text-gray-900 dark:text-gray-100">
                         <form onSubmit={submit} className='space-y-4'>
                             <DivSection>
-                                <Suspense fallback={<div>Cargando formulario de impuestos...</div>}>
+                                <Suspense fallback={<Loader />}>
                                     <TaxesForm data={data} setData={setData} errors={errors} />
                                 </Suspense>
                             </DivSection>

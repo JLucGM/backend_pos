@@ -5,6 +5,7 @@ import { Button, buttonVariants } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import { ArrowLongLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/Components/ui/badge';
+import Loader from '@/Components/ui/loader';
 // Lazy load ProductsForm
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
@@ -121,7 +122,7 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <Suspense fallback={<div>Cargando formulario...</div>}>
+                        <Suspense fallback={<Loader />}>
                             <ProductsForm
                                 data={data}
                                 setData={setData}

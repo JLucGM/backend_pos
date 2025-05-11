@@ -8,6 +8,7 @@ import { lazy, Suspense } from 'react';
 import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
 import { StoresColumns } from './Columns';
+import Loader from '@/Components/ui/loader';
 
 // Define DataTable and StoresForm as lazy components
 const DataTable = lazy(() => import('@/Components/DataTable'));
@@ -63,8 +64,8 @@ export default function Index({ stores, countries, states, cities, permission })
         >
             <Head className="capitalize" title="Tiendas" />
 
+                <Suspense fallback={<Loader />}>
             <DivSection>
-                <Suspense fallback={<div>Cargando tiendas...</div>}>
                     {stores.length > 0 ? (
                         <DataTable
                             columns={StoresColumns}
@@ -78,8 +79,8 @@ export default function Index({ stores, countries, states, cities, permission })
                     ) : (
                         <p>No hay tiendas registradas.</p>
                     )}
-                </Suspense>
             </DivSection>
+                </Suspense>
 
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
@@ -92,7 +93,7 @@ export default function Index({ stores, countries, states, cities, permission })
                             Estos datos podrían estar disponibles públicamente. No utilice su información personal.
                         </Description> */}
                         <form onSubmit={submit} className='space-y-4'>
-                            <Suspense fallback={<div>Cargando formulario...</div>}>
+                            <Suspense fallback={<Loader />}>
                                 <StoresForm
                                     data={data}
                                     setData={setData}
@@ -105,7 +106,6 @@ export default function Index({ stores, countries, states, cities, permission })
                             <div className="flex justify-end p-2.5">
                                 <Button
                                     variant="default"
-                                    size="sm"
                                     type="submit"
                                 >
                                     Guardar
