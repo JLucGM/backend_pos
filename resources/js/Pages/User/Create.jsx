@@ -3,20 +3,22 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { lazy, Suspense } from 'react';
+import Loader from '@/Components/ui/loader';
 
 // Define UserForm como un componente cargado de forma lazy
 const UserForm = lazy(() => import('./UserForm'));
 
-export default function Create({ stores, roles, role }) {
+export default function Create({ roles, role }) {
     const initialValues = {
         name: "",
         phone: "",
         email: "",
+        identification: "",
         password: "",
         status: 0, // o 1, dependiendo del valor predeterminado que desees
         avatar: null,
         role: roles.length > 0 ? roles[0].id : null,
-        store_id: stores.length > 0 ? stores[0].id : null,
+        // store_id: stores.length > 0 ? stores[0].id : null,
     };
 
     const { data, setData, errors, post } = useForm(initialValues);
@@ -41,28 +43,28 @@ export default function Create({ stores, roles, role }) {
         >
             <Head className="capitalize" title="Usuario" />
 
-            <div className="text-gray-900 dark:text-gray-100">
-                <form onSubmit={submit} className='space-y-4'>
-                    <div className="grid grid-cols-3 gap-4">
-                        <Suspense fallback={<div>Cargando formulario...</div>}>
+            <Suspense fallback={<Loader />}>
+                <div className="text-gray-900 dark:text-gray-100">
+                    <form onSubmit={submit} className='space-y-4'>
+                        <div className="grid grid-cols-3 gap-4">
                             <UserForm
                                 data={data}
                                 setData={setData}
                                 errors={errors}
-                                stores={stores}
+                                // stores={stores}
                                 roles={roles}
                                 role={role}
                             />
-                        </Suspense>
-                    </div>
+                        </div>
 
-                    <div className="flex justify-end p-2.5">
-                        <Button>
-                            Guardar
-                        </Button>
-                    </div>
-                </form>
-            </div>
+                        <div className="flex justify-end p-2.5">
+                            <Button>
+                                Guardar
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            </Suspense>
         </AuthenticatedLayout>
     );
 }

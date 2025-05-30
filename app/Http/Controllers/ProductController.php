@@ -13,6 +13,7 @@ use App\Models\ProductAttributeCombination;
 use App\Models\Stock;
 use App\Models\Store;
 use App\Models\Tax;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -33,10 +34,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product = Product::with('tax', 'stocks', 'categories','media')->get();
-
-
         $user = Auth::user();
+        $product = Product::with('tax', 'stocks', 'categories', 'media')
+            ->where('company_id', $user->company_id)
+            ->get();
+
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
@@ -76,21 +78,26 @@ class ProductController extends Controller
             'prices' => 'nullable|array',
             'stocks' => 'nullable|array', // Asegúrate de validar el stock
             'quantity' => 'required|integer|min:0',
-            'store_id' => 'required|exists:stores,id',
+            // 'store_id' => 'required|exists:stores,id',
             'product_barcode' => 'nullable|string|max:255',
             'product_sku' => 'nullable|string|max:255', // Validación para el SKU
         ]);
 
+        $user = Auth::user();
         // Crear el producto
-        $product = Product::create($request->only(
-            'product_name',
-            'product_description',
-            'product_price',
-            'product_price_discount',
-            'status',
-            'tax_id',
-            'product_status_pos',
+        $product = Product::create(array_merge(
+            $request->only(
+                'product_name',
+                'product_description',
+                'product_price',
+                'product_price_discount',
+                'status',
+                'tax_id',
+                'product_status_pos'
+            ),
+            ['company_id' => $user->company_id]
         ));
+
 
         // Asociar las categorías al producto
         $product->categories()->attach($request->categories);
@@ -166,7 +173,7 @@ class ProductController extends Controller
                 Stock::create([
                     'quantity' => $stockQuantity,
                     'product_id' => $product->id,
-                    'store_id' => $request->store_id,
+                    // 'store_id' => $request->store_id,
                     'combination_id' => $combinationModel->id, // Relacionar el stock con la combinación
                     'product_barcode' => $request->barcodes[$combinationKey] ?? null, // Guardar en stock
                     'product_sku' => $request->skus[$combinationKey] ?? null, // Guardar en stock
@@ -177,7 +184,7 @@ class ProductController extends Controller
             Stock::create([
                 'quantity' => $request->quantity,
                 'product_id' => $product->id,
-                'store_id' => $request->store_id,
+                // 'store_id' => $request->store_id,
                 'product_barcode' => $request->product_barcode, // Guardar el barcode en stock
                 'product_sku' => $request->product_sku, // Guardar el SKU en stock
             ]);
@@ -223,6 +230,11 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
+        $user = Auth::user();
+        if ($product->company_id !== $user->company_id) {
+            abort(403, 'No tienes permiso para esta operación.');
+        }
+
         // Cargar las relaciones necesarias, incluyendo las imágenes
         $product->load(
             'tax',
@@ -232,7 +244,7 @@ class ProductController extends Controller
             'combinations.combinationAttributeValue', // Cargar valores de atributos de combinaciones
             'combinations.combinationAttributeValue.attributeValue', // Cargar valores de atributos relacionados
             'combinations.combinationAttributeValue.attributeValue.attribute', // Cargar atributos relacionados
-            'media'
+            'media',
         );
 
         // dd($product);
@@ -283,8 +295,13 @@ class ProductController extends Controller
             'attribute_names.*' => 'nullable|string|max:255',
             'attribute_values' => 'nullable|array',
             'attribute_values.*.*' => 'nullable|string|max:255',
-            'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
+            // 'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
         ]);
+
+        $user = Auth::user();
+        if ($product->company_id !== $user->company_id) {
+            abort(403, 'No tienes permiso para esta operación.');
+        }
 
         // Extraer los datos del producto
         $data = $request->only(
@@ -392,7 +409,7 @@ class ProductController extends Controller
                     [
                         'combination_id' => $combinationModel->id,
                         'product_id' => $product->id,
-                        'store_id' => $request->store_id, // Asegúrate de que el stock esté relacionado con la tienda
+                        // 'store_id' => $request->store_id, // Asegúrate de que el stock esté relacionado con la tienda
                     ],
                     [
                         'quantity' => $stockQuantity,
@@ -406,7 +423,7 @@ class ProductController extends Controller
             Stock::updateOrCreate(
                 [
                     'product_id' => $product->id,
-                    'store_id' => $request->store_id, // Asegúrate de que el stock esté relacionado con la tienda
+                    // 'store_id' => $request->store_id, // Asegúrate de que el stock esté relacionado con la tienda
                     'combination_id' => null, // No hay combinación
                 ],
                 [
@@ -453,6 +470,11 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        $user = Auth::user();
+        if ($product->company_id !== $user->company_id) {
+            abort(403, 'No tienes permiso para esta operación.');
+        }
+
         DB::transaction(function () use ($product) {
 
             $product->categories()->detach();
@@ -503,8 +525,12 @@ class ProductController extends Controller
         $originalProduct = Product::with([
             'categories',
             'stocks',
-            'combinations.combinationAttributeValue.attributeValue',
-            'media'
+            'combinations',
+            'combinations.combinationAttributeValue', // Cargar valores de atributos de combinaciones
+            'combinations.combinationAttributeValue.attributeValue', // Cargar valores de atributos relacionados
+            'combinations.combinationAttributeValue.attributeValue.attribute', // Cargar atributos relacionados
+            'media',
+            'company'
         ])->findOrFail($product);
 
         // Crear una copia del producto

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('slug');
             $table->integer('client_identification')->unique();
             $table->string ('client_phone')->nullable();
+            $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

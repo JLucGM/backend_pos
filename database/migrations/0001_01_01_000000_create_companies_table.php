@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments_methods', function (Blueprint $table) {
+        Schema::create('companies', function (Blueprint $table) {
             $table->id();
-            $table->string('payment_method_name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
-            $table->string('slug');
-            $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
+            $table->string('name')->unique(); // Nombre de la empresa, debe ser único
+            $table->string('slug')->unique()->nullable(); // Para subdominios, opcional
+            $table->string('email');
+            $table->string('phone')->nullable();
+            $table->string('address')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payments_methods');
+        Schema::dropIfExists('companies');
     }
 };

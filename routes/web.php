@@ -74,12 +74,12 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('payments_methods/{payment_method}', [PaymentMethodController::class, 'update'])->name('paymentmethod.update');
     Route::delete('payments_methods/{payment_method}', [PaymentMethodController::class, 'destroy'])->name('paymentmethod.destroy');
     
-    Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
-    Route::get('clients/create', [ClientController::class, 'create'])->name('clients.create');
-    Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
-    Route::get('clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
-    Route::post('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
-    Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+    // Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
+    // Route::get('clients/create', [ClientController::class, 'create'])->name('clients.create');
+    // Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
+    // Route::get('clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
+    // Route::post('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
+    // Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 
     
     Route::get('countries', [CountriesController::class, 'index'])->name('countries.index');
@@ -103,12 +103,12 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('cities/{city}', [CitiesController::class, 'update'])->name('cities.update');
     Route::delete('cities/{city}', [CitiesController::class, 'destroy'])->name('cities.destroy');
 
-    Route::get('stores', [StoreController::class, 'index'])->name('stores.index');
-    Route::get('stores/create', [StoreController::class, 'create'])->name('stores.create');
-    Route::post('stores', [StoreController::class, 'store'])->name('stores.store');
-    Route::get('stores/{store}/edit', [StoreController::class, 'edit'])->name('stores.edit');
-    Route::post('stores/{store}', [StoreController::class, 'update'])->name('stores.update');
-    Route::delete('stores/{store}', [StoreController::class, 'destroy'])->name('stores.destroy');
+    // Route::get('stores', [StoreController::class, 'index'])->name('stores.index');
+    // Route::get('stores/create', [StoreController::class, 'create'])->name('stores.create');
+    // Route::post('stores', [StoreController::class, 'store'])->name('stores.store');
+    // Route::get('stores/{store}/edit', [StoreController::class, 'edit'])->name('stores.edit');
+    // Route::post('stores/{store}', [StoreController::class, 'update'])->name('stores.update');
+    // Route::delete('stores/{store}', [StoreController::class, 'destroy'])->name('stores.destroy');
 
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
@@ -125,6 +125,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     
     
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
+Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{orders}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::post('orders/{orders}', [OrderController::class, 'update'])->name('orders.update');
     

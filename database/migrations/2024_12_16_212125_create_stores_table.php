@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('slug');
             $table->string('store_phone')->nullable();
             $table->text('store_direction')->nullable();
+            $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('country_id')->nullable()->constrained();
             $table->foreignId('state_id')->nullable()->constrained();
             $table->foreignId('city_id')->nullable()->constrained();

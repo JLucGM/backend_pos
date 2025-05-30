@@ -6,18 +6,18 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Badge } from "@/Components/ui/badge"
 
-export default function Dashboard({ client, orders, ordersCount, clientsCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod }) {
-    const user = usePage().props.auth.user;
+export default function Dashboard({ user, usersCount, orders, ordersCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod }) {
+    const userAuth = usePage().props.auth.user;
 
-    // Convertir los datos de client a un formato adecuado para el gráfico
-    const chartData = Object.keys(client).map(month => ({
+    // Convertir los datos de user a un formato adecuado para el gráfico
+    const chartData = Object.keys(user).map(month => ({
         month,
-        clientesRegistrados: client[month], // Renombrado para mayor claridad
+        usersRegistrados: user[month], // Renombrado para mayor claridad
     }));
 
     const chartConfig = {
-        clientesRegistrados: {
-            label: "Clientes Registrados", // Etiqueta más descriptiva
+        usersRegistrados: {
+            label: "Usuarios Registrados", // Etiqueta más descriptiva
             color: "#2563eb",
         },
     };
@@ -39,7 +39,7 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
             header={
                 <DivSection className='flex items-center gap-4'>
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                        Bienvenido, {user.name}
+                        Bienvenido, {userAuth.name}
                     </h2>
                 </DivSection>
             }
@@ -52,29 +52,29 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
                         <span className='block font-medium text-2xl'>
                             {ordersCount}
                         </span>
-                        <p className="text-gray-500 dark:text-gray-400">Órdenes Totales</p> {/* Descripción más clara */}
+                        <p className="text-gray-500 dark:text-gray-400">Órdenes Totales</p>
                     </DivSection>
-                    <DivSection className="col-span-1">
+                     <DivSection className="col-span-1">
                         <span className='block font-medium text-2xl'>
-                            {clientsCount}
+                            {usersCount}
                         </span>
-                        <p className="text-gray-500 dark:text-gray-400">Clientes Totales</p> {/* Descripción más clara */}
-                    </DivSection>
+                        <p className="text-gray-500 dark:text-gray-400">Usuarios Totales</p>
+                    </DivSection> 
                     <DivSection className="col-span-1">
                         <span className='block font-medium text-2xl'>
                             {todayOrdersCount}
                         </span>
-                        <p className="text-gray-500 dark:text-gray-400">Órdenes del Día</p> {/* Descripción más clara */}
+                        <p className="text-gray-500 dark:text-gray-400">Órdenes del Día</p>
                     </DivSection>
                     <DivSection className="col-span-2">
                         <span className='block font-medium text-2xl'>
                             ${totalTodayOrdersAmount}
                         </span>
-                        <p className="text-gray-500 dark:text-gray-400">Recaudado Hoy</p>  {/* Descripción más clara */}
+                        <p className="text-gray-500 dark:text-gray-400">Recaudado Hoy</p> 
                     </DivSection>
 
                     <DivSection className="col-span-3">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Clientes Registrados por Mes</h3> {/* Título del gráfico */}
+                        <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Usuarios Registrados por Mes</h3>
                         <ChartContainer config={chartConfig} className="min-h-[200px] w-full ">
                             <BarChart data={chartData}>
                                 <CartesianGrid vertical={false} />
@@ -93,13 +93,13 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
                                 />
                                 <ChartLegend content={<ChartLegendContent />} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="clientesRegistrados" fill="var(--color-desktop)" radius={4} /> {/* Usa la clave renombrada */}
+                                <Bar dataKey="usersRegistrados" fill="var(--color-desktop)" radius={4} /> 
                             </BarChart>
                         </ChartContainer>
-                    </DivSection>
+                    </DivSection> 
 
                     <DivSection className="col-span-3">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Órdenes Realizadas por Mes</h3>  {/* Título del gráfico */}
+                        <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Órdenes Realizadas por Mes</h3> 
                         <ChartContainer config={chartConfigOrders} className="min-h-[200px] w-full">
                             <BarChart data={chartDataOrders}>
                                 <CartesianGrid vertical={false} />
@@ -118,7 +118,7 @@ export default function Dashboard({ client, orders, ordersCount, clientsCount, t
                                 />
                                 <ChartLegend content={<ChartLegendContent />} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="ordenesRealizadas" fill="var(--color-desktop)" radius={4} /> {/* Usa la clave renombrada */}
+                                <Bar dataKey="ordenesRealizadas" fill="var(--color-desktop)" radius={4} />
                             </BarChart>
                         </ChartContainer>
                     </DivSection>

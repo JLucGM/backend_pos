@@ -24,6 +24,7 @@ class StoreSeeder extends Seeder
                 'country_id' => Country::where('country_name', 'Venezuela')->first()->id,
                 'state_id' => State::where('state_name', 'Amazonas')->first()->id,
                 'city_id' => City::where('city_name', 'Puerto Ayacucho')->first()->id,
+                'company_id' => 1,
             ],            
         ];
 

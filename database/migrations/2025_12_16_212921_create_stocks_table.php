@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('product_sku')->nullable();
             $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade'); //id del producto
             $table->foreignId('product_id')->nullable()->constrained(); //id del producto
-            $table->foreignId('store_id')->nullable()->constrained(); //id de la tienda
+            // $table->foreignId('store_id')->nullable()->constrained(); //id de la tienda
             $table->timestamps();
         });
     }

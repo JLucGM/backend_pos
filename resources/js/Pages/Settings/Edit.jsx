@@ -10,23 +10,27 @@ import Loader from '@/Components/ui/loader';
 const SettingsForm = lazy(() => import('@/Pages/Settings/SettingsForm'));
 
 export default function Edit({ setting }) {
+    console.log("Entrada", setting);
     const initialValues = {
-        app_name: setting.app_name,
+        name: setting.company.name,
         default_currency: setting.default_currency,
-        admin_email: setting.admin_email,
-        admin_phone: setting.admin_phone,
+        email: setting.company.email,
+        address: setting.company.address,
+        phone: setting.company.phone,
         shipping_base_price: setting.shipping_base_price,
     }
 
     const { data, setData, errors, post } = useForm(initialValues)
 
     const submit = (e) => {
+        console.log("salida", data);
         e.preventDefault();
         post(route('setting.update', setting), {
             onSuccess: () => {
                 toast.success("Configuración actualizada exitosamente");
             },
             onError: (error) => {
+                console.error("Error al actualizar:", error);
                 toast.error("Error al actualizar la configuración");
             }
         });
@@ -38,13 +42,13 @@ export default function Edit({ setting }) {
                 <div className='flex justify-between items-center '>
                     <div className="flex justify-start items-center">
                         <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            {setting.app_name}
+                            {setting.company.name}
                         </h2>
                     </div>
                 </div>
             }
         >
-            <Head className="capitalize" title={setting.app_name} />
+            <Head className="capitalize" title={setting.company.name} />
 
             <div className="max-w-7xl mx-auto ">
                 <div className=" overflow-hidden">
@@ -64,11 +68,7 @@ export default function Edit({ setting }) {
                             </div>
 
                             <div className="flex justify-end p-2.5">
-                                <Button
-                                    variant="default"
-                                    size="sm"
-                                    type="submit"
-                                >
+                                <Button>
                                     Guardar
                                 </Button>
                             </div>

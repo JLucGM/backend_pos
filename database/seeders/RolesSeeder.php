@@ -31,10 +31,10 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.tax.edit', 'description' => 'Editar impuestos'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.tax.delete', 'description' => 'Eliminar impuestos'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         
-        Permission::create(['name' => 'admin.category.index', 'description' => 'Ver lista de categorias'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.category.create', 'description' => 'Crear categorias'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.category.edit', 'description' => 'Editar categorias'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.category.delete', 'description' => 'Eliminar categorias'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.category.index', 'description' => 'Ver lista de categorias'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.category.create', 'description' => 'Crear categorias'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.category.edit', 'description' => 'Editar categorias'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.category.delete', 'description' => 'Eliminar categorias'])->syncRoles([$rolSuperAdmin]);
         
         Permission::create(['name' => 'admin.attribute.index', 'description' => 'Ver lista de atributo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.attribute.create', 'description' => 'Crear atributo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
@@ -46,26 +46,25 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.paymentmethod.edit', 'description' => 'Editar metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.paymentmethod.delete', 'description' => 'Eliminar metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         
-        Permission::create(['name' => 'admin.client.index', 'description' => 'Ver lista de clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.client.create', 'description' => 'Crear clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.client.edit', 'description' => 'Editar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.client.delete', 'description' => 'Eliminar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-
+        // Permission::create(['name' => 'admin.client.index', 'description' => 'Ver lista de clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        // Permission::create(['name' => 'admin.client.create', 'description' => 'Crear clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        // Permission::create(['name' => 'admin.client.edit', 'description' => 'Editar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        // Permission::create(['name' => 'admin.client.delete', 'description' => 'Eliminar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         
-        Permission::create(['name' => 'admin.countries.index', 'description' => 'Ver lista de paises'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.countries.create', 'description' => 'Crear paises'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.countries.edit', 'description' => 'Editar paises'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.countries.delete', 'description' => 'Eliminar paises'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.countries.index', 'description' => 'Ver lista de paises'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.countries.create', 'description' => 'Crear paises'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.countries.edit', 'description' => 'Editar paises'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.countries.delete', 'description' => 'Eliminar paises'])->syncRoles([$rolSuperAdmin]);
 
-        Permission::create(['name' => 'admin.states.index', 'description' => 'Ver lista de estados'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.states.create', 'description' => 'Crear estados'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.states.edit', 'description' => 'Editar estados'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.states.delete', 'description' => 'Eliminar estados'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.states.index', 'description' => 'Ver lista de estados'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.states.create', 'description' => 'Crear estados'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.states.edit', 'description' => 'Editar estados'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.states.delete', 'description' => 'Eliminar estados'])->syncRoles([$rolSuperAdmin]);
 
-        Permission::create(['name' => 'admin.cities.index', 'description' => 'Ver lista de estados'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.cities.create', 'description' => 'Crear estados'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.cities.edit', 'description' => 'Editar estados'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        Permission::create(['name' => 'admin.cities.delete', 'description' => 'Eliminar estados'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.cities.index', 'description' => 'Ver lista de estados'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.cities.create', 'description' => 'Crear estados'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.cities.edit', 'description' => 'Editar estados'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.cities.delete', 'description' => 'Eliminar estados'])->syncRoles([$rolSuperAdmin]);
         
         Permission::create(['name' => 'admin.stores.index', 'description' => 'Ver lista de tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.stores.create', 'description' => 'Crear tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
@@ -87,10 +86,10 @@ class RolesSeeder extends Seeder
         // Permission::create(['name' => 'admin.products.edit', 'description' => 'Editar productos'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         // Permission::create(['name' => 'admin.products.delete', 'description' => 'Eliminar productos'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
 
-        // Permission::create(['name' => 'admin.role.index', 'description' => 'Ver lista de roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        // Permission::create(['name' => 'admin.role.create', 'description' => 'Crear roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        // Permission::create(['name' => 'admin.role.edit', 'description' => 'Editar roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        // Permission::create(['name' => 'admin.role.delete', 'description' => 'Eliminar roles'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.role.index', 'description' => 'Ver lista de roles'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.role.create', 'description' => 'Crear roles'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.role.edit', 'description' => 'Editar roles'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.role.delete', 'description' => 'Eliminar roles'])->syncRoles([$rolSuperAdmin]);
 
     }
 }

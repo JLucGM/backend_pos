@@ -17,6 +17,7 @@ class PaymentsMethodsSeeder extends Seeder
         $paymetsMethods = [
             [
                 'payment_method_name' => 'Efectivo',
+                'company_id' => 1,
             ],            
         ];
 

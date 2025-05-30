@@ -415,12 +415,26 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                                     type="text"
                                     name="product_barcode"
                                     value={data.product_barcode || ''}
-                                    className="mt-1 block w-full"
+                                    className="mt-1 block w-full uppercase"
                                     onChange={(e) => setData('product_barcode', e.target.value)}
                                 />
                                 <InputError message={errors.product_barcode} />
                             </div>
 
+                            {!showAttributes && (
+                                <div>
+                                    <InputLabel htmlFor="quantity" value="Stock" />
+                                    <TextInput
+                                        id="quantity"
+                                        type="number"
+                                        name="quantity"
+                                        value={data.quantity}
+                                        className="mt-1 block w-full"
+                                        onChange={(e) => setData('quantity', e.target.value)}
+                                    />
+                                    <InputError message={errors.quantity} />
+                                </div>
+                            )}
 
                         </DivSection>
                     </>
@@ -590,8 +604,8 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                     <InputError message={errors.product_status_pos} className="mt-2" />
                 </DivSection>
 
-                <DivSection className='space-y-4'>
-                    {/* <div>
+                {/*<DivSection className='space-y-4'>
+                    <div>
                         <InputLabel htmlFor="tax_id" value="Impuesto" />
                         <Select
                             name="tax_id"
@@ -607,10 +621,11 @@ export default function ProductsForm({ data, taxes, categories, stores, combinat
                             <p className="ms-2 text-gray-500 text-sm">Deje la opción "Sin impuesto" si colocara el precio con el impuesto agregado. </p>
                             <p className="ms-2 text-gray-500 text-sm">Si coloca un producto sin impuesto, se recomienda colocarlo en todos los productos. </p>
                         </div>
-                    </div> */}
-                </DivSection>
+                    </div> 
+                 
+                </DivSection>*/}
+
             </div>
         </>
     );
 }
-

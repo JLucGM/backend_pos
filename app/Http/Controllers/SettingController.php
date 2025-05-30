@@ -14,10 +14,11 @@ class SettingController extends Controller
      */
     public function index()
     {
-        $setting = Setting::with('media')->first();
         // $currencies = Currency::all();
 
         $user = Auth::user();
+        $setting = Setting::with('media', 'company')->where('company_id', $user->company_id)->first();
+
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
@@ -61,28 +62,35 @@ class SettingController extends Controller
      */
     public function update(Request $request, Setting $setting)
     {
+        // dd($request->all());
         // Validar los datos de entrada
         $request->validate([
-            'app_name' => 'required|string|max:255',
             'default_currency' => 'required|string|max:255',
-            'admin_email' => 'required|email|max:255',
-            'admin_phone' => 'required|string|max:255',
             'shipping_base_price' => 'required|numeric|min:0',
-            // 'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20480',
-            // 'favicon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20480',
-            // 'logofooter' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:20480',
+            'name' => 'required|string|max:255', // Validación para el nombre de la compañía
+            'email' => 'required|email|max:255', // Validación para el correo de la compañía
+            'phone' => 'required|string|max:255', // Validación para el teléfono de la compañía
+            'address' => 'required|string|max:255', // Validación para la dirección de la compañía
         ]);
 
-        $data = $request->only(
-            'app_name',
-            'default_currency',
-            'admin_email',
-            'admin_phone',
-            'shipping_base_price',
-        );
+        $user = Auth::user();
+        if ($setting->company_id !== $user->company_id) {
+            abort(403, 'No tienes permiso para esta operación.');
+        }
 
         // Actualizar los ajustes
-        $setting->update($data);
+        $setting->update($request->only(
+            'default_currency',
+            'shipping_base_price',
+        ));
+        // Actualizar los campos de la compañía
+        $company = $setting->company; // Obtener la compañía asociada
+        $company->update($request->only(
+            'name',
+            'email',
+            'phone',
+            'address'
+        ));
 
         // Verificar si se ha subido un nuevo logo
         if ($request->hasFile('logo')) {
@@ -122,6 +130,7 @@ class SettingController extends Controller
 
         return to_route('setting.index', $setting);
     }
+
 
     /**
      * Remove the specified resource from storage.

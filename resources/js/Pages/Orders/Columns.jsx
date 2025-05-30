@@ -10,12 +10,10 @@ export const ordersColumns = [
     },
     {
         header: "Cliente",
-        accessorKey: "client_id",
+        accessorKey: "user_id",
         cell: ({ row }) => {
-            const clientName = row.original.client?.client_name;
-            const userName = row.original.user?.name;
             return (
-                <p>{clientName || userName || "N/A"}</p>
+                <p>{row.original.user?.name}</p>
             );
         },
     },
@@ -36,16 +34,16 @@ export const ordersColumns = [
             );
         },
     },
-    {
-        header: "Tienda",
-        accessorKey: "stores",
-        cell: ({ row }) => {
-            const storeName = row.original.stores.length > 0 ? row.original.stores[0].store_name : "N/A";
-            return (
-                <p>{storeName}</p>
-            );
-        },
-    },
+    // {
+    //     header: "Tienda",
+    //     accessorKey: "stores",
+    //     cell: ({ row }) => {
+    //         const storeName = row.original.stores.length > 0 ? row.original.stores[0].store_name : "N/A";
+    //         return (
+    //             <p>{storeName}</p>
+    //         );
+    //     },
+    // },
     {
         header: "Fecha",
         accessorKey: "created_at",

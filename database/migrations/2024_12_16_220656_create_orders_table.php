@@ -18,11 +18,12 @@ return new class extends Migration
             $table->string('subtotal');
             $table->string('total');
             $table->string('direction_delivery')->nullable();
-            // $table->string('payment_status')->nullable();
+            // $table->string('payment_status')->nullable();s
             $table->string('order_origin')->nullable();
+            $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('payments_method_id')->nullable()->constrained();
             $table->foreignId('user_id')->nullable()->constrained();
-            $table->foreignId('client_id')->nullable()->constrained();
+            // $table->foreignId('client_id')->nullable()->constrained();
             $table->timestamps();
         });
     }

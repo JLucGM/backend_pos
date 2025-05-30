@@ -7,16 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
-class PaymentMethod extends Model
+class Company extends Model
 {
     use HasFactory, HasSlug;
 
-    protected $table = 'payments_methods';
-
     protected $fillable = [
-        'payment_method_name',
-        'company_id',
-        'slug',
+        'name', 
+        'slug', 
+        'phone', 
+        'address',
+        'email',
     ];
 
     public function getRouteKeyName()
@@ -27,14 +27,18 @@ class PaymentMethod extends Model
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('payment_method_name')
+            ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
     }
 
-    // Definir la relación con PaymentMethodDetail
-    public function details()
+    public function users()
     {
-        return $this->hasMany(PaymentMethodDetail::class, 'payments_method_id');
+        return $this->hasMany(User::class);
     }
-    
+
+    // Si tienes otros modelos asociados a la empresa, como productos:
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }

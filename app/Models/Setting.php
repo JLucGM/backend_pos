@@ -21,6 +21,7 @@ class Setting extends Model implements HasMedia
         'admin_email',
         'admin_phone',
         'shipping_base_price',
+        'company_id',
     ];
 
     public function getRouteKeyName()
@@ -52,4 +53,23 @@ class Setting extends Model implements HasMedia
             ->width(368)
             ->height(232);
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+    // public function getFaviconUrlAttribute()
+    // {
+    //     return $this->getFirstMediaUrl('favicon');
+    // }
+
+    // public function getLogoUrlAttribute()
+    // {
+    //     return $this->getFirstMediaUrl('logo');
+    // }
+
+    // public function getLogoFooterUrlAttribute()
+    // {
+    //     return $this->getFirstMediaUrl('logofooter');
+    // }
 }

@@ -37,7 +37,8 @@ export default function Edit({ payment_method }) {
             onSuccess: () => {
                 toast.success("Método de pago actualizado con éxito.");
             },
-            onError: () => {
+            onError: (err) => {
+                console.error("Error al actualizar el método de pago:", err);
                 toast.error("Error al actualizar el método de pago.");
             },
         });

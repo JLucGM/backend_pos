@@ -26,7 +26,9 @@ class StoreController extends Controller
      */
     public function index()
     {
-        $stores = Store::all();
+        $user = Auth::user();
+
+        $stores = Store::where('company_id', $user->company_id)->get();
         $countries = Country::all();
         $states = State::all();
         $cities = City::all();
@@ -60,12 +62,20 @@ class StoreController extends Controller
             'city_id' => 'required|exists:cities,id',
         ]);
 
+        $user = Auth::user();
+
+        // Asegúrate de que el modelo Store tenga un campo company_id
         $data = $request->only('store_name', 'store_phone', 'store_direction', 'country_id', 'state_id', 'city_id');
 
-        Store::create($data); // Crear el nuevo usuario
+        // Agregar el company_id del usuario logueado
+        $data['company_id'] = $user->company_id; // Asignar el company_id del usuario
 
-        return to_route('stores.index'); // Redirigir a la lista de usuarios
+        // Crear la nueva tienda
+        Store::create($data);
+
+        return to_route('stores.index'); // Redirigir a la lista de tiendas
     }
+
 
     /**
      * Display the specified resource.
@@ -80,19 +90,31 @@ class StoreController extends Controller
      */
     public function edit(Store $store)
     {
+        // Verificar si el store pertenece a la misma company_id que el usuario logueado
+        $user = Auth::user();
+        if ($store->company_id !== $user->company_id) {
+            abort(403, 'No tienes permiso para esta operación.');
+        }
+
         $countries = Country::all();
         $states = State::all();
         $cities = City::all();
 
-        return Inertia::render('Stores/Edit', compact('store','countries', 'states', 'cities'));
-
+        return Inertia::render('Stores/Edit', compact('store', 'countries', 'states', 'cities'));
     }
+
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Store $store)
     {
+        // Verificar si el store pertenece a la misma company_id que el usuario logueado
+        $user = Auth::user();
+        if ($store->company_id !== $user->company_id) {
+            abort(403, 'No tienes permiso para esta operación.');
+        }
+
         $request->validate([
             'store_name' => 'required|string|max:255',
             'store_phone' => 'required|string|max:255',
@@ -101,19 +123,26 @@ class StoreController extends Controller
             'state_id' => 'required|exists:states,id',
             'city_id' => 'required|exists:cities,id',
         ]);
-        
+
         $data = $request->only('store_name', 'store_phone', 'store_direction', 'country_id', 'state_id', 'city_id');
 
-        $store->update($data); // Actualizar el usuario con los nuevos datos
+        $store->update($data); // Actualizar la tienda con los nuevos datos
 
-        return to_route('stores.edit', $store); // Redirigir a la edición del usuario
+        return to_route('stores.edit', $store); // Redirigir a la edición de la tienda
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Store $store)
     {
+        // Verificar si el store pertenece a la misma company_id que el usuario logueado
+        $user = Auth::user();
+        if ($store->company_id !== $user->company_id) {
+            abort(403, 'No tienes permiso para esta operación.');
+        }
+
         $store->delete();
     }
 }

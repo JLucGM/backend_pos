@@ -9,7 +9,7 @@ import { Input } from '@/Components/ui/input';
 import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
 
-export default function UserForm({ data, setData, errors, stores, roles, role, user = "" }) {
+export default function UserForm({ data, setData, errors, roles, role, user = "" }) {
     return (
         <>
             {/* {user.avatar ? ( */}
@@ -63,6 +63,20 @@ export default function UserForm({ data, setData, errors, stores, roles, role, u
                             onChange={(e) => setData('email', e.target.value)}
                         />
                         <InputError message={errors.email} className="mt-2" />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="identification" value="identification" />
+                        <TextInput
+                            id="identification"
+                            type="text"
+                            name="identification"
+                            value={data.identification}
+                            className="mt-1 block w-full"
+                            isFocused={true}
+                            onChange={(e) => setData('identification', e.target.value)}
+                        />
+                        <InputError message={errors.identification} className="mt-2" />
                     </div>
 
                     <div>
@@ -139,7 +153,7 @@ export default function UserForm({ data, setData, errors, stores, roles, role, u
                         <InputError message={errors.role} className="mt-2" />
                     </div>
 
-                    <div>
+                    {/* <div>
                         <InputLabel htmlFor="store" value="Tiendas" />
                         <Select
                             name="store_id"
@@ -150,7 +164,7 @@ export default function UserForm({ data, setData, errors, stores, roles, role, u
                             styles={customStyles}
                         />
                         <InputError message={errors.store_id} className="mt-2" />
-                    </div>
+                    </div> */}
                 </DivSection>
 
             </div>

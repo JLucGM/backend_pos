@@ -29,7 +29,7 @@ class Product extends Model implements HasMedia
         'status',
         'tax_id',
         'product_status_pos',
-        // 'product_sku',
+        'company_id',
         // 'product_barcode',
     ];
 
@@ -51,7 +51,7 @@ class Product extends Model implements HasMedia
             ->width(368)
             ->height(232);
 
-            $this->addMediaConversion('gallery')
+        $this->addMediaConversion('gallery')
             ->width(368)
             ->height(232);
     }
@@ -76,4 +76,8 @@ class Product extends Model implements HasMedia
         return $this->hasMany(Combination::class);
     }
 
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

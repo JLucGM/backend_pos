@@ -90,10 +90,10 @@ export function AppSidebar({
             title: "Staff",
             url: "user.index",
           },
-          {
-            title: "Clientes",
-            url: "clients.index",
-          },
+          // {
+          //   title: "Clientes",
+          //   url: "clients.index",
+          // },
         ],
       },
       {
@@ -125,10 +125,10 @@ export function AppSidebar({
             title: "Configuración",
             url: "setting.index",
           },
-          {
-            title: "Tiendas",
-            url: "stores.index",
-          },
+          // {
+          //   title: "Tiendas",
+          //   url: "stores.index",
+          // },
           {
             title: "Metodo de pago",
             url: "paymentmethod.index",

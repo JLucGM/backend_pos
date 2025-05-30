@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -30,26 +32,44 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // dd($request->all());
+        // Validaciones necesarias
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'avatar' => 'nullable', // Validación para el avatar
-
+            'avatar' => 'nullable',
+            'company_name' => 'required|string|max:255|unique:companies,name',
+            'company_phone' => 'nullable|string|max:20',
+            'company_address' => 'nullable|string|max:255',
         ]);
 
+        // Creación del usuario
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'status' => 1,
         ]);
 
-        // Si se ha subido un avatar, se guarda en la biblioteca de medios
+        // Guardar avatar si se ha subido
         if ($request->hasFile('avatar')) {
             $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
         }
 
+        // Crear la empresa
+        $company = Company::create([
+            'name' => $request->company_name,
+            'phone' => $request->company_phone,
+            'address' => $request->company_address,
+            // Otras propiedades si es necesario
+        ]);
+
+        // Asociar la empresa al usuario
+        $user->company()->associate($company); // Asegúrate de tener la relación definida
+        $user->save();
+
+        $user->assignRole('admin');
+        
         event(new Registered($user));
 
         Auth::login($user);

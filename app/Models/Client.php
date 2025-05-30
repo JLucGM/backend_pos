@@ -16,6 +16,7 @@ class Client extends Model
         'slug',
         'client_identification',
         'client_phone',
+        'company_id',
     ];
 
     public function getRouteKeyName()

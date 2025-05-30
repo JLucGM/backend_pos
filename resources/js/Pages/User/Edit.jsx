@@ -9,16 +9,17 @@ import Loader from '@/Components/ui/loader';
 // Define UserForm como un componente cargado de forma lazy
 const UserForm = lazy(() => import('./UserForm'));
 
-export default function Edit({ user, stores, roles, role, permission }) {
+export default function Edit({ user, roles, role, permission }) {
     const initialValues = {
         name: user.name,
         email: user.email,
         password: '',
         phone: user.phone,
+        identification: user.identification,
         status: user.status,
         avatar: null,
         role: user.roles.length > 0 ? user.roles[0].id : "",
-        store_id: user.stores.length > 0 ? user.stores[0].id : "",
+        // store_id: user.stores.length > 0 ? user.stores[0].id : "",
     };
 
     const { data, setData, errors, post } = useForm(initialValues);
@@ -59,37 +60,29 @@ export default function Edit({ user, stores, roles, role, permission }) {
         >
             <Head className="capitalize" title="Usuarios" />
 
-            <div className="text-gray-900 dark:text-gray-100">
-                <form onSubmit={submit} className='space-y-4'>
-                    <div className="grid grid-cols-3 gap-4">
-                        <Suspense fallback={<Loader />}>
+            <Suspense fallback={<Loader />}>
+                <div className="text-gray-900 dark:text-gray-100">
+                    <form onSubmit={submit} className='space-y-4'>
+                        <div className="grid grid-cols-3 gap-4">
                             <UserForm
                                 data={data}
                                 setData={setData}
                                 errors={errors}
-                                stores={stores}
+                                // stores={stores}
                                 roles={roles}
                                 role={role}
                                 user={user}
                             />
-                        </Suspense>
-                    </div>
+                        </div>
 
-                    <div className="flex justify-end p-2.5">
-                        <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() =>
-                                toast("Actualizado.", {
-                                    description: "Se ha actualizado con éxito.",
-                                })
-                            }
-                        >
-                            Guardar
-                        </Button>
-                    </div>
-                </form>
-            </div>
+                        <div className="flex justify-end p-2.5">
+                            <Button>
+                                Guardar
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            </Suspense>
         </AuthenticatedLayout>
     );
 }

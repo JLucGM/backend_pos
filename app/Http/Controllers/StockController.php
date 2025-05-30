@@ -57,7 +57,7 @@ class StockController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->only('quantity', 'status', 'product_id', 'store_id');
+        $data = $request->only('quantity', 'status', 'product_id');
 
         Stock::create($data);
 

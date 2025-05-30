@@ -11,6 +11,10 @@ const ProductsForm = lazy(() => import('./ProductsForm'));
 
 
 export default function Edit({ product, taxes, categories, stores, combinationsWithPrices }) {
+    // console.log("Product data:", product);
+        console.log("Edit.jsx - Product prop:", product);
+    console.log("Edit.jsx - CombinationsWithPrices prop:", combinationsWithPrices);
+
     const selectedCategories = product.categories.map(category => category.id);
 
     const attributeMap = {};
@@ -59,6 +63,8 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
         initialValues.barcodes[combination] = combinationsWithPrices[combination].product_barcode || ''; // Asigna el código de barras correspondiente
         initialValues.skus[combination] = combinationsWithPrices[combination].product_sku || ''; // Asigna el SKU correspondiente
     }
+
+        console.log("Edit.jsx - Final initialValues:", initialValues);
 
     // Usar useForm para manejar el estado del formulario
     const { data, setData, errors, post, processing } = useForm(initialValues);
@@ -119,10 +125,10 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
         >
             <Head title="Editar Producto" />
 
-            <div className="text-gray-900 dark:text-gray-100">
-                <form onSubmit={submit} className='space-y-4'>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <Suspense fallback={<Loader />}>
+            <Suspense fallback={<Loader />}>
+                <div className="text-gray-900 dark:text-gray-100">
+                    <form onSubmit={submit} className='space-y-4'>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <ProductsForm
                                 data={data}
                                 setData={setData}
@@ -133,16 +139,16 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                                 combinationsWithPrices={combinationsWithPrices}
                                 product={product}
                             />
-                        </Suspense>
-                    </div>
+                        </div>
 
-                    <div className="flex justify-end p-2.5">
-                        <Button variant="default" type="submit" disabled={processing}>
-                            {processing ? "Guardando..." : "Guardar"}
-                        </Button>
-                    </div>
-                </form>
-            </div>
+                        <div className="flex justify-end p-2.5">
+                            <Button variant="default" type="submit" disabled={processing}>
+                                {processing ? "Guardando..." : "Guardar"}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            </Suspense>
         </AuthenticatedLayout>
     );
 }

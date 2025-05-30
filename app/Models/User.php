@@ -31,7 +31,7 @@ class User extends Authenticatable implements HasMedia
         'password',
         'phone',
         'status',
-        'avatar',
+        'company_id',
         'identification',
     ];
 
@@ -73,12 +73,17 @@ class User extends Authenticatable implements HasMedia
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('avatars')
-              ->width(500)
-              ->height(500);
+            ->width(500)
+            ->height(500);
     }
 
     public function stores()
     {
         return $this->belongsToMany(Store::class, 'user_stores');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

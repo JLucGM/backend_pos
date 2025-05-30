@@ -22,7 +22,7 @@ return new class extends Migration
             // Eliminar las siguientes líneas:
             // $table->foreignId('product_id')->nullable()->constrained()->onDelete('set null');
             // $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade');
-            $table->json('product_details')->nullable(); // Nuevo campo para detalles del producto y combinación
+            $table->text('product_details')->nullable(); // Nuevo campo para detalles del producto y combinación
             $table->timestamps();
         });
     }

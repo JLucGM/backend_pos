@@ -3,6 +3,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
+import { toast } from 'sonner';
 
 // Definimos PaymentMethodForm como un componente lazy
 const PaymentMethodForm = lazy(() => import('./PaymentMethodForm'));
@@ -25,7 +26,15 @@ export default function Create({ }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('paymentmethod.store'));
+        post(route('paymentmethod.store'), {
+            onSuccess: () => {
+                toast.success("Método de pago creado con éxito.");
+            },
+            onError: (err) => {
+                console.error("Error al crear el método de pago:", err);
+                toast.error("Error al crear el método de pago.");
+            },
+        });
     };
 
     return (
@@ -56,14 +65,7 @@ export default function Create({ }) {
                         </DivSection>
 
                         <div className="flex justify-end p-2.5">
-                            <Button
-                                variant="default"
-                                onClick={() =>
-                                    toast("Creado.", {
-                                        description: "Se ha creado con éxito.",
-                                    })
-                                }
-                            >
+                            <Button>
                                 Guardar
                             </Button>
                         </div>

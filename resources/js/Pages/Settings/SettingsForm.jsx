@@ -23,43 +23,58 @@ export default function SettingsForm({ data, setting, setData, errors }) {
 
             <div>
                 {/* setting{setting.app_name} */}
-                <InputLabel htmlFor="app_name" value="Nombre" />
+                <InputLabel htmlFor="name" value="Nombre" />
                 <TextInput
-                    id="app_name"
+                    id="name"
                     type="text"
-                    name="app_name"
-                    value={data.app_name}
+                    name="name"
+                    value={data.name}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('app_name', e.target.value)}
+                    onChange={(e) => setData('name', e.target.value)}
                 />
-                <InputError message={errors.app_name} className="mt-2" />
+                <InputError message={errors.name} className="mt-2" />
             </div>
             <div>
-                <InputLabel htmlFor="admin_email" value="Correo" />
+                <InputLabel htmlFor="email" value="Correo" />
                 <TextInput
-                    id="admin_email"
+                    id="email"
                     type="email"
-                    name="admin_email"
-                    value={data.admin_email}
+                    name="email"
+                    value={data.email}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('admin_email', e.target.value)}
+                    onChange={(e) => setData('email', e.target.value)}
                 />
-                <InputError message={errors.admin_email} className="mt-2" />
+                <InputError message={errors.email} className="mt-2" />
             </div>
+
             <div>
-                <InputLabel htmlFor="admin_phone" value="Telefono" />
+                <InputLabel htmlFor="phone" value="Telefono" />
                 <TextInput
-                    id="admin_phone"
+                    id="phone"
                     type="text"
-                    name="admin_phone"
-                    value={data.admin_phone}
+                    name="phone"
+                    value={data.phone}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('admin_phone', e.target.value)}
+                    onChange={(e) => setData('phone', e.target.value)}
                 />
-                <InputError message={errors.admin_phone} className="mt-2" />
+                <InputError message={errors.phone} className="mt-2" />
+            </div>
+            
+            <div>
+                <InputLabel htmlFor="address" value="address" />
+                <TextInput
+                    id="address"
+                    type="text"
+                    name="address"
+                    value={data.address}
+                    className="mt-1 block w-full"
+                    isFocused={true}
+                    onChange={(e) => setData('address', e.target.value)}
+                />
+                <InputError message={errors.address} className="mt-2" />
             </div>
 
             <div>

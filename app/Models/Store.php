@@ -19,6 +19,7 @@ class Store extends Model
         'country_id',
         'state_id',
         'city_id',
+        'company_id',
     ];
 
     public function getRouteKeyName()

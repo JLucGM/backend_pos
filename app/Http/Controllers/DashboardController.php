@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Client;
+// use App\Models\user;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,32 +15,34 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $clients = Client::all();
-        $orders = Order::all();
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
+        $userAuth = Auth::user();
+
+        $users = User::where('company_id', $userAuth->company_id)->get();
+        $orders = Order::where('company_id', $userAuth->company_id)->get();
+
+        $role = $userAuth->getRoleNames();
+        $permission = $userAuth->getAllPermissions();
         $products = Product::with('stocks', 'media')->get(); // Asegúrate de cargar la relación de stocks
 
-        $ordersCount = Order::all()->count();
-        $clientsCount = Client::all()->count();
+        $ordersCount = $orders->count();
+        $usersCount = $users->count();
         $totalTodayOrdersAmount = Order::whereDate('created_at', Carbon::today())->sum('total'); // Sumar el campo 'total' de las órdenes del día
         // dd($totalTodayOrdersAmount);
 
         // Establecer el locale a español
         Carbon::setLocale('Es');
 
-        // Agrupar clientes por mes
-        $chartData = $clients->groupBy(function ($date) {
+        // Agrupar users por mes
+        $chartData = $users->groupBy(function ($date) {
             return \Carbon\Carbon::parse($date->created_at)->locale('es')->translatedFormat('F'); // Agrupar por mes en español
         })->map(function ($row) {
-            return count($row); // Contar el número de clientes por mes
+            return count($row); // Contar el número de useres por mes
         });
 
         $chartDataOrders = $orders->groupBy(function ($date) {
             return \Carbon\Carbon::parse($date->created_at)->locale('es')->translatedFormat('F'); // Agrupar por mes en español
         })->map(function ($row) {
-            return count($row); // Contar el número de clientes por mes
+            // return count($row); // Contar el número de useres por mes
         });
 
         $todayOrdersCount = Order::whereDate('created_at', Carbon::today())->count();
@@ -62,17 +65,19 @@ class DashboardController extends Controller
 
 
         // dd($lowStockProducts);
-        return Inertia::render('Dashboard', [
-            'client' => $chartData,
+        return Inertia::render('Dashboard'
+        , [
+            'user' => $chartData,
             'orders' => $chartDataOrders,
             'ordersCount' => $ordersCount,
-            'clientsCount' => $clientsCount,
+            'usersCount' => $usersCount,
             'todayOrdersCount' => $todayOrdersCount,
             'ordersByPaymentMethod' => $ordersByPaymentMethod,
             'lowStockProducts' => $lowStockProducts, // Pasar los productos con bajo stock
             'totalTodayOrdersAmount' => $totalTodayOrdersAmount,
             'role' => $role,
             'permission' => $permission,
-        ]);
+        ]
+    );
     }
 }
