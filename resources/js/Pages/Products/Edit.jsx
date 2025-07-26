@@ -10,7 +10,7 @@ import Loader from '@/Components/ui/loader';
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
 
-export default function Edit({ product, taxes, categories, stores }) {
+export default function Edit({ product, taxes, categories }) {
     // Log the initial product data to verify its structure
     console.log("Product data:", product);
 
@@ -77,7 +77,6 @@ export default function Edit({ product, taxes, categories, stores }) {
         product_barcode: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].product_barcode : '',
         categories: selectedCategories,
         quantity: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].quantity : 0,
-        store_id: (product.stocks.length > 0) ? product.stocks[0].store_id : null, // Assuming store_id is on stock
         attribute_names: Object.keys(attributeMap),
         attribute_values: Object.values(attributeMap),
         // Use mergedCombinationsData for the `prices` field in the form's state.
@@ -184,8 +183,6 @@ export default function Edit({ product, taxes, categories, stores }) {
                                 errors={errors}
                                 taxes={taxes}
                                 categories={categories}
-                                stores={stores}
-                                // Pass the newly merged data to ProductsForm
                                 combinationsWithPrices={mergedCombinationsData}
                                 product={product}
                             />

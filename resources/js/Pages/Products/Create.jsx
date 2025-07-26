@@ -9,7 +9,7 @@ import Loader from '@/Components/ui/loader';
 // Lazy load ProductsForm
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
-export default function Create({ taxes, categories, stores }) {
+export default function Create({ taxes, categories }) {
     const { data, setData, errors, post, processing } = useForm({
         product_name: "",
         product_description: "",
@@ -27,7 +27,6 @@ export default function Create({ taxes, categories, stores }) {
         // tax_id: taxes.length > 0 ? taxes[0].id : null,
         tax_id: 1,
         quantity: 0,
-        store_id: stores.length > 0 ? stores[0].id : null,
         prices: {},
         stocks: {},
         images: []
@@ -71,7 +70,6 @@ console.log(data);
                                 errors={errors}
                                 taxes={taxes}
                                 categories={categories}
-                                stores={stores}
                             />
                         </div>
 

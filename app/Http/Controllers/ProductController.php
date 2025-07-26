@@ -8,12 +8,8 @@ use App\Models\Category;
 use App\Models\Combination;
 use App\Models\CombinationAttributeValue;
 use App\Models\Product;
-use App\Models\ProductAttribute;
-use App\Models\ProductAttributeCombination;
 use App\Models\Stock;
-use App\Models\Store;
 use App\Models\Tax;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -52,9 +48,8 @@ class ProductController extends Controller
     {
         $taxes = Tax::all();
         $categories = Category::all();
-        $stores = Store::all();
 
-        return Inertia::render('Products/Create', compact('taxes', 'categories', 'stores'));
+        return Inertia::render('Products/Create', compact('taxes', 'categories'));
     }
 
     /**
@@ -198,7 +193,6 @@ class ProductController extends Controller
                 Stock::create([
                     'quantity' => $comboDetails['stock'], // Correctly get stock
                     'product_id' => $product->id,
-                    'store_id' => $request->store_id, // Ensure store_id is passed if needed
                     'combination_id' => $combinationModel->id, // Relacionar el stock con la combinación
                     'product_barcode' => $comboDetails['product_barcode'], // Correctly get barcode
                     'product_sku' => $comboDetails['product_sku'], // Correctly get SKU
@@ -209,7 +203,6 @@ class ProductController extends Controller
             Stock::create([
                 'quantity' => $request->quantity,
                 'product_id' => $product->id,
-                'store_id' => $request->store_id, // Ensure store_id is passed if needed
                 'product_barcode' => $request->product_barcode, // Guardar el barcode en stock
                 'product_sku' => $request->product_sku, // Guardar el SKU en stock
             ]);
@@ -296,9 +289,8 @@ class ProductController extends Controller
 
         $taxes = Tax::all();
         $categories = Category::all();
-        $stores = Store::all();
 
-        return Inertia::render('Products/Edit', compact('product', 'taxes', 'categories', 'stores', 'combinationsWithPrices'));
+        return Inertia::render('Products/Edit', compact('product', 'taxes', 'categories', 'combinationsWithPrices'));
     }
 
     /**
@@ -480,7 +472,6 @@ class ProductController extends Controller
                     [
                         'product_id' => $product->id,
                         'combination_id' => $combinationModel->id,
-                        // 'store_id' => $request->store_id, // Uncomment if store_id is always present and relevant here
                     ],
                     [
                         'quantity' => $stockQuantity,
@@ -505,7 +496,6 @@ class ProductController extends Controller
                 [
                     'product_id' => $product->id,
                     'combination_id' => null, // For simple products, combination_id is null
-                    // 'store_id' => $request->store_id, // Uncomment if store_id is always present and relevant here
                 ],
                 [
                     'quantity' => $request->quantity,

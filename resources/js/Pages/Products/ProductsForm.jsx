@@ -15,9 +15,8 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import { useForm } from '@inertiajs/react';
 import Checkbox from '@/Components/Checkbox';
 import TextAreaRich from '@/Components/ui/TextAreaRich';
-import { AlertCircle } from 'lucide-react'; // Assuming you have this icon for the alert
 
-export default function ProductsForm({ data, taxes, categories, stores, product = null, setData, errors }) {
+export default function ProductsForm({ data, taxes, categories, product = null, setData, errors }) {
     const animatedComponents = makeAnimated();
     const textAreaRef = useRef();
     const { delete: deleteImage } = useForm();
