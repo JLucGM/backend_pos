@@ -63,7 +63,6 @@ export default function Index({ product, permission }) {
                     )}
                 </DivSection>
             </Suspense>
-            
         </AuthenticatedLayout>
     );
 }

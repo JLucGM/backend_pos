@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Stock;
-use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +26,7 @@ class StockController extends Controller
         $productsWithCombinations = Product::whereHas('combinations')->pluck('id');
 
         // Obtener los registros de stock, excluyendo aquellos con combination_id nulo para productos con combinaciones
-        $stock = Stock::with(['product', 'combination.combinationAttributeValue.attributeValue.attribute', 'store'])
+        $stock = Stock::with(['product', 'combination.combinationAttributeValue.attributeValue.attribute'])
             ->where(function ($query) use ($productsWithCombinations) {
                 $query->whereNotNull('combination_id')
                     ->orWhereNotIn('product_id', $productsWithCombinations);
@@ -35,13 +34,12 @@ class StockController extends Controller
             ->get();
 
         // $products = Product::all();
-        $stores = Store::all();
 
         $user = Auth::user();
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
-        return Inertia::render('Stocks/Index', compact('stock', 'stores', 'role', 'permission'));
+        return Inertia::render('Stocks/Index', compact('stock', 'role', 'permission'));
     }
 
     /**

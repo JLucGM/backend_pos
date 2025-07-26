@@ -44,13 +44,5 @@ export const StocksColumns = [
             )
         },
     },
-    // {
-    //     header: "Tienda",
-    //     accessorKey: "store_id",
-    //     cell: ({ row }) => {
-    //         return (
-    //             <p>{row.original.store.store_name} </p>
-    //         )
-    //     },
-    // },
+
 ];

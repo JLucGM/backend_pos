@@ -82,7 +82,7 @@ class OrderController extends Controller
             'direction_delivery' => 'nullable|string|max:255',
             'payments_method_id' => 'required|exists:payments_methods,id',
             'order_origin' => 'required|string|max:255',
-            'user_id' => 'required|exists:users,id', // Añade la validación para client_id
+            'user_id' => 'required|exists:users,id', // Añade la validación para el usuario
             'order_items' => 'required|array|min:1', // Debe haber al menos un producto en la orden
             'order_items.*.product_id' => 'required|exists:products,id', // Valida el product_id para cada item
             'order_items.*.name_product' => 'required|string|max:255',
@@ -105,7 +105,6 @@ class OrderController extends Controller
             'order_origin' => $validatedData['order_origin'],
             'user_id' => $validatedData['user_id'], // Asigna el usuario autenticado como creador de la orden
             'company_id' => $userAuth->company_id, // Asigna la company_id del usuario
-            // 'client_id' => $validatedData['client_id'], // Asigna el client_id
         ]);
 
         // Crea los OrderItems asociados a la orden
