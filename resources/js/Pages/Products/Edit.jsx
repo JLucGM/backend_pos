@@ -10,15 +10,15 @@ import Loader from '@/Components/ui/loader';
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
 
-export default function Edit({ product, taxes, categories, stores, combinationsWithPrices }) {
-    // console.log("Product data:", product);
-        console.log("Edit.jsx - Product prop:", product);
-    console.log("Edit.jsx - CombinationsWithPrices prop:", combinationsWithPrices);
+export default function Edit({ product, taxes, categories, stores }) {
+    // Log the initial product data to verify its structure
+    console.log("Product data:", product);
 
+    // Map selected categories for the form's initial state
     const selectedCategories = product.categories.map(category => category.id);
 
+    // Create a map to group attributes and their values for display
     const attributeMap = {};
-    // Agrupar atributos y valores
     product.combinations.forEach(combination => {
         combination.combination_attribute_value.forEach(attrValue => {
             if (attrValue.attribute_value && attrValue.attribute_value.attribute) {
@@ -36,7 +36,34 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
         });
     });
 
-    // Inicializar valores
+    // --- START: Logic to merge stocks and combinations data ---
+    // Create a map for quick lookup of stock data by combination_id
+    // This allows us to easily find the stock, barcode, and SKU for each combination.
+    const stockMap = {};
+    product.stocks.forEach(stock => {
+        stockMap[stock.combination_id] = {
+            quantity: stock.quantity,
+            product_barcode: stock.product_barcode,
+            product_sku: stock.product_sku,
+        };
+    });
+
+    // Merge combination data with stock data
+    // This creates a new array where each combination object also includes its
+    // corresponding stock quantity, barcode, and SKU.
+    const mergedCombinationsData = product.combinations.map(combination => {
+        // Find the stock data for the current combination, or use defaults if not found
+        const stockData = stockMap[combination.id] || { quantity: "0", product_barcode: '', product_sku: '' };
+        return {
+            ...combination, // Spread existing combination properties
+            stock: stockData.quantity, // Add stock quantity
+            product_barcode: stockData.product_barcode, // Add product barcode
+            product_sku: stockData.product_sku, // Add product SKU
+        };
+    });
+    // --- END: Merging stocks and combinations data ---
+
+    // Initialize form values using the product data and merged combinations
     const initialValues = {
         product_name: product.product_name,
         product_description: product.product_description,
@@ -45,49 +72,71 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
         tax_id: product.tax_id,
         status: product.status,
         product_status_pos: product.product_status_pos,
-        product_sku: (product.stocks[0].combination_id == null) ? product.stocks[0].product_sku : '', // Asegúrate de que este valor se asigne
-        product_barcode: (product.stocks[0].combination_id == null) ? product.stocks[0].product_barcode : '', // Asegúrate de que este valor se asigne
+        // For products without combinations (simple products), use the first stock entry
+        product_sku: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].product_sku : '',
+        product_barcode: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].product_barcode : '',
         categories: selectedCategories,
-        quantity: (product.stocks && product.stocks.length > 0) ? product.stocks[0].quantity : 0,
-        store_id: (product.stocks && product.stocks.length > 0) ? product.stocks[0].store_id : null,
+        quantity: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].quantity : 0,
+        store_id: (product.stocks.length > 0) ? product.stocks[0].store_id : null, // Assuming store_id is on stock
         attribute_names: Object.keys(attributeMap),
         attribute_values: Object.values(attributeMap),
-        prices: combinationsWithPrices,
-        stocks: {}, // Inicializa stocks como un objeto vacío
-        barcodes: {}, // Nuevo campo para almacenar códigos de barras por combinación
-        skus: {}, // Nuevo campo para almacenar SKUs por combinación
+        // Use mergedCombinationsData for the `prices` field in the form's state.
+        // This array will now contain all details (price, stock, barcode, SKU, attributes) for each combination.
+        prices: mergedCombinationsData.map(c => ({
+            id: c.id,
+            combination_price: c.combination_price,
+            stock: c.stock,
+            product_barcode: c.product_barcode,
+            product_sku: c.product_sku,
+            combination_attribute_value: c.combination_attribute_value // Keep original attribute values for display
+        })),
+        // Initialize stocks, barcodes, and skus as objects keyed by combination ID
+        // This is useful if ProductsForm expects these as separate, keyed objects.
+        stocks: {},
+        barcodes: {},
+        skus: {},
     };
-    // Asigna el stock correspondiente
-    for (const combination in combinationsWithPrices) {
-        initialValues.stocks[combination] = combinationsWithPrices[combination].stock || 0; // Asigna el stock correspondiente
-        initialValues.barcodes[combination] = combinationsWithPrices[combination].product_barcode || ''; // Asigna el código de barras correspondiente
-        initialValues.skus[combination] = combinationsWithPrices[combination].product_sku || ''; // Asigna el SKU correspondiente
-    }
 
-        console.log("Edit.jsx - Final initialValues:", initialValues);
+    // Populate the `stocks`, `barcodes`, and `skus` objects in `initialValues`
+    // using the data from `mergedCombinationsData`.
+    mergedCombinationsData.forEach(combination => {
+        initialValues.stocks[combination.id] = combination.stock;
+        initialValues.barcodes[combination.id] = combination.product_barcode;
+        initialValues.skus[combination.id] = combination.product_sku;
+    });
 
-    // Usar useForm para manejar el estado del formulario
+    // Use `useForm` to manage the form's state, initialized with our prepared values
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
+    // Log the final `data` object after `useForm` initialization for debugging
+    // console.log("data (after useForm init):", data);
+    // Log the `mergedCombinationsData` that will be passed to ProductsForm
+    // console.log("mergedCombinationsData (passed to ProductsForm):", mergedCombinationsData);
+
+    // Handle form submission to update the product
     const submit = (e) => {
         e.preventDefault();
+        console.log(data);
         post(route('products.update', product), {
             onSuccess: () => {
                 toast("Producto actualizado con éxito.");
             },
-            onError: () => {
+            onError: (error) => {
+                console.error("Error updating product:", error); // Log detailed error
                 toast.error("Error al actualizar el producto.");
             }
         });
     };
 
+    // Handle product duplication
     const handleDuplicate = () => {
         post(route('products.duplicate', product), {
             onSuccess: () => {
-                toast("Producto actualizado con éxito.");
+                toast("Producto duplicado con éxito."); // Updated toast message for duplication
             },
-            onError: () => {
-                toast.error("Error al actualizar el producto.");
+            onError: (error) => {
+                console.error("Error duplicating product:", error); // Log detailed error
+                toast.error("Error al duplicar el producto.");
             }
         });
     };
@@ -136,7 +185,8 @@ export default function Edit({ product, taxes, categories, stores, combinationsW
                                 taxes={taxes}
                                 categories={categories}
                                 stores={stores}
-                                combinationsWithPrices={combinationsWithPrices}
+                                // Pass the newly merged data to ProductsForm
+                                combinationsWithPrices={mergedCombinationsData}
                                 product={product}
                             />
                         </div>
