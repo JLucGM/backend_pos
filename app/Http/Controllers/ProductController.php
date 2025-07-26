@@ -9,7 +9,6 @@ use App\Models\Combination;
 use App\Models\CombinationAttributeValue;
 use App\Models\Product;
 use App\Models\Stock;
-use App\Models\Tax;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +30,7 @@ class ProductController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $product = Product::with('tax', 'stocks', 'categories', 'media')
+        $product = Product::with('stocks', 'categories', 'media')
             ->where('company_id', $user->company_id)
             ->get();
 
@@ -46,10 +45,9 @@ class ProductController extends Controller
      */
     public function create()
     {
-        $taxes = Tax::all();
         $categories = Category::all();
 
-        return Inertia::render('Products/Create', compact('taxes', 'categories'));
+        return Inertia::render('Products/Create', compact('categories'));
     }
 
     /**
@@ -62,7 +60,6 @@ class ProductController extends Controller
             'product_name' => 'required|string|max:255',
             'product_description' => 'nullable|string',
             'product_price' => 'required|numeric',
-            'tax_id' => 'required|exists:taxes,id',
             'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
             'attribute_names' => 'nullable|array|max:3',
@@ -90,7 +87,6 @@ class ProductController extends Controller
                 'product_price',
                 'product_price_discount',
                 'status',
-                'tax_id',
                 'product_status_pos'
             ),
             ['company_id' => $user->company_id]
@@ -255,7 +251,6 @@ class ProductController extends Controller
 
         // Cargar las relaciones necesarias, incluyendo las imágenes
         $product->load(
-            'tax',
             'categories',
             'stocks',
             'combinations',
@@ -287,10 +282,9 @@ class ProductController extends Controller
             ];
         });
 
-        $taxes = Tax::all();
         $categories = Category::all();
 
-        return Inertia::render('Products/Edit', compact('product', 'taxes', 'categories', 'combinationsWithPrices'));
+        return Inertia::render('Products/Edit', compact('product', 'categories', 'combinationsWithPrices'));
     }
 
     /**
@@ -304,7 +298,6 @@ class ProductController extends Controller
             'product_description' => 'nullable|string',
             'product_price' => 'required|numeric',
             'product_price_discount' => 'nullable|numeric',
-            'tax_id' => 'required|exists:taxes,id',
             'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
             'quantity' => 'required|integer|min:0', // For simple products
@@ -336,7 +329,6 @@ class ProductController extends Controller
             'product_price',
             'product_price_discount',
             'status',
-            'tax_id',
             'product_status_pos'
         ));
 

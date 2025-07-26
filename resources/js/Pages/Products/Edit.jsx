@@ -10,14 +10,9 @@ import Loader from '@/Components/ui/loader';
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
 
-export default function Edit({ product, taxes, categories }) {
-    // Log the initial product data to verify its structure
-    console.log("Product data:", product);
-
-    // Map selected categories for the form's initial state
+export default function Edit({ product, categories }) {
     const selectedCategories = product.categories.map(category => category.id);
 
-    // Create a map to group attributes and their values for display
     const attributeMap = {};
     product.combinations.forEach(combination => {
         combination.combination_attribute_value.forEach(attrValue => {
@@ -36,9 +31,6 @@ export default function Edit({ product, taxes, categories }) {
         });
     });
 
-    // --- START: Logic to merge stocks and combinations data ---
-    // Create a map for quick lookup of stock data by combination_id
-    // This allows us to easily find the stock, barcode, and SKU for each combination.
     const stockMap = {};
     product.stocks.forEach(stock => {
         stockMap[stock.combination_id] = {
@@ -48,11 +40,7 @@ export default function Edit({ product, taxes, categories }) {
         };
     });
 
-    // Merge combination data with stock data
-    // This creates a new array where each combination object also includes its
-    // corresponding stock quantity, barcode, and SKU.
     const mergedCombinationsData = product.combinations.map(combination => {
-        // Find the stock data for the current combination, or use defaults if not found
         const stockData = stockMap[combination.id] || { quantity: "0", product_barcode: '', product_sku: '' };
         return {
             ...combination, // Spread existing combination properties
@@ -61,26 +49,20 @@ export default function Edit({ product, taxes, categories }) {
             product_sku: stockData.product_sku, // Add product SKU
         };
     });
-    // --- END: Merging stocks and combinations data ---
-
-    // Initialize form values using the product data and merged combinations
+ 
     const initialValues = {
         product_name: product.product_name,
         product_description: product.product_description,
         product_price: product.product_price || "0",
         product_price_discount: product.product_price_discount,
-        tax_id: product.tax_id,
         status: product.status,
         product_status_pos: product.product_status_pos,
-        // For products without combinations (simple products), use the first stock entry
         product_sku: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].product_sku : '',
         product_barcode: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].product_barcode : '',
         categories: selectedCategories,
         quantity: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].quantity : 0,
         attribute_names: Object.keys(attributeMap),
         attribute_values: Object.values(attributeMap),
-        // Use mergedCombinationsData for the `prices` field in the form's state.
-        // This array will now contain all details (price, stock, barcode, SKU, attributes) for each combination.
         prices: mergedCombinationsData.map(c => ({
             id: c.id,
             combination_price: c.combination_price,
@@ -89,33 +71,22 @@ export default function Edit({ product, taxes, categories }) {
             product_sku: c.product_sku,
             combination_attribute_value: c.combination_attribute_value // Keep original attribute values for display
         })),
-        // Initialize stocks, barcodes, and skus as objects keyed by combination ID
-        // This is useful if ProductsForm expects these as separate, keyed objects.
         stocks: {},
         barcodes: {},
         skus: {},
     };
 
-    // Populate the `stocks`, `barcodes`, and `skus` objects in `initialValues`
-    // using the data from `mergedCombinationsData`.
     mergedCombinationsData.forEach(combination => {
         initialValues.stocks[combination.id] = combination.stock;
         initialValues.barcodes[combination.id] = combination.product_barcode;
         initialValues.skus[combination.id] = combination.product_sku;
     });
 
-    // Use `useForm` to manage the form's state, initialized with our prepared values
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
-    // Log the final `data` object after `useForm` initialization for debugging
-    // console.log("data (after useForm init):", data);
-    // Log the `mergedCombinationsData` that will be passed to ProductsForm
-    // console.log("mergedCombinationsData (passed to ProductsForm):", mergedCombinationsData);
-
-    // Handle form submission to update the product
     const submit = (e) => {
         e.preventDefault();
-        console.log(data);
+
         post(route('products.update', product), {
             onSuccess: () => {
                 toast("Producto actualizado con éxito.");
@@ -127,7 +98,6 @@ export default function Edit({ product, taxes, categories }) {
         });
     };
 
-    // Handle product duplication
     const handleDuplicate = () => {
         post(route('products.duplicate', product), {
             onSuccess: () => {
@@ -181,7 +151,6 @@ export default function Edit({ product, taxes, categories }) {
                                 data={data}
                                 setData={setData}
                                 errors={errors}
-                                taxes={taxes}
                                 categories={categories}
                                 combinationsWithPrices={mergedCombinationsData}
                                 product={product}

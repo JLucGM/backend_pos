@@ -16,7 +16,7 @@ import { useForm } from '@inertiajs/react';
 import Checkbox from '@/Components/Checkbox';
 import TextAreaRich from '@/Components/ui/TextAreaRich';
 
-export default function ProductsForm({ data, taxes, categories, product = null, setData, errors }) {
+export default function ProductsForm({ data, categories, product = null, setData, errors }) {
     const animatedComponents = makeAnimated();
     const textAreaRef = useRef();
     const { delete: deleteImage } = useForm();
@@ -164,7 +164,7 @@ export default function ProductsForm({ data, taxes, categories, product = null, 
 
         // Only run if attributes are defined and not empty
         const hasValidAttributes = data.attribute_names && data.attribute_names.length > 0 &&
-                                   data.attribute_values && data.attribute_values.every(arr => arr.length > 0 && arr.every(val => val.trim() !== ''));
+            data.attribute_values && data.attribute_values.every(arr => arr.length > 0 && arr.every(val => val.trim() !== ''));
 
         if (hasValidAttributes) {
             calculateAndMergeCombinations();
@@ -359,9 +359,6 @@ export default function ProductsForm({ data, taxes, categories, product = null, 
 
     // Handle image deletion
     const handleDeleteImage = (imageId) => {
-        // For demonstration, logging to console. In a real app, you'd show a UI.
-        // console.log("Confirm delete image:", imageId);
-        // Assuming a confirmation step is handled by a custom modal elsewhere
         deleteImage(route('products.images.destroy', { product: product.id, imageId }), {
             onSuccess: () => {
                 toast("Imagen eliminada con éxito.");
@@ -747,29 +744,6 @@ export default function ProductsForm({ data, taxes, categories, product = null, 
                     </div>
                     <InputError message={errors.product_status_pos} className="mt-2" />
                 </DivSection>
-
-                {/* <DivSection className='space-y-4'>
-                    <div>
-                        <InputLabel htmlFor="tax_id" value="Impuesto" />
-                        <Select
-                            name="tax_id"
-                            id="tax_id"
-                            options={taxes.map(tax => ({ value: tax.id, label: tax.tax_name }))}
-                            value={taxes.length > 0 ? taxes.map(tax => ({ value: tax.id, label: tax.tax_name })).find(option => option.value === data.tax_id) : null}
-                            onChange={(selectedOption) => setData('tax_id', selectedOption.value)}
-                            styles={customStyles}
-                        />
-                        <InputError message={errors.tax_id} className="mt-2" />
-                        <div className="flex items-center">
-                            <AlertCircle className="size-5 text-gray-500" />
-                            <p className="ms-2 text-gray-500 text-sm">Deje la opción "Sin impuesto" si colocara el precio con el impuesto agregado. </p>
-                        </div>
-                        <div className="flex items-center">
-                            <AlertCircle className="size-5 text-gray-500" />
-                            <p className="ms-2 text-gray-500 text-sm">Si coloca un producto sin impuesto, se recomienda colocarlo en todos los productos. </p>
-                        </div>
-                    </div>
-                </DivSection> */}
             </div>
         </>
     );

@@ -27,7 +27,6 @@ class Product extends Model implements HasMedia
         'product_price',
         'product_price_discount',
         'status',
-        'tax_id',
         'product_status_pos',
         'company_id',
         // 'product_barcode',
@@ -54,11 +53,6 @@ class Product extends Model implements HasMedia
         $this->addMediaConversion('gallery')
             ->width(368)
             ->height(232);
-    }
-
-    public function tax()
-    {
-        return $this->belongsTo(Tax::class);
     }
 
     public function categories()

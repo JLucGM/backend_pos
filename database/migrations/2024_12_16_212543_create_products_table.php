@@ -23,7 +23,7 @@ return new class extends Migration
             $table->tinyInteger('status')->default(1);
             $table->tinyInteger('product_status_pos')->default(0);
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('tax_id')->nullable()->constrained();
+            // $table->foreignId('tax_id')->nullable()->constrained();
             $table->timestamps();
         });
     }
