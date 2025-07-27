@@ -37,7 +37,7 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'avatar' => 'nullable',
+            'avatar' => 'nullable|image|max:2048', // Added image validation for avatar
             'company_name' => 'required|string|max:255|unique:companies,name',
             'company_phone' => 'nullable|string|max:20',
             'company_address' => 'nullable|string|max:255',
@@ -61,7 +61,7 @@ class RegisteredUserController extends Controller
             'name' => $request->company_name,
             'phone' => $request->company_phone,
             'address' => $request->company_address,
-            // Otras propiedades si es necesario
+            'email' => $request->email, // Add the email field for the company
         ]);
 
         // Asociar la empresa al usuario
@@ -69,7 +69,7 @@ class RegisteredUserController extends Controller
         $user->save();
 
         $user->assignRole('admin');
-        
+
         event(new Registered($user));
 
         Auth::login($user);
