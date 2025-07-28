@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -76,6 +78,12 @@ class User extends Authenticatable implements HasMedia
             ->width(500)
             ->height(500);
     }
+
+    // protected static function booted()
+    // {
+    //     // Registra tu ámbito global aquí
+    //     static::addGlobalScope(new CompanyScope);
+    // }
 
     public function stores()
     {

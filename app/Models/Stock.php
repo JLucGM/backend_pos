@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\SlugOptions;
 
@@ -14,7 +15,14 @@ class Stock extends Model
         'product_barcode',
         'product_id',
         'combination_id',
+        'company_id',
     ];
+
+    protected static function booted()
+    {
+        // Registra tu ámbito global aquí
+        static::addGlobalScope(new CompanyScope);
+    }
 
     public function product()
     {

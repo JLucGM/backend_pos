@@ -17,12 +17,18 @@ export const StocksColumns = [
 
             return (
                 <div className="">
-                    <Link
-                        href={route('products.edit', product.slug)}
-                        // buttonVariants={{ variant: 'link' }}
-                    >
-                        {product.product_name}
-                    </Link>
+                    {/* Add a conditional check to ensure product exists before accessing its properties */}
+                    {product ? (
+                        <Link
+                            href={route('products.edit', product.slug)}
+                            // buttonVariants={{ variant: 'link' }} // This line is commented out in your original code, keeping it that way.
+                        >
+                            {product.product_name || 'Nombre de producto desconocido'}
+                        </Link>
+                    ) : (
+                        // Fallback text if product is null or undefined
+                        <span>Producto no disponible</span>
+                    )}
                     <div className="">
                         <Badge className={'bg-gray-300 text-black'}>{combinationText}</Badge>
                     </div>
@@ -44,5 +50,4 @@ export const StocksColumns = [
             )
         },
     },
-
 ];

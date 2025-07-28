@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Sluggable\HasSlug;
@@ -34,6 +35,12 @@ class Setting extends Model implements HasMedia
         return SlugOptions::create()
             ->generateSlugsFrom('app_name')
             ->saveSlugsTo('slug');
+    }
+
+    protected static function booted()
+    {
+        // Registra tu ámbito global aquí
+        static::addGlobalScope(new CompanyScope);
     }
 
     public function registerMediaCollections(): void

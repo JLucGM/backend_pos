@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
@@ -35,6 +36,12 @@ class Product extends Model implements HasMedia
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    protected static function booted()
+    {
+        // Registra tu ámbito global aquí
+        static::addGlobalScope(new CompanyScope);
     }
 
     public function getSlugOptions(): SlugOptions

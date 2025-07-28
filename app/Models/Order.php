@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -21,6 +22,12 @@ class Order extends Model
         // 'client_id',
         'company_id',
     ];
+
+    protected static function booted()
+    {
+        // Registra tu ámbito global aquí
+        static::addGlobalScope(new CompanyScope);
+    }
 
     public function orderItems()
     {

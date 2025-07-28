@@ -6,6 +6,7 @@ import { Store } from 'lucide-react';
 import { ordersColumns } from './Columns';
 import Loader from '@/Components/ui/loader';
 import { buttonVariants } from '@/Components/ui/button';
+import HeadingSmall from '@/Components/heading-small';
 
 // Define DataTable and ordersColumns as lazy components
 const DataTable = lazy(() => import('@/Components/DataTable'));
@@ -42,7 +43,16 @@ export default function Index({ orders, permission }) {
                     ) : (
                         <div className="flex flex-col items-center justify-center h-96">
                             <Store size={64} />
-                            <p>No hay pedidos registradas.</p>
+                            <HeadingSmall
+                                title="Tus pedidos se mostrarán aquí"
+                                description="Puedes crear un nuevo pedido haciendo clic en el botón a continuación."
+                                className="text-center"
+                            />
+                            {permission.some(perm => perm.name === 'admin.orders.create') && (
+                                <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('orders.create')}>
+                                    Crear Pedido
+                                </Link>
+                            )}
                         </div>
                     )}
                 </DivSection>

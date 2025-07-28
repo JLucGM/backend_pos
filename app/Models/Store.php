@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
@@ -32,6 +33,12 @@ class Store extends Model
         return SlugOptions::create()
             ->generateSlugsFrom('store_name')
             ->saveSlugsTo('slug');
+    }
+
+    protected static function booted()
+    {
+        // Registra tu ámbito global aquí
+        static::addGlobalScope(new CompanyScope);
     }
 
     public function country()

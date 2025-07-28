@@ -192,6 +192,7 @@ class ProductController extends Controller
                     'combination_id' => $combinationModel->id, // Relacionar el stock con la combinación
                     'product_barcode' => $comboDetails['product_barcode'], // Correctly get barcode
                     'product_sku' => $comboDetails['product_sku'], // Correctly get SKU
+                    'company_id' => $user->company_id, // Asegúrate de que el stock esté asociado a la empresa
                 ]);
             }
         } else {
@@ -201,6 +202,7 @@ class ProductController extends Controller
                 'product_id' => $product->id,
                 'product_barcode' => $request->product_barcode, // Guardar el barcode en stock
                 'product_sku' => $request->product_sku, // Guardar el SKU en stock
+                'company_id' => $user->company_id, // Asegúrate de que el stock esté asociado a la empresa
             ]);
         }
 
