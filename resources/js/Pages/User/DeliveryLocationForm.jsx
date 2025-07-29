@@ -90,11 +90,7 @@ export default function DeliveryLocationForm({ user, location, countries, states
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{isEditing ? 'Editar Dirección de Envío' : 'Agregar Nueva Dirección'}</CardTitle>
-            </CardHeader>
-            <CardContent>
+        
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Línea de Dirección 1 */}
@@ -216,7 +212,5 @@ export default function DeliveryLocationForm({ user, location, countries, states
                         </Button>
                     </div>
                 </form>
-            </CardContent>
-        </Card>
     );
 }
