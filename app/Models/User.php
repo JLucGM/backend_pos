@@ -94,4 +94,9 @@ class User extends Authenticatable implements HasMedia
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function deliveryLocations()
+    {
+        return $this->hasMany(DeliveryLocation::class);
+    }
 }

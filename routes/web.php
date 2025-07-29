@@ -6,6 +6,7 @@ use App\Http\Controllers\CitiesController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeliveryLocationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
@@ -45,6 +46,9 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
     Route::post('users/{user}', [UserController::class, 'update'])->name('user.update');
     Route::delete('users/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+   Route::post('/user/{user}/delivery-location', [UserController::class, 'storeDeliveryLocation'])->name('user.deliveryLocation.store');
+Route::put('/user/{user}/delivery-location/{deliveryLocation}', [UserController::class, 'updateDeliveryLocation'])->name('user.deliveryLocation.update');
+
 
     Route::get('taxes', [TaxController::class, 'index'])->name('tax.index');
     Route::get('taxes/create', [TaxController::class, 'create'])->name('tax.create');
@@ -133,6 +137,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
     Route::post('setting/{setting}', [SettingController::class, 'update'])->name('setting.update');
+
 });
 
 require __DIR__ . '/auth.php';

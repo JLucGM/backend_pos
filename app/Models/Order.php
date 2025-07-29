@@ -19,7 +19,7 @@ class Order extends Model
         'order_origin',
         'payments_method_id',
         'user_id',
-        // 'client_id',
+        'delivery_location_id',
         'company_id',
     ];
 
@@ -45,8 +45,10 @@ class Order extends Model
         return $this->belongsTo(PaymentMethod::class, 'payments_method_id');
     }
 
-    // public function stores()
-    // {
-    //     return $this->belongsToMany(Store::class, 'store_orders');
-    // }
+        // ... dentro de la clase Order
+    public function deliveryLocation()
+    {
+        return $this->belongsTo(DeliveryLocation::class);
+    }
+    
 }
