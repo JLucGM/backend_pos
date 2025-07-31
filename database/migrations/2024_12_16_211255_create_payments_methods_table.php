@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('payment_method_name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
             $table->string('slug');
-            $table->tinyText('description'); //Descripción del atributo. 255 caracteres máximo.
-            $table->boolean('is_active')->default(true); //Indica si el atributo está activo.
+            $table->tinyText('description')->nullable(); //Descripción del atributo. 255 caracteres máximo.
+            $table->boolean('is_active')->default(false); //Indica si el atributo está activo.
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });

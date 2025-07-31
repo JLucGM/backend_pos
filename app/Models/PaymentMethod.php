@@ -18,6 +18,8 @@ class PaymentMethod extends Model
         'payment_method_name',
         'company_id',
         'slug',
+        'description',
+        'is_active',
     ];
 
     public function getRouteKeyName()
@@ -39,9 +41,9 @@ class PaymentMethod extends Model
     }
 
     // Definir la relación con PaymentMethodDetail
-    public function details()
-    {
-        return $this->hasMany(PaymentMethodDetail::class, 'payments_method_id');
-    }
+    // public function details()
+    // {
+    //     return $this->hasMany(PaymentMethodDetail::class, 'payments_method_id');
+    // }
     
 }

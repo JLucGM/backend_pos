@@ -46,10 +46,10 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.paymentmethod.edit', 'description' => 'Editar metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.paymentmethod.delete', 'description' => 'Eliminar metodos de pago'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         
-        // Permission::create(['name' => 'admin.client.index', 'description' => 'Ver lista de clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        // Permission::create(['name' => 'admin.client.create', 'description' => 'Crear clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        // Permission::create(['name' => 'admin.client.edit', 'description' => 'Editar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        // Permission::create(['name' => 'admin.client.delete', 'description' => 'Eliminar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.client.index', 'description' => 'Ver lista de clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.client.create', 'description' => 'Crear clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.client.edit', 'description' => 'Editar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.client.delete', 'description' => 'Eliminar clientes'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         
         Permission::create(['name' => 'admin.countries.index', 'description' => 'Ver lista de paises'])->syncRoles([$rolSuperAdmin]);
         Permission::create(['name' => 'admin.countries.create', 'description' => 'Crear paises'])->syncRoles([$rolSuperAdmin]);

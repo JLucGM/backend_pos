@@ -11,19 +11,11 @@ const PaymentMethodForm = lazy(() => import('./PaymentMethodForm'));
 export default function Create({ }) {
     const { data, setData, errors, post } = useForm({
         payment_method_name: "",
-        payment_details: [{ data_type: "", value: "" }],
+        description: "",
+        is_active: false,
     });
 
-    const addPaymentDetail = () => {
-        setData('payment_details', [...data.payment_details, { data_type: "", value: "" }]);
-    };
-
-    const removePaymentDetail = (index) => {
-        const newDetails = [...data.payment_details];
-        newDetails.splice(index, 1);
-        setData('payment_details', newDetails);
-    };
-
+    // Función para agregar un detalle de pago
     const submit = (e) => {
         e.preventDefault();
         post(route('paymentmethod.store'), {
@@ -58,8 +50,6 @@ export default function Create({ }) {
                                     data={data}
                                     setData={setData}
                                     errors={errors}
-                                    addPaymentDetail={addPaymentDetail}
-                                    removePaymentDetail={removePaymentDetail}
                                 />
                             </Suspense>
                         </DivSection>

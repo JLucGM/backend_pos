@@ -13,27 +13,17 @@ const PaymentMethodForm = lazy(() => import('./PaymentMethodForm'));
 export default function Edit({ payment_method }) {
     const initialValues = {
         payment_method_name: payment_method.payment_method_name,
-        payment_details: payment_method.details.map(detail => ({
-            data_type: detail.payments_method_details_data_types,
-            value: detail.payments_method_details_value,
-        })),
+        description: payment_method.description || "",
+        is_active: payment_method.is_active,
+        // payment_details: payment_method.payment_details || [],
     };
 
     const { data, setData, errors, post } = useForm(initialValues);
 
-    const addPaymentDetail = () => {
-        setData('payment_details', [...data.payment_details, { data_type: "", value: "" }]);
-    };
-
-    const removePaymentDetail = (index) => {
-        const newDetails = [...data.payment_details];
-        newDetails.splice(index, 1);
-        setData('payment_details', newDetails);
-    };
-
+    // Función para agregar un detalle de pago
     const submit = (e) => {
         e.preventDefault();
-        post(route('paymentmethod.update', payment_method.id), {
+        post(route('paymentmethod.update', payment_method), {
             onSuccess: () => {
                 toast.success("Método de pago actualizado con éxito.");
             },
@@ -70,8 +60,6 @@ export default function Edit({ payment_method }) {
                                     data={data}
                                     setData={setData}
                                     errors={errors}
-                                    addPaymentDetail={addPaymentDetail}
-                                    removePaymentDetail={removePaymentDetail}
                                 />
                             </Suspense>
                         </DivSection>

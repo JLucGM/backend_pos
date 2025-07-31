@@ -1,11 +1,13 @@
 // PaymentMethodForm.jsx
+import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Button } from '@/Components/ui/button';
+import { Textarea } from '@/Components/ui/textarea';
 import { PlusCircle, Trash } from 'lucide-react';
 
-export default function PaymentMethodForm({ data, setData, errors, addPaymentDetail, removePaymentDetail }) {
+export default function PaymentMethodForm({ data, setData, errors }) {
     return (
         <>
             <div className="">
@@ -23,58 +25,27 @@ export default function PaymentMethodForm({ data, setData, errors, addPaymentDet
                     <InputError message={errors.payment_method_name} className="mt-2" />
                 </div>
 
-                {data.payment_details.map((detail, index) => (
-                    <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
-                        <div className="col-span-2">
-                            <InputLabel htmlFor={`payments_method_details_data_types_${index}`} value="Dato" />
-                            <TextInput
-                                id={`payments_method_details_data_types_${index}`}
-                                type="text"
-                                name={`payments_method_details_data_types_${index}`}
-                                value={detail.data_type}
-                                className="mt-1 block w-full"
-                                onChange={(e) => {
-                                    const newDetails = [...data.payment_details];
-                                    newDetails[index].data_type = e.target.value;
-                                    setData('payment_details', newDetails);
-                                }}
-                            />
-                            <InputError message={errors.payment_details?.[index]?.data_type} className="mt-2" />
-                        </div>
-                        <div className="col-span-2">
-                            <InputLabel htmlFor={`payments_method_details_value_${index}`} value="Valor" />
-                            <TextInput
-                                id={`payments_method_details_value_${index}`}
-                                type="text"
-                                name={`payments_method_details_value_${index}`}
-                                value={detail.value}
-                                className="mt-1 block w-full"
-                                onChange={(e) => {
-                                    const newDetails = [...data.payment_details];
-                                    newDetails[index].value = e.target.value;
-                                    setData('payment_details', newDetails);
-                                }}
-                            />
-                            <InputError message={errors.payment_details?.[index]?.value} className="mt-2" />
-                        </div>
-                        <div className="flex justify-center items-end col-span-1">
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                onClick={() => removePaymentDetail(index)}
-                            >
-                                <Trash size={24} />
-                                Eliminar dato
-                            </Button>
-                        </div>
-                    </div>
-                ))}
+                <div className="mt-4">
+                    <InputLabel htmlFor="description" value="Descripción" />
+                    <Textarea
+                        id="description"
+                        name="description"
+                        value={data.description}
+                        className="mt-1 block w-full resize-none"
+                        onChange={(e) => setData('description', e.target.value)}
+                    />
+                    <InputError message={errors.description} className="mt-2" />
+                </div>
 
-                <div className="flex justify-center">
-                    <Button variant="link" size="sm" type="button" onClick={addPaymentDetail}>
-                        <PlusCircle className="size-4" />
-                        Agregar dato
-                    </Button>
+                <div className="flex items-center mt-4">
+                    <Checkbox
+                        id="is_active"
+                        name="is_active"
+                        checked={data.is_active === 1}
+                        onChange={(e) => setData('is_active', e.target.checked ? 1 : 0)}
+                        className="mr-2"
+                    />
+                    <InputLabel htmlFor="is_active" value="Activar método de pago" />
                 </div>
             </div>
         </>

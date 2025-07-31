@@ -1,92 +1,93 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Button } from '@/Components/ui/button';
+import { Button, buttonVariants } from '@/Components/ui/button';
 import { toast } from 'sonner';
-import { lazy, Suspense } from 'react';
-import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
-import DivSection from '@/Components/ui/div-section';
+import { lazy, Suspense, useState } from 'react';
+import { ArrowLongLeftIcon, PlusIcon } from '@heroicons/react/24/outline';
 import Loader from '@/Components/ui/loader';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import AddressDialog from './AddressDialog';
+import { Badge } from '@/Components/ui/badge';
+import { Pen, PenSquareIcon } from 'lucide-react';
 
-// Define ClientsForm como un componente cargado de forma lazy
-const ClientsForm = lazy(() => import('./ClientForm'));
+// Importa los nuevos componentes
+const ClientsForm = lazy(() => import('./ClientsForm'));
+const DeliveryLocationForm = lazy(() => import('./DeliveryLocationForm'));
 
-export default function Edit({ client, orderCount, orderTotal }) {
-    const initialValues = {
-        client_name: client.client_name,
-        client_identification: client.client_identification,
-        client_phone: client.client_phone,
-    };
+// Asegúrate de recibir todas las props desde el controlador
+export default function Edit({ client, permission }) {
+    console.log(client);
+    const { data, setData, errors, post, processing } = useForm({
+        name: client.name,
+        email: client.email,
+        password: '',
+        phone: client.phone,
+        identification: client.identification,
+        status: client.status,
+        avatar: null,
 
-    const { data, setData, errors, post } = useForm(initialValues);
+    });
 
-    const submit = (e) => {
+
+
+    const submitclientForm = (e) => {
         e.preventDefault();
-        post(route('clients.update', client.id), {
+        post(route('client.update', client), {
             onSuccess: () => {
-                toast("Cliente creado con éxito.");
+                toast.success("Cliente actualizado con éxito.");
             },
             onError: () => {
-                toast.error("Error al crear el cliente.");
+                toast.error("Error al actualizar el cliente.");
             }
         });
     };
 
     return (
         <AuthenticatedLayout
+            permission={permission}
             header={
-                <div className='flex justify-between items-center '>
+                <div className='flex justify-between items-center'>
                     <div className="flex justify-start items-center">
-                        <Link href={route('clients.index')}>
+                        <Link href={route('client.index')}>
                             <ArrowLongLeftIcon className='size-6' />
                         </Link>
                         <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            Actualizar {client.client_name}
+                            Actualizar {client.name}
                         </h2>
                     </div>
+                    <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('client.create')}>
+                        Crear Usuario
+                    </Link>
                 </div>
             }
         >
-            <Head className="capitalize" title="Clientes" />
+            <Head className="capitalize" title={`Editar ${client.name}`} />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className=" overflow-hidden">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <DivSection className='flex justify-around flex-wrap gap-4'>
-                            <div className="text-center">
-                                <p className='text-lg font-semibold capitalize'>Total gastado</p>
-                                ${orderTotal}
-                            </div>
-                            <div className="text-center">
-                                <p className='text-lg font-semibold capitalize'>Pedidos</p>
-                                {orderCount}
-                            </div>
-                        </DivSection>
-                        <form onSubmit={submit} className='space-y-4'>
-                            <div className="grid grid-cols-1 gap-4">
-                                <DivSection>
-                                    <Suspense fallback={<Loader />}>
-                                        <ClientsForm data={data} setData={setData} errors={errors} />
-                                    </Suspense>
-                                </DivSection>
-                            </div>
+            <div className="space-y-6 py-6">
+                {/* FORMULARIO PRINCIPAL DEL USUARIO */}
+                <Suspense fallback={<Loader />}>
 
-                            <div className="flex justify-end p-2.5">
-                                <Button
-                                    variant="default"
-                                    size="sm"
-                                    onClick={() =>
-                                        toast("Actualizado.", {
-                                            description: "Se ha actualizado con éxito.",
-                                        })
-                                    }
-                                >
-                                    Guardar
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+
+                    <form onSubmit={submitclientForm} className='space-y-4'>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <ClientsForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                                client={client}
+                            />
+                        </div>
+                        <div className="flex justify-end p-2.5">
+                            <Button type="submit" disabled={processing}>
+                                {processing ? 'Guardando...' : 'Guardar Cambios de Usuario'}
+                            </Button>
+                        </div>
+                    </form>
+
+                </Suspense>
+
             </div>
+
         </AuthenticatedLayout>
     );
 }

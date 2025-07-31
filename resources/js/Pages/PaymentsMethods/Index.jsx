@@ -13,6 +13,7 @@ export default function Index({ paymentmethod, permission }) {
     return (
         <AuthenticatedLayout
             header={
+                <>
                 <div className='flex justify-between items-center'>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Método de pago
@@ -25,6 +26,10 @@ export default function Index({ paymentmethod, permission }) {
                         </Link>
                     )}
                 </div>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    Aquí puedes gestionar los métodos de pago disponibles en el sistema.
+                </p>
+                </>
             }
         >
             {/* <Breadcrumb items={items} /> */}

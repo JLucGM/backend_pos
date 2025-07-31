@@ -46,9 +46,15 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
     Route::post('users/{user}', [UserController::class, 'update'])->name('user.update');
     Route::delete('users/{user}', [UserController::class, 'destroy'])->name('user.destroy');
-   Route::post('/user/{user}/delivery-location', [UserController::class, 'storeDeliveryLocation'])->name('user.deliveryLocation.store');
-Route::put('/user/{user}/delivery-location/{deliveryLocation}', [UserController::class, 'updateDeliveryLocation'])->name('user.deliveryLocation.update');
+    Route::post('/user/{user}/delivery-location', [UserController::class, 'storeDeliveryLocation'])->name('user.deliveryLocation.store');
+    Route::put('/user/{user}/delivery-location/{deliveryLocation}', [UserController::class, 'updateDeliveryLocation'])->name('user.deliveryLocation.update');
 
+    Route::get('clients', [ClientController::class, 'index'])->name('client.index');
+    Route::get('clients/create', [ClientController::class, 'create'])->name('client.create');
+    Route::post('clients', [ClientController::class, 'store'])->name('client.store');
+    Route::get('clients/{client}/edit', [ClientController::class, 'edit'])->name('client.edit');
+    Route::post('clients/{client}', [ClientController::class, 'update'])->name('client.update');
+    Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('client.destroy');
 
     Route::get('taxes', [TaxController::class, 'index'])->name('tax.index');
     Route::get('taxes/create', [TaxController::class, 'create'])->name('tax.create');
@@ -137,7 +143,6 @@ Route::put('/user/{user}/delivery-location/{deliveryLocation}', [UserController:
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
     Route::post('setting/{setting}', [SettingController::class, 'update'])->name('setting.update');
-
 });
 
 require __DIR__ . '/auth.php';

@@ -46,32 +46,16 @@ class PaymentMethodController extends Controller
     public function store(Request $request)
     {
         // Validar los datos de entrada
-        $request->validate([
+        $requestValidate = $request->validate([
             'payment_method_name' => 'required|string|max:255',
-            'payment_details' => 'nullable|array', // Cambiado a nullable
-            'payment_details.*.data_type' => 'nullable|string|max:255', // Cambiado a nullable
-            'payment_details.*.value' => 'nullable|string|max:255', // Cambiado a nullable
+            'description' => 'nullable|string|max:255',
+            'is_active' => 'boolean',
         ]);
 
         // Crear el nuevo método de pago
-        $paymentMethod = PaymentMethod::create([
-            'payment_method_name' => $request->payment_method_name,
-            // 'slug' => Str::slug($request->payment_method_name), // Generar un slug si es necesario
+        $paymentMethod = PaymentMethod::create($requestValidate + [
+            'company_id' => Auth::user()->company_id, // Asignar la empresa del usuario autenticado
         ]);
-
-        // Crear los detalles del método de pago solo si existen
-        if ($request->payment_details) {
-            foreach ($request->payment_details as $detail) {
-                // Verificar que ambos campos no estén vacíos
-                if (!empty($detail['data_type']) && !empty($detail['value'])) {
-                    PaymentMethodDetail::create([
-                        'payments_method_details_data_types' => $detail['data_type'],
-                        'payments_method_details_value' => $detail['value'],
-                        'payments_method_id' => $paymentMethod->id, // Asociar el detalle con el método de pago recién creado
-                    ]);
-                }
-            }
-        }
 
         // Redirigir a la lista de métodos de pago
         return to_route('paymentmethod.index');
@@ -91,7 +75,6 @@ class PaymentMethodController extends Controller
     public function edit(PaymentMethod $payment_method)
     {
         // Cargar los detalles del método de pago
-        $payment_method->load('details'); // Asegúrate de que la relación esté definida en el modelo
         return Inertia::render('PaymentsMethods/Edit', compact('payment_method'));
     }
 
@@ -101,38 +84,16 @@ class PaymentMethodController extends Controller
     public function update(Request $request, PaymentMethod $payment_method)
     {
         // Validar los datos de entrada
-        $request->validate([
+        $requestValidate =  $request->validate([
             'payment_method_name' => 'required|string|max:255',
-            'payment_details' => 'nullable|array',
-            'payment_details.*.data_type' => 'nullable|string|max:255',
-            'payment_details.*.value' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'is_active' => 'boolean',
         ]);
 
         // Actualizar el método de pago
-        $payment_method->update([
-            'payment_method_name' => $request->payment_method_name,
+        $payment_method->update($requestValidate + [
+            'company_id' => Auth::user()->company_id, // Asignar la empresa del usuario autenticado
         ]);
-
-        // Eliminar los detalles existentes solo si no se proporcionan nuevos detalles
-        if ($request->payment_details) {
-            // Eliminar los detalles existentes
-            $payment_method->details()->delete();
-
-            // Crear los nuevos detalles del método de pago solo si existen y son válidos
-            foreach ($request->payment_details as $detail) {
-                // Verificar que ambos campos no estén vacíos
-                if (!empty($detail['data_type']) && !empty($detail['value'])) {
-                    PaymentMethodDetail::create([
-                        'payments_method_details_data_types' => $detail['data_type'],
-                        'payments_method_details_value' => $detail['value'],
-                        'payments_method_id' => $payment_method->id, // Asociar el detalle con el método de pago
-                    ]);
-                }
-            }
-        } else {
-            // Si no se proporcionan nuevos detalles, eliminar los detalles existentes
-            $payment_method->details()->delete();
-        }
 
         // Redirigir a la lista de métodos de pago o a la vista de edición
         return to_route('paymentmethod.edit', $payment_method);
@@ -146,9 +107,6 @@ class PaymentMethodController extends Controller
     public function destroy(PaymentMethod $payment_method)
     {
         // Eliminar los registros dependientes
-        $payment_method->details()->delete(); // Asegúrate de tener la relación definida en el modelo
-
-        // Ahora eliminar el método de pago
-        $payment_method->delete();
-    }
+        $payment_method->delete(); // Asegúrate de tener la relación definida en el modelo
+           }
 }

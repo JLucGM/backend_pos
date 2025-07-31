@@ -1,63 +1,77 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
-import CategoriesForm from './ClientForm';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
+import { lazy, Suspense } from 'react';
+import Loader from '@/Components/ui/loader';
+import ClientsForm from './ClientsForm';
 
-export default function Create({ }) {
+// Define UserForm como un componente cargado de forma lazy
+const UserForm = lazy(() => import('./ClientsForm'));
 
+export default function Create({ role }) {
     const initialValues = {
-        client_name: "",
-        client_identification: "",
-        client_phone: "",
-    }
+        name: "",
+        phone: "",
+        email: "",
+        identification: "",
+        password: "",
+        status: 0, // o 1, dependiendo del valor predeterminado que desees
+        avatar: null,
+    };
 
-    const { data, setData, errors, post } = useForm(initialValues)
+    const { data, setData, errors, post } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('category.store'))
-        // console.log(data)
+        post(route('client.store')), {
+            onSuccess: () => {
+                toast("Producto creado con éxito.");
+
+            },
+            onError: (error) => {
+                console.error("Error al crear el cliente:", error);
+                toast.error("Error al crear el producto.");
+            }
+        };
     }
+
     return (
         <AuthenticatedLayout
             header={
-                <div className='flex justify-between items-center px-6'>
+                <div className='flex justify-start items-center'>
+                    <Link href={route('client.index')}>
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Crear cliente
+                        Crear Cliente
                     </h2>
                 </div>
             }
         >
             <Head className="capitalize" title="Cliente" />
 
-            <div className="max-w-7xl mx-auto">
-                <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm">
-                    <div className="text-gray-900 dark:text-gray-100">
-                        <form onSubmit={submit} className='space-y-4'>
+            <Suspense fallback={<Loader />}>
+                <div className="text-gray-900 dark:text-gray-100">
+                    <form onSubmit={submit} className='space-y-4'>
+                        <div className="grid grid-cols-3 gap-4">
+                            <ClientsForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                                // stores={stores}
+                                role={role}
+                            />
+                        </div>
 
-                            <div className="grid grid-cols-1 gap-4">
-                                <DivSection>
-                                <CategoriesForm data={data} setData={setData} errors={errors} />
-                                </DivSection>
-                            </div>
-
-                            <div className="flex justify-end p-2.5">
-                                <Button
-                                    variant="outline"
-                                    onClick={() =>
-                                        toast("Creado.", {
-                                            description: "Se ha creado con éxito.",
-                                        })
-                                    }
-                                >
-                                    Guardar
-                                </Button>
-                            </div>
-
-                        </form>
-                    </div>
+                        <div className="flex justify-end p-2.5">
+                            <Button>
+                                Guardar
+                            </Button>
+                        </div>
+                    </form>
                 </div>
-            </div>
+            </Suspense>
         </AuthenticatedLayout>
-    )
+    );
 }
