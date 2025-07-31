@@ -96,9 +96,12 @@ class UserController extends Controller
             'password' => 'required|string|min:8', // Validar la contraseña
             'avatar' => 'nullable|image|max:2048', // Validación para el avatar
         ]);
-
+        $user = Auth::user();
         // Obtener los datos de la solicitud
-        $data = $request->only('name', 'email', 'phone', 'status', 'identification');
+        $data = array_merge(
+            $request->only('name', 'email', 'phone', 'status', 'identification'),
+            ['company_id' => $user->company_id]
+        );
 
         // Encriptar la contraseña
         $data['password'] = bcrypt($request['password']);

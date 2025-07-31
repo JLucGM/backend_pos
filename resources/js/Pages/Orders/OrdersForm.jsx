@@ -10,6 +10,9 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Button } from '@/Components/ui/button';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { PlusCircle } from 'lucide-react';
+import { Checkbox } from "@/Components/ui/checkbox"
+import { Badge } from '@/Components/ui/badge';
+
 
 export default function OrdersForm({ data, orders = null, products = [], users = [], paymentMethods = [], setData, errors, isDisabled = false }) {
     // console.log('Datos de la orden en OrdersForm:', data);
@@ -19,6 +22,7 @@ export default function OrdersForm({ data, orders = null, products = [], users =
     const [selectedProductToAdd, setSelectedProductToAdd] = useState(null);
     // Estado para el usuario seleccionado en el dropdown
     const [selectedUser, setSelectedUser] = useState(null);
+    const [deliveryLocations, setDeliveryLocations] = useState([]);
 
     // Función para formatear fechas, maneja valores nulos
     const formatDate = (dateString) => {
@@ -178,11 +182,42 @@ export default function OrdersForm({ data, orders = null, products = [], users =
         setData('status', selectedOption.value);
     };
 
-    // Maneja el cambio en el select de usuario
     const handleUserChange = (selectedOption) => {
         setSelectedUser(selectedOption);
         setData('user_id', selectedOption ? selectedOption.value : null);
+
+        // Actualiza las direcciones de entrega del usuario seleccionado
+        const selectedUserData = users.find(user => user.id === selectedOption.value);
+        setDeliveryLocations(selectedUserData ? selectedUserData.delivery_locations : []);
+
+        // Asegúrate de que delivery_location_id se restablezca al cambiar de usuario
+        setData('delivery_location_id', null);
     };
+
+    useEffect(() => {
+        if (data.user_id && users.length > 0) {
+            const selectedUserData = users.find(user => user.id === data.user_id);
+            if (selectedUserData) {
+                const userLocations = selectedUserData.delivery_locations || [];
+                setDeliveryLocations(userLocations);
+
+                // Encuentra y selecciona automáticamente la dirección predeterminada
+                const defaultLocation = userLocations.find(loc => loc.is_default);
+                if (defaultLocation) {
+                    setData('delivery_location_id', defaultLocation.id);
+                } else if (userLocations.length > 0) {
+                    // Si no hay predeterminada, selecciona la primera
+                    setData('delivery_location_id', userLocations[0].id);
+                } else {
+                    setData('delivery_location_id', null);
+                }
+            }
+        } else {
+            setDeliveryLocations([]);
+            setData('delivery_location_id', null);
+        }
+    }, [data.user_id, users, setData]);
+
 
     // Efecto para inicializar el usuario seleccionado si ya viene en los datos (para edición)
     useEffect(() => {
@@ -309,19 +344,7 @@ export default function OrdersForm({ data, orders = null, products = [], users =
                             />
                             <InputError message={errors.status} className="mt-2" />
                         </div>
-                        <div className="mt-4">
-                            <InputLabel htmlFor="direction_delivery" value="Dirección de Entrega" />
-                            <TextInput
-                                id="direction_delivery"
-                                type="text"
-                                name="direction_delivery"
-                                value={data.direction_delivery || ""}
-                                className="mt-1 block w-full"
-                                onChange={(e) => setData('direction_delivery', e.target.value)}
-                                disabled={isDisabled}
-                            />
-                            <InputError message={errors.direction_delivery} className="mt-2" />
-                        </div>
+
                         <div className="mt-4">
                             <InputLabel htmlFor="payments_method_id" value="Método de Pago" />
                             <Select
@@ -364,25 +387,87 @@ export default function OrdersForm({ data, orders = null, products = [], users =
                                             <span className="text-gray-900 dark:text-gray-100">{orders.user.identification}</span>
                                         </>
                                     )}
+                                    {orders.delivery_location.address_line_1 && (
+                                        <>
+                                            <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Dirección:</p>
+                                            <span className="text-gray-900 dark:text-gray-100">{orders.delivery_location.address_line_1}</span>
+                                        </>
+                                    )}
                                 </div>
                             ) : ( // Create mode
-                                <div className="mt-2">
-                                    <InputLabel htmlFor="user_id" value="Seleccionar Usuario" />
-                                    <Select
-                                        id="user_id"
-                                        name="user_id"
-                                        options={userOptions}
-                                        value={selectedUser}
-                                        onChange={handleUserChange}
-                                        styles={customStyles}
-                                        placeholder="Buscar o seleccionar usuario..."
-                                        isClearable={true}
-                                        isDisabled={isDisabled}
-                                    />
-                                    <InputError message={errors.user_id} className="mt-2" />
-                                </div>
+                                <>
+                                    <div className="mt-2">
+                                        <InputLabel htmlFor="user_id" value="Seleccionar Usuario" />
+                                        <Select
+                                            id="user_id"
+                                            name="user_id"
+                                            options={userOptions}
+                                            value={selectedUser}
+                                            onChange={handleUserChange}
+                                            styles={customStyles}
+                                            placeholder="Buscar o seleccionar usuario..."
+                                            isClearable={true}
+                                            isDisabled={isDisabled}
+                                        />
+                                        <InputError message={errors.user_id} className="mt-2" />
+                                    </div>
+                                    <div className="mt-4">
+
+                                        <div className="mt-4">
+                                            <InputLabel htmlFor="delivery_location_id" value="Direcciones de Entrega" />
+                                            {deliveryLocations.length > 0 ? (
+                                                <div className="space-y-3 mt-2">
+                                                    {deliveryLocations.map((location) => (
+                                                        <div key={location.id} className="flex items-center space-x-2">
+                                                            <Checkbox
+                                                                id={`location-${location.id}`}
+                                                                checked={data.delivery_location_id === location.id}
+                                                                onCheckedChange={(checked) => {
+                                                                    setData('delivery_location_id', checked ? location.id : null)
+                                                                }}
+                                                                disabled={isDisabled}
+                                                            />
+                                                            <label
+                                                                htmlFor={`location-${location.id}`}
+                                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1"
+                                                            >
+                                                                <div className="flex flex-col">
+                                                                    <div className="gap-2">
+                                                                        {!!location.is_default && (
+                                                                            <p className="text-muted-foreground text-xs">
+                                                                                Dirección predeterminada
+                                                                            </p>
+                                                                        )}
+                                                                        <p className="font-medium">
+                                                                            {location.address_line_1}
+                                                                            {location.address_line_2 && `, ${location.address_line_2}`}
+                                                                        </p>
+                                                                    </div>
+                                                                    {location.postal_code && (
+                                                                        <span className="text-muted-foreground text-xs">
+                                                                            Código postal: {location.postal_code}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </label>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground mt-1">
+                                                    {data.user_id
+                                                        ? "Este usuario no tiene direcciones registradas"
+                                                        : "Seleccione un usuario para ver sus direcciones"}
+                                                </p>
+                                            )}
+
+                                            <InputError message={errors.delivery_location_id} className="mt-2" />
+                                        </div>
+                                    </div>
+                                </>
                             )}
                         </div>
+
                     </DivSection>
                 </div>
 
@@ -452,7 +537,7 @@ export default function OrdersForm({ data, orders = null, products = [], users =
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Button
-                                                variant="link" 
+                                                variant="link"
                                                 type="button"
                                                 onClick={() => handleRemoveItem(index)}
                                             >

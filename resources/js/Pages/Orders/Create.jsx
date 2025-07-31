@@ -7,35 +7,30 @@ import { toast } from 'sonner';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
 export default function Create({ paymentMethods, products, users }) { // Asegúrate de recibir 'users' aquí
+    // console.log(users)
 
-    // Valores iniciales para el formulario de una nueva orden
     const initialValues = {
         status: 'pending', // Estado inicial por defecto
         total: 0,
         subtotal: 0,
         totaldiscounts: 0,
-        direction_delivery: '',
         payments_method_id: paymentMethods.length > 0 ? paymentMethods[0].id : null, // Primer método de pago por defecto
         order_origin: 'web', // Origen de la orden
         order_items: [], // Array vacío para los productos de la orden
-        user_id:  null, // Inicializa user_id como null
+        user_id: null, // Inicializa user_id como null
+        delivery_location_id: null,
     }
 
-    // Hook useForm de Inertia para manejar el estado del formulario
     const { data, setData, errors, post, processing } = useForm(initialValues)
 
     // Función para manejar el envío del formulario
     const submit = (e) => {
-        // console.log("Submitting order data:", data);
-
-        // if (processing) return; // Evita múltiples envíos si ya está procesando
-        // console.log("Processing order creation...");
+        console.log("Submitting order data:", data);
 
         e.preventDefault();
         post(route('orders.store'), {
             onSuccess: () => {
                 toast.success("Pedido creado con éxito.");
-                // Opcional: Redirigir a la vista de edición o lista de órdenes
             },
             onError: (err) => {
                 console.error("Error al crear el pedido:", err);

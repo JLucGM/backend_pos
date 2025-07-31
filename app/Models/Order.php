@@ -15,7 +15,6 @@ class Order extends Model
         'totaldiscounts',
         'subtotal',
         'total',
-        'direction_delivery',
         'order_origin',
         'payments_method_id',
         'user_id',

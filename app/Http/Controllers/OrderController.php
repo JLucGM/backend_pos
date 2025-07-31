@@ -42,7 +42,7 @@ class OrderController extends Controller
         }
 
         $paymentMethods = PaymentMethod::all();
-        $users = User::where('company_id', $userAuth->company_id)->get();
+        $users = User::with('deliveryLocations')->where('company_id', $userAuth->company_id)->where('status', 1)->get();
         // Carga productos con sus categorías, combinaciones y medios (imágenes)
         $products = Product::with(
             'categories',
@@ -79,7 +79,7 @@ class OrderController extends Controller
             'total' => 'required|numeric|min:0', // Asegura que el total sea no negativo
             'subtotal' => 'required|numeric|min:0', // Valida el subtotal
             'totaldiscounts' => 'nullable|numeric|min:0', // Valida los descuentos
-            'direction_delivery' => 'nullable|string|max:255',
+            'delivery_location_id' => 'required|exists:delivery_locations,id', // Validación para delivery_location_id
             'payments_method_id' => 'required|exists:payments_methods,id',
             'order_origin' => 'required|string|max:255',
             'user_id' => 'required|exists:users,id', // Añade la validación para el usuario
@@ -100,7 +100,7 @@ class OrderController extends Controller
             'total' => $validatedData['total'],
             'subtotal' => $validatedData['subtotal'],
             'totaldiscounts' => $validatedData['totaldiscounts'] ?? 0, // Por defecto 0 si no se proporciona
-            'direction_delivery' => $validatedData['direction_delivery'],
+            'delivery_location_id' => $validatedData['delivery_location_id'], // Guarda el delivery_location_id
             'payments_method_id' => $validatedData['payments_method_id'],
             'order_origin' => $validatedData['order_origin'],
             'user_id' => $validatedData['user_id'], // Asigna el usuario autenticado como creador de la orden
@@ -146,7 +146,7 @@ class OrderController extends Controller
         }
 
         // Carga las relaciones necesarias para la orden
-        $orders->load('user', 'orderItems', 'paymentMethod'); // Cargas relaciones de la orden
+        $orders->load('user', 'orderItems', 'paymentMethod','deliveryLocation'); // Cargas relaciones de la orden
         // Carga todos los productos con sus stocks y combinaciones
         // Asegúrate de que las relaciones 'stocks', 'combinations', 'combinationAttributeValue', 'attributeValue'
         // estén cargadas para que el frontend pueda acceder a ellas.

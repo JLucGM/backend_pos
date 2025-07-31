@@ -13,7 +13,7 @@ const OrdersForm = lazy(() => import('./OrdersForm'));
 
 // Asegúrate de recibir 'products' y 'users' como props aquí
 export default function Edit({ orders, paymentMethods, products, users }) {
-    // console.log("Orders data:", orders); // Para depuración
+    console.log(orders)
     // Inicialización de los valores del formulario
     const initialValues = {
         status: orders.status,
