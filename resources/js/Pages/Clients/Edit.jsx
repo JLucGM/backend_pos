@@ -6,17 +6,15 @@ import { lazy, Suspense, useState } from 'react';
 import { ArrowLongLeftIcon, PlusIcon } from '@heroicons/react/24/outline';
 import Loader from '@/Components/ui/loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import AddressDialog from './AddressDialog';
 import { Badge } from '@/Components/ui/badge';
 import { Pen, PenSquareIcon } from 'lucide-react';
+import AddressDialog from '../User/AddressDialog';
 
 // Importa los nuevos componentes
 const ClientsForm = lazy(() => import('./ClientsForm'));
-const DeliveryLocationForm = lazy(() => import('./DeliveryLocationForm'));
 
 // Asegúrate de recibir todas las props desde el controlador
-export default function Edit({ client, permission }) {
-    console.log(client);
+export default function Edit({ client, roles, role, permission, countries, states, cities, deliveryLocations }) {
     const { data, setData, errors, post, processing } = useForm({
         name: client.name,
         email: client.email,
@@ -25,14 +23,26 @@ export default function Edit({ client, permission }) {
         identification: client.identification,
         status: client.status,
         avatar: null,
-
+        role: client.roles.length > 0 ? client.roles[0].id : "",
+        _method: 'POST',
     });
 
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState(null);
 
+    const openDialogForNewAddress = () => {
+        setSelectedLocation(null);
+        setIsDialogOpen(true);
+    };
 
-    const submitclientForm = (e) => {
+    const openDialogForEditAddress = (location) => {
+        setSelectedLocation(location);
+        setIsDialogOpen(true);
+    };
+
+    const submitClientForm = (e) => {
         e.preventDefault();
-        post(route('client.update', client), {
+        post(route('client.update', client.slug), {
             onSuccess: () => {
                 toast.success("Cliente actualizado con éxito.");
             },
@@ -44,6 +54,7 @@ export default function Edit({ client, permission }) {
 
     return (
         <AuthenticatedLayout
+            roles={role}
             permission={permission}
             header={
                 <div className='flex justify-between items-center'>
@@ -56,7 +67,7 @@ export default function Edit({ client, permission }) {
                         </h2>
                     </div>
                     <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('client.create')}>
-                        Crear Usuario
+                        Crear Cliente
                     </Link>
                 </div>
             }
@@ -64,30 +75,86 @@ export default function Edit({ client, permission }) {
             <Head className="capitalize" title={`Editar ${client.name}`} />
 
             <div className="space-y-6 py-6">
-                {/* FORMULARIO PRINCIPAL DEL USUARIO */}
+                {/* FORMULARIO PRINCIPAL DEL CLIENTE */}
                 <Suspense fallback={<Loader />}>
-
-
-                    <form onSubmit={submitclientForm} className='space-y-4'>
+                    <form onSubmit={submitClientForm} className='space-y-4'>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <ClientsForm
                                 data={data}
                                 setData={setData}
                                 errors={errors}
-                                client={client}
+                                roles={roles}
+                                user={client}
                             />
                         </div>
                         <div className="flex justify-end p-2.5">
                             <Button type="submit" disabled={processing}>
-                                {processing ? 'Guardando...' : 'Guardar Cambios de Usuario'}
+                                {processing ? 'Guardando...' : 'Guardar Cambios de Cliente'}
                             </Button>
                         </div>
                     </form>
-
                 </Suspense>
 
+                {/* SECCIÓN DE DIRECCIONES DE ENVÍO */}
+                <Suspense fallback={<Loader />}>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Direcciones de Envío</h3>
+                            <Button variant="outline" size="sm" onClick={openDialogForNewAddress}>
+                                <PlusIcon className="size-4 mr-2" />
+                                Agregar Dirección
+                            </Button>
+                        </div>
+
+                        {/* Lista de direcciones existentes */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {deliveryLocations.length > 0 ? (
+                                deliveryLocations.map(location => (
+                                    // La clave se mueve al componente Card, que es el elemento raíz en el map
+                                    <Card key={location.id}>
+                                        <CardHeader>
+                                            <CardTitle className="flex justify-between items-center">
+                                                {!!location.is_default && (
+                                                    <Badge className="ml-2" variant="secondary">
+                                                        Predeterminada
+                                                    </Badge>
+                                                )}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => openDialogForEditAddress(location)}
+                                                >
+                                                    <Pen className="size-4" />
+                                                </Button>
+                                            </CardTitle>
+                                            {/* <CardDescription>{location.address_line_2}</CardDescription> */}
+                                        </CardHeader>
+                                        <CardContent>
+                                            {location.address_line_1}
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            ) : (
+                                <p className="text-gray-500 dark:text-gray-400">Este usuario no tiene direcciones de envío.</p>
+                            )}
+                        </div>
+                    </div>
+                </Suspense>
             </div>
 
+            {/* Diálogo para agregar/editar dirección */}
+            <AddressDialog
+                isOpen={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                user={client}
+                location={selectedLocation}
+                countries={countries}
+                states={states}
+                cities={cities}
+                onSuccess={() => {
+                    // Aquí puedes hacer algo después de que se haya creado o editado la dirección
+                }}
+            />
         </AuthenticatedLayout>
     );
 }

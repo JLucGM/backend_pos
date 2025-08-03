@@ -85,14 +85,6 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('payments_methods/{payment_method}', [PaymentMethodController::class, 'update'])->name('paymentmethod.update');
     Route::delete('payments_methods/{payment_method}', [PaymentMethodController::class, 'destroy'])->name('paymentmethod.destroy');
 
-    // Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
-    // Route::get('clients/create', [ClientController::class, 'create'])->name('clients.create');
-    // Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
-    // Route::get('clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
-    // Route::post('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
-    // Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
-
-
     Route::get('countries', [CountriesController::class, 'index'])->name('countries.index');
     Route::get('countries/create', [CountriesController::class, 'create'])->name('countries.create');
     Route::post('countries', [CountriesController::class, 'store'])->name('countries.store');
@@ -146,9 +138,6 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('discounts/{discount}/edit', [DiscountController::class, 'edit'])->name('discounts.edit');
     Route::post('discounts/{discount}', [DiscountController::class, 'update'])->name('discounts.update');
     Route::delete('discounts/{discount}', [DiscountController::class, 'destroy'])->name('discounts.destroy');
-
-
-
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');

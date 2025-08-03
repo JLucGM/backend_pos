@@ -276,7 +276,7 @@ class UserController extends Controller
             $user->deliveryLocations()->create($validated);
         });
 
-        return redirect()->route('user.edit', $user->slug)->with('success', 'Dirección de entrega creada con éxito.');
+        return redirect()->back();
     }
 
     public function updateDeliveryLocation(Request $request, User $user, DeliveryLocation $deliveryLocation)

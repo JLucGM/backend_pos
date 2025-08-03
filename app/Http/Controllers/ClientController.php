@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\City;
 use App\Models\Client;
+use App\Models\Country;
 use App\Models\Role;
+use App\Models\State;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -122,19 +125,25 @@ class ClientController extends Controller
      */
     public function edit(User $client)
     {
-         $user = Auth::user();
-    if (!$user->hasRole('super admin')) {
-        if ($user->company_id !== $client->company_id) {
-            abort(403, 'No tienes permiso para esta operación.');
+        $user = Auth::user();
+        $countries = Country::all(); // Asegúrate de importar el modelo Country
+        $states = State::all(); // Asegúrate de importar el modelo State
+        $cities = City::all(); // Asegúrate de importar el modelo City
+        
+        if (!$user->hasRole('super admin')) {
+            if ($user->company_id !== $client->company_id) {
+                abort(403, 'No tienes permiso para esta operación.');
+            }
         }
-    }
-    $client->load('roles', 'media'); // Cargar roles y medios
-    $client->avatar_url = $client->getFirstMediaUrl('avatars'); // Asegúrate de que 'avatars' sea el nombre de la colección
-    // Cargar roles y permisos del usuario
-    $role = $user->getRoleNames();
-    $permission = $user->getAllPermissions();
 
-        return Inertia::render('Clients/Edit', compact('client', 'role', 'permission'));
+        $client->load('roles', 'media'); // Cargar roles y medios
+        $client->avatar_url = $client->getFirstMediaUrl('avatars'); // Asegúrate de que 'avatars' sea el nombre de la colección
+        // Cargar roles y permisos del usuario
+        $role = $user->getRoleNames();
+        $permission = $user->getAllPermissions();
+        $deliveryLocations = $client->deliveryLocations()->with(['city', 'state', 'country'])->get();
+
+        return Inertia::render('Clients/Edit', compact('client', 'role', 'permission', 'countries', 'states', 'cities', 'deliveryLocations'));
     }
 
     /**
@@ -142,28 +151,59 @@ class ClientController extends Controller
      */
     public function update(Request $request, User $client)
     {
-         // Validar que el usuario autenticado tenga permiso
-        $authUser = Auth::user();
-        if (!$authUser->hasRole('super admin') && $authUser->company_id !== $client->company_id) {
-            abort(403, 'No tienes permiso para esta operación.');
+        // dd($client);
+        // if (!Auth::user()->hasRole('super admin')) {
+        //     $users = Auth::user();
+        //     if ($users->company_id !== $user->company_id) {
+        //         abort(403, 'No tienes permiso para esta operación.');
+        //     }
+        // }
+
+        // Validar la solicitud
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $client->id,
+            'phone' => 'nullable|string|max:15',
+            'status' => 'required|boolean',
+            'role' => 'required|exists:roles,id',
+            'identification' => 'nullable|string|unique:users,identification,' . $client->id,
+            // 'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
+            'password' => 'nullable|string|min:8', // La contraseña es opcional
+            'avatar' => 'nullable|image|max:2048', // Validación para el avatar
+        ]);
+
+        // Obtener los datos de la solicitud
+        $data = $request->only('name', 'email', 'phone', 'status', 'identification');
+
+                // Encriptar la contraseña si se proporciona
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request['password']);
         }
-        // Validar los datos del formulario
-        // $validatedData = $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'identification' => 'required|string|max:255|unique:clients,identification,'.$client->id,
-        //     'phone' => 'required|string|max:20',
-        // ]);
-        // Actualizar el cliente
-        $client->update($request->only('name', 'email', 'phone', 'status', 'identification'));
-        // Manejar la actualización del avatar si se proporciona
+
+        // Actualizar el usuario con los nuevos datos
+        $client->update($data);
+
+        // Manejar la carga del avatar
         if ($request->hasFile('avatar')) {
-            $client->clearMediaCollection('avatars');
+            // Eliminar el avatar anterior si existe
+            $client->clearMediaCollection('avatars'); // Elimina todos los avatares anteriores
+            // Agregar el nuevo avatar
             $client->addMediaFromRequest('avatar')->toMediaCollection('avatars');
         }
 
+        // Actualizar el rol del usuario
+        if ($request->filled('role')) {
+            // Sincronizar roles
+            $client->syncRoles([$request->input('role')]);
+        }
 
+        // Relacionar el usuario con la tienda
+        // if ($request->filled('store_id')) {
+        //     // Sincronizar tiendas
+        //     $client->stores()->sync([$request->input('store_id')]);
+        // }
 
-        return to_route('client.edit', $client); // Redirigir a la edición del usuario
+        return to_route('client.edit', $client); // Redirigir a la edición del cliente
     }
 
     /**
