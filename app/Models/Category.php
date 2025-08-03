@@ -27,4 +27,9 @@ class Category extends Model
             ->generateSlugsFrom('category_name')
             ->saveSlugsTo('slug');
     }
+
+    public function discounts()
+    {
+        return $this->belongsToMany(Discount::class);
+    }
 }

@@ -91,5 +91,10 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.role.edit', 'description' => 'Editar roles'])->syncRoles([$rolSuperAdmin]);
         Permission::create(['name' => 'admin.role.delete', 'description' => 'Eliminar roles'])->syncRoles([$rolSuperAdmin]);
 
+        Permission::create(['name' => 'admin.discount.index', 'description' => 'Ver lista de descuentos'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.discount.create', 'description' => 'Crear descuentos'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.discount.edit', 'description' => 'Editar descuentos'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.discount.delete', 'description' => 'Eliminar descuentos'])->syncRoles([$rolSuperAdmin]);
+
     }
 }

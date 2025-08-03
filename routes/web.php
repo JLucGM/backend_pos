@@ -7,6 +7,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryLocationController;
+use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
@@ -133,12 +134,21 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('stocks/create', [StockController::class, 'create'])->name('stocks.create');
     Route::post('stocks', [StockController::class, 'store'])->name('stocks.store');
 
-
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{orders}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::post('orders/{orders}', [OrderController::class, 'update'])->name('orders.update');
+
+    Route::get('discounts', [DiscountController::class, 'index'])->name('discounts.index');
+    Route::get('discounts/create', [DiscountController::class, 'create'])->name('discounts.create');
+    Route::post('discounts', [DiscountController::class, 'store'])->name('discounts.store');
+    Route::get('discounts/{discount}/edit', [DiscountController::class, 'edit'])->name('discounts.edit');
+    Route::post('discounts/{discount}', [DiscountController::class, 'update'])->name('discounts.update');
+    Route::delete('discounts/{discount}', [DiscountController::class, 'destroy'])->name('discounts.destroy');
+
+
+
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');

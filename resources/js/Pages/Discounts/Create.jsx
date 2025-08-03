@@ -1,0 +1,96 @@
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { lazy, Suspense } from 'react';
+import { Button } from '@/Components/ui/button';
+import { toast } from 'sonner';
+import Loader from '@/Components/ui/loader';
+import DivSection from '@/Components/ui/div-section';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
+
+// Cargar el componente de forma diferida
+const DiscountsForm = lazy(() => import('./DiscountsForm'));
+
+export default function Create({ products, categories }) {
+    const initialValues = {
+        name: "",
+        slug: "",
+        description: "",
+        discount_type: "percentage",
+        value: "",
+        applies_to: "product", // Puede ser 'product', 'category' o 'order_total'
+        start_date: new Date().toISOString().slice(0, 19),
+        end_date: Date.now(),
+        automatic: false,
+        minimum_order_amount: 0,
+        usage_limit: 1,
+        code: "",
+        is_active: false,
+        product_ids: [],
+        category_ids: [],
+
+    }
+
+    const { data, setData, errors, post } = useForm(initialValues);
+
+    const submit = (e) => {
+        e.preventDefault();
+        console.log(data);
+        post(route('discounts.store'), {
+            onSuccess: () => {
+                toast("Descuento creado con éxito.");
+            },
+            onError: (error) => {
+                console.log(error);
+                toast.error("Error al crear el descuento.");
+            }
+        });
+    }
+
+    return (
+        <AuthenticatedLayout
+            header={
+                <div className='flex justify-between items-center '>
+                    <div className="flex justify-start items-center">
+                        <Link href={route('discounts.index')} >
+                            <ArrowLongLeftIcon className='size-6' />
+                        </Link>
+                        <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                            Crear descuento
+                        </h2>
+                    </div>
+                </div>
+            }
+        >
+            <Head className="capitalize" title="Descuento" />
+
+            <div className="max-w-7xl mx-auto">
+                <div className="text-gray-900 dark:text-gray-100">
+                    <form onSubmit={submit} className='space-y-4'>
+
+                        <div className="grid grid-cols-1 gap-4">
+                            <DivSection>
+                                <Suspense fallback={<Loader />}>
+                                    <DiscountsForm
+                                        data={data}
+                                        products={products}
+                                        categories={categories}
+                                        setData={setData}
+                                        errors={errors}
+                                    />
+                                </Suspense>
+                            </DivSection>
+                        </div>
+
+                        <div className="flex justify-end p-2.5">
+                            <Button
+                                variant="outline"
+                            >
+                                Guardar
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </AuthenticatedLayout>
+    )
+}

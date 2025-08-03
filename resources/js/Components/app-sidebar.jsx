@@ -1,6 +1,7 @@
 import * as React from "react"
 import {
   AudioWaveform,
+  BadgePercent,
   // BookOpen,
   Bot,
   Cog,
@@ -63,7 +64,7 @@ export function AppSidebar({
     ],
     navMain: [
       {
-        title: "Inventario",
+        title: "Productos",
         url: "#",
         icon: ShoppingBag,
         items: [
@@ -192,6 +193,11 @@ export function AppSidebar({
         title: "Pedidos",
         url: "orders.index",
         icon: ShoppingBasket,  
+      },
+      {
+        title: "Descuentos",
+        url: "discounts.index",
+        icon: BadgePercent,  
       },
       
     ],

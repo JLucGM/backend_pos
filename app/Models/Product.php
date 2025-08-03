@@ -81,4 +81,9 @@ class Product extends Model implements HasMedia
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function discounts()
+    {
+        return $this->belongsToMany(Discount::class);
+    }
 }

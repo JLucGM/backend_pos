@@ -3,7 +3,7 @@ export const customStyles = {
         control: (base, { isFocused }) => ({
             ...base,
             borderRadius: '30px',
-            borderColor: isFocused ? '#9ca3af' : '#9ca3af',
+            borderColor: isFocused ? '#d1d5db' : '#d1d5db',
             
         }),
         option: (base, { isSelected, hover }) => ({
