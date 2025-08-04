@@ -141,7 +141,7 @@ export default function Edit({ product, categories }) {
                 </div>
             }
         >
-            <Head title="Editar Producto" />
+            <Head title={`Editar Producto ${product.product_name}`} />
 
             <Suspense fallback={<Loader />}>
                 <div className="text-gray-900 dark:text-gray-100">

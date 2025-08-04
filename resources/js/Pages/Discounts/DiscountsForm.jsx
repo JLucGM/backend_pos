@@ -1,14 +1,10 @@
-import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { useEffect } from 'react';
 import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
-import { Calendar } from '@/Components/ui/calendar';
 import { DatePicker } from '@/Components/DatePicker';
-import { Switch } from '@/Components/ui/switch';
-
 
 export default function DiscountsForm({ data, products, categories, setData, errors }) {
     const handleSelectChange = (selectedOptions, name) => {
@@ -37,6 +33,20 @@ export default function DiscountsForm({ data, products, categories, setData, err
         { value: 'order_total', label: 'Total del pedido' },
     ];
 
+    const automaticOptions = [
+        { value: true, label: 'Descuento Automático' },
+        { value: false, label: 'Descuento por código' },
+    ];
+
+    const statusOptions = [
+        { value: true, label: 'Activo' },
+        { value: false, label: 'Inactivo' },
+    ];
+
+    const handleStatusChange = (selectedOption) => {
+        setData('is_active', selectedOption ? selectedOption.value : null);
+    };
+
     // Efecto para limpiar los IDs de productos o categorías si se cambia la opción de aplicación
     useEffect(() => {
         if (data.applies_to === 'product') {
@@ -49,14 +59,16 @@ export default function DiscountsForm({ data, products, categories, setData, err
     return (
         <>
             <div className="mt-4">
-                <div className="flex items-center gap-3">
-                    <Switch
-                        id="automatic"
-                        checked={data.automatic}
-                        onCheckedChange={(checked) => setData('automatic', checked)} // Cambiado a onCheckedChange
-                    />
-                    <InputLabel htmlFor="automatic">Automático</InputLabel>
-                </div>
+                <InputLabel htmlFor="automatic">Método</InputLabel>
+                <Select
+                    id="automatic"
+                    name="automatic"
+                    options={automaticOptions}
+                    value={automaticOptions.find(option => option.value === data.automatic)}
+                    onChange={(selectedOption) => setData('automatic', selectedOption.value)}
+                    className="mt-1 block w-full"
+                    styles={customStyles}
+                />
                 <InputError message={errors.automatic} className="mt-2" />
             </div>
 
@@ -157,14 +169,17 @@ export default function DiscountsForm({ data, products, categories, setData, err
             </div>
 
             <div className="mt-4">
-                <div className="flex items-center gap-3">
-                    <Checkbox
-                        id="is_active"
-                        checked={data.is_active}
-                        onChange={(e) => setData('is_active', e.target.checked)} // Cambiado a onChange
-                    />
-                    <InputLabel htmlFor="is_active">Estado</InputLabel>
-                </div>
+                <InputLabel htmlFor="is_active" value="Estado" />
+                <Select
+                    id="is_active"
+                    name="is_active"
+                    options={statusOptions}
+                    value={statusOptions.find(option => option.value === data.is_active)} // Asegúrate de que esto esté correcto
+                    onChange={handleStatusChange}
+                    styles={customStyles}
+                    placeholder="Seleccionar estado..."
+                    isClearable={false}
+                />
                 <InputError message={errors.is_active} className="mt-2" />
             </div>
 

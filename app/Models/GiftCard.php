@@ -2,21 +2,27 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
-class Client extends Model
+class GiftCard extends Model
 {
+
     use HasFactory, HasSlug;
 
     protected $fillable = [
-        'client_name',
+        'code',
         'slug',
-        'client_identification',
-        'client_phone',
+        'description',
+        'initial_balance',
+        'current_balance',
+        'expiration_date',
+        'is_active',
         'company_id',
+        'user_id',
     ];
 
     public function getRouteKeyName()
@@ -27,12 +33,18 @@ class Client extends Model
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('client_name')
+            ->generateSlugsFrom('code')
             ->saveSlugsTo('slug');
     }
 
-    public function orders()
-{
-    return $this->hasMany(Order::class);
-}
+    protected static function booted()
+    {
+        // Registra tu ámbito global aquí
+        static::addGlobalScope(new CompanyScope);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

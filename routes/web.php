@@ -8,6 +8,7 @@ use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryLocationController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\GiftCardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
@@ -138,6 +139,13 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('discounts/{discount}/edit', [DiscountController::class, 'edit'])->name('discounts.edit');
     Route::post('discounts/{discount}', [DiscountController::class, 'update'])->name('discounts.update');
     Route::delete('discounts/{discount}', [DiscountController::class, 'destroy'])->name('discounts.destroy');
+
+    Route::get('gift-cards', [GiftCardController::class, 'index'])->name('giftCards.index');
+    Route::get('gift-cards/create', [GiftCardController::class, 'create'])->name('giftCards.create');
+    Route::post('gift-cards', [GiftCardController::class, 'store'])->name('giftCards.store');
+    Route::get('gift-cards/{giftCard}/edit', [GiftCardController::class, 'edit'])->name('giftCards.edit');
+    Route::post('gift-cards/{giftCard}', [GiftCardController::class, 'update'])->name('giftCards.update');
+    Route::delete('gift-cards/{giftCard}', [GiftCardController::class, 'destroy'])->name('giftCards.destroy');
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');

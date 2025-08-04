@@ -80,6 +80,10 @@ export function AppSidebar({
             title: "Inventarios",
             url: "stocks.index",
           },
+          {
+            title: "Gift Cards",
+            url: "giftCards.index",
+          },
         ],
       },
       {
@@ -88,13 +92,13 @@ export function AppSidebar({
         icon: Bot,
         items: [
           {
-            title: "Staff",
+            title: "Usuarios",
             url: "user.index",
           },
-          // {
-          //   title: "Clientes",
-          //   url: "clients.index",
-          // },
+          {
+            title: "Clientes",
+            url: "client.index",
+          },
         ],
       },
       {

@@ -13,9 +13,9 @@ export function DatePicker({ selectedDate, onDateChange }) {
   
   return (
     <div className="flex flex-col gap-3">
-      <Label htmlFor="date" className="px-1">
+      {/* <Label htmlFor="date" className="px-1">
         Fecha
-      </Label>
+      </Label> */}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

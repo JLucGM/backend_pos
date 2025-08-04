@@ -96,5 +96,10 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.discount.edit', 'description' => 'Editar descuentos'])->syncRoles([$rolSuperAdmin]);
         Permission::create(['name' => 'admin.discount.delete', 'description' => 'Eliminar descuentos'])->syncRoles([$rolSuperAdmin]);
 
+        Permission::create(['name' => 'admin.giftCards.index', 'description' => 'Ver lista de tarjetas de regalo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.giftCards.create', 'description' => 'Crear tarjetas de regalo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.giftCards.edit', 'description' => 'Editar tarjetas de regalo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.giftCards.delete', 'description' => 'Eliminar tarjetas de regalo'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+
     }
 }

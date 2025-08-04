@@ -1,11 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Button } from '@/Components/ui/button';
+import { Button, buttonVariants } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import DivSection from '@/Components/ui/div-section';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { lazy, Suspense } from 'react';
 import Loader from '@/Components/ui/loader';
+import { Badge } from '@/Components/ui/badge';
+import { TrashIcon } from 'lucide-react';
 
 // Cargar el componente de forma diferida
 const DiscountsForm = lazy(() => import('./DiscountsForm'));
@@ -29,7 +31,7 @@ export default function Edit({ discount, products, categories }) {
         usage_limit: discount.usage_limit,
         minimum_order_amount: discount.minimum_order_amount,
         applies_to: discount.applies_to,
-         product_ids: discount.products.map(product => product.id) || [], // Obtener IDs de productos seleccionados
+        product_ids: discount.products.map(product => product.id) || [], // Obtener IDs de productos seleccionados
         category_ids: discount.categories.map(category => category.id) || [], // Obtener IDs de categorías seleccionadas
     }
 
@@ -57,19 +59,30 @@ export default function Edit({ discount, products, categories }) {
     return (
         <AuthenticatedLayout
             header={
-                <div className='flex justify-between items-center '>
-                    <div className="flex justify-start items-center">
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center">
                         <Link href={route('discounts.index')} >
                             <ArrowLongLeftIcon className='size-6' />
                         </Link>
-                        <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                             Actualizar {discount.name}
                         </h2>
+                        <Badge variant={discount.is_active === 1 ? 'success' : 'info'}>
+                            {discount.is_active === 1 ? 'Publicado' : 'Borrador'}
+                        </Badge>
+                    </div>
+                    <div className="">
+                        <Link
+                            className={buttonVariants({ variant: "outlineDestructive" })}
+                            href={route('discounts.destroy', [discount])} method='delete' as="button">
+                            <TrashIcon className='size-6' />
+                            Eliminar descuento
+                        </Link>
                     </div>
                 </div>
             }
         >
-            <Head className="capitalize" title="Categorias" />
+            <Head className="capitalize" title={`Descuento ${discount.name}`} />
 
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
