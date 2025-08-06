@@ -10,7 +10,7 @@ import Loader from '@/Components/ui/loader';
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
 
-export default function Edit({ product, categories }) {
+export default function Edit({ product, categories, taxes }) {
     const selectedCategories = product.categories.map(category => category.id);
 
     const attributeMap = {};
@@ -74,6 +74,7 @@ export default function Edit({ product, categories }) {
         stocks: {},
         barcodes: {},
         skus: {},
+        tax_id: product.tax_id || null,
     };
 
     mergedCombinationsData.forEach(combination => {
@@ -154,6 +155,7 @@ export default function Edit({ product, categories }) {
                                 categories={categories}
                                 combinationsWithPrices={mergedCombinationsData}
                                 product={product}
+                                taxes={taxes}
                             />
                         </div>
 

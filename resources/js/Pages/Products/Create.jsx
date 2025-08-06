@@ -9,7 +9,7 @@ import Loader from '@/Components/ui/loader';
 // Lazy load ProductsForm
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
-export default function Create({ categories }) {
+export default function Create({ categories, taxes }) {
     const { data, setData, errors, post, processing } = useForm({
         product_name: "",
         product_description: "",
@@ -27,17 +27,19 @@ export default function Create({ categories }) {
         quantity: 0,
         prices: {},
         stocks: {},
-        images: []
+        images: [],
+        tax_id: taxes.length > 0 ? taxes[0].id : null,
     });
 
     const submit = (e) => {
         e.preventDefault();
-
+console.log(data);
         post(route('products.store'), {
             onSuccess: () => {
                 toast("Producto creado con éxito.");
             },
-            onError: () => {
+            onError: (error) => {
+                console.error("Error al crear el producto:", error);
                 toast.error("Error al crear el producto.");
             }
         });
@@ -67,6 +69,7 @@ export default function Create({ categories }) {
                                 setData={setData}
                                 errors={errors}
                                 categories={categories}
+                                taxes={taxes}
                             />
                         </div>
 

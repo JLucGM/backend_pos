@@ -16,7 +16,7 @@ import { useForm } from '@inertiajs/react';
 import Checkbox from '@/Components/Checkbox';
 import TextAreaRich from '@/Components/ui/TextAreaRich';
 
-export default function ProductsForm({ data, categories, product = null, setData, errors }) {
+export default function ProductsForm({ data, categories, taxes, product = null, setData, errors }) {
     const animatedComponents = makeAnimated();
     const textAreaRef = useRef();
     const { delete: deleteImage } = useForm();
@@ -27,6 +27,12 @@ export default function ProductsForm({ data, categories, product = null, setData
     const categoryOptions = categories.map(category => ({
         value: category.id,
         label: category.category_name
+    }));
+
+    // Options for tax select input
+    const taxOptions = taxes.map(tax => ({
+        value: tax.id,
+        label: tax.tax_name + (tax.tax_rate ? ` (${tax.tax_rate}%)` : '')
     }));
 
     // Effect to determine if attributes section should be shown
@@ -732,17 +738,34 @@ export default function ProductsForm({ data, categories, product = null, setData
                         <InputError message={errors.status} className="mt-2" />
                     </div>
 
-                    <div className="flex items-center mt-4">
-                        <Checkbox
-                            id="product_status_pos"
-                            name="product_status_pos"
-                            checked={data.product_status_pos === 1}
-                            onChange={(e) => setData('product_status_pos', e.target.checked ? 1 : 0)}
-                            className="mr-2"
-                        />
-                        <InputLabel htmlFor="product_status_pos" value="Activar en POS" />
+                    <div className="">
+
+                        <div className="flex items-center mt-4">
+                            <Checkbox
+                                id="product_status_pos"
+                                name="product_status_pos"
+                                checked={data.product_status_pos === 1}
+                                onChange={(e) => setData('product_status_pos', e.target.checked ? 1 : 0)}
+                                className="mr-2"
+                            />
+                            <InputLabel htmlFor="product_status_pos" value="Activar en POS" />
+                        </div>
+                        <InputError message={errors.product_status_pos} className="mt-2" />
                     </div>
-                    <InputError message={errors.product_status_pos} className="mt-2" />
+
+                    <div>
+                        <InputLabel htmlFor="tax_id" value="Impuesto" />
+                        <Select
+                            name="tax_id"
+                            id="tax_id"
+                            options={taxOptions}
+                            value={taxOptions.find(option => option.value === data.tax_id)}
+                            onChange={(selectedOption) => setData('tax_id', selectedOption.value)}
+                            styles={customStyles}
+                        />
+                        <InputError message={errors.tax_id} className="mt-2" />
+                    </div>
+
                 </DivSection>
             </div>
         </>

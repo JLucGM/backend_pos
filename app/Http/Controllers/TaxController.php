@@ -52,7 +52,9 @@ class TaxController extends Controller
             'tax_rate' => 'required|numeric|min:0|max:100',
         ]);
 
+        $user = Auth::user();
         $data = $request->only('tax_name', 'tax_description', 'tax_rate');
+        $data['company_id'] = $user->company_id;
 
         Tax::create($data); // Crear el nuevo usuario
 

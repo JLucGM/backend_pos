@@ -9,6 +9,7 @@ use App\Models\Combination;
 use App\Models\CombinationAttributeValue;
 use App\Models\Product;
 use App\Models\Stock;
+use App\Models\Tax;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -46,8 +47,9 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::all();
+        $taxes = Tax::all();
 
-        return Inertia::render('Products/Create', compact('categories'));
+        return Inertia::render('Products/Create', compact('categories', 'taxes'));
     }
 
     /**
@@ -73,6 +75,9 @@ class ProductController extends Controller
             'product_barcode' => 'nullable|string|max:255',
             'product_sku' => 'nullable|string|max:255',
             'images.*' => 'nullable|image|max:2048', // Add validation for images
+            'tax_id' => 'nullable|exists:taxes,id', // Validar tax_id
+            'status' => 'required|boolean', // Assuming status is a boolean
+            'product_status_pos' => 'required|boolean', // Assuming product_status_pos is a boolean
         ]);
 
         // dd($request->all()); // Keep this for debugging if needed, but it's not the issue
@@ -87,7 +92,8 @@ class ProductController extends Controller
                 'product_price',
                 'product_price_discount',
                 'status',
-                'product_status_pos'
+                'product_status_pos',
+                'tax_id', // Asegúrate de que 'tax_id' esté en el formulario y sea opcional
             ),
             ['company_id' => $user->company_id]
         ));
@@ -285,8 +291,9 @@ class ProductController extends Controller
         });
 
         $categories = Category::all();
+        $taxes = Tax::all();
 
-        return Inertia::render('Products/Edit', compact('product', 'categories', 'combinationsWithPrices'));
+        return Inertia::render('Products/Edit', compact('product', 'categories', 'combinationsWithPrices', 'taxes'));
     }
 
     /**
@@ -315,6 +322,9 @@ class ProductController extends Controller
             'product_barcode' => 'nullable|string|max:255', // For simple products
             'product_sku' => 'nullable|string|max:255', // For simple products
             'images.*' => 'nullable|image|max:2048', // Add validation for images
+            'tax_id' => 'nullable|exists:taxes,id', // Validar tax_id
+            'status' => 'required|boolean', // Assuming status is a boolean
+            'product_status_pos' => 'required|boolean', // Assuming product_status_pos is a 
         ]);
 
         // dd($request->all()); // Uncomment for debugging incoming request data
@@ -331,7 +341,8 @@ class ProductController extends Controller
             'product_price',
             'product_price_discount',
             'status',
-            'product_status_pos'
+            'product_status_pos',
+            'tax_id', 
         ));
 
         // Sync categories
@@ -386,14 +397,14 @@ class ProductController extends Controller
 
         // Delete attribute values not in the current request
         AttributeValue::whereIn('attribute_id', $existingProductAttributeIds)
-                      ->whereNotIn('id', $currentRequestAttributeValueIds)
-                      ->delete();
+            ->whereNotIn('id', $currentRequestAttributeValueIds)
+            ->delete();
 
         // Then, delete attributes not in the current request (only if they have no remaining values)
         Attribute::whereIn('id', $existingProductAttributeIds)
-                 ->whereNotIn('id', $currentRequestAttributeIds)
-                 ->doesntHave('attribute_values') // Only delete if no associated values
-                 ->delete();
+            ->whereNotIn('id', $currentRequestAttributeIds)
+            ->doesntHave('attribute_values') // Only delete if no associated values
+            ->delete();
 
 
         // --- Combination and Stock Management ---
@@ -430,7 +441,7 @@ class ProductController extends Controller
                     $combinationModel = $product->combinations()->whereHas('combinationAttributeValue', function ($query) use ($currentComboAttributeValueIds) {
                         $query->whereIn('attribute_value_id', $currentComboAttributeValueIds);
                     }, '=', count($currentComboAttributeValueIds))
-                    ->first();
+                        ->first();
                 }
 
                 if ($combinationModel) {
@@ -478,7 +489,6 @@ class ProductController extends Controller
             // Delete combinations and their stocks that are no longer in the request
             $product->combinations()->whereNotIn('id', $processedCombinationIds)->delete();
             $product->stocks()->whereNotNull('combination_id')->whereNotIn('combination_id', $processedCombinationIds)->delete();
-
         } else {
             // Product is now a simple product (no combinations or all removed)
             // Delete all existing combinations and their associated stocks for this product

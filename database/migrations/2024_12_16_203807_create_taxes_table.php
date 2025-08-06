@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('slug');
             $table->string('tax_description', 100)->nullable();
             $table->decimal('tax_rate', 5, 2)->nullable();
+            $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

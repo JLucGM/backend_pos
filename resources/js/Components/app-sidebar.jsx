@@ -138,10 +138,10 @@ export function AppSidebar({
             title: "Metodo de pago",
             url: "paymentmethod.index",
           },
-          // {
-          //   title: "Taxes",
-          //   url: "tax.index",
-          // },
+          {
+            title: "Taxes",
+            url: "tax.index",
+          },
         ],
       },
       // {
@@ -191,19 +191,19 @@ export function AppSidebar({
       {
         title: "Inicio",
         url: "dashboard",
-        icon: HomeIcon,  
+        icon: HomeIcon,
       },
       {
         title: "Pedidos",
         url: "orders.index",
-        icon: ShoppingBasket,  
+        icon: ShoppingBasket,
       },
       {
         title: "Descuentos",
         url: "discounts.index",
-        icon: BadgePercent,  
+        icon: BadgePercent,
       },
-      
+
     ],
   }
 

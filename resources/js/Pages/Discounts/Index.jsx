@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import {  Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import { Button, buttonVariants } from '@/Components/ui/button';
 import { discountColumns } from './Columns';
@@ -20,7 +20,7 @@ export default function Index({ discounts, permission }) {
                         Descuentos
                     </h2>
                     {permission.some(perm => perm.name === 'admin.discount.create') && (
-                         <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('discounts.create')}
+                        <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('discounts.create')}
                         >
                             Crear Descuento
                         </Link>
@@ -44,19 +44,19 @@ export default function Index({ discounts, permission }) {
                         />
                     </Suspense>
                 ) : (
-                   <div className="flex flex-col items-center justify-center h-96">
-                            <BadgePercent size={64} />
-                            <HeadingSmall
-                                title="Tus descuentos se mostrarán aquí"
-                                description="Puedes crear un nuevo descuento haciendo clic en el botón a continuación."
-                                className="text-center"
-                            />
-                            {permission.some(perm => perm.name === 'admin.discount.create') && (
-                                <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('discounts.create')}>
-                                    Crear Descuento
-                                </Link>
-                            )}
-                        </div>
+                    <div className="flex flex-col items-center justify-center h-96">
+                        <BadgePercent size={64} />
+                        <HeadingSmall
+                            title="Tus descuentos se mostrarán aquí"
+                            description="Puedes crear un nuevo descuento haciendo clic en el botón a continuación."
+                            className="text-center"
+                        />
+                        {permission.some(perm => perm.name === 'admin.discount.create') && (
+                            <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('discounts.create')}>
+                                Crear Descuento
+                            </Link>
+                        )}
+                    </div>
                 )}
             </DivSection>
 

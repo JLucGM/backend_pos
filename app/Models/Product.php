@@ -16,11 +16,6 @@ class Product extends Model implements HasMedia
     use HasFactory, HasSlug;
     use InteractsWithMedia;
 
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('products');
-    }
-
     protected $fillable = [
         'product_name',
         'slug',
@@ -30,6 +25,7 @@ class Product extends Model implements HasMedia
         'status',
         'product_status_pos',
         'company_id',
+        'tax_id',
         // 'product_barcode',
     ];
 
@@ -38,17 +34,22 @@ class Product extends Model implements HasMedia
         return 'slug';
     }
 
+    public function getSlugOptions(): SlugOptions
+    {
+        return SlugOptions::create()
+            ->generateSlugsFrom('product_name')
+            ->saveSlugsTo('slug');
+    }
+
     protected static function booted()
     {
         // Registra tu ámbito global aquí
         static::addGlobalScope(new CompanyScope);
     }
 
-    public function getSlugOptions(): SlugOptions
+    public function registerMediaCollections(): void
     {
-        return SlugOptions::create()
-            ->generateSlugsFrom('product_name')
-            ->saveSlugsTo('slug');
+        $this->addMediaCollection('products');
     }
 
     public function registerMediaConversions(?Media $media = null): void
@@ -80,6 +81,11 @@ class Product extends Model implements HasMedia
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function taxes()
+    {
+        return $this->belongsTo(Tax::class);
     }
 
     public function discounts()

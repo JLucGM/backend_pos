@@ -1,14 +1,16 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, DialogDescription } from '@headlessui/react'
 import { useState } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
-import { Button } from '@/Components/ui/button';
+import { Button, buttonVariants } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
 import { taxesColumns } from './Columns';
 import Loader from '@/Components/ui/loader';
+import { ReceiptText } from 'lucide-react';
+import HeadingSmall from '@/Components/heading-small';
 
 // Define DataTable and TaxesForm as lazy components
 const DataTable = lazy(() => import('@/Components/DataTable'));
@@ -71,7 +73,19 @@ export default function Index({ taxes, permission }) {
                             permissions={permission}
                         />
                     ) : (
-                        <p>No hay impuestos registrados.</p>
+                        <div className="flex flex-col items-center justify-center h-96">
+                            <ReceiptText size={64} />
+                            <HeadingSmall
+                                title="Tus impuestos se mostrarán aquí"
+                                description="Puedes crear un nuevo impuesto haciendo clic en el botón a continuación."
+                                className="text-center"
+                            />
+                            {permission.some(perm => perm.name === 'admin.tax.create') && (
+                                <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('tax.create')}>
+                                    Crear Impuesto
+                                </Link>
+                            )}
+                        </div>
                     )}
                 </DivSection>
             </Suspense>
