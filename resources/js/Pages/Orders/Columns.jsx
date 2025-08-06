@@ -1,14 +1,5 @@
 export const ordersColumns = [
     {
-        header: "#id",
-        accessorKey: "id",
-        cell: ({ row }) => (
-            <div className="flex items-center">
-                <p className='me-2'>{row.original.id}</p>
-            </div>
-        ),
-    },
-    {
         header: "Cliente",
         accessorKey: "user_id",
         cell: ({ row }) => {

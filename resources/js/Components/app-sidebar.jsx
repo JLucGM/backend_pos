@@ -72,10 +72,10 @@ export function AppSidebar({
             title: "Productos",
             url: "products.index",
           },
-          {
-            title: "Categoria",
-            url: "category.index",
-          },
+          // {
+          //   title: "Categoria",
+          //   url: "category.index",
+          // },
           {
             title: "Inventarios",
             url: "stocks.index",
@@ -139,7 +139,7 @@ export function AppSidebar({
             url: "paymentmethod.index",
           },
           {
-            title: "Taxes",
+            title: "Impuestos",
             url: "tax.index",
           },
         ],

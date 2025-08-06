@@ -30,7 +30,7 @@ class TaxController extends Controller
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
-        return Inertia::render('Taxes/Index', compact('taxes','role','permission'));
+        return Inertia::render('Taxes/Index', compact('taxes', 'role', 'permission'));
     }
 
     /**
@@ -48,8 +48,8 @@ class TaxController extends Controller
     {
         $request->validate([
             'tax_name' => 'required|string|max:255',
-            'tax_description' => 'required|string|max:255',
             'tax_rate' => 'required|numeric|min:0|max:100',
+            'tax_description' => 'nullable|string|max:255',
         ]);
 
         $user = Auth::user();
@@ -75,7 +75,6 @@ class TaxController extends Controller
     public function edit(Tax $tax)
     {
         return Inertia::render('Taxes/Edit', compact('tax'));
-
     }
 
     /**
@@ -85,10 +84,10 @@ class TaxController extends Controller
     {
         $request->validate([
             'tax_name' => 'required|string|max:255',
-            'tax_description' => 'required|string|max:255',
             'tax_rate' => 'required|numeric|min:0|max:100',
+            'tax_description' => 'nullable|string|max:255',
         ]);
-        
+
         $data = $request->only('tax_name', 'tax_description', 'tax_rate');
 
         $tax->update($data); // Actualizar el usuario con los nuevos datos
