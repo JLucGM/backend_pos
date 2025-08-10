@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Clients\StoreRequest;
+use App\Http\Requests\Clients\UpdateRequest;
 use App\Models\City;
 use App\Models\Client;
 use App\Models\Country;
@@ -73,19 +75,8 @@ class ClientController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        // Validar la solicitud
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:15',
-            'identification' => 'nullable|string|unique:users',
-            'status' => 'required|boolean',
-            'password' => 'required|string|min:8', // Validar la contraseña
-            'avatar' => 'nullable|image|max:2048', // Validación para el avatar
-        ]);
-
         $user = Auth::user();
 
         // Obtener los datos de la solicitud
@@ -115,7 +106,7 @@ class ClientController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Client $client)
+    public function show(User $client)
     {
         //
     }
@@ -149,29 +140,8 @@ class ClientController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $client)
+    public function update(UpdateRequest $request, User $client)
     {
-        // dd($client);
-        // if (!Auth::user()->hasRole('super admin')) {
-        //     $users = Auth::user();
-        //     if ($users->company_id !== $user->company_id) {
-        //         abort(403, 'No tienes permiso para esta operación.');
-        //     }
-        // }
-
-        // Validar la solicitud
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $client->id,
-            'phone' => 'nullable|string|max:15',
-            'status' => 'required|boolean',
-            'role' => 'required|exists:roles,id',
-            'identification' => 'nullable|string|unique:users,identification,' . $client->id,
-            // 'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
-            'password' => 'nullable|string|min:8', // La contraseña es opcional
-            'avatar' => 'nullable|image|max:2048', // Validación para el avatar
-        ]);
-
         // Obtener los datos de la solicitud
         $data = $request->only('name', 'email', 'phone', 'status', 'identification');
 

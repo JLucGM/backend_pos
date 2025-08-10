@@ -15,9 +15,8 @@ import { Badge } from '@/Components/ui/badge';
 
 
 export default function OrdersForm({ data, orders = null, products = [], users = [], paymentMethods = [], setData, errors, isDisabled = false }) {
-    // console.log('Datos de la orden en OrdersForm:', data);
-    // console.log('Ítems de la orden:', data.order_items);
-    // ...
+    console.log(products);
+    
     // Estado para el producto/combinación seleccionado en el dropdown para añadir a la orden
     const [selectedProductToAdd, setSelectedProductToAdd] = useState(null);
     // Estado para el usuario seleccionado en el dropdown
@@ -64,76 +63,70 @@ export default function OrdersForm({ data, orders = null, products = [], users =
 
     // Opciones para el select de productos, incluyendo precio y combinaciones - ¡MEMOIZADAS!
     const productOptions = useMemo(() => {
-        const options = [];
-        products.forEach(product => {
-            const originalProductPrice = parseFloat(product.product_price);
+    const options = [];
+    products.forEach(product => {
+        const originalProductPrice = parseFloat(product.product_price);
 
-            if (product.combinations && product.combinations.length > 0) {
-                product.combinations.forEach(combination => {
-                    const effectivePrice = parseFloat(combination.combination_price);
-                    const combinationStock = calculateStock(product, combination.id); // Stock de la combinación
+        if (product.combinations && product.combinations.length > 0) {
+            product.combinations.forEach(combination => {
+                const effectivePrice = parseFloat(combination.combination_price);
+                const combinationStock = calculateStock(product, combination.id); // Stock de la combinación
 
-                    if (combinationStock > 0) { // Solo añadir si hay stock
-                        let combinationAttributesDisplay = '';
-                        if (combination.combination_attribute_value && Array.isArray(combination.combination_attribute_value)) {
-                            const attributeNames = combination.combination_attribute_value.map(
-                                cav => cav.attribute_value.attribute_value_name
-                            );
-                            if (attributeNames.length > 0) {
-                                combinationAttributesDisplay = attributeNames.join(', ');
-                            }
+                // Cambia la condición para incluir productos sin stock
+                if (combinationStock >= 0) { // Cambiado de > 0 a >= 0
+                    let combinationAttributesDisplay = '';
+                    if (combination.combination_attribute_value && Array.isArray(combination.combination_attribute_value)) {
+                        const attributeNames = combination.combination_attribute_value.map(
+                            cav => cav.attribute_value.attribute_value_name
+                        );
+                        if (attributeNames.length > 0) {
+                            combinationAttributesDisplay = attributeNames.join(', ');
                         }
-                        const barcode = product.stocks.find(s => s.combination_id === combination.id)?.product_barcode || null;
-
-                        options.push({
-                            value: product.id,
-                            // Almacenar las partes para la renderización personalizada
-                            original_product_name: product.product_name,
-                            combination_attributes_display: combinationAttributesDisplay,
-                            barcode: barcode,
-                            effective_price: effectivePrice,
-                            original_display_price: originalProductPrice,
-
-                            // Datos adicionales para el manejo interno
-                            combination_id: combination.id,
-                            combination_details: combination,
-                            is_combination: true,
-                            stock: combinationStock,
-                            // La propiedad 'label' se usará para la búsqueda interna de react-select
-                            label: `${product.product_name} ${combinationAttributesDisplay} ${barcode || ''} ${effectivePrice.toFixed(2)}`.toLowerCase()
-                        });
                     }
-                });
-            } else {
-                const effectivePrice = (product.product_price_discount !== null && product.product_price_discount !== undefined)
-                    ? parseFloat(product.product_price_discount)
-                    : originalProductPrice;
+                    const barcode = product.stocks.find(s => s.combination_id === combination.id)?.product_barcode || null;
 
-                const productStock = calculateStock(product); // Stock del producto base
-
-                if (productStock > 0) { // Solo añadir si hay stock
-                    const barcode = product.stocks.find(s => s.combination_id === null)?.product_barcode || null;
                     options.push({
                         value: product.id,
-                        // Almacenar las partes para la renderización personalizada
                         original_product_name: product.product_name,
-                        combination_attributes_display: null, // No hay atributos para productos sin combinación
+                        combination_attributes_display: combinationAttributesDisplay,
                         barcode: barcode,
                         effective_price: effectivePrice,
-                        original_display_price: (effectivePrice !== originalProductPrice) ? originalProductPrice : null,
-
-                        // Datos adicionales para el manejo interno
-                        is_combination: false,
-                        stock: productStock,
-                        // La propiedad 'label' se usará para la búsqueda interna de react-select
-                        label: `${product.product_name} ${barcode || ''} ${effectivePrice.toFixed(2)}`.toLowerCase()
+                        original_display_price: originalProductPrice,
+                        combination_id: combination.id,
+                        combination_details: combination,
+                        is_combination: true,
+                        stock: combinationStock,
+                        label: `${product.product_name} ${combinationAttributesDisplay} ${barcode || ''} ${effectivePrice.toFixed(2)}`.toLowerCase()
                     });
                 }
-            }
-        });
-        return options;
-    }, [products]); // Dependencia: solo se recalcula si la prop 'products' cambia
+            });
+        } else {
+            const effectivePrice = (product.product_price_discount !== null && product.product_price_discount !== undefined)
+                ? parseFloat(product.product_price_discount)
+                : originalProductPrice;
 
+            const productStock = calculateStock(product); // Stock del producto base
+
+            // Cambia la condición para incluir productos sin stock
+            if (productStock >= 0) { // Cambiado de > 0 a >= 0
+                const barcode = product.stocks.find(s => s.combination_id === null)?.product_barcode || null;
+                options.push({
+                    value: product.id,
+                    original_product_name: product.product_name,
+                    combination_attributes_display: null,
+                    barcode: barcode,
+                    effective_price: effectivePrice,
+                    original_display_price: (effectivePrice !== originalProductPrice) ? originalProductPrice : null,
+                    is_combination: false,
+                    stock: productStock,
+                    label: `${product.product_name} ${barcode || ''} ${effectivePrice.toFixed(2)}`.toLowerCase()
+                });
+            }
+        }
+    });
+    return options;
+}, [products]);
+console.log("productOptions", productOptions);
     // Función para formatear la etiqueta de la opción en el Select
     const formatProductOptionLabel = ({ original_product_name, combination_attributes_display, barcode, effective_price, original_display_price }) => (
         <div className="flex flex-col">

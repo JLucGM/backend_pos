@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Taxes\StoreRequest;
+use App\Http\Requests\Taxes\UpdateRequest;
 use App\Models\Tax;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -44,14 +46,8 @@ class TaxController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        $request->validate([
-            'tax_name' => 'required|string|max:255',
-            'tax_rate' => 'required|numeric|min:0|max:100',
-            'tax_description' => 'nullable|string|max:255',
-        ]);
-
         $user = Auth::user();
         $data = $request->only('tax_name', 'tax_description', 'tax_rate');
         $data['company_id'] = $user->company_id;
@@ -80,14 +76,8 @@ class TaxController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Tax $tax)
+    public function update(UpdateRequest $request, Tax $tax)
     {
-        $request->validate([
-            'tax_name' => 'required|string|max:255',
-            'tax_rate' => 'required|numeric|min:0|max:100',
-            'tax_description' => 'nullable|string|max:255',
-        ]);
-
         $data = $request->only('tax_name', 'tax_description', 'tax_rate');
 
         $tax->update($data); // Actualizar el usuario con los nuevos datos

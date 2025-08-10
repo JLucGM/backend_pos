@@ -52,13 +52,8 @@ class CitiesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        $request->validate([
-            'city_name' => 'required|string|max:255',
-            'state_id' => 'required|exists:states,id',
-        ]);
-
         //dd($request);
         $data = $request->only('city_name', 'state_id');
 
@@ -89,12 +84,8 @@ class CitiesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, City $city)
+    public function update(UpdateRequest $request, City $city)
     {
-        $request->validate([
-            'city_name' => 'required|string|max:255',
-            'state_id' => 'required|exists:states,id',
-        ]);
         $data = $request->only('city_name', 'state_id');
 
         $city->update($data);

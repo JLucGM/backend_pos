@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Categories\StoreRequest;
+use App\Http\Requests\Categories\UpdateRequest;
 use App\Models\Category;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -42,12 +45,8 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        $request->validate([
-            'category_name' => 'required|string|max:255',
-        ]);
-
         $data = $request->only('category_name');
 
         Category::create($data); // Crear el nuevo usuario
@@ -75,11 +74,8 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category)
+    public function update(UpdateRequest $request, Category $category)
     {
-        $request->validate([
-            'category_name' => 'required|string|max:255',
-        ]);
         $data = $request->only('category_name');
 
         $category->update($data);

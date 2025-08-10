@@ -6,6 +6,7 @@ use App\Http\Requests\Countries\StoreRequest;
 use App\Http\Requests\Countries\UpdateRequest;
 use App\Models\Countries;
 use App\Models\Country;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -49,11 +50,11 @@ class CountriesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        $request->validate([
-            'country_name' => 'required|string|max:255',
-        ]);
+        $data = $request->only('country_name');
+
+        Country::create($data);
 
         $data = $request->only('country_name');
 
@@ -85,12 +86,8 @@ class CountriesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Country $country)
+    public function update(UpdateRequest $request, Country $country)
     {
-        $request->validate([
-            'country_name' => 'required|string|max:255',
-        ]);
-        
         $data = $request->only('country_name');
 
         $country->update($data);

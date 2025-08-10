@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Products\StoreRequest;
+use App\Http\Requests\Products\UpdateRequest;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
 use App\Models\Category;
@@ -55,31 +57,8 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.s
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        // Validar los datos de entrada
-        $request->validate([
-            'product_name' => 'required|string|max:255',
-            'product_description' => 'nullable|string',
-            'product_price' => 'required|numeric',
-            'categories' => 'required|array',
-            'categories.*' => 'exists:categories,id',
-            'attribute_names' => 'nullable|array|max:3',
-            'attribute_names.*' => 'nullable|string|max:255',
-            'attribute_values' => 'nullable|array',
-            'attribute_values.*' => 'nullable|array',
-            'attribute_values.*.*' => 'nullable|string|max:255',
-            'prices' => 'nullable|array', // Ensure prices is an array
-            'stocks' => 'nullable|array', // Ensure stocks is an array
-            'quantity' => 'required|integer|min:0',
-            'product_barcode' => 'nullable|string|max:255',
-            'product_sku' => 'nullable|string|max:255',
-            'images.*' => 'nullable|image|max:2048', // Add validation for images
-            'tax_id' => 'nullable|exists:taxes,id', // Validar tax_id
-            'status' => 'required|boolean', // Assuming status is a boolean
-            'product_status_pos' => 'required|boolean', // Assuming product_status_pos is a boolean
-        ]);
-
         // dd($request->all()); // Keep this for debugging if needed, but it's not the issue
 
         $user = Auth::user();
@@ -299,37 +278,10 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(UpdateRequest $request, Product $product)
     {
-        // Validar los datos de entrada
-        $request->validate([
-            'product_name' => 'required|string|max:255',
-            'product_description' => 'nullable|string',
-            'product_price' => 'required|numeric',
-            'product_price_discount' => 'nullable|numeric',
-            'categories' => 'required|array',
-            'categories.*' => 'exists:categories,id',
-            'quantity' => 'required|integer|min:0', // For simple products
-            'attribute_names' => 'nullable|array',
-            'attribute_names.*' => 'nullable|string|max:255',
-            'attribute_values' => 'nullable|array',
-            'attribute_values.*' => 'nullable|array',
-            'attribute_values.*.*' => 'nullable|string|max:255',
-            'prices' => 'nullable|array', // Array of combination objects
-            'stocks' => 'nullable|array', // Associative array keyed by combo ID or _key
-            'barcodes' => 'nullable|array', // Associative array keyed by combo ID or _key
-            'skus' => 'nullable|array', // Associative array keyed by combo ID or _key
-            'product_barcode' => 'nullable|string|max:255', // For simple products
-            'product_sku' => 'nullable|string|max:255', // For simple products
-            'images.*' => 'nullable|image|max:2048', // Add validation for images
-            'tax_id' => 'nullable|exists:taxes,id', // Validar tax_id
-            'status' => 'required|boolean', // Assuming status is a boolean
-            'product_status_pos' => 'required|boolean', // Assuming product_status_pos is a 
-        ]);
-
-        // dd($request->all()); // Uncomment for debugging incoming request data
-
         $user = Auth::user();
+
         if ($product->company_id !== $user->company_id) {
             abort(403, 'No tienes permiso para esta operación.');
         }
@@ -342,7 +294,7 @@ class ProductController extends Controller
             'product_price_discount',
             'status',
             'product_status_pos',
-            'tax_id', 
+            'tax_id',
         ));
 
         // Sync categories

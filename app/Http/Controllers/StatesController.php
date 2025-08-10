@@ -54,15 +54,9 @@ class StatesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        $request->validate([
-            'state_name' => 'required|string|max:255',
-            'country_id' => 'required|exists:countries,id',
-        ]);
-
-        //dd($request);
-        $data = $request->only('state_name', 'country_id');
+        $data = $request->validated();
 
         State::create($data);
 
@@ -91,14 +85,9 @@ class StatesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, State $state)
+    public function update(UpdateRequest $request, State $state)
     {
-        $request->validate([
-            'state_name' => 'required|string|max:255',
-            'country_id' => 'required|exists:countries,id',
-        ]);
-        
-        $data = $request->only('state_name', 'country_id');
+        $data = $request->validated();
 
         $state->update($data);
 

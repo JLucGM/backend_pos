@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Discounts\StoreRequest;
+use App\Http\Requests\Discounts\UpdateRequest;
 use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Product;
@@ -46,24 +48,9 @@ class DiscountController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'discount_type' => 'required|string|in:percentage,fixed_amount',
-            'value' => 'required|numeric|min:0',
-            'applies_to' => 'required|string|in:product,category,order_total',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'minimum_order_amount' => 'nullable|numeric|min:0',
-            'usage_limit' => 'nullable|integer|min:0',
-            'code' => 'nullable|string|max:255',
-            'is_active' => 'required|boolean',
-            'automatic' => 'boolean',
-        ]);
-
-         $user = Auth::user();
+        $user = Auth::user();
         // dd($request->all()); // Para depurar y ver los datos recibidos
 
         $data = $request->only('name', 'description', 'discount_type', 'value', 'applies_to', 'start_date', 'end_date', 'minimum_order_amount', 'usage_limit', 'code', 'is_active', 'automatic');
@@ -106,23 +93,8 @@ class DiscountController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Discount $discount)
+    public function update(UpdateRequest $request, Discount $discount)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'discount_type' => 'required|string|in:percentage,fixed_amount',
-            'value' => 'required|numeric|min:0',
-            'applies_to' => 'required|string|in:product,category,order_total',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'minimum_order_amount' => 'nullable|numeric|min:0',
-            'usage_limit' => 'nullable|integer|min:0',
-            'code' => 'nullable|string|max:255',
-            'is_active' => 'required|boolean',
-            'automatic' => 'boolean',
-        ]);
-
         // Obtener los datos de la solicitud
         $data = $request->only('name', 'description', 'discount_type', 'value', 'applies_to', 'start_date', 'end_date', 'minimum_order_amount', 'usage_limit', 'code', 'is_active', 'automatic');
 
@@ -150,8 +122,6 @@ class DiscountController extends Controller
 
         return to_route('discounts.edit', $discount)->with('success', 'Descuento actualizado con éxito.');
     }
-
-
 
     /**
      * Remove the specified resource from storage.

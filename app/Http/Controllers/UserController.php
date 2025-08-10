@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 // use App\Http\Requests\Users\StoreRequest;
 // use App\Http\Requests\Users\UpdateRequest;
 
+use App\Http\Requests\DeliveryLocations\StoreRequest as DeliveryLocationsStoreRequest;
+use App\Http\Requests\DeliveryLocations\UpdateRequest as DeliveryLocationsUpdateRequest;
+use App\Http\Requests\Users\StoreRequest;
+use App\Http\Requests\Users\UpdateRequest;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\DeliveryLocation;
@@ -82,20 +86,8 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        // Validar la solicitud
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:15',
-            'identification' => 'nullable|string|unique:users',
-            'status' => 'required|boolean',
-            'role' => 'required|exists:roles,id', // Validar que el rol existe
-            // 'store_id' => 'required|exists:stores,id', // Validar que el store_id existe
-            'password' => 'required|string|min:8', // Validar la contraseña
-            'avatar' => 'nullable|image|max:2048', // Validación para el avatar
-        ]);
         $user = Auth::user();
         // Obtener los datos de la solicitud
         $data = array_merge(
@@ -175,28 +167,8 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(UpdateRequest $request, User $user)
     {
-        // if (!Auth::user()->hasRole('super admin')) {
-        //     $users = Auth::user();
-        //     if ($users->company_id !== $user->company_id) {
-        //         abort(403, 'No tienes permiso para esta operación.');
-        //     }
-        // }
-
-        // Validar la solicitud
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:15',
-            'status' => 'required|boolean',
-            'role' => 'required|exists:roles,id',
-            'identification' => 'nullable|string|unique:users,identification,' . $user->id,
-            // 'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
-            'password' => 'nullable|string|min:8', // La contraseña es opcional
-            'avatar' => 'nullable|image|max:2048', // Validación para el avatar
-        ]);
-
         // Obtener los datos de la solicitud
         $data = $request->only('name', 'email', 'phone', 'status', 'identification');
 
@@ -251,59 +223,36 @@ class UserController extends Controller
         $user->delete();
     }
 
-    public function storeDeliveryLocation(Request $request, User $user)
+    public function storeDeliveryLocation(DeliveryLocationsStoreRequest $request, User $user)
     {
-        $validated = $request->validate([
-            'address_line_1' => 'required|string|max:255',
-            'address_line_2' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:20',
-            'phone_number' => 'nullable|string|max:20',
-            'notes' => 'nullable|string|max:500',
-            'country_id' => 'nullable|exists:countries,id',
-            'state_id' => 'nullable|exists:states,id',
-            'city_id' => 'nullable|exists:cities,id',
-            'is_default' => 'required|boolean',
-        ]);
-
-        DB::transaction(function () use ($user, $validated) {
+       
+        DB::transaction(function () use ($user, $request) {
             // Si la nueva dirección se establece como predeterminada,
             // desmarca cualquier otra dirección que sea predeterminada para este usuario.
-            if ($validated['is_default']) {
+            if ($request['is_default']) {
                 $user->deliveryLocations()->update(['is_default' => false]);
             }
 
             // Crea la nueva dirección
-            $user->deliveryLocations()->create($validated);
+            $user->deliveryLocations()->create($request->validated());
         });
 
         return redirect()->back();
     }
 
-    public function updateDeliveryLocation(Request $request, User $user, DeliveryLocation $deliveryLocation)
+    public function updateDeliveryLocation(DeliveryLocationsUpdateRequest $request, User $user, DeliveryLocation $deliveryLocation)
     {
-        $validated = $request->validate([
-            'address_line_1' => 'required|string|max:255',
-            'address_line_2' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:20',
-            'phone_number' => 'nullable|string|max:20',
-            'notes' => 'nullable|string|max:500',
-            'country_id' => 'nullable|exists:countries,id',
-            'state_id' => 'nullable|exists:states,id',
-            'city_id' => 'nullable|exists:cities,id',
-            'is_default' => 'required|boolean',
-        ]);
-
-        DB::transaction(function () use ($user, $deliveryLocation, $validated) {
+        DB::transaction(function () use ($user, $deliveryLocation, $request) {
             // Si esta dirección se establece como predeterminada,
             // desmarca todas las demás direcciones del usuario.
-            if ($validated['is_default']) {
+            if ($request['is_default']) {
                 $user->deliveryLocations()
                     ->where('id', '!=', $deliveryLocation->id)
                     ->update(['is_default' => false]);
             }
 
             // Actualiza la dirección actual
-            $deliveryLocation->update($validated);
+            $deliveryLocation->update($request->validated());
         });
 
         return redirect()->route('user.edit', $user->slug)->with('success', 'Dirección de entrega actualizada con éxito.');

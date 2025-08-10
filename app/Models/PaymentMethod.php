@@ -39,11 +39,9 @@ class PaymentMethod extends Model
         // Registra tu ámbito global aquí
         static::addGlobalScope(new CompanyScope);
     }
-
-    // Definir la relación con PaymentMethodDetail
-    // public function details()
-    // {
-    //     return $this->hasMany(PaymentMethodDetail::class, 'payments_method_id');
-    // }
     
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

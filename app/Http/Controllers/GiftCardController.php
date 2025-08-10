@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GiftCards\StoreRequest;
+use App\Http\Requests\GiftCards\UpdateRequest;
 use App\Models\GiftCard;
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -44,17 +47,8 @@ class GiftCardController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        $request->validate([
-            'code' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'initial_balance' => 'required|numeric|min:0',
-            'expiration_date' => 'nullable|date',
-            'is_active' => 'boolean',
-            'user_id' => 'nullable|exists:users,id',
-        ]);
-
         // Asignar el valor de initial_balance a current_balance
         $data = $request->all();
         $data['current_balance'] = $data['initial_balance'];
@@ -91,17 +85,8 @@ class GiftCardController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, GiftCard $giftCard)
+    public function update(UpdateRequest $request, GiftCard $giftCard)
     {
-        $request->validate([
-            'code' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'initial_balance' => 'required|numeric|min:0',
-            'expiration_date' => 'nullable|date',
-            'is_active' => 'boolean',
-            'user_id' => 'nullable|exists:users,id',
-        ]);
-
         // Asignar el valor de initial_balance a current_balance
         $data = $request->all();
         $data['current_balance'] = $data['initial_balance'];

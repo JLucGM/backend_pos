@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PaymentMethods\StoreRequest;
+use App\Http\Requests\PaymentMethods\UpdateRequest;
 use App\Models\PaymentMethod;
 use App\Models\PaymentMethodDetail;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -43,17 +46,11 @@ class PaymentMethodController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
-        // Validar los datos de entrada
-        $requestValidate = $request->validate([
-            'payment_method_name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
-        ]);
 
         // Crear el nuevo método de pago
-        $paymentMethod = PaymentMethod::create($requestValidate + [
+        $paymentMethod = PaymentMethod::create($request->validated() + [
             'company_id' => Auth::user()->company_id, // Asignar la empresa del usuario autenticado
         ]);
 
@@ -81,25 +78,16 @@ class PaymentMethodController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PaymentMethod $payment_method)
+    public function update(UpdateRequest $request, PaymentMethod $payment_method)
     {
-        // Validar los datos de entrada
-        $requestValidate =  $request->validate([
-            'payment_method_name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
-        ]);
-
         // Actualizar el método de pago
-        $payment_method->update($requestValidate + [
+        $payment_method->update($request->validated() + [
             'company_id' => Auth::user()->company_id, // Asignar la empresa del usuario autenticado
         ]);
 
         // Redirigir a la lista de métodos de pago o a la vista de edición
         return to_route('paymentmethod.edit', $payment_method);
     }
-
-
 
     /**
      * Remove the specified resource from storage.
@@ -108,5 +96,5 @@ class PaymentMethodController extends Controller
     {
         // Eliminar los registros dependientes
         $payment_method->delete(); // Asegúrate de tener la relación definida en el modelo
-           }
+    }
 }

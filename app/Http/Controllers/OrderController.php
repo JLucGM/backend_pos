@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Orders\StoreRequest;
+use App\Http\Requests\Orders\UpdateRequest;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\PaymentMethod;
 use App\Models\Product;
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,9 +56,7 @@ class OrderController extends Controller
             'combinations.combinationAttributeValue', // Cargar valores de atributos de combinaciones
             'combinations.combinationAttributeValue.attributeValue', // Cargar valores de atributos relacionados
             'combinations.combinationAttributeValue.attributeValue.attribute', // Cargar atributos relacionados
-        )
-            ->where('company_id', Auth::user()->company_id)
-            ->get();
+        )->get();
 
         return Inertia::render('Orders/Create', compact('paymentMethods', 'products', 'users'));
     }
@@ -63,7 +64,7 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRequest $request)
     {
         // dd($request->all());
         $userAuth = Auth::user();
@@ -73,42 +74,21 @@ class OrderController extends Controller
             abort(403, 'No tienes permiso para esta operación.');
         }
 
-        // Valida los datos del formulario
-        $validatedData = $request->validate([
-            'status' => 'required|string|max:255',
-            'total' => 'required|numeric|min:0', // Asegura que el total sea no negativo
-            'subtotal' => 'required|numeric|min:0', // Valida el subtotal
-            'totaldiscounts' => 'nullable|numeric|min:0', // Valida los descuentos
-            'delivery_location_id' => 'required|exists:delivery_locations,id', // Validación para delivery_location_id
-            'payments_method_id' => 'required|exists:payments_methods,id',
-            'order_origin' => 'required|string|max:255',
-            'user_id' => 'required|exists:users,id', // Añade la validación para el usuario
-            'order_items' => 'required|array|min:1', // Debe haber al menos un producto en la orden
-            'order_items.*.product_id' => 'required|exists:products,id', // Valida el product_id para cada item
-            'order_items.*.name_product' => 'required|string|max:255',
-            'order_items.*.product_price' => 'required|numeric|min:0', // Usar product_price aquí (precio efectivo)
-            'order_items.*.original_display_price' => 'nullable|numeric|min:0', // Para el precio original tachado
-            'order_items.*.quantity' => 'required|integer|min:1',
-            'order_items.*.subtotal' => 'required|numeric|min:0',
-            'order_items.*.combination_id' => 'nullable|exists:combinations,id', // Valida combination_id
-            'order_items.*.product_details' => 'nullable|string', // Se asume que es una cadena JSON
-        ]);
-
         // Crea la Orden principal
         $order = Order::create([
-            'status' => $validatedData['status'],
-            'total' => $validatedData['total'],
-            'subtotal' => $validatedData['subtotal'],
-            'totaldiscounts' => $validatedData['totaldiscounts'] ?? 0, // Por defecto 0 si no se proporciona
-            'delivery_location_id' => $validatedData['delivery_location_id'], // Guarda el delivery_location_id
-            'payments_method_id' => $validatedData['payments_method_id'],
-            'order_origin' => $validatedData['order_origin'],
-            'user_id' => $validatedData['user_id'], // Asigna el usuario autenticado como creador de la orden
+            'status' => $request['status'],
+            'total' => $request['total'],
+            'subtotal' => $request['subtotal'],
+            'totaldiscounts' => $request['totaldiscounts'] ?? 0, // Por defecto 0 si no se proporciona
+            'delivery_location_id' => $request['delivery_location_id'], // Guarda el delivery_location_id
+            'payments_method_id' => $request['payments_method_id'],
+            'order_origin' => $request['order_origin'],
+            'user_id' => $request['user_id'], // Asigna el usuario autenticado como creador de la orden
             'company_id' => $userAuth->company_id, // Asigna la company_id del usuario
         ]);
 
         // Crea los OrderItems asociados a la orden
-        foreach ($validatedData['order_items'] as $itemData) {
+        foreach ($request['order_items'] as $itemData) {
             $order->orderItems()->create([
                 'product_id' => $itemData['product_id'],
                 'name_product' => $itemData['name_product'],
@@ -146,7 +126,7 @@ class OrderController extends Controller
         }
 
         // Carga las relaciones necesarias para la orden
-        $orders->load('user', 'orderItems', 'paymentMethod','deliveryLocation'); // Cargas relaciones de la orden
+        $orders->load('user', 'orderItems', 'paymentMethod', 'deliveryLocation'); // Cargas relaciones de la orden
         // Carga todos los productos con sus stocks y combinaciones
         // Asegúrate de que las relaciones 'stocks', 'combinations', 'combinationAttributeValue', 'attributeValue'
         // estén cargadas para que el frontend pueda acceder a ellas.
@@ -179,50 +159,26 @@ class OrderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Order $orders)
+    public function update(UpdateRequest $request, Order $orders)
     {
         $user = Auth::user();
         if ($orders->company_id !== $user->company_id) {
             abort(403, 'No tienes permiso para esta operación.');
         }
 
-        // Para depuración: Descomenta esta línea para ver los datos exactos que llegan al controlador
-        // dd($request->all());
-
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'status' => 'required|string|max:255',
-            'total' => 'required|numeric|min:0',
-            'subtotal' => 'required|numeric|min:0',
-            'totaldiscounts' => 'nullable|numeric|min:0',
-            'direction_delivery' => 'nullable|string|max:255',
-            'payments_method_id' => 'required|exists:payments_methods,id',
-            'user_id' => 'nullable|exists:users,id',
-            'order_items' => 'required|array|min:1',
-            'order_items.*.id' => 'nullable', // Permitir IDs numéricos (existentes) o UUIDs (temporales)
-            'order_items.*.product_id' => 'nullable|exists:products,id', // 'nullable' porque puede no venir si no se modifica el producto
-            'order_items.*.name_product' => 'nullable|string|max:255', // 'nullable'
-            'order_items.*.product_price' => 'nullable|numeric|min:0', // 'nullable'
-            'order_items.*.original_display_price' => 'nullable|numeric|min:0',
-            'order_items.*.quantity' => 'nullable|integer|min:1', // 'nullable'
-            'order_items.*.subtotal' => 'nullable|numeric|min:0', // 'nullable'
-            'order_items.*.combination_id' => 'nullable|exists:combinations,id',
-            'order_items.*.product_details' => 'nullable|string',
-        ]);
-
         // Update the main Order record
         $orders->update([
-            'status' => $validatedData['status'],
-            'total' => $validatedData['total'],
-            'subtotal' => $validatedData['subtotal'],
-            'totaldiscounts' => $validatedData['totaldiscounts'] ?? 0,
-            'direction_delivery' => $validatedData['direction_delivery'],
-            'payments_method_id' => $validatedData['payments_method_id'],
-            'user_id' => $validatedData['user_id'] ?? $orders->user_id, // Usar el valor existente si no se envía
+            'status' => $request('status'),
+            'total' => $request('total'),
+            'subtotal' => $request('subtotal'),
+            'totaldiscounts' => $request('totaldiscounts') ?? 0,
+            'direction_delivery' => $request('direction_delivery'),
+            'payments_method_id' => $request('payments_method_id'),
+            'user_id' => $request('user_id') ?? $orders->user_id, // Usar el valor existente si no se envía
         ]);
 
         // --- Synchronize Order Items ---
-        $incomingOrderItems = collect($validatedData['order_items']);
+        $incomingOrderItems = collect($request('order_items'));
         $existingOrderItemIds = $orders->orderItems->pluck('id');
 
         // IDs de los items que deben permanecer (del frontend y existen en DB)
