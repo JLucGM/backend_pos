@@ -14,6 +14,7 @@ class Order extends Model
         'status',
         'totaldiscounts',
         'subtotal',
+        'tax_amount',
         'total',
         'order_origin',
         'payments_method_id',

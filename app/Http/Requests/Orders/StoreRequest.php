@@ -25,8 +25,9 @@ class StoreRequest extends FormRequest
            'status' => 'required|string|max:255',
             'total' => 'required|numeric|min:0', // Asegura que el total sea no negativo
             'subtotal' => 'required|numeric|min:0', // Valida el subtotal
+            'tax_amount' => 'required|numeric|min:0', // AÑADIDO: Validación para el tax_amount total del pedido
             'totaldiscounts' => 'nullable|numeric|min:0', // Valida los descuentos
-            'delivery_location_id' => 'required|exists:delivery_locations,id', // Validación para delivery_location_id
+            'delivery_location_id' => 'nullable|exists:delivery_locations,id', // Validación para delivery_location_id
             'payments_method_id' => 'required|exists:payments_methods,id',
             'order_origin' => 'required|string|max:255',
             'user_id' => 'required|exists:users,id', // Añade la validación para el usuario
@@ -37,6 +38,7 @@ class StoreRequest extends FormRequest
             'order_items.*.original_display_price' => 'nullable|numeric|min:0', // Para el precio original tachado
             'order_items.*.quantity' => 'required|integer|min:1',
             'order_items.*.subtotal' => 'required|numeric|min:0',
+            'order_items.*.tax_amount' => 'required|numeric|min:0', // AÑADIDO: Validación para el tax_amount de cada ítem
             'order_items.*.combination_id' => 'nullable|exists:combinations,id', // Valida combination_id
             'order_items.*.product_details' => 'nullable|string', // Se asume que es una cadena JSON
         ];
@@ -54,9 +56,12 @@ class StoreRequest extends FormRequest
             'subtotal.required' => 'The subtotal is required.',
             'subtotal.numeric' => 'The subtotal must be a number.',
             'subtotal.min' => 'The subtotal must be at least 0.',
+            'tax_amount.required' => 'The tax amount is required.', // AÑADIDO
+            'tax_amount.numeric' => 'The tax amount must be a number.', // AÑADIDO
+            'tax_amount.min' => 'The tax amount must be at least 0.', // AÑADIDO
             'totaldiscounts.numeric' => 'The total discounts must be a number.',
             'totaldiscounts.min' => 'The total discounts must be at least 0.',
-            'delivery_location_id.required' => 'The delivery location is required.',
+            // 'delivery_location_id.required' => 'The delivery location is required.',
             'delivery_location_id.exists' => 'The selected delivery location is invalid.',
             'payments_method_id.required' => 'The payments method is required.',
             'payments_method_id.exists' => 'The selected payments method is invalid.',
@@ -84,6 +89,9 @@ class StoreRequest extends FormRequest
             'order_items.*.subtotal.required' => 'The subtotal is required.',
             'order_items.*.subtotal.numeric' => 'The subtotal must be a number.',
             'order_items.*.subtotal.min' => 'The subtotal must be at least 0.',
+            'order_items.*.tax_amount.required' => 'The item tax amount is required.', // AÑADIDO
+            'order_items.*.tax_amount.numeric' => 'The item tax amount must be a number.', // AÑADIDO
+            'order_items.*.tax_amount.min' => 'The item tax amount must be at least 0.', // AÑADIDO
             'order_items.*.combination_id.exists' => 'The selected combination is invalid.',
             'order_items.*.product_details.string' => 'The product details must be a string.',
         ];

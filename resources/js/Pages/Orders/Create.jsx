@@ -7,12 +7,13 @@ import { toast } from 'sonner';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
 export default function Create({ paymentMethods, products, users }) { // Asegúrate de recibir 'users' aquí
-    // console.log(users)
+    console.log(products)
 
     const initialValues = {
         status: 'pending', // Estado inicial por defecto
-        total: 0,
         subtotal: 0,
+        tax_amount: 0,
+        total: 0,
         totaldiscounts: 0,
         payments_method_id: paymentMethods.length > 0 ? paymentMethods[0].id : null, // Primer método de pago por defecto
         order_origin: 'web', // Origen de la orden

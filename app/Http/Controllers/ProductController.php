@@ -33,9 +33,7 @@ class ProductController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $product = Product::with('stocks', 'categories', 'media')
-            ->where('company_id', $user->company_id)
-            ->get();
+        $product = Product::with('stocks', 'categories', 'media')->get();
 
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
@@ -59,8 +57,6 @@ class ProductController extends Controller
      */
     public function store(StoreRequest $request)
     {
-        // dd($request->all()); // Keep this for debugging if needed, but it's not the issue
-
         $user = Auth::user();
 
         // Crear el producto

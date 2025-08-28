@@ -14,17 +14,15 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('status');
-            $table->string('totaldiscounts');
-            $table->string('subtotal');
-            $table->string('total');
-            // $table->string('direction_delivery')->nullable();
-            // $table->string('payment_status')->nullable();s
+            $table->decimal('totaldiscounts', 10, 2)->default(0.00);
+            $table->decimal('subtotal', 10, 2)->default(0.00);
+            $table->decimal('total', 10, 2)->default(0.00);
+            $table->decimal('tax_amount', 10, 2)->default(0.00); // Nuevo campo para el monto de impuestos
             $table->string('order_origin')->nullable();
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('payments_method_id')->nullable()->constrained();
             $table->foreignId('user_id')->nullable()->constrained();
             $table->foreignId('delivery_location_id')->nullable()->constrained('delivery_locations')->onDelete('set null');
-            // $table->foreignId('client_id')->nullable()->constrained();
             $table->timestamps();
         });
     }

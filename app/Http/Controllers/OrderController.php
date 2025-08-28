@@ -52,6 +52,7 @@ class OrderController extends Controller
             'combinations',
             'media',
             'stocks',
+            'taxes',
             'combinations',
             'combinations.combinationAttributeValue', // Cargar valores de atributos de combinaciones
             'combinations.combinationAttributeValue.attributeValue', // Cargar valores de atributos relacionados
@@ -77,8 +78,9 @@ class OrderController extends Controller
         // Crea la Orden principal
         $order = Order::create([
             'status' => $request['status'],
-            'total' => $request['total'],
+            'tax_amount' => $request['tax_amount'], // Recibe el monto TOTAL de impuestos desde la vista
             'subtotal' => $request['subtotal'],
+            'total' => $request['total'],
             'totaldiscounts' => $request['totaldiscounts'] ?? 0, // Por defecto 0 si no se proporciona
             'delivery_location_id' => $request['delivery_location_id'], // Guarda el delivery_location_id
             'payments_method_id' => $request['payments_method_id'],
@@ -95,12 +97,9 @@ class OrderController extends Controller
                 'price_product' => $itemData['product_price'], // Precio efectivo
                 'quantity' => $itemData['quantity'],
                 'subtotal' => $itemData['subtotal'],
+                'tax_amount' => $itemData['tax_amount'], // AÑADIDO: Guarda el monto de impuesto del ítem
                 'combination_id' => $itemData['combination_id'] ?? null, // Guarda combination_id si existe
                 'product_details' => $itemData['product_details'],
-                // NOTA: 'original_display_price' no se guarda directamente en OrderItem
-                // si no tienes una columna específica para ello.
-                // Si necesitas persistir el precio original, deberías añadir una columna
-                // como 'original_price_product' a tu tabla 'order_items'.
             ]);
         }
 
@@ -126,7 +125,7 @@ class OrderController extends Controller
         }
 
         // Carga las relaciones necesarias para la orden
-        $orders->load('user', 'orderItems', 'paymentMethod', 'deliveryLocation'); // Cargas relaciones de la orden
+        $orders->load('user', 'orderItems.product', 'paymentMethod', 'deliveryLocation'); // Cargas relaciones de la orden
         // Carga todos los productos con sus stocks y combinaciones
         // Asegúrate de que las relaciones 'stocks', 'combinations', 'combinationAttributeValue', 'attributeValue'
         // estén cargadas para que el frontend pueda acceder a ellas.
@@ -135,6 +134,7 @@ class OrderController extends Controller
             'combinations',
             'media',
             'stocks',
+            'taxes',
             'combinations',
             'combinations.combinationAttributeValue', // Cargar valores de atributos de combinaciones
             'combinations.combinationAttributeValue.attributeValue', // Cargar valores de atributos relacionados

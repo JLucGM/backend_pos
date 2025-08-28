@@ -33,7 +33,7 @@ export default function Create({ categories, taxes }) {
 
     const submit = (e) => {
         e.preventDefault();
-
+console.log(data)
         post(route('products.store'), {
             onSuccess: () => {
                 toast("Producto creado con éxito.");

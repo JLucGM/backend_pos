@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -11,12 +10,12 @@ import { Button } from '@/Components/ui/button';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { PlusCircle } from 'lucide-react';
 import { Checkbox } from "@/Components/ui/checkbox"
-import { Badge } from '@/Components/ui/badge';
-
+import DataTable from '@/Components/DataTable';
+import { orderItemsColumns } from './orderItemsColumns';
 
 export default function OrdersForm({ data, orders = null, products = [], users = [], paymentMethods = [], setData, errors, isDisabled = false }) {
-    console.log(products);
-    
+    // console.log(products);
+
     // Estado para el producto/combinación seleccionado en el dropdown para añadir a la orden
     const [selectedProductToAdd, setSelectedProductToAdd] = useState(null);
     // Estado para el usuario seleccionado en el dropdown
@@ -63,70 +62,72 @@ export default function OrdersForm({ data, orders = null, products = [], users =
 
     // Opciones para el select de productos, incluyendo precio y combinaciones - ¡MEMOIZADAS!
     const productOptions = useMemo(() => {
-    const options = [];
-    products.forEach(product => {
-        const originalProductPrice = parseFloat(product.product_price);
+        const options = [];
+        products.forEach(product => {
+            const originalProductPrice = parseFloat(product.product_price);
 
-        if (product.combinations && product.combinations.length > 0) {
-            product.combinations.forEach(combination => {
-                const effectivePrice = parseFloat(combination.combination_price);
-                const combinationStock = calculateStock(product, combination.id); // Stock de la combinación
+            if (product.combinations && product.combinations.length > 0) {
+                product.combinations.forEach(combination => {
+                    const effectivePrice = parseFloat(combination.combination_price);
+                    const combinationStock = calculateStock(product, combination.id); // Stock de la combinación
+
+                    // Cambia la condición para incluir productos sin stock
+                    if (combinationStock >= 0) { // Cambiado de > 0 a >= 0
+                        let combinationAttributesDisplay = '';
+                        if (combination.combination_attribute_value && Array.isArray(combination.combination_attribute_value)) {
+                            const attributeNames = combination.combination_attribute_value.map(
+                                cav => cav.attribute_value.attribute_value_name
+                            );
+                            if (attributeNames.length > 0) {
+                                combinationAttributesDisplay = attributeNames.join(', ');
+                            }
+                        }
+                        const barcode = product.stocks.find(s => s.combination_id === combination.id)?.product_barcode || null;
+
+                        options.push({
+                            value: product.id,
+                            original_product_name: product.product_name,
+                            combination_attributes_display: combinationAttributesDisplay,
+                            barcode: barcode,
+                            effective_price: effectivePrice,
+                            original_display_price: originalProductPrice,
+                            combination_id: combination.id,
+                            combination_details: combination,
+                            is_combination: true,
+                            stock: combinationStock,
+                            tax_rate: product.taxes ? parseFloat(product.taxes.tax_rate) : 0, // AÑADIDO: Tasa de impuesto del producto
+                            label: `${product.product_name} ${combinationAttributesDisplay} ${barcode || ''} ${effectivePrice.toFixed(2)}`.toLowerCase()
+                        });
+                    }
+                });
+            } else {
+                const effectivePrice = (product.product_price_discount !== null && product.product_price_discount !== undefined)
+                    ? parseFloat(product.product_price_discount)
+                    : originalProductPrice;
+
+                const productStock = calculateStock(product); // Stock del producto base
 
                 // Cambia la condición para incluir productos sin stock
-                if (combinationStock >= 0) { // Cambiado de > 0 a >= 0
-                    let combinationAttributesDisplay = '';
-                    if (combination.combination_attribute_value && Array.isArray(combination.combination_attribute_value)) {
-                        const attributeNames = combination.combination_attribute_value.map(
-                            cav => cav.attribute_value.attribute_value_name
-                        );
-                        if (attributeNames.length > 0) {
-                            combinationAttributesDisplay = attributeNames.join(', ');
-                        }
-                    }
-                    const barcode = product.stocks.find(s => s.combination_id === combination.id)?.product_barcode || null;
-
+                if (productStock >= 0) { // Cambiado de > 0 a >= 0
+                    const barcode = product.stocks.find(s => s.combination_id === null)?.product_barcode || null;
                     options.push({
                         value: product.id,
                         original_product_name: product.product_name,
-                        combination_attributes_display: combinationAttributesDisplay,
+                        combination_attributes_display: null,
                         barcode: barcode,
                         effective_price: effectivePrice,
-                        original_display_price: originalProductPrice,
-                        combination_id: combination.id,
-                        combination_details: combination,
-                        is_combination: true,
-                        stock: combinationStock,
-                        label: `${product.product_name} ${combinationAttributesDisplay} ${barcode || ''} ${effectivePrice.toFixed(2)}`.toLowerCase()
+                        original_display_price: (effectivePrice !== originalProductPrice) ? originalProductPrice : null,
+                        is_combination: false,
+                        stock: productStock,
+                        tax_rate: product.taxes ? parseFloat(product.taxes.tax_rate) : 0, // AÑADIDO: Tasa de impuesto del producto
+                        label: `${product.product_name} ${barcode || ''} ${effectivePrice.toFixed(2)}`.toLowerCase()
                     });
                 }
-            });
-        } else {
-            const effectivePrice = (product.product_price_discount !== null && product.product_price_discount !== undefined)
-                ? parseFloat(product.product_price_discount)
-                : originalProductPrice;
-
-            const productStock = calculateStock(product); // Stock del producto base
-
-            // Cambia la condición para incluir productos sin stock
-            if (productStock >= 0) { // Cambiado de > 0 a >= 0
-                const barcode = product.stocks.find(s => s.combination_id === null)?.product_barcode || null;
-                options.push({
-                    value: product.id,
-                    original_product_name: product.product_name,
-                    combination_attributes_display: null,
-                    barcode: barcode,
-                    effective_price: effectivePrice,
-                    original_display_price: (effectivePrice !== originalProductPrice) ? originalProductPrice : null,
-                    is_combination: false,
-                    stock: productStock,
-                    label: `${product.product_name} ${barcode || ''} ${effectivePrice.toFixed(2)}`.toLowerCase()
-                });
             }
-        }
-    });
-    return options;
-}, [products]);
-console.log("productOptions", productOptions);
+        });
+        return options;
+    }, [products]);
+
     // Función para formatear la etiqueta de la opción en el Select
     const formatProductOptionLabel = ({ original_product_name, combination_attributes_display, barcode, effective_price, original_display_price }) => (
         <div className="flex flex-col">
@@ -227,40 +228,46 @@ console.log("productOptions", productOptions);
     // Maneja la adición de un producto a la lista de order_items
     const handleAddProduct = () => {
         if (selectedProductToAdd) {
+            const taxRate = selectedProductToAdd.tax_rate || 0;
+
+
             const existingItemIndex = data.order_items.findIndex(
                 item => item.product_id === selectedProductToAdd.value &&
                     item.combination_id === (selectedProductToAdd.is_combination ? selectedProductToAdd.combination_id : null)
             );
 
-            let productDetailsString = null;
-
-            if (selectedProductToAdd.is_combination) {
-                // product_details contendrá SÓLO los atributos (ej., "rojo y m")
-                productDetailsString = selectedProductToAdd.combination_attributes_display || '';
-            } else {
-                // Para productos sin combinación, product_details debe ser null
-                productDetailsString = null;
-            }
-
-
             if (existingItemIndex > -1) {
-                const updatedItems = data.order_items.map((item, index) =>
-                    index === existingItemIndex
-                        ? { ...item, quantity: item.quantity + 1, subtotal: (item.quantity + 1) * parseFloat(item.product_price || 0) } // Ensure product_price is a number
-                        : item
-                );
+                const updatedItems = data.order_items.map((item, index) => {
+                    if (index === existingItemIndex) {
+                        // Aquí debes usar item.tax_rate para calcular el impuesto
+                        const taxRate = item.tax_rate || 0;
+                        const newQuantity = item.quantity + 1;
+                        const newSubtotal = newQuantity * parseFloat(item.product_price || 0);
+                        const newTaxAmount = newSubtotal * (taxRate / 100);
+                        return {
+                            ...item,
+                            quantity: newQuantity,
+                            subtotal: newSubtotal,
+                            tax_amount: newTaxAmount,
+                            tax_rate: taxRate
+                        };
+                    }
+                    return item;
+                });
                 setData('order_items', updatedItems);
             } else {
                 const newItem = {
                     product_id: selectedProductToAdd.value,
-                    name_product: selectedProductToAdd.original_product_name, // Usar el nombre original del producto
-                    product_price: selectedProductToAdd.effective_price, // Usar effective_price
-                    original_display_price: selectedProductToAdd.original_display_price,
+                    name_product: selectedProductToAdd.original_product_name,
+                    product_price: selectedProductToAdd.effective_price,
                     quantity: 1,
-                    subtotal: selectedProductToAdd.effective_price, // Usar effective_price
+                    subtotal: selectedProductToAdd.effective_price,
+                    tax_rate: taxRate, // Tasa de impuesto del producto
+                    tax_amount: selectedProductToAdd.effective_price * (taxRate / 100), // Monto de impuesto para el ítem
                     combination_id: selectedProductToAdd.is_combination ? selectedProductToAdd.combination_id : null,
-                    product_details: productDetailsString, // Contiene solo los atributos para combinaciones
-                    is_combination: selectedProductToAdd.is_combination
+                    product_details: selectedProductToAdd.is_combination
+                        ? JSON.stringify(selectedProductToAdd.combination_attributes_display || '') // <-- CAMBIO AQUÍ
+                        : null
                 };
                 setData('order_items', [...data.order_items, newItem]);
             }
@@ -271,11 +278,20 @@ console.log("productOptions", productOptions);
     // Maneja el cambio de cantidad para un item de la orden
     const handleQuantityChange = (index, newQuantity) => {
         const quantity = Math.max(1, parseInt(newQuantity) || 1);
-        const updatedItems = data.order_items.map((item, i) =>
-            i === index
-                ? { ...item, quantity: quantity, subtotal: quantity * parseFloat(item.product_price || 0) } // Ensure product_price is a number
-                : item
-        );
+        const updatedItems = data.order_items.map((item, i) => {
+            if (i === index) {
+                const newSubtotal = quantity * parseFloat(item.product_price || 0);
+                const taxRate = item.tax_rate || 0;
+                const newTaxAmount = newSubtotal * (taxRate / 100); // Recalcula tax_amount del ítem
+                return {
+                    ...item,
+                    quantity: quantity,
+                    subtotal: newSubtotal,
+                    tax_amount: newTaxAmount // Actualiza tax_amount del ítem
+                };
+            }
+            return item;
+        });
         setData('order_items', updatedItems);
     };
 
@@ -285,22 +301,22 @@ console.log("productOptions", productOptions);
         setData('order_items', updatedItems);
     };
 
-    // Efecto para recalcular el total y subtotal cada vez que order_items cambia
+    // Efecto para recalcular el total, subtotal e impuestos cada vez que order_items cambia
     useEffect(() => {
-        // Convertir item.subtotal a número antes de sumarlo
-        const newSubtotal = data.order_items.reduce((sum, item) => sum + parseFloat(item.subtotal || 0), 0);
+    const newSubtotal = data.order_items.reduce((sum, item) => sum + parseFloat(item.subtotal || 0), 0);
+    const newTotalTaxAmount = data.order_items.reduce((sum, item) => sum + parseFloat(item.tax_amount || 0), 0);
 
-        // Asegurarse de que data.subtotal sea un número antes de comparar
-        if (newSubtotal.toFixed(2) !== (parseFloat(data.subtotal) || 0).toFixed(2)) {
-            // console.log("Recalculando subtotal:", newSubtotal);
-            setData(prevData => ({
-                ...prevData,
-                subtotal: newSubtotal,
-                total: newSubtotal,
-                totaldiscounts: 0,
-            }));
-        }
-    }, [data.order_items, setData]);
+    console.log('Order Items:', data.order_items);
+    console.log('Subtotal:', newSubtotal, 'Tax total:', newTotalTaxAmount);
+
+    setData(prevData => ({
+        ...prevData,
+        subtotal: newSubtotal,
+        tax_amount: newTotalTaxAmount,
+        total: newSubtotal + newTotalTaxAmount - parseFloat(prevData.totaldiscounts || 0),
+    }));
+}, [data.order_items, setData]);
+
 
     return (
         <>
@@ -380,12 +396,15 @@ console.log("productOptions", productOptions);
                                             <span className="text-gray-900 dark:text-gray-100">{orders.user.identification}</span>
                                         </>
                                     )}
-                                    {orders.delivery_location.address_line_1 && (
+                                    {orders && orders.delivery_location ? ( // Verifica si delivery_location existe
                                         <>
                                             <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Dirección:</p>
                                             <span className="text-gray-900 dark:text-gray-100">{orders.delivery_location.address_line_1}</span>
                                         </>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground mt-1">No hay dirección de entrega disponible.</p>
                                     )}
+
                                 </div>
                             ) : ( // Create mode
                                 <>
@@ -490,6 +509,12 @@ console.log("productOptions", productOptions);
                         </Button>
                     </div>
 
+{/* <DataTable
+    columns={orderItemsColumns}
+    data={data.order_items || []}
+
+  /> */}
+
                     <Table>
                         <TableCaption>Detalles de los productos en la orden</TableCaption>
                         <TableHeader>
@@ -520,9 +545,9 @@ console.log("productOptions", productOptions);
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            {item.original_display_price && (parseFloat(item.original_display_price) || 0) !== (parseFloat(item.product_price) || 0) ? (
+                                            {/* {item.original_display_price && (parseFloat(item.original_display_price) || 0) !== (parseFloat(item.product_price) || 0) ? (
                                                 <span className="line-through text-gray-500 mr-2">${(parseFloat(item.original_display_price) || 0).toFixed(2)}</span>
-                                            ) : null}
+                                            ) : null} */}
                                             <span>${(parseFloat(item.product_price) || 0).toFixed(2)}</span>
                                         </TableCell>
                                         <TableCell>
@@ -548,12 +573,18 @@ console.log("productOptions", productOptions);
                             )}
                         </TableBody>
 
-
                         <tfoot>
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-bold">Subtotal</TableCell>
                                 <TableCell className="font-bold">
                                     <span>${(parseFloat(data.subtotal) || 0).toFixed(2)}</span>
+                                </TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell colSpan="3" className="text-right font-bold">Impuestos</TableCell>
+                                <TableCell className="font-bold">
+                                    <span>${(parseFloat(data.tax_amount) || 0).toFixed(2)}</span> {/* Muestra el tax_amount existente */}
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
@@ -567,13 +598,16 @@ console.log("productOptions", productOptions);
                             <TableRow className="bg-gray-100 dark:bg-gray-700">
                                 <TableCell colSpan="3" className="text-right font-bold text-lg">Total</TableCell>
                                 <TableCell className="font-bold text-lg">
-                                    <span>${(parseFloat(data.total) || 0).toFixed(2)}</span>
+                                    {/* <span>${(parseFloat(data.total) + parseFloat(data.tax_amount) - parseFloat(data.totaldiscounts) || 0).toFixed(2)}</span> <br /> */}
+                                    <span>${(parseFloat(data.subtotal) + parseFloat(data.tax_amount) - parseFloat(data.totaldiscounts)).toFixed(2)}</span>
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                         </tfoot>
-                    </Table>
 
+
+                        {/* <span>${(parseFloat(data.tax_amount)).toFixed(2)}</span> */}
+                    </Table>
                 </DivSection>
             </div>
         </>

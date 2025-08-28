@@ -34,7 +34,6 @@ class Tax extends Model
 
     protected static function booted()
     {
-        // Registra tu ámbito global aquí
         static::addGlobalScope(new CompanyScope);
     }
 

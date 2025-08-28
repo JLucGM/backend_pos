@@ -40,10 +40,10 @@ export default function ProductsForm({ data, categories, taxes, product = null, 
         // Show attributes section if product has combinations (for edit)
         // or if attributes are already defined in data (e.g., after adding them in create)
         if (product && product.combinations.length > 0 || (data.attribute_names && data.attribute_names.length > 0)) {
-            setShowAttributes(false);
+            setShowAttributes(true);
         } else {
             // For new products or products without attributes, ensure it's false initially
-            setShowAttributes(true);
+            setShowAttributes(false);
         }
     }, [product, data.attribute_names]); // Depend on product and data.attribute_names
 
