@@ -132,6 +132,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{orders}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::post('orders/{orders}', [OrderController::class, 'update'])->name('orders.update');
+    Route::delete('orders/{orders}', [OrderController::class, 'destroy'])->name('orders.destroy');
 
     Route::get('discounts', [DiscountController::class, 'index'])->name('discounts.index');
     Route::get('discounts/create', [DiscountController::class, 'create'])->name('discounts.create');

@@ -1,10 +1,11 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
 import { DatePicker } from '@/Components/DatePicker';
+import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 
 export default function DiscountsForm({ data, products, categories, setData, errors }) {
     const handleSelectChange = (selectedOptions, name) => {
@@ -17,15 +18,8 @@ export default function DiscountsForm({ data, products, categories, setData, err
         setData(name, value);
     };
 
-    const productOptions = products.map(product => ({
-        value: product.id,
-        label: product.product_name,
-    }));
-
-    const categoryOptions = categories.map(category => ({
-        value: category.id,
-        label: category.category_name,
-    }));
+    const categoryOptions = useMemo(() => mapToSelectOptions(categories, 'id', 'category_name'), [categories]);
+    const productOptions = useMemo(() => mapToSelectOptions(products, 'id', 'product_name'), [products]);
 
     const appliesToOptions = [
         { value: 'product', label: 'Producto' },

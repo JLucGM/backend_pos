@@ -125,7 +125,7 @@ class OrderController extends Controller
         }
 
         // Carga las relaciones necesarias para la orden
-        $orders->load('user', 'orderItems.product', 'paymentMethod', 'deliveryLocation'); // Cargas relaciones de la orden
+        $orders->load('user', 'orderItems.product.taxes', 'paymentMethod', 'deliveryLocation'); // Cargas relaciones de la orden
         // Carga todos los productos con sus stocks y combinaciones
         // Asegúrate de que las relaciones 'stocks', 'combinations', 'combinationAttributeValue', 'attributeValue'
         // estén cargadas para que el frontend pueda acceder a ellas.
@@ -166,50 +166,40 @@ class OrderController extends Controller
             abort(403, 'No tienes permiso para esta operación.');
         }
 
-        // Update the main Order record
         $orders->update([
-            'status' => $request('status'),
-            'total' => $request('total'),
-            'subtotal' => $request('subtotal'),
-            'totaldiscounts' => $request('totaldiscounts') ?? 0,
-            'direction_delivery' => $request('direction_delivery'),
-            'payments_method_id' => $request('payments_method_id'),
-            'user_id' => $request('user_id') ?? $orders->user_id, // Usar el valor existente si no se envía
+            'status' => $request->input('status'),
+            'total' => $request->input('total'),
+            'subtotal' => $request->input('subtotal'),
+            'totaldiscounts' => $request->input('totaldiscounts') ?? 0,
+            'direction_delivery' => $request->input('direction_delivery'),
+            'payments_method_id' => $request->input('payments_method_id'),
+            'user_id' => $request->input('user_id') ?? $orders->user_id,
         ]);
 
-        // --- Synchronize Order Items ---
-        $incomingOrderItems = collect($request('order_items'));
-        $existingOrderItemIds = $orders->orderItems->pluck('id');
-
-        // IDs de los items que deben permanecer (del frontend y existen en DB)
+        $incomingOrderItems = collect($request->input('order_items'));
         $itemsToKeepIds = $incomingOrderItems->filter(function ($item) {
-            // Un item existente tendrá un ID numérico (no contiene guiones como un UUID)
             return isset($item['id']) && !str_contains($item['id'], '-');
         })->pluck('id');
 
-        // Eliminar items que ya no están en la solicitud
         $orders->orderItems()->whereNotIn('id', $itemsToKeepIds)->delete();
 
-        // Crear o actualizar items de la orden
         foreach ($incomingOrderItems as $itemData) {
-            // Si el item tiene un ID y no es un UUID temporal, es un item existente
             if (isset($itemData['id']) && !str_contains($itemData['id'], '-')) {
-                // Item existente: Buscar y actualizar
                 $orderItem = OrderItem::find($itemData['id']);
                 if ($orderItem) {
                     $orderItem->update([
-                        'product_id' => $itemData['product_id'] ?? $orderItem->product_id, // Usar valor existente si no se envía
-                        'combination_id' => $itemData['combination_id'] ?? $orderItem->combination_id, // Usar valor existente si no se envía
-                        'name_product' => $itemData['name_product'] ?? $orderItem->name_product, // Usar valor existente si no se envía
-                        'price_product' => $itemData['product_price'] ?? $orderItem->price_product, // Usar valor existente si no se envía
-                        'subtotal' => $itemData['subtotal'] ?? $orderItem->subtotal, // Usar valor existente si no se envía
-                        'quantity' => $itemData['quantity'] ?? $orderItem->quantity, // Usar valor existente si no se envía
-                        'product_details' => $itemData['product_details'] ?? $orderItem->product_details, // Usar valor existente si no se envía
+                        'product_id' => $itemData['product_id'] ?? $orderItem->product_id,
+                        'combination_id' => $itemData['combination_id'] ?? $orderItem->combination_id,
+                        'name_product' => $itemData['name_product'] ?? $orderItem->name_product,
+                        'price_product' => $itemData['product_price'] ?? $orderItem->price_product,
+                        'subtotal' => $itemData['subtotal'] ?? $orderItem->subtotal,
+                        'quantity' => $itemData['quantity'] ?? $orderItem->quantity,
+                        'product_details' => $itemData['product_details'] ?? $orderItem->product_details,
+                        'tax_rate' => $itemData['tax_rate'] ?? $orderItem->tax_rate,
+                        'tax_amount' => $itemData['tax_amount'] ?? $orderItem->tax_amount,
                     ]);
                 }
             } else {
-                // Nuevo item: Crear
-                // Para nuevos items, los campos requeridos deben estar presentes desde el frontend
                 $orders->orderItems()->create([
                     'product_id' => $itemData['product_id'],
                     'combination_id' => $itemData['combination_id'] ?? null,
@@ -218,13 +208,14 @@ class OrderController extends Controller
                     'subtotal' => $itemData['subtotal'],
                     'quantity' => $itemData['quantity'],
                     'product_details' => $itemData['product_details'] ?? null,
+                    'tax_rate' => $itemData['tax_rate'] ?? 0,
+                    'tax_amount' => $itemData['tax_amount'] ?? 0,
                 ]);
             }
         }
 
         return redirect()->route('orders.edit', $orders)->with('success', 'Orden actualizada con éxito.');
     }
-
 
     /**
      * Remove the specified resource from storage.

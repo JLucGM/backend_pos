@@ -4,17 +4,15 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { customStyles } from '@/hooks/custom-select';
+import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 import { useMemo } from 'react';
 import Select from 'react-select';
 
 export default function GiftCardsForm({ data, users, setData, errors }) {
 
-    const userOptions = users.map(user => ({
-        value: user.id,
-        label: user.name
-    }));
+    const userOptions = useMemo(() => mapToSelectOptions(users, 'id', 'name'), [users]);
 
-    const selectedUser   = useMemo(() => {
+    const selectedUser = useMemo(() => {
         return userOptions.find(option => option.value === data.user_id);
     }, [data.user_id, userOptions]);
 

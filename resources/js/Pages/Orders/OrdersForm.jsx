@@ -1,47 +1,26 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import TextInput from '@/Components/TextInput';
 import DivSection from '@/Components/ui/div-section';
 import { customStyles } from '@/hooks/custom-select';
 import Select from 'react-select';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow, } from "@/Components/ui/table";
+import { Table, TableBody, TableCell, TableRow, } from "@/Components/ui/table";
 import { Button } from '@/Components/ui/button';
-import { TrashIcon } from '@heroicons/react/24/outline';
 import { PlusCircle } from 'lucide-react';
-import { Checkbox } from "@/Components/ui/checkbox"
 import DataTable from '@/Components/DataTable';
-import { orderItemsColumns } from './orderItemsColumns';
+import { getOrderItemsColumns } from './orderItemsColumns';
+import UserInfo from '@/Components/UserInfo';
+import { formatDate } from '@/utils/dateFormatter';
+import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 
 export default function OrdersForm({ data, orders = null, products = [], users = [], paymentMethods = [], setData, errors, isDisabled = false }) {
-    // console.log(products);
 
-    // Estado para el producto/combinación seleccionado en el dropdown para añadir a la orden
     const [selectedProductToAdd, setSelectedProductToAdd] = useState(null);
-    // Estado para el usuario seleccionado en el dropdown
     const [selectedUser, setSelectedUser] = useState(null);
     const [deliveryLocations, setDeliveryLocations] = useState([]);
 
-    // Función para formatear fechas, maneja valores nulos
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
-        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        return new Date(dateString).toLocaleDateString('es-ES', options);
-    };
-
-    // Opciones para el select de métodos de pago
-    const paymentOptions = paymentMethods.map(method => ({
-        value: method.id,
-        label: method.payment_method_name
-    }));
-
-    // Opciones para el select de usuarios - ¡MEMOIZADAS!
-    const userOptions = useMemo(() => {
-        return users.map(user => ({
-            value: user.id,
-            label: `${user.name} (${user.email || 'Sin email'})`
-        }));
-    }, [users]); // Dependencia: solo se recalcula si la prop 'users' cambia
+    const paymentOptions = useMemo(() => mapToSelectOptions(paymentMethods, 'id', 'payment_method_name'), [paymentMethods]);
+    const userOptions = useMemo(() => mapToSelectOptions(users, 'id', 'name'), [users]);
 
     // Helper para calcular el stock de un producto o combinación
     const calculateStock = (product, combinationId = null) => {
@@ -160,9 +139,9 @@ export default function OrdersForm({ data, orders = null, products = [], users =
     // Opciones para el select de estado de la orden
     const statusOptions = [
         { value: 'pending', label: 'Pendiente' },
+        { value: 'processing', label: 'Procesando' },
         { value: 'completed', label: 'Completado' },
         { value: 'cancelled', label: 'Cancelado' },
-        { value: 'processing', label: 'Procesando' },
         { value: 'shipped', label: 'Enviado' },
     ];
 
@@ -303,20 +282,22 @@ export default function OrdersForm({ data, orders = null, products = [], users =
 
     // Efecto para recalcular el total, subtotal e impuestos cada vez que order_items cambia
     useEffect(() => {
-    const newSubtotal = data.order_items.reduce((sum, item) => sum + parseFloat(item.subtotal || 0), 0);
-    const newTotalTaxAmount = data.order_items.reduce((sum, item) => sum + parseFloat(item.tax_amount || 0), 0);
+        const newSubtotal = data.order_items.reduce((sum, item) => sum + parseFloat(item.subtotal || 0), 0);
+        const newTotalTaxAmount = data.order_items.reduce((sum, item) => sum + parseFloat(item.tax_amount || 0), 0);
 
-    console.log('Order Items:', data.order_items);
-    console.log('Subtotal:', newSubtotal, 'Tax total:', newTotalTaxAmount);
+        setData(prevData => ({
+            ...prevData,
+            subtotal: newSubtotal,
+            tax_amount: newTotalTaxAmount,
+            total: newSubtotal + newTotalTaxAmount - parseFloat(prevData.totaldiscounts || 0),
+        }));
+    }, [data.order_items, setData]);
 
-    setData(prevData => ({
-        ...prevData,
-        subtotal: newSubtotal,
-        tax_amount: newTotalTaxAmount,
-        total: newSubtotal + newTotalTaxAmount - parseFloat(prevData.totaldiscounts || 0),
-    }));
-}, [data.order_items, setData]);
-
+    const orderItemsColumns = useMemo(() => getOrderItemsColumns({
+        handleQuantityChange,
+        handleRemoveItem,
+        isDisabled,
+    }), [handleQuantityChange, handleRemoveItem, isDisabled]);
 
     return (
         <>
@@ -372,114 +353,18 @@ export default function OrdersForm({ data, orders = null, products = [], users =
 
                 <div className="col-span-full md:col-span-1 ">
                     <DivSection >
-                        <div>
-                            <h2 className='font-semibold text-lg'>Usuario</h2>
-                            {orders && orders.user ? ( // Check if orders and orders.user exist (edit mode)
-                                <div className="mt-2">
-                                    <p className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre:</p>
-                                    <span className="text-gray-900 dark:text-gray-100">{orders.user.name}</span>
-                                    {orders.user.email && (
-                                        <>
-                                            <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Email:</p>
-                                            <span className="text-gray-900 dark:text-gray-100">{orders.user.email}</span>
-                                        </>
-                                    )}
-                                    {orders.user.phone && (
-                                        <>
-                                            <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Teléfono:</p>
-                                            <span className="text-gray-900 dark:text-gray-100">{orders.user.phone}</span>
-                                        </>
-                                    )}
-                                    {orders.user.identification && (
-                                        <>
-                                            <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">identification:</p>
-                                            <span className="text-gray-900 dark:text-gray-100">{orders.user.identification}</span>
-                                        </>
-                                    )}
-                                    {orders && orders.delivery_location ? ( // Verifica si delivery_location existe
-                                        <>
-                                            <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Dirección:</p>
-                                            <span className="text-gray-900 dark:text-gray-100">{orders.delivery_location.address_line_1}</span>
-                                        </>
-                                    ) : (
-                                        <p className="text-sm text-muted-foreground mt-1">No hay dirección de entrega disponible.</p>
-                                    )}
-
-                                </div>
-                            ) : ( // Create mode
-                                <>
-                                    <div className="mt-2">
-                                        <InputLabel htmlFor="user_id" value="Seleccionar Usuario" />
-                                        <Select
-                                            id="user_id"
-                                            name="user_id"
-                                            options={userOptions}
-                                            value={selectedUser}
-                                            onChange={handleUserChange}
-                                            styles={customStyles}
-                                            placeholder="Buscar o seleccionar usuario..."
-                                            isClearable={true}
-                                            isDisabled={isDisabled}
-                                        />
-                                        <InputError message={errors.user_id} className="mt-2" />
-                                    </div>
-                                    <div className="mt-4">
-
-                                        <div className="mt-4">
-                                            <InputLabel htmlFor="delivery_location_id" value="Direcciones de Entrega" />
-                                            {deliveryLocations.length > 0 ? (
-                                                <div className="space-y-3 mt-2">
-                                                    {deliveryLocations.map((location) => (
-                                                        <div key={location.id} className="flex items-center space-x-2">
-                                                            <Checkbox
-                                                                id={`location-${location.id}`}
-                                                                checked={data.delivery_location_id === location.id}
-                                                                onCheckedChange={(checked) => {
-                                                                    setData('delivery_location_id', checked ? location.id : null)
-                                                                }}
-                                                                disabled={isDisabled}
-                                                            />
-                                                            <label
-                                                                htmlFor={`location-${location.id}`}
-                                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1"
-                                                            >
-                                                                <div className="flex flex-col">
-                                                                    <div className="gap-2">
-                                                                        {!!location.is_default && (
-                                                                            <p className="text-muted-foreground text-xs">
-                                                                                Dirección predeterminada
-                                                                            </p>
-                                                                        )}
-                                                                        <p className="font-medium">
-                                                                            {location.address_line_1}
-                                                                            {location.address_line_2 && `, ${location.address_line_2}`}
-                                                                        </p>
-                                                                    </div>
-                                                                    {location.postal_code && (
-                                                                        <span className="text-muted-foreground text-xs">
-                                                                            Código postal: {location.postal_code}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            </label>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <p className="text-sm text-muted-foreground mt-1">
-                                                    {data.user_id
-                                                        ? "Este usuario no tiene direcciones registradas"
-                                                        : "Seleccione un usuario para ver sus direcciones"}
-                                                </p>
-                                            )}
-
-                                            <InputError message={errors.delivery_location_id} className="mt-2" />
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-
+                        <UserInfo
+                            orders={orders}
+                            userOptions={userOptions}
+                            selectedUser={selectedUser}
+                            handleUserChange={handleUserChange}
+                            customStyles={customStyles}
+                            deliveryLocations={deliveryLocations}
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                            isDisabled={isDisabled}
+                        />
                     </DivSection>
                 </div>
 
@@ -509,105 +394,44 @@ export default function OrdersForm({ data, orders = null, products = [], users =
                         </Button>
                     </div>
 
-{/* <DataTable
-    columns={orderItemsColumns}
-    data={data.order_items || []}
-
-  /> */}
+                    <DataTable
+                        columns={orderItemsColumns}
+                        data={data.order_items || []}
+                    />
 
                     <Table>
-                        <TableCaption>Detalles de los productos en la orden</TableCaption>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Producto</TableHead>
-                                <TableHead className="w-24">Cantidad</TableHead>
-                                <TableHead>Precio</TableHead>
-                                <TableHead>Subtotal</TableHead>
-                                <TableHead className="text-right">Acciones</TableHead>
-                            </TableRow>
-                        </TableHeader>
                         <TableBody>
-                            {data.order_items && data.order_items.length > 0 ? (
-                                data.order_items.map((item, index) => (
-                                    <TableRow key={`${item.product_id}-${item.combination_id || 'no-combo'}-${index}`}>
-                                        <TableCell className="capitalize flex flex-col">
-                                            <p className='font-bold'>{item.name_product}</p>
-                                            <p className='text-sm text-gray-500'>{item.product_details || ''}</p>
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextInput
-                                                type="number"
-                                                min="1"
-                                                value={item.quantity}
-                                                onChange={(e) => handleQuantityChange(index, e.target.value)}
-                                                className="w-20"
-                                                disabled={isDisabled}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            {/* {item.original_display_price && (parseFloat(item.original_display_price) || 0) !== (parseFloat(item.product_price) || 0) ? (
-                                                <span className="line-through text-gray-500 mr-2">${(parseFloat(item.original_display_price) || 0).toFixed(2)}</span>
-                                            ) : null} */}
-                                            <span>${(parseFloat(item.product_price) || 0).toFixed(2)}</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span>${(parseFloat(item.subtotal) || 0).toFixed(2)}</span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button
-                                                variant="link"
-                                                type="button"
-                                                onClick={() => handleRemoveItem(index)}
-                                            >
-                                                <TrashIcon className="size-4" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan="5" className="text-center text-gray-500 dark:text-gray-400">
-                                        No hay productos en la orden. Agrega algunos.
-                                    </TableCell>
-                                </TableRow>
-                            )}
+                        <TableRow>
+                            <TableCell colSpan="3" className="text-right font-bold">Subtotal</TableCell>
+                            <TableCell className="font-bold">
+                                <span>${(parseFloat(data.subtotal) || 0).toFixed(2)}</span>
+                            </TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell colSpan="3" className="text-right font-bold">Impuestos</TableCell>
+                            <TableCell className="font-bold">
+                                <span>${(parseFloat(data.tax_amount) || 0).toFixed(2)}</span>
+                            </TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell colSpan="3" className="text-right font-bold">Descuentos</TableCell>
+                            <TableCell className="font-bold">
+                                <span>-${(parseFloat(data.totaldiscounts) || 0).toFixed(2)}</span>
+                            </TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                        <TableRow className="bg-gray-100 dark:bg-gray-700">
+                            <TableCell colSpan="3" className="text-right font-bold text-lg">Total</TableCell>
+                            <TableCell className="font-bold text-lg">
+                                <span>${(parseFloat(data.subtotal) + parseFloat(data.tax_amount) - parseFloat(data.totaldiscounts)).toFixed(2)}</span>
+                            </TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
                         </TableBody>
-
-                        <tfoot>
-                            <TableRow>
-                                <TableCell colSpan="3" className="text-right font-bold">Subtotal</TableCell>
-                                <TableCell className="font-bold">
-                                    <span>${(parseFloat(data.subtotal) || 0).toFixed(2)}</span>
-                                </TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell colSpan="3" className="text-right font-bold">Impuestos</TableCell>
-                                <TableCell className="font-bold">
-                                    <span>${(parseFloat(data.tax_amount) || 0).toFixed(2)}</span> {/* Muestra el tax_amount existente */}
-                                </TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell colSpan="3" className="text-right font-bold">Descuentos</TableCell>
-                                <TableCell className="font-bold">
-                                    <span>-${(parseFloat(data.totaldiscounts) || 0).toFixed(2)}</span>
-                                </TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                            <TableRow className="bg-gray-100 dark:bg-gray-700">
-                                <TableCell colSpan="3" className="text-right font-bold text-lg">Total</TableCell>
-                                <TableCell className="font-bold text-lg">
-                                    {/* <span>${(parseFloat(data.total) + parseFloat(data.tax_amount) - parseFloat(data.totaldiscounts) || 0).toFixed(2)}</span> <br /> */}
-                                    <span>${(parseFloat(data.subtotal) + parseFloat(data.tax_amount) - parseFloat(data.totaldiscounts)).toFixed(2)}</span>
-                                </TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                        </tfoot>
-
-
-                        {/* <span>${(parseFloat(data.tax_amount)).toFixed(2)}</span> */}
                     </Table>
+
                 </DivSection>
             </div>
         </>

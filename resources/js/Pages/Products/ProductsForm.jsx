@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import InputError from '@/Components/InputError';
@@ -15,6 +15,7 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import { useForm } from '@inertiajs/react';
 import Checkbox from '@/Components/Checkbox';
 import TextAreaRich from '@/Components/ui/TextAreaRich';
+import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 
 export default function ProductsForm({ data, categories, taxes, product = null, setData, errors }) {
     const animatedComponents = makeAnimated();
@@ -23,17 +24,8 @@ export default function ProductsForm({ data, categories, taxes, product = null, 
     const [showAttributes, setShowAttributes] = useState(false);
     const [localErrors, setLocalErrors] = useState({}); // New state for local validation errors
 
-    // Options for category select input
-    const categoryOptions = categories.map(category => ({
-        value: category.id,
-        label: category.category_name
-    }));
-
-    // Options for tax select input
-    const taxOptions = taxes.map(tax => ({
-        value: tax.id,
-        label: tax.tax_name + (tax.tax_rate ? ` (${tax.tax_rate}%)` : '')
-    }));
+    const categoryOptions = useMemo(() => mapToSelectOptions(categories, 'id', 'category_name'), [categories]);
+    const taxOptions = useMemo(() => mapToSelectOptions(taxes, 'id', tax => `${tax.tax_name} (${tax.tax_rate}%)`), [taxes]);
 
     // Effect to determine if attributes section should be shown
     useEffect(() => {

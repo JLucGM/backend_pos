@@ -39,6 +39,10 @@ class UpdateRequest extends FormRequest
             'order_items.*.subtotal' => 'nullable|numeric|min:0', // 'nullable'
             'order_items.*.combination_id' => 'nullable|exists:combinations,id',
             'order_items.*.product_details' => 'nullable|string',
+
+            'order_items.*.tax_rate' => 'required|numeric|min:0',       // <-- Añadido
+        'order_items.*.tax_amount' => 'required|numeric|min:0',     // <-- Añadido
+
         ];
     }
 
@@ -78,7 +82,14 @@ class UpdateRequest extends FormRequest
             'order_items.*.subtotal.min' => 'The subtotal must be at least 0.',
             'order_items.*.combination_id.exists' => 'The selected combination is invalid.',
             'order_items.*.product_details.string' => 'The product details must be a string.',
+
+            'tax_rate.required' => 'La tasa de impuesto es requerida para cada ítem.',
+'tax_rate.numeric' => 'La tasa de impuesto debe ser un número válido.',
+'tax_rate.min' => 'La tasa de impuesto no puede ser negativa.',
+'tax_amount.required' => 'El monto de impuesto es requerido para cada ítem.',
+'tax_amount.numeric' => 'El monto de impuesto debe ser un número válido.',
+'tax_amount.min' => 'El monto de impuesto no puede ser negativo.',
+
         ];
     }
-
 }

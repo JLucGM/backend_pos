@@ -13,7 +13,7 @@ const OrdersForm = lazy(() => import('./OrdersForm'));
 
 // Asegúrate de recibir 'products' y 'users' como props aquí
 export default function Edit({ orders, paymentMethods, products, users }) {
-    // console.log(orders, products); // Para depuración
+    // console.log(orders); // Para depuración
 
     const initialValues = {
         status: orders.status,
@@ -22,10 +22,33 @@ export default function Edit({ orders, paymentMethods, products, users }) {
         subtotal: parseFloat(orders.subtotal) || 0,
         totaldiscounts: parseFloat(orders.totaldiscounts) || 0,
         user_id: orders.user_id || null,
+        payments_method_id: orders.payments_method_id || null,
+        // order_items: orders.order_items ? orders.order_items.map(item => {
+        //     const quantity = parseInt(item.quantity || 1);
+        //     const priceProduct = parseFloat(item.price_product || 0);
+        //     const calculatedSubtotal = quantity * priceProduct;
+        //     return {
+        //         id: String(item.id),
+        //         product_id: item.product_id || null,
+        //         name_product: item.name_product || '',
+        //         product_price: priceProduct,
+        //         quantity: quantity,
+        //         subtotal: calculatedSubtotal,
+        //         tax_amount: parseFloat(item.tax_amount || 0),
+        //         combination_id: item.combination_id || null,
+        //         product_details: item.product_details || null,
+        //         is_combination: item.is_combination ?? (item.combination_id !== null),
+        //     };
+        // }) : [],
         order_items: orders.order_items ? orders.order_items.map(item => {
             const quantity = parseInt(item.quantity || 1);
             const priceProduct = parseFloat(item.price_product || 0);
+            const taxRate = item.product && item.product.taxes
+                ? parseFloat(item.product.taxes.tax_rate)
+                : 0;
             const calculatedSubtotal = quantity * priceProduct;
+            const calculatedTaxAmount = calculatedSubtotal * (taxRate / 100);
+
             return {
                 id: String(item.id),
                 product_id: item.product_id || null,
@@ -33,19 +56,22 @@ export default function Edit({ orders, paymentMethods, products, users }) {
                 product_price: priceProduct,
                 quantity: quantity,
                 subtotal: calculatedSubtotal,
-                tax_amount: parseFloat(item.tax_amount || 0),
+                tax_rate: taxRate,
+                tax_amount: calculatedTaxAmount,
                 combination_id: item.combination_id || null,
                 product_details: item.product_details || null,
                 is_combination: item.is_combination ?? (item.combination_id !== null),
+                product: item.product || null, // Mantener referencia al producto
             };
         }) : [],
+
     };
 
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-
+        console.log(data);
         post(route('orders.update', orders.id), {
             _method: 'put', // Esto es crucial para que Laravel reconozca la petición como PUT
             onSuccess: () => {

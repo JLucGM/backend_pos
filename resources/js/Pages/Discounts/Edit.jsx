@@ -8,15 +8,12 @@ import { lazy, Suspense } from 'react';
 import Loader from '@/Components/ui/loader';
 import { Badge } from '@/Components/ui/badge';
 import { TrashIcon } from 'lucide-react';
+import { formatDate } from '@/utils/dateFormatter';
 
 // Cargar el componente de forma diferida
 const DiscountsForm = lazy(() => import('./DiscountsForm'));
 
 export default function Edit({ discount, products, categories }) {
-
-    const formatDate = (dateString) => {
-        return dateString ? dateString.split('T')[0] : '';
-    };
 
     const initialValues = {
         name: discount.name,

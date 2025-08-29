@@ -1,3 +1,6 @@
+import { buttonVariants } from "@/Components/ui/button";
+import { Link } from "@inertiajs/react";
+
 export const ordersColumns = [
     {
         header: "Cliente",
@@ -46,4 +49,20 @@ export const ordersColumns = [
             );
         },
     },
+    {
+        header: "Acciones",
+        accessorKey: "actions",
+        cell: ({ row }) => {
+            return (
+                <div className="flex space-x-2">
+                    <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('orders.edit', row.original.id)}>
+                        Editar
+                    </Link>
+                    {/* <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('orders.destroy', [row.original])} method="delete">
+                        Eliminar
+                    </Link> */}
+                </div>
+            );
+        },
+    }
 ];

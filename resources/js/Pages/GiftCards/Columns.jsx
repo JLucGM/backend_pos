@@ -25,4 +25,20 @@ export const giftCardsColumns = [
         accessorFn: (row) => `${row.current_balance} / ${row.initial_balance}`,
         id: "balances",
     },
+    {
+        header: "Acciones",
+        accessorKey: "actions",
+        cell: ({ row }) => {
+            return (
+                <div className="flex space-x-2">
+                    <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('giftCards.edit', row.original)}>
+                        Editar
+                    </Link>
+                    <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('giftCards.destroy', [row.original])} method="delete">
+                        Eliminar
+                    </Link>
+                </div>
+            );
+        },
+    }
 ];
