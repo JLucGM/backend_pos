@@ -5,16 +5,20 @@ import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
 import { Textarea } from '@/Components/ui/textarea';
 import { toast } from 'sonner';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import Checkbox from '@/Components/Checkbox';
+import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 
 export default function DeliveryLocationForm({ user, location, countries, states, cities, onCancel, onSuccess }) {
-    const isEditing = location && location.id;
-
+    
     const [filteredStates, setFilteredStates] = useState([]);
     const [filteredCities, setFilteredCities] = useState([]);
+    const isEditing = location && location.id;
+    const countryOptions = useMemo(() => mapToSelectOptions(countries, 'id', 'country_name'), [countries]);
+    const stateOptions = useMemo(() => mapToSelectOptions(filteredStates, 'id', 'state_name'), [filteredStates]);
+    const cityOptions = useMemo(() => mapToSelectOptions(filteredCities, 'id', 'city_name'), [filteredCities]);
 
     const { data, setData, post, put, errors, processing, reset } = useForm({
         address_line_1: location?.address_line_1 || '',
@@ -125,18 +129,17 @@ export default function DeliveryLocationForm({ user, location, countries, states
                     <InputError message={errors.phone_number} className="mt-2" />
                 </div>
             </div>
-            {/* País, Estado, Ciudad */}
+            {/* País, Estado, Ciudad s*/}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <InputLabel htmlFor="country_id" value="País" />
                     <Select
                         name="country_id"
                         id="country_id"
-                        options={countries.map(country => ({ value: country.id, label: country.country_name }))}
-                        value={countries.map(c => ({ value: c.id, label: c.country_name })).find(c => c.value === data.country_id) || null}
-                        onChange={(selectedOption) => setData('country_id', selectedOption ? selectedOption.value : null)}
+                        options={countryOptions}
+                        value={countryOptions.find(option => option.value === data.country_id)}
+                        onChange={(selectedOption) => setData('country_id', selectedOption.value)}
                         styles={customStyles}
-                        isClearable
                     />
                     <InputError message={errors.country_id} className="mt-2" />
                 </div>
@@ -145,12 +148,10 @@ export default function DeliveryLocationForm({ user, location, countries, states
                     <Select
                         name="state_id"
                         id="state_id"
-                        options={filteredStates.map(state => ({ value: state.id, label: state.state_name }))}
-                        value={filteredStates.map(s => ({ value: s.id, label: s.state_name })).find(s => s.value === data.state_id) || null}
-                        onChange={(selectedOption) => setData('state_id', selectedOption ? selectedOption.value : null)}
+                        options={stateOptions}
+                        value={stateOptions.find(option => option.value === data.state_id)}
+                        onChange={(selectedOption) => setData('state_id', selectedOption.value)}
                         styles={customStyles}
-                        isDisabled={!data.country_id || filteredStates.length === 0}
-                        isClearable
                     />
                     <InputError message={errors.state_id} className="mt-2" />
                 </div>
@@ -159,12 +160,10 @@ export default function DeliveryLocationForm({ user, location, countries, states
                     <Select
                         name="city_id"
                         id="city_id"
-                        options={filteredCities.map(city => ({ value: city.id, label: city.city_name }))}
-                        value={filteredCities.map(c => ({ value: c.id, label: c.city_name })).find(c => c.value === data.city_id) || null}
-                        onChange={(selectedOption) => setData('city_id', selectedOption ? selectedOption.value : null)}
+                        options={cityOptions}
+                        value={cityOptions.find(option => option.value === data.city_id)}
+                        onChange={(selectedOption) => setData('city_id', selectedOption.value)}
                         styles={customStyles}
-                        isDisabled={!data.state_id || filteredCities.length === 0}
-                        isClearable
                     />
                     <InputError message={errors.city_id} className="mt-2" />
                 </div>

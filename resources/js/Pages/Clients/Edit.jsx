@@ -15,6 +15,7 @@ const ClientsForm = lazy(() => import('./ClientsForm'));
 
 // Asegúrate de recibir todas las props desde el controlador
 export default function Edit({ client, roles, role, permission, countries, states, cities, deliveryLocations }) {
+    // console.log(client);
     const { data, setData, errors, post, processing } = useForm({
         name: client.name,
         email: client.email,
@@ -42,11 +43,13 @@ export default function Edit({ client, roles, role, permission, countries, state
 
     const submitClientForm = (e) => {
         e.preventDefault();
+        console.log(data);
         post(route('client.update', client.slug), {
             onSuccess: () => {
                 toast.success("Cliente actualizado con éxito.");
             },
-            onError: () => {
+            onError: (error) => {
+                console.log(error);
                 toast.error("Error al actualizar el cliente.");
             }
         });

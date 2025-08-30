@@ -33,7 +33,7 @@ class UpdateRequest extends FormRequest
             'status' => 'required|boolean',
             'role' => 'required|exists:roles,id',
             'identification' => 'nullable|string|unique:users,identification,' . $client->id,
-            'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
+            // 'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
             'password' => 'nullable|string|min:8', // La contraseña es opcional
             'avatar' => 'nullable|image|max:2048', // Validación para el avatar
         ];

@@ -10,9 +10,13 @@ import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
 
 export default function ClientsForm({ data, setData, errors, user = "" }) {
+    const statusOptions = [
+        { value: 0, label: 'Inactivo' },
+        { value: 1, label: 'Activo' }
+    ];
     return (
         <>
-            
+
             <div className="col-span-full flex justify-center">
 
                 <Avatar className="h-56 w-56 ">
@@ -60,7 +64,7 @@ export default function ClientsForm({ data, setData, errors, user = "" }) {
                             id="identification"
                             type="text"
                             name="identification"
-                            value={data.identification}
+                            value={data.identification ?? ''}
                             className="mt-1 block w-full"
                             isFocused={true}
                             onChange={(e) => setData('identification', e.target.value)}
@@ -116,16 +120,14 @@ export default function ClientsForm({ data, setData, errors, user = "" }) {
 
                     <div>
                         <InputLabel htmlFor="status" value="Estado" />
-                        <select
+                        <Select
+                            options={statusOptions}
                             name="status"
-                            id="status"
-                            value={data.status}
-                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-full"
-                            onChange={(e) => setData('status', e.target.value)}
-                        >
-                            <option value={0}>Inactivo</option>
-                            <option value={1}>Activo</option>
-                        </select>
+                            value={statusOptions.find(option => option.value === Number(data.status))}
+                            onChange={(selectedOption) => setData('status', selectedOption.value)}
+                            styles={customStyles} // si usas estilos personalizados
+                            className="mt-1"
+                        />
                         <InputError message={errors.status} className="mt-2" />
                     </div>
 

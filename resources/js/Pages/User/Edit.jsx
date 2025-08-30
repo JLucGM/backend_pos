@@ -101,7 +101,7 @@ export default function Edit({ user, roles, role, permission, countries, states,
                 </Suspense>
 
                 {/* SECCIÓN DE DIRECCIONES DE ENVÍO */}
-                <Suspense fallback={<Loader />}>
+                {/* <Suspense fallback={<Loader />}>
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Direcciones de Envío</h3>
@@ -111,7 +111,6 @@ export default function Edit({ user, roles, role, permission, countries, states,
                             </Button>
                         </div>
 
-                        {/* Lista de direcciones existentes */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {deliveryLocations.length > 0 ? (
                                 deliveryLocations.map(location => (
@@ -132,7 +131,7 @@ export default function Edit({ user, roles, role, permission, countries, states,
                                                     <Pen className="size-4" />
                                                 </Button>
                                             </CardTitle>
-                                            {/* <CardDescription>{location.address_line_2}</CardDescription> */}
+                                            <CardDescription>{location.address_line_2}</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             {location.address_line_1}
@@ -144,11 +143,11 @@ export default function Edit({ user, roles, role, permission, countries, states,
                             )}
                         </div>
                     </div>
-                </Suspense>
+                </Suspense> */}
             </div>
 
             {/* Diálogo para agregar/editar dirección */}
-            <AddressDialog
+            {/* <AddressDialog
                 isOpen={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
                 user={user}
@@ -159,7 +158,7 @@ export default function Edit({ user, roles, role, permission, countries, states,
                 onSuccess={() => {
                     // Aquí puedes hacer algo después de que se haya creado o editado la dirección
                 }}
-            />
+            /> */}
         </AuthenticatedLayout>
     );
 }

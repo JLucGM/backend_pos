@@ -18,8 +18,8 @@ export default function Create({ products, categories }) {
         discount_type: "percentage",
         value: "",
         applies_to: "product", // Puede ser 'product', 'category' o 'order_total'
-        start_date: new Date().toISOString().slice(0, 19),
-        end_date: Date.now(),
+        start_date: new Date(),
+        end_date: new Date(),
         automatic: false,
         minimum_order_amount: 0,
         usage_limit: 1,

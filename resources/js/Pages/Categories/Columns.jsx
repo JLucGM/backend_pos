@@ -1,3 +1,7 @@
+import { buttonVariants } from "@/Components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Ellipsis, Pen, Trash } from "lucide-react";
+import { Link } from "@inertiajs/react";
 
 export const categoriesColumns = [
     {
@@ -5,19 +9,28 @@ export const categoriesColumns = [
         accessorKey: "category_name",
     },
     {
-            header: "Acciones",
-            accessorKey: "actions",
-            cell: ({ row }) => {
-                return (
-                    <div className="flex space-x-2">
-                        <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('categories.edit', row.original.id)}>
-                            Editar
-                        </Link>
-                        <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('categories.delete', row.original.id)} method='delete' as="button">
-                            Eliminar
-                        </Link>
-                    </div>
-                );
-            },
-        }
+        header: "Acciones",
+        accessorKey: "actions",
+        cell: ({ row }) => {
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger>
+                        <Ellipsis />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem>
+                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('categories.edit', row.original)}>
+                                <Pen /> Editar
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('categories.destroy', [row.original])} method="delete">
+                                <Trash /> Eliminar
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            );
+        },
+    }
 ];

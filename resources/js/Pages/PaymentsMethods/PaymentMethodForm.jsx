@@ -3,9 +3,7 @@ import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
-import { Button } from '@/Components/ui/button';
 import { Textarea } from '@/Components/ui/textarea';
-import { PlusCircle, Trash } from 'lucide-react';
 
 export default function PaymentMethodForm({ data, setData, errors }) {
     return (

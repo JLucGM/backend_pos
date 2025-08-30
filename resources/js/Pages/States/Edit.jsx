@@ -22,9 +22,10 @@ export default function Edit({ state, countries }) {
         e.preventDefault();
         post(route('states.update', state), {
             onSuccess: () => {
-                toast("Estadp actualizado con éxito.");
+                toast("Estado actualizado con éxito.");
             },
-            onError: () => {
+            onError: (error) => {
+                console.log(error);
                 toast.error("Error al actualizar el estado.");
             }
         });

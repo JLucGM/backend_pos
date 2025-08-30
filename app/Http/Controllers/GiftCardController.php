@@ -60,7 +60,7 @@ class GiftCardController extends Controller
 
         $giftCard = GiftCard::create($data + ['company_id' => Auth::user()->company_id]);
 
-        return to_route('giftCards.edit', $giftCard->id);
+        return to_route('giftCards.edit', $giftCard);
     }
 
 

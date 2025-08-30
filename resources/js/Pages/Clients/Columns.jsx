@@ -1,5 +1,9 @@
 import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
+import { buttonVariants } from "@/Components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Ellipsis, Pen, Trash } from "lucide-react";
+import { Link } from "@inertiajs/react";
 
 export const userColumns = [
     {
@@ -44,14 +48,23 @@ export const userColumns = [
         accessorKey: "actions",
         cell: ({ row }) => {
             return (
-                <div className="flex space-x-2">
-                    <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('clients.edit', row.original)}>
-                        Editar
-                    </Link>
-                    <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('clients.destroy', [row.original])} method="delete">
-                        Eliminar
-                    </Link>
-                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger>
+                        <Ellipsis />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem>
+                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('client.edit', row.original)}>
+                                <Pen /> Editar
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('client.destroy', [row.original])} method="delete">
+                                <Trash /> Eliminar
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             );
         },
     }

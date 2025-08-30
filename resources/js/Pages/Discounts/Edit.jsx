@@ -14,15 +14,15 @@ import { formatDate } from '@/utils/dateFormatter';
 const DiscountsForm = lazy(() => import('./DiscountsForm'));
 
 export default function Edit({ discount, products, categories }) {
-
+console.log(discount)
     const initialValues = {
         name: discount.name,
         code: discount.code,
         description: discount.description,
         discount_type: discount.discount_type,
         value: discount.value,
-        start_date: formatDate(discount.start_date), // Formatear la fecha de inicio
-        end_date: formatDate(discount.end_date),
+        start_date: discount.start_date, // cadena ISO directamente
+    end_date: discount.end_date,
         automatic: discount.automatic,
         is_active: discount.is_active,
         usage_limit: discount.usage_limit,

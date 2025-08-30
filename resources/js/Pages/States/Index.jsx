@@ -26,7 +26,8 @@ export default function Index({ states, countries, permission }) {
             onSuccess: () => {
                 toast("Estado creado con éxito.");
             },
-            onError: () => {
+            onError: (error) => {
+                console.log(error);
                 toast.error("Error al crear el estado.");
             }
         })
@@ -73,14 +74,22 @@ export default function Index({ states, countries, permission }) {
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
                 <DialogBackdrop className="fixed inset-0 bg-black/40" />
-
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
                     <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
-                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear estado</DialogTitle>
-                        <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del estado</Description>
+                        <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">
+                            Crear estado
+                        </DialogTitle>
+                        <Description className={'text-gray-700 dark:text-gray-300'}>
+                            Ingresa la información del estado
+                        </Description>
                         <form onSubmit={submit} className='space-y-4'>
                             <Suspense fallback={<Loader />}>
-                                <StatesForm data={data} setData={setData} errors={errors} countries={countries} />
+                                <StatesForm
+                                    data={data}
+                                    setData={setData}
+                                    errors={errors}
+                                    countries={countries}
+                                />
                             </Suspense>
                             <div className="flex justify-end p-2.5">
                                 <Button
