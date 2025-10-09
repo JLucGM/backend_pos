@@ -18,7 +18,19 @@ class OrderItem extends Model
         'order_id',
         'product_id',
         'combination_id',
-        'product_details'
+        'product_details',
+        'discount_id', // Nuevo
+        'discount_amount', // Nuevo
+        'discounted_price', // Nuevo
+        'discounted_subtotal', // Nuevo
+    ];
+
+    protected $casts = [
+        'subtotal' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'discounted_price' => 'decimal:2',
+        'discounted_subtotal' => 'decimal:2',
     ];
 
     public function order()

@@ -25,9 +25,8 @@ export default function ProductsForm({ data, categories, taxes, product = null, 
     const [localErrors, setLocalErrors] = useState({}); // New state for local validation errors
 
     const categoryOptions = useMemo(() => mapToSelectOptions(categories, 'id', 'category_name'), [categories]);
-    const taxOptions = useMemo(() => mapToSelectOptions(taxes, 'id', tax => `${tax.tax_name} (${tax.tax_rate}%)`), [taxes]);
+    const taxOptions = useMemo(() => mapToSelectOptions(taxes, 'id', tax => `${tax.tax_name} (${tax.tax_rate}%)`, true), [taxes]);
 
-    // Effect to determine if attributes section should be shown
     useEffect(() => {
         // Show attributes section if product has combinations (for edit)
         // or if attributes are already defined in data (e.g., after adding them in create)
@@ -751,10 +750,11 @@ export default function ProductsForm({ data, categories, taxes, product = null, 
                             name="tax_id"
                             id="tax_id"
                             options={taxOptions}
-                            value={taxOptions.find(option => option.value === data.tax_id)}
-                            onChange={(selectedOption) => setData('tax_id', selectedOption.value)}
+                            value={taxOptions.find(option => option.value === (data.tax_id ?? null))}  // Use ?? null to handle undefined
+                            onChange={(selectedOption) => setData('tax_id', selectedOption ? selectedOption.value : null)}  // Handle null
                             styles={customStyles}
                         />
+
                         <InputError message={errors.tax_id} className="mt-2" />
                     </div>
 

@@ -6,8 +6,8 @@ import { lazy, Suspense } from 'react';
 import { toast } from 'sonner';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
-export default function Create({ paymentMethods, products, users }) { // Asegúrate de recibir 'users' aquí
-    console.log(products)
+export default function Create({ paymentMethods, products, users, discounts  }) { // Asegúrate de recibir 'users' aquí
+    // console.log(products)
 
     const initialValues = {
         status: 'pending', // Estado inicial por defecto
@@ -26,7 +26,7 @@ export default function Create({ paymentMethods, products, users }) { // Asegúr
 
     // Función para manejar el envío del formulario
     const submit = (e) => {
-        console.log("Submitting order data:", data);
+        console.log('data', data);
 
         e.preventDefault();
         post(route('orders.store'), {
@@ -63,10 +63,10 @@ export default function Create({ paymentMethods, products, users }) { // Asegúr
                                     products={products}
                                     paymentMethods={paymentMethods}
                                     users={users} // Pasa la prop users al OrdersForm
+                                    discounts={discounts} // Pasa los descuentos al OrdersForm
                                     data={data}
                                     setData={setData}
                                     errors={errors}
-                                    // No se pasa la prop 'orders' para la vista de creación, por lo que será null en OrdersForm
                                     isDisabled={processing} // Deshabilita el formulario mientras se envía
                                 />
 

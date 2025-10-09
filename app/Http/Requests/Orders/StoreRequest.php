@@ -41,6 +41,8 @@ class StoreRequest extends FormRequest
             'order_items.*.tax_amount' => 'required|numeric|min:0', // AÑADIDO: Validación para el tax_amount de cada ítem
             'order_items.*.combination_id' => 'nullable|exists:combinations,id', // Valida combination_id
             'order_items.*.product_details' => 'nullable|string', // Se asume que es una cadena JSON
+            'manual_discount_code' => 'nullable|string|max:50', // AÑADIDO
+          'manual_discount_amount' => 'nullable|numeric|min:0|max:999999',
         ];
     }
 
@@ -94,6 +96,10 @@ class StoreRequest extends FormRequest
             'order_items.*.tax_amount.min' => 'The item tax amount must be at least 0.', // AÑADIDO
             'order_items.*.combination_id.exists' => 'The selected combination is invalid.',
             'order_items.*.product_details.string' => 'The product details must be a string.',
+            'manual_discount_code.string' => 'El código de descuento debe ser texto.',
+          'manual_discount_code.max' => 'El código de descuento no puede exceder 50 caracteres.',
+          'manual_discount_amount.numeric' => 'El monto de descuento manual debe ser un número.',
+          'manual_discount_amount.min' => 'El monto de descuento manual no puede ser negativo.',
         ];
     }
 

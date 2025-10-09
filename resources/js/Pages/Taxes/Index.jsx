@@ -81,10 +81,11 @@ export default function Index({ taxes, permission }) {
                                 className="text-center"
                             />
                             {permission.some(perm => perm.name === 'admin.tax.create') && (
-                                <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('tax.create')}>
-                                    Crear Impuesto
-                                </Link>
-                            )}
+                        <Button variant="default" size="sm"
+                            onClick={() => setIsOpen(true)}>
+                            Añadir impuesto
+                        </Button>
+                    )}
                         </div>
                     )}
                 </DivSection>

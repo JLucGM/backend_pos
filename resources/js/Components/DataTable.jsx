@@ -2,16 +2,12 @@ import React from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender, getPaginationRowModel, getFilteredRowModel, getExpandedRowModel } from '@tanstack/react-table';
 import { useState } from 'react';
 import TextInput from './TextInput';
-import { Link } from '@inertiajs/react';
-import { Popover, PopoverButton, PopoverPanel, Select } from '@headlessui/react';
+import { Select } from '@headlessui/react';
 import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronUpIcon, MagnifyingGlassIcon, MinusIcon, PencilSquareIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-// import { PDFDownloadLink } from '@react-pdf/renderer';
-// import PDFDocuments from './PDF/PDFDocuments';
 
 export default function DataTable({ data, columns
-    // , routeEdit = null, routeDestroy = null, PDFComponent, editPermission, deletePermission, downloadPdfPermission, permissions 
 }) {
     const [filtering, setFiltering] = useState("");
     const [sorting, setSorting] = useState([]);
@@ -36,12 +32,6 @@ export default function DataTable({ data, columns
         onGlobalFilterChange: setFiltering,
 
     })
-
-    // const hasPermission = (perm) => {
-    //     return permissions.some(permission => permission.name === perm);
-    // };
-
-    const expandedColumn = columns.find((column) => column.accessorKey === 'id') || columns[0];
 
     return (
         <>
@@ -84,11 +74,6 @@ export default function DataTable({ data, columns
                                         </TableHead>
                                     ))
                                 }
-                                {/* {(hasPermission(editPermission) || hasPermission(deletePermission)) && (
-                                    <TableHead key="acciones" className=" px-6 py-3 w-20">
-                                        Acciones
-                                    </TableHead>
-                                )} */}
                             </TableRow>
                         ))
                     }
@@ -106,42 +91,6 @@ export default function DataTable({ data, columns
                                             </TableCell>
                                         ))
                                     }
-                                    {/* {(hasPermission(editPermission) || hasPermission(deletePermission)) && (
-                                        <TableCell key="acciones" className="flex justify-end space-x-4 capitalize border-slate-200s px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            {expandedColumn.expanded && (
-                                                <Button
-                                                    className="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                                    onClick={() => row.toggleExpanded()}
-                                                >
-                                                    {row.getIsExpanded() ? <MinusIcon className='size-4' /> : <PlusIcon className='size-4' />}
-                                                </Button>
-                                            )}
-                                            
-                                            <Popover className="relative">
-                                                <PopoverButton
-                                                    className="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                                >
-                                                    Opciones
-                                                </PopoverButton>
-                                                <PopoverPanel anchor="bottom" className="flex flex-col space-y-2 p-1 rounded-xl border border-gray-200 bg-white dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 ">
-                                                   
-                                                    {hasPermission(editPermission) && (
-                                                        <Link href={route(routeEdit, [row.original.slug ?? row.original.id])} className="flex w-full text-left hover:bg-gray-200 hover:rounded-md p-2">
-                                                            <PencilSquareIcon className='size-5' /> Editar
-                                                        </Link>
-                                                    )}
-                                                    {hasPermission(deletePermission) && (
-                                                        <Link
-                                                            className="flex w-full text-left text-red-600 hover:bg-red-200 hover:rounded-md p-2"
-                                                            // onClick={() => console.log('Delete clicked for:', row.original.slug)}
-                                                            href={route(routeDestroy, [row.original.slug])} method='delete' as="button">
-                                                            <TrashIcon className='size-5' /> Eliminar
-                                                        </Link>
-                                                    )}
-                                                </PopoverPanel>
-                                            </Popover>
-                                        </TableCell>
-                                    )} */}
                                 </TableRow>
                                 {
                                     row.getIsExpanded() && (

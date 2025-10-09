@@ -18,6 +18,10 @@ return new class extends Migration
             $table->unsignedInteger('quantity');
             $table->decimal('subtotal', 10, 2)->default(0.00);
             $table->decimal('tax_amount', 10, 2)->default(0.00);
+            $table->decimal('discount_amount', 8, 2)->default(0); // Monto del descuento aplicado al ítem
+            $table->decimal('discounted_price', 8, 2)->nullable(); // Precio post-descuento (para referencia)
+            $table->decimal('discounted_subtotal', 8, 2)->nullable(); // Subtotal post-descuento (opcional, si quieres trackear)
+            $table->foreignId('discount_id')->nullable()->constrained('discounts')->onDelete('set null');
             $table->foreignId('order_id')->constrained()->onDelete('cascade'); // Una orden no debe existir sin sus items
             $table->foreignId('product_id')->nullable()->constrained()->onDelete('set null'); // Esta es la clave
             $table->foreignId('combination_id')->nullable()->constrained()->onDelete('set null'); // Y esta, si aplica
