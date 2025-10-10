@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Discounts;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreRequest extends FormRequest
 {
@@ -22,7 +23,7 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-           'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'discount_type' => 'required|string|in:percentage,fixed_amount',
             'value' => 'required|numeric|min:0',
@@ -31,9 +32,30 @@ class StoreRequest extends FormRequest
             'end_date' => 'required|date|after:start_date',
             'minimum_order_amount' => 'nullable|numeric|min:0',
             'usage_limit' => 'nullable|integer|min:0',
-            'code' => 'nullable|string|max:255',
+            'code' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::requiredIf(fn() => !$this->automatic),
+                Rule::unique('discounts', 'code')->where(fn($q) => $q->where('automatic', false)),
+            ],
             'is_active' => 'required|boolean',
             'automatic' => 'boolean',
+            // FIX: Para product_selections (array de {product_id, combination_id})
+            'product_selections' => [
+                'nullable',
+                'array',
+                Rule::requiredIf(fn() => $this->applies_to === 'product'),
+            ],
+            'product_selections.*.product_id' => 'required|exists:products,id',
+            'product_selections.*.combination_id' => 'nullable|exists:combinations,id', // FIX: A 'combinations'
+            // Para category_ids
+            'category_ids' => [
+                'nullable',
+                'array',
+                Rule::requiredIf(fn() => $this->applies_to === 'category'),
+            ],
+            'category_ids.*' => 'exists:categories,id',
         ];
     }
 
@@ -60,10 +82,20 @@ class StoreRequest extends FormRequest
             'usage_limit.min' => 'The usage limit must be at least 0.',
             'code.string' => 'The code must be a string.',
             'code.max' => 'The code may not be greater than 255 characters.',
+            'code.required_if' => 'The code is required for manual discounts.',
+            'code.unique' => 'The code is already in use.',
             'is_active.required' => 'The is active field is required.',
             'is_active.boolean' => 'The is active field must be true or false.',
             'automatic.boolean' => 'The automatic field must be true or false.',
+            // FIX: Mensajes para product_selections
+            'product_selections.required_if' => 'Product selections are required when applies to is product.',
+            'product_selections.array' => 'Product selections must be an array.',
+            'product_selections.*.product_id.required' => 'Product ID is required.',
+            'product_selections.*.product_id.exists' => 'The selected product does not exist.',
+            'product_selections.*.combination_id.exists' => 'The selected combination does not exist.',
+            'category_ids.required_if' => 'Category IDs are required when applies to is category.',
+            'category_ids.array' => 'Category IDs must be an array.',
+            'category_ids.*.exists' => 'The selected category does not exist.',
         ];
     }
-
 }

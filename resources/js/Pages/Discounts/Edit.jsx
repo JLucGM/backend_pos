@@ -14,58 +14,65 @@ import { formatDate } from '@/utils/dateFormatter';
 const DiscountsForm = lazy(() => import('./DiscountsForm'));
 
 export default function Edit({ discount, products, categories }) {
-console.log(discount)
-    const initialValues = {
-        name: discount.name,
-        code: discount.code,
-        description: discount.description,
-        discount_type: discount.discount_type,
-        value: discount.value,
-        start_date: discount.start_date, // cadena ISO directamente
-    end_date: discount.end_date,
-        automatic: discount.automatic,
-        is_active: discount.is_active,
-        usage_limit: discount.usage_limit,
-        minimum_order_amount: discount.minimum_order_amount,
-        applies_to: discount.applies_to,
-        product_ids: discount.products.map(product => product.id) || [], // Obtener IDs de productos seleccionados
-        category_ids: discount.categories.map(category => category.id) || [], // Obtener IDs de categorías seleccionadas
-    }
+    console.log('Discount para edit:', discount); // Debug: Verifica products con pivot
 
-    const { data, setData, errors, post } = useForm(initialValues);
+    // NUEVO: Mapea product_selections desde discount.products (con pivot combination_id)
+    const productSelections = discount.applies_to === 'product' ?
+        discount.products.map(product => ({
+            product_id: product.id,
+            combination_id: product.pivot.combination_id // Del pivot (null para simples, ID para variables)
+        })) : [];
+
+    // Mapea category_ids desde discount.categories
+    const categoryIds = discount.applies_to === 'category' ?
+        discount.categories.map(category => category.id) : [];
+
+    const initialValues = {
+        name: discount.name || '',
+        code: discount.code || '',
+        description: discount.description || '',
+        discount_type: discount.discount_type || 'percentage',
+        value: discount.value || '',
+        start_date: discount.start_date ? new Date(discount.start_date) : null, // Para DatePicker
+        end_date: discount.end_date ? new Date(discount.end_date) : null,
+        automatic: discount.automatic || false,
+        is_active: discount.is_active || false,
+        usage_limit: discount.usage_limit || 0,
+        minimum_order_amount: discount.minimum_order_amount || 0,
+        applies_to: discount.applies_to || 'product',
+        product_selections: productSelections, // NUEVO: Array de {product_id, combination_id} para edit
+        category_ids: categoryIds, // Array de IDs para edit
+    };
+
+    const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('discounts.update', discount), {
+        console.log('Update data:', data); // Debug selections en edit
+        post(route('discounts.update', discount), { // Usa ID para route
             onSuccess: () => {
-                toast("Descuento actualizado con éxito.");
+                toast.success("Descuento actualizado con éxito.");
             },
             onError: (error) => {
-                console.error("Error al actualizar el descuento:", error);
-                if (error.response && error.response.status === 422) {
-                    toast.error("Por favor, corrige los errores en el formulario.");
-                } else {
-                    console.error("Error inesperado:", error);
-                    toast.error("Error inesperado al actualizar el descuento.");
-                }
-                toast.error("Error al actualizar el descuento.");
+                console.error("Error al actualizar:", error);
+                toast.error("Error al actualizar el descuento. Revisa los errores.");
             }
         });
-    }
+    };
 
     return (
         <AuthenticatedLayout
             header={
                 <div className="flex justify-between items-center">
                     <div className="flex items-center">
-                        <Link href={route('discounts.index')} >
+                        <Link href={route('discounts.index')}>
                             <ArrowLongLeftIcon className='size-6' />
                         </Link>
                         <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                             Actualizar {discount.name}
                         </h2>
-                        <Badge variant={discount.is_active === 1 ? 'success' : 'info'}>
-                            {discount.is_active === 1 ? 'Publicado' : 'Borrador'}
+                        <Badge variant={discount.is_active ? 'default' : 'secondary'}>
+                            {discount.is_active ? 'Activo' : 'Inactivo'}
                         </Badge>
                     </div>
                     <div className="">
@@ -79,35 +86,35 @@ console.log(discount)
                 </div>
             }
         >
-            <Head className="capitalize" title={`Descuento ${discount.name}`} />
+            <Head title={`Editar ${discount.name}`} />
 
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
-
                     <div className="grid grid-cols-1 gap-4">
                         <DivSection>
                             <Suspense fallback={<Loader />}>
                                 <DiscountsForm
                                     data={data}
+                                    products={products} // Incluye combinations para options
+                                    categories={categories}
                                     setData={setData}
                                     errors={errors}
-                                    products={products}
-                                    categories={categories}
+                                    isEdit={true} // NUEVO: Prop para detectar modo edit (opcional, para lógica en form)
                                 />
                             </Suspense>
                         </DivSection>
                     </div>
 
-                    <div className="flex justify-end p-2.5">
-                        <Button
-                            variant="default"
-                        >
-                            Guardar
+                    <div className="flex justify-end p-2.5 gap-2">
+                        <Link href={route('discounts.index')} className={buttonVariants({ variant: "outline" })}>
+                            Cancelar
+                        </Link>
+                        <Button variant="default" type="submit" disabled={processing}>
+                            Actualizar
                         </Button>
                     </div>
-
                 </form>
             </div>
         </AuthenticatedLayout>
-    )
+    );
 }

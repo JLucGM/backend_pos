@@ -84,14 +84,14 @@ class Product extends Model implements HasMedia
     }
 
     public function taxes()
-{
-    return $this->belongsTo(Tax::class, 'tax_id'); // Asegúrate de especificar el campo 'tax_id'
-}
-
-
+    {
+        return $this->belongsTo(Tax::class, 'tax_id'); // Asegúrate de especificar el campo 'tax_id'
+    }
 
     public function discounts()
     {
-        return $this->belongsToMany(Discount::class);
+        return $this->belongsToMany(Discount::class, 'discount_product')
+            ->withPivot('combination_id')
+            ->withTimestamps();
     }
 }

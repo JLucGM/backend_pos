@@ -14,8 +14,8 @@ export const discountColumns = [
         accessorKey: "status",
         cell: ({ row }) => {
             return (
-                <Badge variant={row.original.status === 1 ? 'success' : 'info'}>
-                    {row.original.status === 1 ? 'Publicado' : 'Borrador'}
+                <Badge variant={row.original.is_active ? 'default' : 'secondary'}>
+                    {row.original.is_active ? 'Activo' : 'Inactivo'}
                 </Badge>
             )
         },

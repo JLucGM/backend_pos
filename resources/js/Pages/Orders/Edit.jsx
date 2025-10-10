@@ -36,6 +36,17 @@ export default function Edit({ orders, paymentMethods, products, users, discount
             const calculatedSubtotal = parseFloat(item.subtotal || (quantity * discountedPrice)); // Preserva $9 post
             const calculatedTaxAmount = parseFloat(item.tax_amount || (calculatedSubtotal * (taxRate / 100)));
 
+            // FIX: Parse product_details JSON para attributes_display (muestra variaciones)
+            let attributesDisplay = null;
+            if (item.product_details) {
+                try {
+                    const details = typeof item.product_details === 'string' ? JSON.parse(item.product_details) : item.product_details;
+                    attributesDisplay = details.attributes || null;
+                } catch (e) {
+                    console.warn('Error parsing product_details:', e);
+                }
+            }
+
             const mappedItem = {
                 id: String(item.id),
                 product_id: item.product_id || null,
@@ -48,10 +59,11 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                 tax_rate: taxRate,
                 tax_amount: calculatedTaxAmount, // $1.62
                 discount_id: item.discount_id || null,
-                discount_amount: parseFloat(item.discount_amount || 0), // $1
+                discount_amount: parseFloat(item.discount_amount || 0), // $1 – Preserva de DB
                 discount_type: item.discount_type || null,
                 combination_id: item.combination_id || null,
                 product_details: item.product_details || null,
+                attributes_display: attributesDisplay, // FIX: Para mostrar "Talla S, Color Rojo" en DataTable
                 categories: item.categories || (item.product?.categories || []),
                 is_combination: item.combination_id !== null,
                 product: item.product || null,
@@ -59,7 +71,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
             };
 
             // DEBUG: Verifica valores mapeados
-            // console.log(`Item ${index} mapped: product_price=${originalPrice} (original), discounted_price=${discountedPrice} (post), subtotal=${calculatedSubtotal} (post)`);
+            // console.log(`Item ${index} mapped: product_price=${originalPrice} (original), discounted_price=${discountedPrice} (post), subtotal=${calculatedSubtotal} (post), attributes_display=${attributesDisplay}`);
 
             return mappedItem;
         }) : [],
@@ -71,8 +83,8 @@ export default function Edit({ orders, paymentMethods, products, users, discount
 
     const submit = (e) => {
         e.preventDefault();
-        // console.log('Submitting update data:', data);
-        post(route('orders.update', orders.id), {
+        console.log('Submitting update data:', data);
+        post(route('orders.update', orders), {
             _method: 'put',
             onSuccess: () => {
                 toast.success('Pedido actualizado con éxito.');
@@ -131,7 +143,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                                         discounts={discounts}
                                         setData={setData}
                                         errors={errors}
-                                        isEdit={false}
+                                        isEdit={false} // FIX: Cambia a true para modo edit (bloquea agregar nuevos, preserva descuentos)
                                     />
                                 </div>
 

@@ -30,19 +30,21 @@ class UpdateRequest extends FormRequest
             'payments_method_id' => 'required|exists:payments_methods,id',
             'user_id' => 'nullable|exists:users,id',
             'order_items' => 'required|array|min:1',
-            'order_items.*.id' => 'nullable', // Permitir IDs numéricos (existentes) o UUIDs (temporales)
-            'order_items.*.product_id' => 'nullable|exists:products,id', // 'nullable' porque puede no venir si no se modifica el producto
+            'order_items.*.id' => 'nullable', // Permitir IDs numéricos (existentes) o strings (temporales)
+            'order_items.*.product_id' => 'nullable|exists:products,id', // 'nullable' porque puede no venir si no se modifica
             'order_items.*.name_product' => 'nullable|string|max:255', // 'nullable'
             'order_items.*.product_price' => 'nullable|numeric|min:0', // 'nullable'
             'order_items.*.original_display_price' => 'nullable|numeric|min:0',
             'order_items.*.quantity' => 'nullable|integer|min:1', // 'nullable'
             'order_items.*.subtotal' => 'nullable|numeric|min:0', // 'nullable'
             'order_items.*.combination_id' => 'nullable|exists:combinations,id',
-            'order_items.*.product_details' => 'nullable|string',
-
-            'order_items.*.tax_rate' => 'required|numeric|min:0',       // <-- Añadido
-        'order_items.*.tax_amount' => 'required|numeric|min:0',     // <-- Añadido
-
+            'order_items.*.product_details' => 'nullable|json', // FIX: json para validar (de frontend)
+            'order_items.*.discount_amount' => 'nullable|numeric|min:0', // FIX: Opcional para preservado
+            'order_items.*.discounted_price' => 'nullable|numeric|min:0', // FIX: Opcional
+            'order_items.*.discount_id' => 'nullable|exists:discounts,id', // Opcional
+            'order_items.*.discount_type' => 'nullable|string|in:percentage,fixed_amount', // Opcional
+            'order_items.*.tax_rate' => 'required|numeric|min:0', // Required (calculado)
+            'order_items.*.tax_amount' => 'required|numeric|min:0', // Required (calculado)
         ];
     }
 
@@ -81,15 +83,19 @@ class UpdateRequest extends FormRequest
             'order_items.*.subtotal.numeric' => 'The subtotal must be a number.',
             'order_items.*.subtotal.min' => 'The subtotal must be at least 0.',
             'order_items.*.combination_id.exists' => 'The selected combination is invalid.',
-            'order_items.*.product_details.string' => 'The product details must be a string.',
-
-            'tax_rate.required' => 'La tasa de impuesto es requerida para cada ítem.',
-'tax_rate.numeric' => 'La tasa de impuesto debe ser un número válido.',
-'tax_rate.min' => 'La tasa de impuesto no puede ser negativa.',
-'tax_amount.required' => 'El monto de impuesto es requerido para cada ítem.',
-'tax_amount.numeric' => 'El monto de impuesto debe ser un número válido.',
-'tax_amount.min' => 'El monto de impuesto no puede ser negativo.',
-
+            'order_items.*.product_details.json' => 'The product details must be valid JSON.',
+            'order_items.*.discount_amount.numeric' => 'The discount amount must be a number.',
+            'order_items.*.discount_amount.min' => 'The discount amount must be at least 0.',
+            'order_items.*.discounted_price.numeric' => 'The discounted price must be a number.',
+            'order_items.*.discounted_price.min' => 'The discounted price must be at least 0.',
+            'order_items.*.discount_id.exists' => 'The selected discount is invalid.',
+            'order_items.*.discount_type.in' => 'The discount type must be percentage or fixed_amount.',
+            'order_items.*.tax_rate.required' => 'La tasa de impuesto es requerida para cada ítem.',
+            'order_items.*.tax_rate.numeric' => 'La tasa de impuesto debe ser un número válido.',
+            'order_items.*.tax_rate.min' => 'La tasa de impuesto no puede ser negativa.',
+            'order_items.*.tax_amount.required' => 'El monto de impuesto es requerido para cada ítem.',
+            'order_items.*.tax_amount.numeric' => 'El monto de impuesto debe ser un número válido.',
+            'order_items.*.tax_amount.min' => 'El monto de impuesto no puede ser negativo.',
         ];
     }
 }

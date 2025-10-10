@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
 export default function Create({ paymentMethods, products, users, discounts  }) { // Asegúrate de recibir 'users' aquí
-    // console.log(products)
+    console.log(products)
 
     const initialValues = {
         status: 'pending', // Estado inicial por defecto
@@ -26,7 +26,7 @@ export default function Create({ paymentMethods, products, users, discounts  }) 
 
     // Función para manejar el envío del formulario
     const submit = (e) => {
-        console.log('data', data);
+        // console.log('data', data);
 
         e.preventDefault();
         post(route('orders.store'), {

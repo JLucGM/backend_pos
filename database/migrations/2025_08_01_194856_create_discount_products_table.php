@@ -11,11 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('discount_product', function (Blueprint $table) {
+        Schema::create('discount_product', function (Blueprint $table) {  // O cambia a 'discount_products' para plural
             $table->id();
             $table->foreignId('discount_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->foreignId('combination_id')->nullable()->constrained('combinations')->onDelete('set null');
             $table->timestamps();
+            $table->unique(['discount_id', 'product_id', 'combination_id']);
+            // Opcional: Especifica engine si hay problemas
+            // $table->engine = 'InnoDB';
         });
     }
 
