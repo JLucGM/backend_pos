@@ -20,6 +20,7 @@ export default function Index({ countries, permission }) {
 
     const submit = (e) => {
         e.preventDefault();
+        console.log(data);
         post(route('countries.store'), {
             onSuccess: () => {
                 toast("País creado con éxito.");
@@ -78,7 +79,11 @@ export default function Index({ countries, permission }) {
                         <Description className={'text-gray-700 dark:text-gray-300'}>Ingresa la información del pais</Description>
                         <form onSubmit={submit} className='space-y-4'>
                             <Suspense fallback={<Loader />}>
-                                <CountriesForm data={data} setData={setData} errors={errors} />
+                                <CountriesForm
+                                    data={data}
+                                    setData={setData}
+                                    errors={errors}
+                                />
                             </Suspense>
                             <div className="flex justify-end p-2.5">
                                 <Button

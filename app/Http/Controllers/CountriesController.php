@@ -56,10 +56,6 @@ class CountriesController extends Controller
 
         Country::create($data);
 
-        $data = $request->only('country_name');
-
-        Country::create($data);
-
         return to_route('countries.index');
     }
 
