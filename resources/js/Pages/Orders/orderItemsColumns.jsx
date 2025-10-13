@@ -1,83 +1,77 @@
-// resources/js/Pages/Orders/orderItemsColumns.js
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
+import { Badge } from '@/Components/ui/badge';
 import { BadgePercent, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
 
 export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, isDisabled, showDiscount = true, isEdit = false }) => [
     {
         id: 'name_product',
         header: 'Producto',
-        size: 250, // FIX: Ancho mayor para atributos/variaciones
+        size: 250, 
         cell: ({ row }) => {
             const item = row.original;
-
-            // --- CÁLCULO DE PRECIOS PARA MOSTRAR ---
             const originalPrice = parseFloat(item.product_price || 0);
             const discountedPrice = parseFloat(item.discounted_price || originalPrice);
             const discountAmount = parseFloat(item.discount_amount || 0);
             const hasDiscount = discountAmount > 0;
-            // ----------------------------------------
+
+            let attributesString = null;
+            if (item.attributes && Array.isArray(item.attributes) && item.attributes.length > 0) {
+                attributesString = item.attributes
+                    .map(attr => 
+                        `${attr.attribute_name.charAt(0).toUpperCase() + attr.attribute_name.slice(1)}: ${attr.attribute_value_name.charAt(0).toUpperCase() + attr.attribute_value_name.slice(1)}`
+                    )
+                    .join(', ');
+            } else if (item.attributes_display) {
+                attributesString = item.attributes_display
+                    .replace(/^ - /, '') 
+                    .trim();
+            }
 
             return (
                 <div className="space-y-1">
-
                     <div className="flex">
+                        {/* Nombre del Producto */}
+                        <div className="font-medium">{item.name_product}</div> {/* Principal: "pantalon" */}
+                        {/* Barcode */}
+                        {item.barcode && (
+                            <div className="text-xs text-gray-400 pl-2"> {/* Opcional: Barcode */}
+                                ({item.barcode})
+                            </div>
+                        )}
+                    </div>
 
-                    {/* Nombre del Producto */}
-                    <div className="font-medium">{item.name_product}</div> {/* Principal: "pantalon" */}
-                    {/* Barcode */}
-                    {item.barcode && (
-                        <div className="text-xs text-gray-400 pl-2"> {/* Opcional: Barcode */}
-                            ({item.barcode})
+                    {attributesString && (
+                        <div className=" mt-1">
+                            <Badge
+                                variant="default" 
+                                className="text-xs px-2 py-0.5"
+                            >
+                                {attributesString}
+                            </Badge>
                         </div>
                     )}
-                        </div>
 
-                    {/* Atributos/Variaciones */}
-                    {item.attributes_display && (
-                        <div className="text-sm text-gray-500 pl-2 s-red-400"> {/* FIX: Muestra atributos debajo */}
-                            {item.attributes_display}
-                        </div>
-                    )}
-
-
-                    {/* --- SECCIÓN: PRECIO Y PRECIO DE DESCUENTO --- */}
                     <div className="flex items-center space-x-2 pt-1">
-                        {/* 1. Precio Original (Tachado si hay descuento) */}
                         {hasDiscount && (
                             <span className="line-through text-gray-500 text-sm">
                                 ${originalPrice.toFixed(2)}
                             </span>
                         )}
 
-                        {/* 2. Precio Aplicado (Con o Sin Descuento) */}
-                        {/* Si hay descuento, se pone en verde, si no, es el precio normal */}
                         <span className={`font-semibold ${hasDiscount ? 'text-green-600 text-sm' : 'text-gray-900 text-sm'}`}>
                             ${discountedPrice.toFixed(2)}
                         </span>
 
-                        {/* 3. Monto del Descuento (Solo si > 0) */}
                     </div>
                     {hasDiscount && (
                         <div className="flex items-center space-x-1">
-
                             <BadgePercent className='size-4' />
-                            {/* <span className="text-red-600 text-sm font-medium">
-                                NombreDescuento:
-                            </span> */}
                             <span className=" text-sm font-medium">
                                 (-${discountAmount.toFixed(2)})
                             </span>
                         </div>
                     )}
-                    {/* ---------------------------------------------------- */}
-
-                    {/* {item.combination_id && !isEdit && ( // Opcional: ID variación para debug (no en edit)
-                        <div className="text-xs text-blue-600 pl-2">
-                            Variación ID: {item.combination_id}
-                        </div>
-                    )} */}
                 </div>
             );
         },
@@ -101,18 +95,17 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
             );
         },
     },
-    {
-        id: 'product_price',
-        header: 'Precio Unitario',
-        size: 120,
-        cell: ({ row, getValue }) => {
-            const originalPrice = parseFloat(getValue() || row.original.product_price || 0);
-            // Mostramos solo el precio aplicado para evitar redundancia con el nombre
-            const discountedPrice = parseFloat(row.original.discounted_price || originalPrice);
+    // {
+    //     id: 'product_price',
+    //     header: 'Precio Unitario',
+    //     size: 120,
+    //     cell: ({ row, getValue }) => {
+    //         const originalPrice = parseFloat(getValue() || row.original.product_price || 0);
+    //         const discountedPrice = parseFloat(row.original.discounted_price || originalPrice);
 
-            return <span className="font-medium text-right">${discountedPrice.toFixed(2)}</span>;
-        },
-    },
+    //         return <span className="font-medium text-right">${discountedPrice.toFixed(2)}</span>;
+    //     },
+    // },
     {
         id: 'subtotal',
         header: 'Subtotal',

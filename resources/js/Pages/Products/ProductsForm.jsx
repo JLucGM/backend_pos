@@ -27,23 +27,16 @@ export default function ProductsForm({ data, categories, taxes, product = null, 
     const categoryOptions = useMemo(() => mapToSelectOptions(categories, 'id', 'category_name'), [categories]);
     const taxOptions = useMemo(() => mapToSelectOptions(taxes, 'id', tax => `${tax.tax_name} (${tax.tax_rate}%)`, true), [taxes]);
 
+    // Elimina este useEffect o modifícalo así:
     useEffect(() => {
-        // Show attributes section if product has combinations (for edit)
-        // or if attributes are already defined in data (e.g., after adding them in create)
-        if (product && product.combinations.length > 0 || (data.attribute_names && data.attribute_names.length > 0)) {
+        // Solo mostrar atributos automáticamente si se está editando y ya existen combinaciones
+        if (product && product.combinations.length > 0) {
             setShowAttributes(true);
-        } else {
-            // For new products or products without attributes, ensure it's false initially
-            setShowAttributes(false);
         }
-    }, [product, data.attribute_names]); // Depend on product and data.attribute_names
+        // Si es un producto nuevo, siempre inicia en false
+    }, [product]);
 
-    // Effect to ensure data.prices is an array when attributes are enabled
-    // This is crucial for the "Create" flow where data.prices might start as {} or a single item.
     useEffect(() => {
-        // If attributes are now shown, and data.prices is not already an array
-        // or it's an array but only contains the 'default' simple product entry,
-        // reset it to an empty array so the combination logic can build it correctly.
         if (showAttributes && (!Array.isArray(data.prices) || (Array.isArray(data.prices) && data.prices.length === 1 && data.prices[0]?._key === 'default'))) {
             setData('prices', []);
         }
@@ -53,15 +46,11 @@ export default function ProductsForm({ data, categories, taxes, product = null, 
     const generateCombinations = () => {
         const { attribute_names, attribute_values } = data;
 
-        // Filter out attributes that have no name or no values
         const validAttributeData = attribute_names
             .map((name, index) => ({ name, values: attribute_values[index] || [] }))
             .filter(attr => attr.name && attr.name.trim() !== '' && attr.values.length > 0 && attr.values.every(val => val.trim() !== ''));
 
         if (validAttributeData.length === 0) {
-            // If no valid attributes/values, return an array with an empty array
-            // This represents a single "default" combination for simple products,
-            // but this function is primarily used when attributes are present.
             return [[]];
         }
 
@@ -639,7 +628,19 @@ export default function ProductsForm({ data, categories, taxes, product = null, 
                                 </>
                             )}
                             {!showAttributes && data.attribute_names.length < 3 ? (
-                                <Button className="w-full justify-start p-4" variant="link" size="sm" type="button" onClick={() => setShowAttributes(true)}>
+                                <Button
+                                    className="w-full justify-start p-4"
+                                    variant="link"
+                                    size="sm"
+                                    type="button"
+                                    onClick={() => {
+                                        setShowAttributes(true);
+                                        if (data.attribute_names.length === 0) {
+                                            setData('attribute_names', ['']);
+                                            setData('attribute_values', [['']]);
+                                        }
+                                    }}
+                                >
                                     <PlusCircle className="size-4 mr-1" />
                                     Agregar opción
                                 </Button>

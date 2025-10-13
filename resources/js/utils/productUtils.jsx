@@ -1,20 +1,29 @@
 /**
  * Formatea el display de atributos para una combinación de producto.
  * @param {Object} combination - Objeto de combinación con 'combination_attribute_value' (array).
- * @returns {string} String formateado como " - Atributo1: Valor1, Atributo2: Valor2" o vacío.
+ * @param {boolean} [asString=false] - Si true, retorna string plano (para compatibilidad); si false, array para badges.
+ * @returns {Array|string} Array de {attribute_name, attribute_value_name} o string formateado.
  */
-export const formatAttributesDisplay = (combination) => {
+export const formatAttributesDisplay = (combination, asString = false) => {
     if (!combination.combination_attribute_value || !Array.isArray(combination.combination_attribute_value)) {
-        return '';
+        return asString ? '' : [];
     }
 
-    const attributesDisplay = combination.combination_attribute_value
-        .map(cav =>
-            `${cav.attribute_value.attribute.attribute_name}: ${cav.attribute_value.attribute_value_name}`
-        )
-        .join(', ');
+    const attributesArray = combination.combination_attribute_value.map(cav => ({
+        attribute_name: cav.attribute_value.attribute.attribute_name, // e.g., "talla"
+        attribute_value_name: cav.attribute_value.attribute_value_name, // e.g., "s"
+    }));
 
-    return attributesDisplay ? ` - ${attributesDisplay}` : '';
+    if (asString) {
+        // Modo string (compatibilidad): Une como antes
+        const attributesDisplay = attributesArray
+            .map(attr => `${attr.attribute_name}: ${attr.attribute_value_name}`)
+            .join(', ');
+        return attributesDisplay ? ` - ${attributesDisplay}` : '';
+    }
+
+    // Modo array (para badges): Retorna el array directamente
+    return attributesArray;
 };
 
 /**

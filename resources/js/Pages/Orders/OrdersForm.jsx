@@ -6,17 +6,22 @@ import { customStyles } from '@/hooks/custom-select';
 import Select from 'react-select';
 import { Table, TableBody, TableCell, TableRow } from "@/Components/ui/table";
 import { Button } from '@/Components/ui/button';
-import { PlusCircle, } from 'lucide-react';
+import { AlertTriangle, PlusCircle } from 'lucide-react';
 import DataTable from '@/Components/DataTable';
 import UserInfo from '@/Components/UserInfo';
 import { formatDate } from '@/utils/dateFormatter';
 import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 import { Input } from '@/Components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, } from '@/Components/ui/dialog';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { useDiscounts } from '@/hooks/useDiscounts';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useOrderItems } from '@/hooks/useOrderItems';
 import { useOrderTotals } from '@/hooks/useOrderTotals';
+import { Badge } from '@/Components/ui/badge';
+import { getBulkProductColumns } from './getBulkProductColumns';
+import BulkProductDialog from './BulkProductDialog';
 
 export default function OrdersForm({
     data,
@@ -33,38 +38,39 @@ export default function OrdersForm({
     const paymentOptions = useMemo(() => mapToSelectOptions(paymentMethods, 'id', 'payment_method_name'), [paymentMethods]);
 
     const {
-       manualDiscountCode,
-       setManualDiscountCode,
-       manualDiscountAmount,
-       appliedManualDiscount,
-       handleManualDiscountApply,
-       orderTotalAutomaticDiscount,
-       findApplicableDiscount,
-   } = useDiscounts(data, discounts, setData, isEdit, products);
+        manualDiscountCode,
+        setManualDiscountCode,
+        manualDiscountAmount,
+        appliedManualDiscount,
+        handleManualDiscountApply,
+        orderTotalAutomaticDiscount,
+        findApplicableDiscount,
+    } = useDiscounts(data, discounts, setData, isEdit, products);
 
     const {
-       selectedProductToAdd,
-       setSelectedProductToAdd,
-       productOptions,
-       formatProductOptionLabel,
-       handleAddProduct,
-       filterProductOptions, // Ya es util, pero del hook si quieres
-   } = useProductOptions(products, data, setData, isEdit, findApplicableDiscount);
+        productOptions, // Aún útil para DataTable en Dialog
+        selectedProductsBulk,
+        handleAddBulkProducts,
+        toggleBulkSelection,
+        selectAllBulk,
+        clearBulkSelection,
+        filterProductOptions, // Si DataTable usa filtrado
+    } = useProductOptions(products, data, setData, isEdit, findApplicableDiscount);
 
-   const {
-       selectedUser,
-       deliveryLocations,
-       handleUserChange,
-       userOptions, // Ahora del hook (reemplaza el memo local)
-   } = useUserManagement(data, users, setData);
+    const {
+        selectedUser,
+        deliveryLocations,
+        handleUserChange,
+        userOptions, // Ahora del hook (reemplaza el memo local)
+    } = useUserManagement(data, users, setData);
 
-      const {
-       handleQuantityChange,
-       handleRemoveItem,
-       orderItemsColumns,
-   } = useOrderItems(data, discounts, setData, isEdit, isDisabled, findApplicableDiscount, products);
-   
-      useOrderTotals(data, appliedManualDiscount, orderTotalAutomaticDiscount, setData, isEdit);
+    const {
+        handleQuantityChange,
+        handleRemoveItem,
+        orderItemsColumns,
+    } = useOrderItems(data, discounts, setData, isEdit, isDisabled, findApplicableDiscount, products);
+
+    useOrderTotals(data, appliedManualDiscount, orderTotalAutomaticDiscount, setData, isEdit);
 
 
     const statusOptions = [
@@ -77,6 +83,16 @@ export default function OrdersForm({
 
     const handlePaymentChange = (selectedOption) => setData('payments_method_id', selectedOption.value);
     const handleStatusChange = (selectedOption) => setData('status', selectedOption.value);
+
+    const bulkProductColumns = useMemo(() =>
+        getBulkProductColumns({
+            selectedProductsBulk,
+            toggleBulkSelection,
+            isDisabled,
+            isEdit
+        }),
+        [selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit]
+    );
 
     return (
         <>
@@ -149,32 +165,22 @@ export default function OrdersForm({
 
                 <DivSection className='col-span-full'>
                     <h3 className='font-semibold text-lg mb-4'>Productos del Pedido</h3>
+
                     <div className="flex items-center gap-2 mb-4">
-                        <Select
-                            id="product_selector"
-                            name="product_selector"
-                            options={productOptions}
-                            value={selectedProductToAdd}
-                            onChange={setSelectedProductToAdd}
-                            styles={customStyles}
-                            placeholder="Busca y selecciona producto o variación (e.g., Pantalon - Talla S, Rojo - $11)..."
-                            className="flex-grow"
-                            isDisabled={isDisabled || isEdit}
-                            filterOption={filterProductOptions}
-                            formatOptionLabel={formatProductOptionLabel}
+                        <BulkProductDialog
+                            productOptions={productOptions}
+                            selectedProductsBulk={selectedProductsBulk}
+                            bulkProductColumns={bulkProductColumns}
+                            handleAddBulkProducts={handleAddBulkProducts}
+                            selectAllBulk={selectAllBulk}
+                            clearBulkSelection={clearBulkSelection}
+                            isDisabled={isDisabled}
+                            isEdit={isEdit}
                         />
-                        <Button
-                            type="button"
-                            onClick={handleAddProduct}
-                            disabled={!selectedProductToAdd || isDisabled || isEdit}
-                            variant="outline"
-                            size="sm"
-                        >
-                            <PlusCircle className="size-4" />
-                        </Button>
+
                     </div>
 
-                    {/* Input para Código de Descuento Manual */}
+                    {/* Input para Código de Descuento Manual (intacto) */}
                     <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
                         <InputLabel value="Código de Descuento (Opcional)" className="mb-2" />
                         <div className="flex gap-2">
@@ -195,18 +201,18 @@ export default function OrdersForm({
                                 Aplicar
                             </Button>
                         </div>
-                        {appliedManualDiscount && (
+                        {/* {appliedManualDiscount && (
                             <p className="mt-1 text-sm text-green-600">
                                 Aplicado: {appliedManualDiscount.name} - Ahorro: ${manualDiscountAmount.toFixed(2)}
                                 {appliedManualDiscount.applied_to && (
                                     <span className="text-xs"> (aplicado a {appliedManualDiscount.applied_to.length} ítem{appliedManualDiscount.applied_to.length > 1 ? 's' : ''})</span>
                                 )}
                             </p>
-                        )}
+                        )} */}
                         <InputError message={errors.manual_discount_code} className="mt-2" />
                     </div>
 
-                    {/* DataTable: Muestra order_items con columnas para discounted_price, discount_amount */}
+                    {/* DataTable: Muestra order_items con columnas para discounted_price, discount_amount (intacto) */}
                     {data.order_items && data.order_items.length > 0 ? (
                         <DataTable
                             columns={orderItemsColumns}
@@ -216,7 +222,7 @@ export default function OrdersForm({
                         <p className="text-gray-500 text-center py-8">No hay productos en el pedido. Agrega algunos para continuar.</p>
                     )}
 
-                    {/* Tabla de Totales: Subtotal post-descuentos por ítem, total final */}
+                    {/* Tabla de Totales: Subtotal post-descuentos por ítem, total final (intacto) */}
                     <Table className="mt-6">
                         <TableBody>
                             <TableRow>

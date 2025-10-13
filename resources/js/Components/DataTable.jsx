@@ -7,8 +7,7 @@ import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, ChevronDownIcon, Chevron
 import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
-export default function DataTable({ data, columns
-}) {
+export default function DataTable({ data, columns }) {
     const [filtering, setFiltering] = useState("");
     const [sorting, setSorting] = useState([]);
     const table = useReactTable({
@@ -30,7 +29,8 @@ export default function DataTable({ data, columns
             }
         },
         onGlobalFilterChange: setFiltering,
-
+        // Opcional: Si quieres keys más robustas basadas en data, agrega getRowId
+        // getRowId: (row, index) => row.original.value || row.original.id || index.toString(), // Útil si no usas row.id
     })
 
     return (
@@ -65,12 +65,8 @@ export default function DataTable({ data, columns
                                                 {{
                                                     'asc': <ChevronUpIcon className=" size-4" />,
                                                     'desc': <ChevronDownIcon className=" size-4" />
-                                                }
-                                                [
-                                                    header.column.getIsSorted() ?? null
-                                                ]}
+                                                }[header.column.getIsSorted() ?? null]}
                                             </div>
-
                                         </TableHead>
                                     ))
                                 }
@@ -82,11 +78,13 @@ export default function DataTable({ data, columns
                 <TableBody>
                     {
                         table.getRowModel().rows?.map((row) => (
-                            <React.Fragment key={row.original.id}>
+                            <React.Fragment key={row.id}>
                                 <TableRow>
                                     {
-                                        row.getVisibleCells().map((cell, index) => (
-                                            <TableCell key={index} className="capitalize px-6 py-4">
+                                        row.getVisibleCells().map((cell) => (
+                                            // FIX: Removí key={index} aquí también, ya que TanStack maneja keys internas para cells.
+                                            // Si necesitas, usa cell.id o cell.column.id + row.id
+                                            <TableCell key={cell.id} className="capitalize px-6 py-4">
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
                                         ))
@@ -94,9 +92,10 @@ export default function DataTable({ data, columns
                                 </TableRow>
                                 {
                                     row.getIsExpanded() && (
-                                        <TableRow key={`expanded-${row.original.id}`}>
+                                        // FIX: Cambia key a row.id para consistencia
+                                        <TableRow key={`expanded-${row.id}`}>
                                             <TableCell colSpan={row.getVisibleCells().length + 1} className="p-4">
-                                                {columns.find((column) => column.accessorKey === 'id').expanded(row)}
+                                                {columns.find((column) => column.accessorKey === 'id')?.expanded?.(row)}
                                             </TableCell>
                                         </TableRow>
                                     )
@@ -109,7 +108,7 @@ export default function DataTable({ data, columns
 
             <div className="flex justify-between ">
                 <Select
-                    className={' border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-3xl shadow-sm'}
+                    className={' border-gray-300 dark:border-gray-300 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-3xl shadow-sm'}
                     value={table.getState().pagination.pageSize}
                     onChange={(e) => {
                         table.setPageSize(Number(e.target.value))
@@ -183,7 +182,6 @@ export default function DataTable({ data, columns
                     </Button>
                 </div>
             </div>
-
         </>
     );
 }
