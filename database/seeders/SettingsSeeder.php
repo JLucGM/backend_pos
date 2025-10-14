@@ -23,7 +23,7 @@ class SettingsSeeder extends Seeder
                 'default_currency' => "bs",
                 // 'admin_email' => "joedoe@example.com",
                 // 'admin_phone' => "04125549950",
-                'shipping_base_price' => "2.00",
+                // 'shipping_base_price' => "2.00",
                 'company_id' => 1,
             ],            
         ];

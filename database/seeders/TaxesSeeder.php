@@ -14,16 +14,12 @@ class TaxesSeeder extends Seeder
     public function run(): void
     {
         //'tax_name', 'tax_description', 'tax_rate'
-        $categorias = [
-            [
-                'tax_name' => 'Sin impuesto',
-                'tax_description' => 'Sin impuesto',
-                // 'tax_rate' => '',
-            ],            
+        $categorias = [           
             [
                 'tax_name' => 'IVA',
                 'tax_description' => 'Impuesto al Valor Agregado',
                 'tax_rate' => '16',
+                'company_id' => 1,
             ],            
         ];
 

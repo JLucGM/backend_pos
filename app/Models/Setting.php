@@ -17,11 +17,7 @@ class Setting extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $fillable = [
-        'app_name',
         'default_currency',
-        'admin_email',
-        'admin_phone',
-        'shipping_base_price',
         'company_id',
     ];
 

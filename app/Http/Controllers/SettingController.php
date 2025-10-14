@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\Setting;
+use App\Models\ShippingRate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -66,7 +68,7 @@ class SettingController extends Controller
         // Validar los datos de entrada
         $request->validate([
             'default_currency' => 'required|string|max:255',
-            'shipping_base_price' => 'required|numeric|min:0',
+            // 'shipping_base_price' => 'required|numeric|min:0',
             'name' => 'required|string|max:255', // Validación para el nombre de la compañía
             'email' => 'required|email|max:255', // Validación para el correo de la compañía
             'phone' => 'required|string|max:255', // Validación para el teléfono de la compañía
@@ -81,7 +83,7 @@ class SettingController extends Controller
         // Actualizar los ajustes
         $setting->update($request->only(
             'default_currency',
-            'shipping_base_price',
+            // 'shipping_base_price',
         ));
         // Actualizar los campos de la compañía
         $company = $setting->company; // Obtener la compañía asociada
@@ -129,6 +131,73 @@ class SettingController extends Controller
         }
 
         return to_route('setting.index', $setting);
+    }
+
+    public function updateSettings(Request $request, Setting $setting)
+    {
+        $user = Auth::user();
+        if ($setting->company_id !== $user->company_id) {
+            abort(403);
+        }
+        $request->validate([
+            'default_currency' => 'required|string|max:255',
+            // Agrega otros campos de settings si es necesario
+        ]);
+        $setting->update($request->only('default_currency' /*, otros campos */));
+        return response()->json(['message' => 'Settings actualizados exitosamente']);
+    }
+
+    public function updateCompany(Request $request, Company $company)
+    {
+        $user = Auth::user();
+        if ($company->id !== $user->company_id) {
+            abort(403);
+        }
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+        ]);
+        $company->update($request->only('name', 'email', 'phone', 'address'));
+        return response()->json(['message' => 'Compañía actualizada exitosamente']);
+    }
+
+     public function updateMedia(Request $request, Setting $setting)
+    {
+        $user = Auth::user();
+        if ($setting->company_id !== $user->company_id) {
+            abort(403);
+        }
+        if ($request->hasFile('logo')) {
+            $setting->clearMediaCollection('logo');
+            $setting->addMediaFromRequest('logo')->toMediaCollection('logo');
+        }
+        if ($request->hasFile('favicon')) {
+            $setting->clearMediaCollection('favicon');
+            $setting->addMediaFromRequest('favicon')->toMediaCollection('favicon');
+        }
+        if ($request->hasFile('logofooter')) {
+            $setting->clearMediaCollection('logofooter');
+            $setting->addMediaFromRequest('logofooter')->toMediaCollection('logofooter');
+        }
+        return response()->json(['message' => 'Media actualizada exitosamente']);
+    }
+
+    public function updateShippingRates(Request $request)
+    {
+        $user = Auth::user();
+        // Valida y actualiza solo los shipping_rates de la compañía
+        $request->validate([
+            'shipping_rate_id' => 'required|exists:shipping_rates,id',
+            'price' => 'required|numeric',
+            // Otros campos
+        ]);
+        $shippingRate = ShippingRate::where('id', $request->shipping_rate_id)
+            ->where('company_id', $user->company_id)
+            ->firstOrFail();
+        $shippingRate->update($request->only('price' /*, otros campos */));
+        return response()->json(['message' => 'Tarifas de envío actualizadas exitosamente']);
     }
 
 

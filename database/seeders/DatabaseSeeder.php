@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,6 +25,17 @@ class DatabaseSeeder extends Seeder
         $this->call(PaymentsMethodsSeeder::class);
         $this->call(StoreSeeder::class);
         $this->call(SettingsSeeder::class);
+
+        DB::table('shipping_rates')->insert([
+            'name' => 'Estandar',
+            'slug' => "estandar",
+            'price' => 2.00,
+            'description' => 'Envío básico a zonas locales',
+            'company_id' => 1, // ID de una empresa de prueba
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
 
         User::create([
             'name' => 'Jean Gouirand',

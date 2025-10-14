@@ -15,8 +15,8 @@ class CompaniesSeeder extends Seeder
     {
         $companies = [
             [
-                'name' => 'Empresa 1',
-                'email' => 'empresa1@example.com',
+                'name' => 'My Store',
+                'email' => 'mystore@example.com',
                 'phone' => '123456789',
                 'address' => 'Direccion 1',
             ],
