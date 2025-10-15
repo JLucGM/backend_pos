@@ -6,7 +6,6 @@ use App\Http\Requests\Orders\StoreRequest;
 use App\Http\Requests\Orders\UpdateRequest;
 use App\Models\Discount;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Store;

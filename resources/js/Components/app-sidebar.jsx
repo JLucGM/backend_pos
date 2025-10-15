@@ -142,6 +142,10 @@ export function AppSidebar({
             title: "Impuestos",
             url: "tax.index",
           },
+          {
+            title: "Tarifa de envio",
+            url: "shippingrate.index",
+          },
         ],
       },
       // {

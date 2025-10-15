@@ -17,6 +17,7 @@ class ShippingRate extends Model
         'slug',
         'price',
         'description',
+        'company_id',
     ];
 
     public function getRouteKeyName()
@@ -27,7 +28,7 @@ class ShippingRate extends Model
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('app_name')
+            ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
     }
 

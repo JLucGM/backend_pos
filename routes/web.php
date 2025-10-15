@@ -14,6 +14,7 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ShippingRateController;
 use App\Http\Controllers\StatesController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StoreController;
@@ -147,6 +148,14 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('gift-cards/{giftCard}/edit', [GiftCardController::class, 'edit'])->name('giftCards.edit');
     Route::post('gift-cards/{giftCard}', [GiftCardController::class, 'update'])->name('giftCards.update');
     Route::delete('gift-cards/{giftCard}', [GiftCardController::class, 'destroy'])->name('giftCards.destroy');
+    Route::get('gift-cards', [GiftCardController::class, 'index'])->name('giftCards.index');
+
+    Route::get('shipping-rates', [ShippingRateController::class, 'index'])->name('shippingrate.index');
+    Route::get('shipping-rates/create', [ShippingRateController::class, 'create'])->name('shippingrate.create');
+    Route::post('shipping-rates', [ShippingRateController::class, 'store'])->name('shippingrate.store');
+    Route::get('shipping-rates/{shippingRate}/edit', [ShippingRateController::class, 'edit'])->name('shippingrate.edit');
+    Route::post('shipping-rates/{shippingRate}', [ShippingRateController::class, 'update'])->name('shippingrate.update');
+    Route::delete('shipping-rates/{shippingRate}', [ShippingRateController::class, 'destroy'])->name('shippingrate.destroy');
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
