@@ -12,6 +12,7 @@ class Order extends Model
 
     protected $fillable = [
         'status',
+        'totalshipping',
         'totaldiscounts',
         'subtotal',
         'tax_amount',
@@ -21,6 +22,7 @@ class Order extends Model
         'user_id',
         'delivery_location_id',
         'company_id',
+        'shipping_rate_id',
     ];
 
     protected static function booted()
@@ -50,5 +52,10 @@ class Order extends Model
     {
         return $this->belongsTo(DeliveryLocation::class);
     }
+
+    public function shippingRate()
+{
+    return $this->belongsTo(ShippingRate::class, 'shipping_rate_id');
+}
     
 }

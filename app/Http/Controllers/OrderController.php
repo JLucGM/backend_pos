@@ -8,6 +8,7 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Product;
+use App\Models\ShippingRate;
 use App\Models\Store;
 use App\Models\User;
 use Carbon\Carbon;
@@ -60,18 +61,22 @@ class OrderController extends Controller
             'taxes', // Completo: todos los taxes
             'combinations.combinationAttributeValue.attributeValue.attribute', // Anidado completo para labels de variaciones
             'discounts' // Completo: descuentos con pivot full (combination_id)
-        )->where('company_id', $userAuth->company_id)->get(); // Filtrar por compañía – TODOS los productos de la compañía van
+        )
+            // ->where('company_id', $userAuth->company_id)
+            ->get(); // Filtrar por compañía – TODOS los productos de la compañía van
 
         // Cargar TODOS los descuentos activos (con relaciones completas, filtrado por compañía)
         $discounts = Discount::with([
             'products', // Completo: todos los products relacionados (con pivot combination_id)
             'categories' // Completo: todas las categories
         ])
-            ->where('company_id', $userAuth->company_id) // Filtrar por compañía (agrega consistencia; remueve si no quieres)
+            // ->where('company_id', $userAuth->company_id) // Filtrar por compañía (agrega consistencia; remueve si no quieres)
             ->active() // Scope: is_active=true, fechas válidas
             ->get(); // TODOS los descuentos activos van
 
-        return Inertia::render('Orders/Create', compact('paymentMethods', 'products', 'users', 'discounts'));
+        $shippingRates = ShippingRate::all();
+
+        return Inertia::render('Orders/Create', compact('paymentMethods', 'products', 'users', 'discounts', 'shippingRates'));
     }
 
     /**
@@ -79,6 +84,7 @@ class OrderController extends Controller
      */
     public function store(StoreRequest $request)
     {
+        // dd($request->all());
         $userAuth = Auth::user();
 
         if ($userAuth->company_id !== $request->input('company_id', $userAuth->company_id)) {
@@ -212,13 +218,23 @@ class OrderController extends Controller
             $taxAmount = collect($orderItemsData)->sum(fn($i) => $i['tax_amount']); // Re-sum tax
         }
 
+        // Obtener el shipping_rate_id del request
+        $shippingRateId = $request->input('shipping_rate_id');
+        $totalShipping = 0;  // Inicializa el monto de envío
+        if ($shippingRateId) {
+            $shippingRate = ShippingRate::find($shippingRateId);  // Obtén la tarifa de la base de datos
+            if ($shippingRate) {
+                $totalShipping = $shippingRate->price;  // Asume que hay un campo 'price' en la tabla shipping_rates
+            }
+        }
+        // dd($totalShipping);
         // Cálculo final
         $finalSubtotal = $subtotalPostDiscount;
-        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount;
+        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount + $totalShipping;  // Suma el costo de envío
         $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount;
 
         // Crear orden
-        $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount) {
+        $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping) {
             $order = Order::create([
                 'status' => $request['status'],
                 'tax_amount' => $taxAmount,
@@ -232,6 +248,8 @@ class OrderController extends Controller
                 'order_origin' => $request['order_origin'],
                 'user_id' => $request['user_id'],
                 'company_id' => $userAuth->company_id,
+                'shipping_rate_id' => $shippingRateId,  // Guarda el ID de la tarifa
+                'totalshipping' => $totalShipping,
             ]);
 
             foreach ($orderItemsData as $itemData) {
@@ -434,16 +452,18 @@ class OrderController extends Controller
             'combinations.combinationAttributeValue.attributeValue.attribute',
             'discounts' // FIX: Carga descuentos del producto para frontend
         )
-            ->where('company_id', Auth::user()->company_id)
+            // ->where('company_id', Auth::user()->company_id)
             ->get();
 
         // Carga todos los usuarios
         $users = User::all(); // Filtra por rol si necesitas: ->where('role', 'client')
 
         $paymentMethods = PaymentMethod::all(); // Asume modelo PaymentMethod
+        $shippingRates = ShippingRate::all();  // <-- Agrega esto para pasar a la vista
 
         return Inertia::render('Orders/Edit', [
             'orders' => $orders,
+            'shippingRates' => $shippingRates,
             'paymentMethods' => $paymentMethods,
             'products' => $products,
             'users' => $users,
@@ -451,10 +471,6 @@ class OrderController extends Controller
         ]);
     }
 
-
-    /**
-     * Update the specified resource in storage.
-     */
     /**
      * Update the specified resource in storage.
      */
@@ -607,12 +623,21 @@ class OrderController extends Controller
             $taxAmount = collect($orderItemsData)->sum(fn($i) => $i['tax_amount']);
         }
 
+        $shippingRateId = $request->input('shipping_rate_id');
+        $totalShipping = 0;
+        if ($shippingRateId) {
+            $shippingRate = ShippingRate::find($shippingRateId);
+            if ($shippingRate) {
+                $totalShipping = $shippingRate->price;
+            }
+        }
+
         $finalSubtotal = $subtotalPostDiscount;
-        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount;
+        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount + $totalShipping;  // Incluye totalShipping
         $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount;
 
         // Update con transacción – FIX: Agrega $existingItems y $sentIds en use()
-        $orders = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $orders, $stockChanges, $sentIds, $existingItems, $manualDiscountCode, $manualDiscountAmount) { // <-- FIX: Agrega $existingItems aquí
+        $orders = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $shippingRateId, $totalShipping, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $orders, $stockChanges, $sentIds, $existingItems, $manualDiscountCode, $manualDiscountAmount) { // <-- FIX: Agrega $existingItems aquí
             try {
                 // Update orden principal
                 $orders->update([
@@ -625,7 +650,8 @@ class OrderController extends Controller
                     'manual_discount_amount' => $manualDiscountAmount,
                     'payments_method_id' => $request['payments_method_id'],
                     'user_id' => $request['user_id'] ?? $orders->user_id,
-                    // direction_delivery si aplica
+                    'shipping_rate_id' => $shippingRateId,
+                    'totalshipping' => $totalShipping,
                 ]);
                 Log::info('Order updated: ID=' . $orders->id . ', total=' . $finalTotal); // Debug
 

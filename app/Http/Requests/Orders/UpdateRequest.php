@@ -45,6 +45,8 @@ class UpdateRequest extends FormRequest
             'order_items.*.discount_type' => 'nullable|string|in:percentage,fixed_amount', // Opcional
             'order_items.*.tax_rate' => 'required|numeric|min:0', // Required (calculado)
             'order_items.*.tax_amount' => 'required|numeric|min:0', // Required (calculado)
+            'shipping_rate_id' => 'nullable|exists:shipping_rates,id',  // Valida que exista en la tabla shipping_rates
+            'totalshipping' => 'nullable|numeric',
         ];
     }
 

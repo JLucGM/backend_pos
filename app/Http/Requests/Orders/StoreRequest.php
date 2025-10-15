@@ -47,6 +47,8 @@ class StoreRequest extends FormRequest
             'order_items.*.attributes_display' => 'nullable|string', // Opcional: Para display (no guardado en DB)
             'manual_discount_code' => 'nullable|string|max:50', // AÑADIDO
             'manual_discount_amount' => 'nullable|numeric|min:0|max:999999',
+            'shipping_rate_id' => 'nullable|exists:shipping_rates,id',  // Valida que exista en la tabla shipping_rates
+            'totalshipping' => 'nullable|numeric',  // Valida que exista en la tabla shipping_rates
         ];
     }
 

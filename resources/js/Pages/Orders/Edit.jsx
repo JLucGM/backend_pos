@@ -10,7 +10,7 @@ import Loader from '@/Components/ui/loader';
 
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
-export default function Edit({ orders, paymentMethods, products, users, discounts }) {
+export default function Edit({ orders, paymentMethods, products, users, discounts, shippingRates }) {
     // FIX: Maneja flash messages (success/error de backend)
     const { flash } = usePage().props;
     if (flash?.success) toast.success(flash.success);
@@ -24,10 +24,12 @@ export default function Edit({ orders, paymentMethods, products, users, discount
         total: parseFloat(orders.total) || 0,
         subtotal: parseFloat(orders.subtotal) || 0,
         totaldiscounts: parseFloat(orders.totaldiscounts) || 0,
+        totalshipping: parseFloat(orders.totalshipping) || 0,  
         user_id: orders.user_id || null,
         payments_method_id: orders.payments_method_id || null,
         manual_discount_code: orders.manual_discount_code || null,
         manual_discount_amount: parseFloat(orders.manual_discount_amount) || 0,
+        shipping_rate_id: orders.shipping_rate_id || null,
         order_items: orders.order_items ? orders.order_items.map((item, index) => {
             const quantity = parseInt(item.quantity || 1);
             const originalPrice = parseFloat(item.price_product || 0); // FIX: Original de DB price_product ($10)
@@ -141,6 +143,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                                         products={products}
                                         users={users}
                                         discounts={discounts}
+                                        shippingRates={shippingRates}
                                         setData={setData}
                                         errors={errors}
                                         isEdit={false} // FIX: Cambia a true para modo edit (bloquea agregar nuevos, preserva descuentos)

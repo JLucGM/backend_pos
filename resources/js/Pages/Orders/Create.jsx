@@ -6,8 +6,8 @@ import { lazy, Suspense } from 'react';
 import { toast } from 'sonner';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
-export default function Create({ paymentMethods, products, users, discounts  }) { // Asegúrate de recibir 'users' aquí
-    console.log(products)
+export default function Create({ paymentMethods, products, users, discounts, shippingRates  }) { // Asegúrate de recibir 'users' aquí
+    // console.log(products)
 
     const initialValues = {
         status: 'pending', // Estado inicial por defecto
@@ -15,11 +15,13 @@ export default function Create({ paymentMethods, products, users, discounts  }) 
         tax_amount: 0,
         total: 0,
         totaldiscounts: 0,
+        totalshipping: 0.00,
         payments_method_id: paymentMethods.length > 0 ? paymentMethods[0].id : null, // Primer método de pago por defecto
         order_origin: 'web', // Origen de la orden
         order_items: [], // Array vacío para los productos de la orden
         user_id: null, // Inicializa user_id como null
         delivery_location_id: null,
+        shipping_rate_id: null,
     }
 
     const { data, setData, errors, post, processing } = useForm(initialValues)
@@ -64,6 +66,7 @@ export default function Create({ paymentMethods, products, users, discounts  }) 
                                     paymentMethods={paymentMethods}
                                     users={users} // Pasa la prop users al OrdersForm
                                     discounts={discounts} // Pasa los descuentos al OrdersForm
+                                    shippingRates={shippingRates}
                                     data={data}
                                     setData={setData}
                                     errors={errors}

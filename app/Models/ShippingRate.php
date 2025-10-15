@@ -36,4 +36,14 @@ class ShippingRate extends Model
     {
         static::addGlobalScope(new CompanyScope);
     }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

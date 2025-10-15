@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import DivSection from '@/Components/ui/div-section';
@@ -30,12 +30,14 @@ export default function OrdersForm({
     users = [],
     paymentMethods = [],
     discounts = [],
+    shippingRates = [],
     setData,
     errors,
     isEdit = false,
     isDisabled = false
 }) {
     const paymentOptions = useMemo(() => mapToSelectOptions(paymentMethods, 'id', 'payment_method_name'), [paymentMethods]);
+    const shippingRatesOptions = useMemo(() => mapToSelectOptions(shippingRates, 'id', shippingRates => `${shippingRates.name} (${shippingRates.price})`, true), [shippingRates]);
 
     const {
         manualDiscountCode,
@@ -94,6 +96,15 @@ export default function OrdersForm({
         [selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit]
     );
 
+    useEffect(() => {
+        if (data.shipping_rate_id && shippingRates) {
+            const selectedRate = shippingRates.find(rate => rate.id === data.shipping_rate_id);
+            if (selectedRate) {
+                setData('totalshipping', selectedRate.price || 0);  // Asume que shippingRates tiene un campo 'price'
+            }
+        }
+    }, [data.shipping_rate_id, shippingRates, setData]);
+
     return (
         <>
             <div className="grid grid-cols-3 gap-4">
@@ -142,6 +153,20 @@ export default function OrdersForm({
                                 isDisabled={isDisabled}
                             />
                             <InputError message={errors.payments_method_id} className="mt-2" />
+                        </div>
+
+                        <div className="mt-4">
+                            <InputLabel htmlFor="shipping_rate_id" value="Tarifa de envio" />
+                            <Select
+                                id="shipping_rate_id"
+                                name="shipping_rate_id"
+                                options={shippingRatesOptions}
+                                value={shippingRatesOptions.find(option => option.value === data.shipping_rate_id)}
+                                onChange={(selectedOption) => setData('shipping_rate_id', selectedOption ? selectedOption.value : null)}  // Handler corregido
+                                styles={customStyles}
+                                isDisabled={isDisabled}
+                            />
+                            <InputError message={errors.shipping_rate_id} className="mt-2" />
                         </div>
                     </DivSection>
                 </div>
@@ -237,6 +262,11 @@ export default function OrdersForm({
                                 <TableCell className="font-medium text-red-600">
                                     -${(parseFloat(data.totaldiscounts) || 0).toFixed(2)}
                                 </TableCell>
+                                <TableCell></TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell colSpan="3" className="text-right font-medium">Costo de Envío</TableCell>
+                                <TableCell className="font-medium">${(parseFloat(data.totalshipping) || 0).toFixed(2)}</TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                             <TableRow>

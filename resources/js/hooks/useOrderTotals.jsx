@@ -1,4 +1,3 @@
-// src/hooks/useOrderTotals.js
 import { useEffect } from 'react';
 
 /**
@@ -7,25 +6,41 @@ import { useEffect } from 'react';
  * @param {Object} appliedManualDiscount - De useDiscounts.
  * @param {number} orderTotalAutomaticDiscount - De useDiscounts.
  * @param {Function} setData - Actualiza totales.
- * @param {boolean} isEdit - Modo edición (opcional, para lógica futura).
- * @returns {void} - Solo side-effect (actualiza data via setData).
+ * @param {boolean} isEdit - Modo edición (opcional).
+ * @returns {void} - Solo side-effect.
  */
 export const useOrderTotals = (data, appliedManualDiscount, orderTotalAutomaticDiscount, setData, isEdit) => {
     useEffect(() => {
-        const itemsSubtotal = data.order_items.reduce((sum, item) => sum + parseFloat(item.subtotal || 0), 0);
-        const itemsTaxAmount = data.order_items.reduce((sum, item) => sum + parseFloat(item.tax_amount || 0), 0);
-        const itemsDiscounts = data.order_items.reduce((sum, item) => sum + parseFloat(item.discount_amount || 0), 0);
+        // Función auxiliar para parsear números de forma segura
+        const safeParseFloat = (value) => {
+            const parsed = parseFloat(value);
+            return isNaN(parsed) ? 0 : parsed;  // Si no es un número, devuelve 0
+        };
+
+        // Calcula subtotal de ítems con validación
+        const itemsSubtotal = data.order_items.reduce((sum, item) => sum + safeParseFloat(item.subtotal), 0);
+        const itemsTaxAmount = data.order_items.reduce((sum, item) => sum + safeParseFloat(item.tax_amount), 0);
+        const itemsDiscounts = data.order_items.reduce((sum, item) => sum + safeParseFloat(item.discount_amount), 0);
 
         let manualDiscount = 0;
         if (appliedManualDiscount && appliedManualDiscount.applies_to === 'order_total') {
-            manualDiscount = parseFloat(data.manual_discount_amount || 0);
+            manualDiscount = safeParseFloat(data.manual_discount_amount);
         }
-        const orderTotalDiscount = orderTotalAutomaticDiscount;
+        const orderTotalDiscount = safeParseFloat(orderTotalAutomaticDiscount);  // Asegura que sea un número
         const globalDiscounts = manualDiscount + orderTotalDiscount;
 
         const totalDiscounts = itemsDiscounts + globalDiscounts;
-        const finalTotal = itemsSubtotal + itemsTaxAmount - globalDiscounts;
+        const finalTotal = itemsSubtotal + itemsTaxAmount + safeParseFloat(data.totalshipping) - globalDiscounts;  // Usa safeParseFloat para totalshipping
 
+        // console.log('Recalculando totales:', {
+        //     itemsSubtotal,
+        //     itemsTaxAmount,
+        //     globalDiscounts,
+        //     totalshipping: data.totalshipping,
+        //     finalTotal,  // Ahora debería ser un número válido
+        // });
+
+        // Actualiza data con los nuevos valores
         setData(prevData => ({
             ...prevData,
             subtotal: itemsSubtotal,
@@ -34,5 +49,5 @@ export const useOrderTotals = (data, appliedManualDiscount, orderTotalAutomaticD
             total: finalTotal,
             manual_discount_amount: manualDiscount,
         }));
-    }, [data.order_items, appliedManualDiscount, orderTotalAutomaticDiscount, setData, isEdit]);
+    }, [data.order_items, data.totalshipping, appliedManualDiscount, orderTotalAutomaticDiscount, setData, isEdit]);
 };

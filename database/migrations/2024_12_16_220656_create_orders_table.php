@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('status');
             $table->decimal('totaldiscounts', 10, 2)->default(0.00);
+            $table->decimal('totalshipping', 10, 2)->default(0.00);
             $table->decimal('subtotal', 10, 2)->default(0.00);
             $table->decimal('total', 10, 2)->default(0.00);
             $table->decimal('tax_amount', 10, 2)->default(0.00); // Nuevo campo para el monto de impuestos
@@ -23,6 +24,7 @@ return new class extends Migration
             $table->foreignId('payments_method_id')->nullable()->constrained();
             $table->foreignId('user_id')->nullable()->constrained();
             $table->foreignId('delivery_location_id')->nullable()->constrained('delivery_locations')->onDelete('set null');
+            $table->foreignId('shipping_rate_id')->nullable()->constrained('shipping_rates')->onDelete('set null');
             $table->timestamps();
         });
     }
