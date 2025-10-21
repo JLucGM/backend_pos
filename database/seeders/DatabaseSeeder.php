@@ -25,6 +25,8 @@ class DatabaseSeeder extends Seeder
         $this->call(PaymentsMethodsSeeder::class);
         $this->call(StoreSeeder::class);
         $this->call(SettingsSeeder::class);
+        $this->call(ThemeSeeder::class);
+        $this->call(PageSeeder::class);
 
         DB::table('shipping_rates')->insert([
             'name' => 'Estandar',

@@ -130,6 +130,10 @@ export function AppSidebar({
             title: "Configuración",
             url: "setting.index",
           },
+          {
+            title: "Políticas",
+            url: "pages.index",
+          },
           // {
           //   title: "Tiendas",
           //   url: "stores.index",

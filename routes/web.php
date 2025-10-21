@@ -6,10 +6,11 @@ use App\Http\Controllers\CitiesController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\DeliveryLocationController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\GiftCardController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -32,6 +33,8 @@ Route::get('/', function () {
         // 'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::get('/{slug}', [FrontendController::class, 'show'])->name('pages.show');
 
 // Route::get('/dashboard', function () {
 //     return Inertia::render('Dashboard');
@@ -156,6 +159,13 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('shipping-rates/{shippingRate}/edit', [ShippingRateController::class, 'edit'])->name('shippingrate.edit');
     Route::post('shipping-rates/{shippingRate}', [ShippingRateController::class, 'update'])->name('shippingrate.update');
     Route::delete('shipping-rates/{shippingRate}', [ShippingRateController::class, 'destroy'])->name('shippingrate.destroy');
+    
+    Route::get('pages', [PageController::class, 'index'])->name('pages.index');
+    Route::get('pages/create', [PageController::class, 'create'])->name('pages.create');
+    Route::post('pages', [PageController::class, 'store'])->name('pages.store');
+    Route::get('pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
+    Route::post('pages/{page}', [PageController::class, 'update'])->name('pages.update');
+    Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
