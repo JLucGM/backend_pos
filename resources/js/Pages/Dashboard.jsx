@@ -5,6 +5,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Badge } from "@/Components/ui/badge"
+import SummaryCard from '@/Components/SummaryCard';
 
 export default function Dashboard({ user, usersCount, orders, ordersCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod }) {
     const userAuth = usePage().props.auth.user;
@@ -48,30 +49,10 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
 
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                 <div className="grid auto-rows-min gap-4 lg:grid-cols-6">
-                    <DivSection className="col-span-2">
-                        <span className='block font-medium text-2xl'>
-                            {ordersCount}
-                        </span>
-                        <p className="text-gray-500 dark:text-gray-400">Órdenes Totales</p>
-                    </DivSection>
-                     <DivSection className="col-span-1">
-                        <span className='block font-medium text-2xl'>
-                            {usersCount}
-                        </span>
-                        <p className="text-gray-500 dark:text-gray-400">Usuarios Totales</p>
-                    </DivSection> 
-                    <DivSection className="col-span-1">
-                        <span className='block font-medium text-2xl'>
-                            {todayOrdersCount}
-                        </span>
-                        <p className="text-gray-500 dark:text-gray-400">Órdenes del Día</p>
-                    </DivSection>
-                    <DivSection className="col-span-2">
-                        <span className='block font-medium text-2xl'>
-                            ${totalTodayOrdersAmount}
-                        </span>
-                        <p className="text-gray-500 dark:text-gray-400">Recaudado Hoy</p> 
-                    </DivSection>
+                    <SummaryCard label="Órdenes Totales" value={ordersCount} className="col-span-2" />
+  <SummaryCard label="Usuarios Totales" value={usersCount} className="col-span-1" />
+  <SummaryCard label="Órdenes del Día" value={todayOrdersCount} className="col-span-1" />
+  <SummaryCard label="Recaudado Hoy" value={totalTodayOrdersAmount} prefix="$" className="col-span-2" />
 
                     <DivSection className="col-span-3">
                         <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Usuarios Registrados por Mes</h3>

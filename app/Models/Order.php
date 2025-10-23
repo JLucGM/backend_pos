@@ -41,21 +41,18 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-
     public function paymentMethod()
     {
         return $this->belongsTo(PaymentMethod::class, 'payments_method_id');
     }
 
-        // ... dentro de la clase Order
     public function deliveryLocation()
     {
         return $this->belongsTo(DeliveryLocation::class);
     }
 
     public function shippingRate()
-{
-    return $this->belongsTo(ShippingRate::class, 'shipping_rate_id');
-}
-    
+    {
+        return $this->belongsTo(ShippingRate::class, 'shipping_rate_id');
+    }
 }

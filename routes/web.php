@@ -14,6 +14,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingRateController;
 use App\Http\Controllers\StatesController;
@@ -34,7 +35,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/{slug}', [FrontendController::class, 'show'])->name('pages.show');
+Route::get('/page/{slug}', [FrontendController::class, 'show'])->name('pages.show');
 
 // Route::get('/dashboard', function () {
 //     return Inertia::render('Dashboard');
@@ -170,6 +171,8 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
     Route::post('setting/{setting}', [SettingController::class, 'update'])->name('setting.update');
+
+    Route::get('/reports', [ReportController::class, 'index'])->name('reportes.index');
 });
 
 require __DIR__ . '/auth.php';

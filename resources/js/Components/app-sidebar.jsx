@@ -4,6 +4,7 @@ import {
   BadgePercent,
   // BookOpen,
   Bot,
+  ChartColumnBigIcon,
   Cog,
   Command,
   Frame,
@@ -210,6 +211,11 @@ export function AppSidebar({
         title: "Descuentos",
         url: "discounts.index",
         icon: BadgePercent,
+      },
+      {
+        title: "Reportes",
+        url: "reportes.index",
+        icon: ChartColumnBigIcon,
       },
 
     ],
