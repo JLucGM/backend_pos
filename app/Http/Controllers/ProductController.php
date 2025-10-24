@@ -236,10 +236,7 @@ class ProductController extends Controller
         $product->load(
             'categories',
             'stocks',
-            'combinations',
-            'combinations.combinationAttributeValue', // Cargar valores de atributos de combinaciones
-            'combinations.combinationAttributeValue.attributeValue', // Cargar valores de atributos relacionados
-            'combinations.combinationAttributeValue.attributeValue.attribute', // Cargar atributos relacionados
+            'combinations.combinationAttributeValue.attributeValue.attribute',
             'media',
         );
 
@@ -276,6 +273,7 @@ class ProductController extends Controller
      */
     public function update(UpdateRequest $request, Product $product)
     {
+        //nuevo
         $user = Auth::user();
 
         if ($product->company_id !== $user->company_id) {
@@ -304,21 +302,17 @@ class ProductController extends Controller
                 });
         }
 
-        // --- Attribute and Attribute Value Management ---
         $attributeMap = []; // [attribute_name => attribute_id]
         $attributeValueNameToIdMap = []; // [attribute_value_name => attribute_value_id]
 
-        // Process incoming attribute names and values
         $incomingAttributeNames = $request->input('attribute_names', []);
         $incomingAttributeValues = $request->input('attribute_values', []);
 
-        // Collect IDs of attributes and attribute values that are in the current request
         $currentRequestAttributeIds = [];
         $currentRequestAttributeValueIds = [];
 
         foreach ($incomingAttributeNames as $index => $attributeName) {
             if (!empty($attributeName)) {
-                // Find or create the attribute
                 $attribute = Attribute::firstOrCreate(
                     ['attribute_name' => $attributeName],
                 );
@@ -328,7 +322,6 @@ class ProductController extends Controller
                 if (isset($incomingAttributeValues[$index]) && is_array($incomingAttributeValues[$index])) {
                     foreach ($incomingAttributeValues[$index] as $value) {
                         if (!empty($value)) {
-                            // Find or create the attribute value
                             $attributeValue = AttributeValue::firstOrCreate(
                                 ['attribute_value_name' => $value, 'attribute_id' => $attribute->id]
                             );
@@ -340,34 +333,32 @@ class ProductController extends Controller
             }
         }
 
-        // Get existing attribute IDs for the product, safely handling null attributes
         $existingProductAttributeIds = $product->attributes ? $product->attributes->pluck('id') : collect();
 
-        // Delete attribute values not in the current request
         AttributeValue::whereIn('attribute_id', $existingProductAttributeIds)
             ->whereNotIn('id', $currentRequestAttributeValueIds)
             ->delete();
 
-        // Then, delete attributes not in the current request (only if they have no remaining values)
         Attribute::whereIn('id', $existingProductAttributeIds)
             ->whereNotIn('id', $currentRequestAttributeIds)
-            ->doesntHave('attribute_values') // Only delete if no associated values
+            ->doesntHave('attribute_values')
             ->delete();
 
-
         // --- Combination and Stock Management ---
-        $processedCombinationIds = []; // To track combinations that were processed in this request
+        $processedCombinationIds = [];
 
         if (is_array($request->prices) && !empty($request->prices)) {
-            // Product has combinations
+            // Product is now variable: delete simple stock and create/update combinations
+            $product->stocks()->whereNull('combination_id')->delete();  // Elimina stock simple
+
             foreach ($request->prices as $comboData) {
+                // (Mantén la lógica de creación/actualización de combinaciones igual)
                 $combinationId = $comboData['id'] ?? null;
                 $combinationPrice = $comboData['combination_price'] ?? '0';
                 $stockQuantity = $comboData['stock'] ?? '0';
                 $productBarcode = $comboData['product_barcode'] ?? null;
                 $productSku = $comboData['product_sku'] ?? null;
 
-                // Determine attribute value IDs for this combination from incoming data
                 $currentComboAttributeValueIds = [];
                 if (isset($comboData['combination_attribute_value']) && is_array($comboData['combination_attribute_value'])) {
                     foreach ($comboData['combination_attribute_value'] as $attrValData) {
@@ -378,14 +369,12 @@ class ProductController extends Controller
                     }
                 }
 
-                // Find or create the combination
                 $combinationModel = null;
                 if ($combinationId) {
                     $combinationModel = Combination::find($combinationId);
                 }
 
                 if (!$combinationModel && !empty($currentComboAttributeValueIds)) {
-                    // If no ID or not found by ID, try to find by its attribute values
                     $combinationModel = $product->combinations()->whereHas('combinationAttributeValue', function ($query) use ($currentComboAttributeValueIds) {
                         $query->whereIn('attribute_value_id', $currentComboAttributeValueIds);
                     }, '=', count($currentComboAttributeValueIds))
@@ -393,61 +382,53 @@ class ProductController extends Controller
                 }
 
                 if ($combinationModel) {
-                    // Update existing combination
                     $combinationModel->update([
                         'combination_price' => $combinationPrice,
                     ]);
                 } else {
-                    // Create new combination
                     $combinationModel = Combination::create([
                         'product_id' => $product->id,
                         'combination_price' => $combinationPrice,
                     ]);
                 }
 
-                // --- Correct way to "sync" CombinationAttributeValue for HasMany relationship ---
-                // First, delete existing CombinationAttributeValue records for this combination
                 $combinationModel->combinationAttributeValue()->delete();
-                // Then, create new ones based on the current data
                 foreach ($currentComboAttributeValueIds as $attributeValueId) {
                     CombinationAttributeValue::create([
                         'combination_id' => $combinationModel->id,
                         'attribute_value_id' => $attributeValueId,
                     ]);
                 }
-                // --- End of fix for sync() ---
 
-                // Track processed combination ID
                 $processedCombinationIds[] = $combinationModel->id;
 
-                // Handle stock for this combination (update or create)
                 Stock::updateOrCreate(
                     [
                         'product_id' => $product->id,
                         'combination_id' => $combinationModel->id,
+                        'company_id' => $user->company_id,
                     ],
                     [
                         'quantity' => $stockQuantity,
                         'product_barcode' => $productBarcode,
                         'product_sku' => $productSku,
+                        'company_id' => $user->company_id,
                     ]
                 );
             }
 
-            // Delete combinations and their stocks that are no longer in the request
+            // Delete old combinations and stocks
             $product->combinations()->whereNotIn('id', $processedCombinationIds)->delete();
             $product->stocks()->whereNotNull('combination_id')->whereNotIn('combination_id', $processedCombinationIds)->delete();
         } else {
-            // Product is now a simple product (no combinations or all removed)
-            // Delete all existing combinations and their associated stocks for this product
+            // Product is now simple: delete all combinations and their stocks, keep/create simple stock
             $product->combinations()->delete();
-            $product->stocks()->whereNotNull('combination_id')->delete();
+            $product->stocks()->whereNotNull('combination_id')->delete();  // Elimina stocks de combinaciones
 
-            // Update or create the single stock entry for the simple product
             Stock::updateOrCreate(
                 [
                     'product_id' => $product->id,
-                    'combination_id' => null, // For simple products, combination_id is null
+                    'combination_id' => null,
                 ],
                 [
                     'quantity' => $request->quantity,

@@ -12,7 +12,7 @@ const ProductsForm = lazy(() => import('./ProductsForm'));
 
 export default function Edit({ product, categories, taxes }) {
     const selectedCategories = product.categories.map(category => category.id);
-
+console.log(product);
     const attributeMap = {};
     product.combinations.forEach(combination => {
         combination.combination_attribute_value.forEach(attrValue => {
