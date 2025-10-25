@@ -17,10 +17,10 @@ export const ordersColumns = [
         header: "Status",
         accessorKey: "status",
     },
-    {
-        header: "Origen",
-        accessorKey: "order_origin",
-    },
+    // {
+    //     header: "Origen",
+    //     accessorKey: "order_origin",
+    // },
     {
         header: "Total",
         accessorKey: "total",
