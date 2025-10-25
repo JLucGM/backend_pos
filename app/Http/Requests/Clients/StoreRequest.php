@@ -26,7 +26,7 @@ class StoreRequest extends FormRequest
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'nullable|string|max:15',
             'identification' => 'nullable|string|unique:users',
-            'status' => 'required|boolean',
+            'is_active' => 'required|boolean',
             'password' => 'required|string|min:8', // Validar la contraseña
             'avatar' => 'nullable|image|max:2048', // Validación para el avatar
         ];
@@ -41,7 +41,7 @@ class StoreRequest extends FormRequest
             'email.unique' => 'The email has already been taken.',
             'phone.max' => 'The phone number may not be greater than 15 characters.',
             'identification.unique' => 'The identification has already been taken.',
-            'status.required' => 'The status is required.',
+            'is_active.required' => 'The is_active is required.',
             'password.required' => 'The password is required.',
             'password.min' => 'The password must be at least 8 characters.',
             'avatar.image' => 'The avatar must be an image.',

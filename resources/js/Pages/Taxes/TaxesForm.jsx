@@ -12,7 +12,7 @@ export default function TaxesForm({ data, setData, errors }) {
                     type="text"
                     name="tax_name"
                     value={data.tax_name}
-                    className="mt-1 block w-full"
+                    className="block w-full"
                     isFocused={true}
                     onChange={(e) => setData('tax_name', e.target.value)}
                 />
@@ -26,7 +26,7 @@ export default function TaxesForm({ data, setData, errors }) {
                     type="text"
                     name="tax_rate"
                     value={data.tax_rate}
-                    className="mt-1 block w-full"
+                    className="block w-full"
                     onChange={(e) => setData('tax_rate', e.target.value)}
                 />
                 <InputError message={errors.tax_rate} className="mt-2" />
@@ -38,7 +38,7 @@ export default function TaxesForm({ data, setData, errors }) {
                     type="text"
                     name="tax_description"
                     value={data.tax_description}
-                    className="mt-1 block w-full"
+                    className="block w-full"
                     onChange={(e) => setData('tax_description', e.target.value)}
                 />
                 <InputError message={errors.tax_description} className="mt-2" />

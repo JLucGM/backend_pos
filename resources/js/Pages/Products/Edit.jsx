@@ -12,7 +12,7 @@ const ProductsForm = lazy(() => import('./ProductsForm'));
 
 export default function Edit({ product, categories, taxes }) {
     const selectedCategories = product.categories.map(category => category.id);
-console.log(product);
+
     const attributeMap = {};
     product.combinations.forEach(combination => {
         combination.combination_attribute_value.forEach(attrValue => {
@@ -49,13 +49,13 @@ console.log(product);
             product_sku: stockData.product_sku, // Add product SKU
         };
     });
- 
+
     const initialValues = {
         product_name: product.product_name,
         product_description: product.product_description,
         product_price: product.product_price || "0",
         product_price_discount: product.product_price_discount,
-        status: product.status,
+        is_active: product.is_active,
         product_status_pos: product.product_status_pos,
         product_sku: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].product_sku : '',
         product_barcode: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].product_barcode : '',
@@ -122,8 +122,8 @@ console.log(product);
                         <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                             {product.product_name}
                         </h2>
-                        <Badge variant={product.status === 1 ? 'success' : 'info'}>
-                            {product.status === 1 ? 'Publicado' : 'Borrador'}
+                        <Badge variant={product.is_active === true ? 'success' : 'info'}>
+                            {product.is_active === true ? 'Publicado' : 'Borrador'}
                         </Badge>
                     </div>
 

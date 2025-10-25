@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'elluc09@gmail.com',
             'password' => bcrypt('123456789'),
             'phone' => '04121234567',
-            'status' => '1',
+            'is_active' => '1',
             'company_id' => 1,
             // 'avatar' => asset('img/profile/default.jpg'),
         ])->assignRole('super admin');
@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'cliente@example.com',
             'password' => bcrypt('123456789'),
             'phone' => '04121234567',
-            'status' => '1',
+            'is_active' => '1',
             'company_id' => 1,
             // 'avatar' => asset('img/profile/default.jpg'),
         ])->assignRole('client');

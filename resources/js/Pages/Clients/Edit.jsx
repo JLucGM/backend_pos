@@ -7,7 +7,7 @@ import { ArrowLongLeftIcon, PlusIcon } from '@heroicons/react/24/outline';
 import Loader from '@/Components/ui/loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
-import { Pen, PenSquareIcon } from 'lucide-react';
+import { Pen } from 'lucide-react';
 import AddressDialog from '../User/AddressDialog';
 
 // Importa los nuevos componentes
@@ -22,7 +22,7 @@ export default function Edit({ client, roles, role, permission, countries, state
         password: '',
         phone: client.phone,
         identification: client.identification,
-        status: client.status,
+        is_active: client.is_active,
         avatar: null,
         role: client.roles.length > 0 ? client.roles[0].id : "",
         _method: 'POST',
@@ -43,7 +43,7 @@ export default function Edit({ client, roles, role, permission, countries, state
 
     const submitClientForm = (e) => {
         e.preventDefault();
-        console.log(data);
+
         post(route('client.update', client.slug), {
             onSuccess: () => {
                 toast.success("Cliente actualizado con éxito.");

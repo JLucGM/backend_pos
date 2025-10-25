@@ -19,7 +19,7 @@ export default function Create({ categories, taxes }) {
         product_barcode: "",
         barcodes: {}, // Nuevo campo para almacenar códigos de barras por combinación
         skus: {}, // Nuevo campo para almacenar SKUs por combinación
-        status: 0,
+        is_active: false,
         product_status_pos: 0,
         categories: categories.length > 0 ? [categories[0].id] : [],
         attribute_names: [""],

@@ -1,22 +1,18 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
-import { AspectRatio } from '@/Components/ui/aspect-ratio';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import DivSection from '@/Components/ui/div-section';
 import { Input } from '@/Components/ui/input';
-// import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
+import { useSelectOptions } from '@/hooks/useSelectOptions';
 
 export default function ClientsForm({ data, setData, errors, user = "" }) {
-    const statusOptions = [
-        { value: 0, label: 'Inactivo' },
-        { value: 1, label: 'Activo' }
-    ];
+    const { statusOptions } = useSelectOptions();
+
     return (
         <>
-
             <div className="col-span-full flex justify-center">
 
                 <Avatar className="h-56 w-56 ">
@@ -119,16 +115,16 @@ export default function ClientsForm({ data, setData, errors, user = "" }) {
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="status" value="Estado" />
+                        <InputLabel htmlFor="is_active" value="Estado" />
                         <Select
                             options={statusOptions}
-                            name="status"
-                            value={statusOptions.find(option => option.value === Number(data.status))}
-                            onChange={(selectedOption) => setData('status', selectedOption.value)}
+                            name="is_active"
+                            value={statusOptions.find(option => option.value === Number(data.is_active))}
+                            onChange={(selectedOption) => setData('is_active', selectedOption.value)}
                             styles={customStyles} // si usas estilos personalizados
                             className="mt-1"
                         />
-                        <InputError message={errors.status} className="mt-2" />
+                        <InputError message={errors.is_active} className="mt-2" />
                     </div>
 
                 </DivSection>

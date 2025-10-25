@@ -48,7 +48,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'status' => 1,
+            'is_active' => 1,
         ]);
 
         // Guardar avatar si se ha subido

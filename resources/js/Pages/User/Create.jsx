@@ -15,7 +15,7 @@ export default function Create({ roles, role }) {
         email: "",
         identification: "",
         password: "",
-        status: 0, // o 1, dependiendo del valor predeterminado que desees
+        is_active: false,
         avatar: null,
         role: roles.length > 0 ? roles[0].id : null,
         // store_id: stores.length > 0 ? stores[0].id : null,

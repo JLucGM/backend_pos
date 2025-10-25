@@ -91,7 +91,7 @@ class UserController extends Controller
         $user = Auth::user();
         // Obtener los datos de la solicitud
         $data = array_merge(
-            $request->only('name', 'email', 'phone', 'status', 'identification'),
+            $request->only('name', 'email', 'phone', 'is_active', 'identification'),
             ['company_id' => $user->company_id]
         );
 
@@ -170,7 +170,7 @@ class UserController extends Controller
     public function update(UpdateRequest $request, User $user)
     {
         // Obtener los datos de la solicitud
-        $data = $request->only('name', 'email', 'phone', 'status', 'identification');
+        $data = $request->only('name', 'email', 'phone', 'is_active', 'identification');
 
         // Encriptar la contraseña si se proporciona
         if ($request->filled('password')) {

@@ -6,8 +6,12 @@ import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
 import { DatePicker } from '@/Components/DatePicker';
 import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
+import { useSelectOptions } from '@/hooks/useSelectOptions';
 
 export default function DiscountsForm({ data, products, categories, setData, errors, isEdit = false }) {
+
+    const { statusOptions, productOptions, categoryOptions, appliesToOptions, automaticOptions } = useSelectOptions(categories, [], products);  // taxes vacío si no las usas
+
     const handleSelectChange = (selectedOptions, name) => {
         if (name === 'product_selections') {
             // Para products: Array de {product_id, combination_id}
@@ -28,73 +32,15 @@ export default function DiscountsForm({ data, products, categories, setData, err
         setData(name, value);
     };
 
-    const categoryOptions = useMemo(() => mapToSelectOptions(categories, 'id', 'category_name'), [categories]);
-
-    // Options flat: Simples + Variaciones individuales
-    const productOptions = useMemo(() => {
-        const options = [];
-
-        products.forEach(product => {
-            // Simple (sin combinations)
-            if (!product.combinations || product.combinations.length === 0) {
-                options.push({
-                    value: `simple_${product.id}`,
-                    label: `${product.product_name} - $${parseFloat(product.product_price).toFixed(2)}`,
-                    product_id: product.id,
-                    combination_id: null,
-                });
-            } else {
-                // Variables: Cada combination individual
-                product.combinations.forEach(comb => {
-                    let attributes = '';
-                    if (comb.combination_attribute_value && Array.isArray(comb.combination_attribute_value)) {
-                        attributes = comb.combination_attribute_value.map(cav => 
-                            `${cav.attribute_value.attribute.attribute_name}: ${cav.attribute_value.attribute_value_name}`
-                        ).join(', ');
-                        attributes = attributes ? ` - ${attributes}` : '';
-                    }
-                    const price = comb.combination_price ? ` - $${parseFloat(comb.combination_price).toFixed(2)}` : '';
-
-                    options.push({
-                        value: `comb_${comb.id}`,
-                        label: `${product.product_name}${attributes}${price}`,
-                        product_id: product.id,
-                        combination_id: comb.id,
-                    });
-                });
-            }
-        });
-
-        return options;
-    }, [products]);
-
     // Value para product_selections (funciona en edit con datos cargados)
     const getProductSelectionsValue = () => {
         if (!data.product_selections || !Array.isArray(data.product_selections)) return [];
-        return data.product_selections.map(sel => productOptions.find(opt => 
+        return data.product_selections.map(sel => productOptions.find(opt =>
             opt.product_id === sel.product_id && opt.combination_id === sel.combination_id
         )).filter(Boolean);
     };
 
-    const appliesToOptions = [
-        { value: 'product', label: 'Producto' },
-        { value: 'category', label: 'Categoría' },
-        { value: 'order_total', label: 'Total del pedido' },
-    ];
 
-    const automaticOptions = [
-        { value: true, label: 'Descuento Automático' },
-        { value: false, label: 'Descuento por código' },
-    ];
-
-    const statusOptions = [
-        { value: true, label: 'Activo' },
-        { value: false, label: 'Inactivo' },
-    ];
-
-    const handleStatusChange = (selectedOption) => {
-        setData('is_active', selectedOption.value);
-    };
 
     // Limpia al cambiar applies_to (en edit, preserva si no cambia)
     useEffect(() => {
@@ -127,7 +73,7 @@ export default function DiscountsForm({ data, products, categories, setData, err
                 <TextInput
                     id="name"
                     value={data.name}
-                    className="mt-1 block w-full"
+                    className="block w-full"
                     isFocused={!isEdit}
                     onChange={e => setData('name', e.target.value)}
                 />
@@ -140,7 +86,7 @@ export default function DiscountsForm({ data, products, categories, setData, err
                     <TextInput
                         id="code"
                         value={data.code}
-                        className="mt-1 block w-full"
+                        className="block w-full"
                         onChange={e => setData('code', e.target.value)}
                     />
                     <InputError message={errors.code} className="mt-2" />
@@ -152,7 +98,7 @@ export default function DiscountsForm({ data, products, categories, setData, err
                 <TextInput
                     id="description"
                     value={data.description}
-                    className="mt-1 block w-full"
+                    className="block w-full"
                     onChange={e => setData('description', e.target.value)}
                 />
                 <InputError message={errors.description} className="mt-2" />
@@ -179,7 +125,7 @@ export default function DiscountsForm({ data, products, categories, setData, err
                     <TextInput
                         id="value"
                         value={data.value}
-                        className="mt-1 block w-full"
+                        className="block w-full"
                         onChange={e => setData('value', e.target.value)}
                     />
                     <InputError message={errors.value} className="mt-2" />
@@ -209,12 +155,12 @@ export default function DiscountsForm({ data, products, categories, setData, err
             <div className="mt-4">
                 <InputLabel htmlFor="is_active" value="Estado" />
                 <Select
-                    id="is_active"
                     options={statusOptions}
-                    value={statusOptions.find(opt => opt.value === data.is_active)}
-                    onChange={handleStatusChange}
-                    styles={customStyles}
-                    placeholder="Seleccionar estado..."
+                    name="is_active"
+                    value={statusOptions.find(option => option.value === Number(data.is_active))}
+                    onChange={(selectedOption) => setData('is_active', selectedOption.value)}
+                    styles={customStyles} // si usas estilos personalizados
+                    className="mt-1"
                 />
                 <InputError message={errors.is_active} className="mt-2" />
             </div>
@@ -225,7 +171,7 @@ export default function DiscountsForm({ data, products, categories, setData, err
                     id="usage_limit"
                     type="number"
                     value={data.usage_limit}
-                    className="mt-1 block w-full"
+                    className="block w-full"
                     onChange={e => setData('usage_limit', e.target.value)}
                 />
                 <InputError message={errors.usage_limit} className="mt-2" />
@@ -237,7 +183,7 @@ export default function DiscountsForm({ data, products, categories, setData, err
                     id="minimum_order_amount"
                     type="number"
                     value={data.minimum_order_amount}
-                    className="mt-1 block w-full"
+                    className="block w-full"
                     onChange={e => setData('minimum_order_amount', e.target.value)}
                 />
                 <InputError message={errors.minimum_order_amount} className="mt-2" />

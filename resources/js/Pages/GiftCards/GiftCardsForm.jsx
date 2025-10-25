@@ -4,13 +4,14 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { customStyles } from '@/hooks/custom-select';
+import { useSelectOptions } from '@/hooks/useSelectOptions';
 import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 import { useMemo } from 'react';
 import Select from 'react-select';
 
 export default function GiftCardsForm({ data, users, setData, errors }) {
 
-    const userOptions = useMemo(() => mapToSelectOptions(users, 'id', 'name'), [users]);
+    const { statusOptions, userOptions } = useSelectOptions([], [], [], [], users);  // taxes vacío si no las usas
 
     const selectedUser = useMemo(() => {
         return userOptions.find(option => option.value === data.user_id);
@@ -20,10 +21,6 @@ export default function GiftCardsForm({ data, users, setData, errors }) {
         setData('user_id', selectedOption ? selectedOption.value : null);
     };
 
-    const statusOptions = [
-        { value: true, label: 'Activo' },
-        { value: false, label: 'Inactivo' },
-    ];
 
     const handleStatusChange = (selectedOption) => {
         setData('is_active', selectedOption ? selectedOption.value : null);

@@ -9,17 +9,17 @@ import { customStyles } from '@/hooks/custom-select';
 export default function ProductSettings({ data, setData, errors, statusOptions, taxOptions }) {
     return (
         <DivSection className='space-y-4'>
-            <div className='md:col-span-2 lg:col-span-1'>
-                <InputLabel htmlFor="status" value="Publicar" />
+            <div>
+                <InputLabel htmlFor="is_active" value="Publicar" />
                 <Select
-                    name="status"
-                    id="status"
                     options={statusOptions}
-                    value={statusOptions.find(option => option.value === data.status)}
-                    onChange={(selectedOption) => setData('status', selectedOption.value)}
-                    styles={customStyles}
+                    name="is_active"
+                    value={statusOptions.find(option => option.value === Number(data.is_active))}
+                    onChange={(selectedOption) => setData('is_active', selectedOption.value)}
+                    styles={customStyles} // si usas estilos personalizados
+                    className="mt-1"
                 />
-                <InputError message={errors.status} className="mt-2" />
+                <InputError message={errors.is_active} className="mt-2" />
             </div>
 
             <div className="">

@@ -3,11 +3,10 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
-import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
-import { useMemo } from 'react';
+import { useSelectOptions } from '@/hooks/useSelectOptions';
 
 export default function CitiesForm({ data, states, setData, errors }) {
-    const stateOptions = useMemo(() => mapToSelectOptions(states, 'id', 'state_name'), [states]);
+    const { stateOptions } = useSelectOptions([], [], [], states);  // Solo necesitas stateOptions, así que pasa arrays vacíos para los demás
 
     return (
         <>

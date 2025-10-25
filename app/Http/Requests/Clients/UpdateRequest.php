@@ -30,7 +30,7 @@ class UpdateRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $client->id,
             'phone' => 'nullable|string|max:15',
-            'status' => 'required|boolean',
+            'is_active' => 'required|boolean',
             'role' => 'required|exists:roles,id',
             'identification' => 'nullable|string|unique:users,identification,' . $client->id,
             // 'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
@@ -48,7 +48,7 @@ class UpdateRequest extends FormRequest
             'email.unique' => 'The email has already been taken.',
             'phone.max' => 'The phone number may not be greater than 15 characters.',
             'identification.unique' => 'The identification has already been taken.',
-            'status.required' => 'The status is required.',
+            'is_active.required' => 'The is_active is required.',
             'password.min' => 'The password must be at least 8 characters.',
             'avatar.image' => 'The avatar must be an image.',
             'avatar.max' => 'The avatar may not be greater than 2048 kilobytes.',

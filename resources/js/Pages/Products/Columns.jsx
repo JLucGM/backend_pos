@@ -62,14 +62,18 @@ export const ProductColumns = [
     //     },
     // },
     {
-        header: "Estado",
-        accessorKey: "status",
+        header: "Publicado",
+        accessorKey: "is_active",
         cell: ({ row }) => {
+            const isActive = row.original.is_active === true; // Verifica si el estado es "1" (Activo)
             return (
-                <Badge variant={row.original.status === 1 ? 'success' : 'info'}>
-                    {row.original.status === 1 ? 'Publicado' : 'Borrador'}
+                // <Badge variant={isActive ? "default" : "secondary"}>
+                //     {isActive ? 'Activo' : 'Inactivo'}
+                // </Badge>
+                <Badge variant={isActive === true ? 'success' : 'info'}>
+                    {isActive === true ? 'Publicado' : 'Borrador'}
                 </Badge>
-            )
+            );
         },
     },
     {

@@ -17,7 +17,7 @@ export default function Create({ users }) {
         initial_balance: "10.00",
         // current_balance: "",
         expiration_date: "",
-        is_active: false,
+        is_active: 0,
         user_id: null,
     }
 

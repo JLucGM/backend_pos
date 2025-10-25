@@ -55,7 +55,7 @@ class PaymentMethodController extends Controller
         ]);
 
         // Redirigir a la lista de métodos de pago
-        return to_route('paymentmethod.index');
+        return to_route('paymentmethod.edit', $paymentMethod);
     }
 
     /**
@@ -96,5 +96,7 @@ class PaymentMethodController extends Controller
     {
         // Eliminar los registros dependientes
         $payment_method->delete(); // Asegúrate de tener la relación definida en el modelo
+
+        return to_route('paymentmethod.index')->with('success', 'Método de pago eliminado con éxito.');
     }
 }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255); //Nombre del atributo (por ejemplo, "Talla", "Color", "Material").
+            $table->string('name', 255);
             $table->string('slug');
             $table->foreignId('payments_method_id')->nullable()->constrained();
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');

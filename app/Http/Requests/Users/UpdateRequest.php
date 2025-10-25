@@ -21,11 +21,13 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $user = $this->route('user');
+
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:15',
-            'status' => 'required|boolean',
+            'is_active' => 'required|boolean',
             'role' => 'required|exists:roles,id',
             'identification' => 'nullable|string|unique:users,identification,' . $user->id,
             // 'store_id' => 'required|exists:stores,id', // Asegúrate de validar el store_id
@@ -49,7 +51,7 @@ class UpdateRequest extends FormRequest
             'email.email' => 'El correo electrónico debe ser una dirección de correo válida.',
             'email.unique' => 'El correo electrónico ya está en uso.',
             'phone.max' => 'El número de teléfono no puede tener más de 15 caracteres.',
-            'status.required' => 'El estado es obligatorio.',
+            'is_active.required' => 'El estado es obligatorio.',
             'role.required' => 'El rol es obligatorio.',
             'role.exists' => 'El rol seleccionado no es válido.',
             'identification.unique' => 'La identificación ya está en uso.',

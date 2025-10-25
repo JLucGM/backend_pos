@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('product_description')->nullable();
             $table->decimal('product_price', 10, 2);
             $table->decimal('product_price_discount', 10, 2)->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->boolean('is_active')->default(false);
             $table->tinyInteger('product_status_pos')->default(0);
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('tax_id')->nullable()->constrained();

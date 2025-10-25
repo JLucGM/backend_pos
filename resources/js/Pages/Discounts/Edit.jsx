@@ -36,7 +36,7 @@ export default function Edit({ discount, products, categories }) {
         start_date: discount.start_date ? new Date(discount.start_date) : null, // Para DatePicker
         end_date: discount.end_date ? new Date(discount.end_date) : null,
         automatic: discount.automatic || false,
-        is_active: discount.is_active || false,
+        is_active: discount.is_active || 0,
         usage_limit: discount.usage_limit || 0,
         minimum_order_amount: discount.minimum_order_amount || 0,
         applies_to: discount.applies_to || 'product',
@@ -48,7 +48,7 @@ export default function Edit({ discount, products, categories }) {
 
     const submit = (e) => {
         e.preventDefault();
-        console.log('Update data:', data); // Debug selections en edit
+        // console.log('Update data:', data); // Debug selections en edit
         post(route('discounts.update', discount), { // Usa ID para route
             onSuccess: () => {
                 toast.success("Descuento actualizado con éxito.");
@@ -71,8 +71,8 @@ export default function Edit({ discount, products, categories }) {
                         <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                             Actualizar {discount.name}
                         </h2>
-                        <Badge variant={discount.is_active ? 'default' : 'secondary'}>
-                            {discount.is_active ? 'Activo' : 'Inactivo'}
+                        <Badge variant={discount.is_active === true ? 'success' : 'info'}>
+                            {discount.is_active === true ? 'Publicado' : 'Borrador'}
                         </Badge>
                     </div>
                     <div className="">
@@ -106,9 +106,9 @@ export default function Edit({ discount, products, categories }) {
                     </div>
 
                     <div className="flex justify-end p-2.5 gap-2">
-                        <Link href={route('discounts.index')} className={buttonVariants({ variant: "outline" })}>
+                        {/* <Link href={route('discounts.index')} className={buttonVariants({ variant: "outline" })}>
                             Cancelar
-                        </Link>
+                        </Link> */}
                         <Button variant="default" type="submit" disabled={processing}>
                             Actualizar
                         </Button>

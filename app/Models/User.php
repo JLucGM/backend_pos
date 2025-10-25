@@ -32,9 +32,13 @@ class User extends Authenticatable implements HasMedia
         'email',
         'password',
         'phone',
-        'status',
+        'is_active',
         'company_id',
         'identification',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function getRouteKeyName()

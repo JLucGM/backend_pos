@@ -66,7 +66,7 @@ class ProductController extends Controller
                 'product_description',
                 'product_price',
                 'product_price_discount',
-                'status',
+                'is_active',
                 'product_status_pos',
                 'tax_id', // Asegúrate de que 'tax_id' esté en el formulario y sea opcional
             ),
@@ -286,7 +286,7 @@ class ProductController extends Controller
             'product_description',
             'product_price',
             'product_price_discount',
-            'status',
+            'is_active',
             'product_status_pos',
             'tax_id',
         ));

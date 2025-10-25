@@ -42,7 +42,7 @@ class UpdateRequest extends FormRequest
             'product_sku' => 'nullable|string|max:255', // For simple products
             'images.*' => 'nullable|image|max:2048', // Add validation for images
             'tax_id' => 'nullable|exists:taxes,id', // Validar tax_id
-            'status' => 'required|boolean', // Assuming status is a boolean
+            'is_active' => 'required|boolean', // Assuming is_active is a boolean
             'product_status_pos' => 'required|boolean', // Assuming product_status_pos is a boolean
         ];
     }
@@ -81,8 +81,8 @@ class UpdateRequest extends FormRequest
             'images.*.image' => 'The image must be an image.',
             'images.*.max' => 'The image may not be greater than 2048 kilobytes.',
             'tax_id.exists' => 'The selected tax is invalid.',
-            'status.required' => 'The status is required.',
-            'status.boolean' => 'The status must be true or false.',
+            'is_active.required' => 'The is_active is required.',
+            'is_active.boolean' => 'The is_active must be true or false.',
             'product_status_pos.required' => 'The product status POS is required.',
             'product_status_pos.boolean' => 'The product status POS must be true or false.',
         ];

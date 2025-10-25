@@ -13,13 +13,13 @@ import { Badge } from '@/Components/ui/badge';
 const GiftCardsForm = lazy(() => import('./GiftCardsForm'));
 
 export default function Edit({ giftCard, users }) {
-    console.log(giftCard);
+    // console.log(giftCard);
     const initialValues = {
         code: giftCard.code,
         description: giftCard.description,
         initial_balance: giftCard.initial_balance,
         expiration_date: giftCard.expiration_date,
-        is_active: giftCard.is_active === 1, // Convertir 1 a true y 0 a false
+        is_active: giftCard.is_active , // Convertir 1 a true y 0 a false
         user_id: giftCard.user_id,
     };
 

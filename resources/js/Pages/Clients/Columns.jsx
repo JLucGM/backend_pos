@@ -32,13 +32,16 @@ export const userColumns = [
         accessorKey: "phone",
     },
     {
-        header: "Estado",
-        accessorKey: "status",
+        header: "Publicado",
+        accessorKey: "is_active",
         cell: ({ row }) => {
-            const isActive = row.original.status === "1"; // Verifica si el estado es "1" (Activo)
+            const isActive = row.original.is_active === true; // Verifica si el estado es "1" (Activo)
             return (
-                <Badge variant={isActive ? "default" : "secondary"}>
-                    {isActive ? 'Activo' : 'Inactivo'}
+                // <Badge variant={isActive ? "default" : "secondary"}>
+                //     {isActive ? 'Activo' : 'Inactivo'}
+                // </Badge>
+                <Badge variant={isActive === true ? 'success' : 'info'}>
+                    {isActive === true ? 'Publicado' : 'Borrador'}
                 </Badge>
             );
         },

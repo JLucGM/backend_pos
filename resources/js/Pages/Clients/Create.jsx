@@ -5,9 +5,7 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { lazy, Suspense } from 'react';
 import Loader from '@/Components/ui/loader';
 import ClientsForm from './ClientsForm';
-
-// Define UserForm como un componente cargado de forma lazy
-const UserForm = lazy(() => import('./ClientsForm'));
+import { toast } from 'sonner';
 
 export default function Create({ role }) {
     const initialValues = {
@@ -16,7 +14,7 @@ export default function Create({ role }) {
         email: "",
         identification: "",
         password: "",
-        status: 0, // o 1, dependiendo del valor predeterminado que desees
+        is_active: false,
         avatar: null,
     };
 
@@ -26,12 +24,12 @@ export default function Create({ role }) {
         e.preventDefault();
         post(route('client.store')), {
             onSuccess: () => {
-                toast("Producto creado con éxito.");
+                toast("Cliente creado con éxito.");
 
             },
             onError: (error) => {
                 console.error("Error al crear el cliente:", error);
-                toast.error("Error al crear el producto.");
+                toast.error("Error al crear el cliente.");
             }
         };
     }

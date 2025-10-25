@@ -25,7 +25,7 @@ import AttributeSection from '@/Components/Products/AttributeSection';
 import ProductSettings from '@/Components/Products/ProductSettings';
 
 export default function ProductsForm({ data, categories, taxes, product = null, setData, errors }) {
-    console.log('Rendering ProductsForm with showAttributes:', product && product.combinations.length > 0);
+    // console.log('Rendering ProductsForm with showAttributes:', product && product.combinations.length > 0);
     const { categoryOptions, taxOptions, statusOptions } = useSelectOptions(categories, taxes);
 
     const {

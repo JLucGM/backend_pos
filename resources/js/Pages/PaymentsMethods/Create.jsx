@@ -4,6 +4,7 @@ import { Button } from '@/Components/ui/button';
 import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import { toast } from 'sonner';
+import Loader from '@/Components/ui/loader';
 
 // Definimos PaymentMethodForm como un componente lazy
 const PaymentMethodForm = lazy(() => import('./PaymentMethodForm'));
@@ -44,15 +45,13 @@ export default function Create({ }) {
             <div className=" text-gray-900 dark:text-gray-100">
                 <div className="relative overflow-x-auto">
                     <form onSubmit={submit} className='space-y-4'>
-                        <DivSection>
-                            <Suspense fallback={<div>Cargando formulario de método de pago...</div>}>
-                                <PaymentMethodForm
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                />
-                            </Suspense>
-                        </DivSection>
+                        <Suspense fallback={<Loader />}>
+                            <PaymentMethodForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                            />
+                        </Suspense>
 
                         <div className="flex justify-end p-2.5">
                             <Button>

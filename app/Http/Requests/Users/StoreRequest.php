@@ -26,7 +26,7 @@ class StoreRequest extends FormRequest
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'nullable|string|max:15',
             'identification' => 'nullable|string|unique:users',
-            'status' => 'required|boolean',
+            'is_active' => 'required|boolean',
             'role' => 'required|exists:roles,id', // Validar que el rol existe
             // 'store_id' => 'required|exists:stores,id', // Validar que el store_id existe
             'password' => 'required|string|min:8', // Validar la contraseña
@@ -49,8 +49,8 @@ class StoreRequest extends FormRequest
             'phone.max' => 'The phone may not be greater than 15 characters.',
             'identification.string' => 'The identification must be a string.',
             'identification.unique' => 'The identification has already been taken.',
-            'status.required' => 'The status is required.',
-            'status.boolean' => 'The status must be true or false.',
+            'is_active.required' => 'The is_active is required.',
+            'is_active.boolean' => 'The is_active must be true or false.',
             'role.required' => 'The role is required.',
             'role.exists' => 'The selected role is invalid.',
             // 'store_id.required' => 'The store is required.',

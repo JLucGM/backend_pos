@@ -8,8 +8,11 @@ import { Input } from '@/Components/ui/input';
 // import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
+import { useSelectOptions } from '@/hooks/useSelectOptions';
 
 export default function UserForm({ data, setData, errors, roles, role, user = "" }) {
+        const { statusOptions } = useSelectOptions();
+    
     return (
         <>
             {/* {user.avatar ? ( */}
@@ -126,18 +129,16 @@ export default function UserForm({ data, setData, errors, roles, role, user = ""
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="status" value="Estado" />
-                        <select
-                            name="status"
-                            id="status"
-                            value={data.status}
-                            className="border-gray-300 w-full dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-full"
-                            onChange={(e) => setData('status', e.target.value)}
-                        >
-                            <option value={0}>Inactivo</option>
-                            <option value={1}>Activo</option>
-                        </select>
-                        <InputError message={errors.status} className="mt-2" />
+                        <InputLabel htmlFor="is_active" value="Estado" />
+                        <Select
+                            options={statusOptions}
+                            name="is_active"
+                            value={statusOptions.find(option => option.value === Number(data.is_active))}
+                            onChange={(selectedOption) => setData('is_active', selectedOption.value)}
+                            styles={customStyles} // si usas estilos personalizados
+                            className="mt-1"
+                        />
+                        <InputError message={errors.is_active} className="mt-2" />
                     </div>
 
                     <div>

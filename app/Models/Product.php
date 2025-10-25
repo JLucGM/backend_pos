@@ -22,11 +22,15 @@ class Product extends Model implements HasMedia
         'product_description',
         'product_price',
         'product_price_discount',
-        'status',
+        'is_active',
         'product_status_pos',
         'company_id',
         'tax_id',
         // 'product_barcode',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function getRouteKeyName()

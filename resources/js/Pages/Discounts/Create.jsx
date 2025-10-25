@@ -10,7 +10,7 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 const DiscountsForm = lazy(() => import('./DiscountsForm'));
 
 export default function Create({ products, categories }) {
-    console.log('Products con combinations:', products); // Debug
+    // console.log('Products con combinations:', products); // Debug
 
     const initialValues = {
         name: "",
@@ -25,7 +25,7 @@ export default function Create({ products, categories }) {
         minimum_order_amount: 0,
         usage_limit: 1,
         code: "",
-        is_active: false,
+        is_active: 0,
         product_selections: [], // NUEVO: Array de {product_id, combination_id} – directo para pivot
         category_ids: [],
     };
@@ -34,7 +34,7 @@ export default function Create({ products, categories }) {
 
     const submit = (e) => {
         e.preventDefault();
-        console.log('Submit con selections:', data); // Debug array
+        // console.log('Submit con selections:', data); // Debug array
         post(route('discounts.store'), {
             onSuccess: () => toast.success("Descuento creado con éxito."),
             onError: (error) => {
