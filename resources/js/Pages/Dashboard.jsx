@@ -9,6 +9,7 @@ import SummaryCard from '@/Components/SummaryCard';
 
 export default function Dashboard({ user, usersCount, orders, ordersCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod }) {
     const userAuth = usePage().props.auth.user;
+    const settings = usePage().props.settings;
 
     // Convertir los datos de user a un formato adecuado para el gráfico
     const chartData = Object.keys(user).map(month => ({
@@ -50,9 +51,9 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                 <div className="grid auto-rows-min gap-4 lg:grid-cols-6">
                     <SummaryCard label="Órdenes Totales" value={ordersCount} className="col-span-2" />
-  <SummaryCard label="Usuarios Totales" value={usersCount} className="col-span-1" />
-  <SummaryCard label="Órdenes del Día" value={todayOrdersCount} className="col-span-1" />
-  <SummaryCard label="Recaudado Hoy" value={totalTodayOrdersAmount} prefix="$" className="col-span-2" />
+                    <SummaryCard label="Usuarios Totales" value={usersCount} className="col-span-1" />
+                    <SummaryCard label="Órdenes del Día" value={todayOrdersCount} className="col-span-1" />
+                    <SummaryCard label="Recaudado Hoy" value={totalTodayOrdersAmount} prefix={settings.default_currency} className="col-span-2" />
 
                     <DivSection className="col-span-3">
                         <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Usuarios Registrados por Mes</h3>
@@ -74,13 +75,13 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
                                 />
                                 <ChartLegend content={<ChartLegendContent />} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="usersRegistrados" fill="var(--color-desktop)" radius={4} /> 
+                                <Bar dataKey="usersRegistrados" fill="var(--color-desktop)" radius={4} />
                             </BarChart>
                         </ChartContainer>
-                    </DivSection> 
+                    </DivSection>
 
                     <DivSection className="col-span-3">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Órdenes Realizadas por Mes</h3> 
+                        <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Órdenes Realizadas por Mes</h3>
                         <ChartContainer config={chartConfigOrders} className="min-h-[200px] w-full">
                             <BarChart data={chartDataOrders}>
                                 <CartesianGrid vertical={false} />

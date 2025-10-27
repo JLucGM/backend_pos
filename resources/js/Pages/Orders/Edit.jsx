@@ -16,7 +16,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
     if (flash?.success) toast.success(flash.success);
     if (flash?.error) toast.error(flash.error);
 
-    console.log(products); // Debug DB
+    // console.log(products); // Debug DB
 
     const initialValues = {
         status: orders.status,

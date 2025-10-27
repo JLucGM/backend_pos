@@ -2,7 +2,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
 import { AlertTriangle } from 'lucide-react';
 
-export const getBulkProductColumns = ({ selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit }) => [
+export const getBulkProductColumns = ({ selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit, settings }) => [
     {
         id: 'select',
         header: 'Seleccionar',
@@ -60,9 +60,9 @@ export const getBulkProductColumns = ({ selectedProductsBulk, toggleBulkSelectio
                     {/* Sección de precios */}
                     <div className="text-sm text-gray-500">
                         {option.original_price > option.effective_price && (
-                            <span className="line-through mr-1">${option.original_price.toFixed(2)}</span>
+                            <span className="line-through mr-1">{settings.default_currency} {option.original_price.toFixed(2)}</span>
                         )}
-                        ${option.effective_price.toFixed(2)}
+                        {settings.default_currency} {option.effective_price.toFixed(2)}
                         {option.discount && (
                             <span className="ml-2 text-green-600 text-xs">
                                 {option.discount.value}% off
@@ -96,6 +96,6 @@ export const getBulkProductColumns = ({ selectedProductsBulk, toggleBulkSelectio
         id: 'original_price',
         header: 'Precio',
         size: 120,
-        cell: ({ row }) => <span className="text-right">${row.original.original_price.toFixed(2)}</span>,
+        cell: ({ row }) => <span className="text-right">{settings.default_currency} {row.original.original_price.toFixed(2)}</span>,
     },
 ];

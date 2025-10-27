@@ -6,22 +6,19 @@ import { customStyles } from '@/hooks/custom-select';
 import Select from 'react-select';
 import { Table, TableBody, TableCell, TableRow } from "@/Components/ui/table";
 import { Button } from '@/Components/ui/button';
-import { AlertTriangle, PlusCircle } from 'lucide-react';
 import DataTable from '@/Components/DataTable';
 import UserInfo from '@/Components/UserInfo';
 import { formatDate } from '@/utils/dateFormatter';
 import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 import { Input } from '@/Components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, } from '@/Components/ui/dialog';
-import { Checkbox } from '@/Components/ui/checkbox';
 import { useDiscounts } from '@/hooks/useDiscounts';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useOrderItems } from '@/hooks/useOrderItems';
 import { useOrderTotals } from '@/hooks/useOrderTotals';
-import { Badge } from '@/Components/ui/badge';
 import { getBulkProductColumns } from './getBulkProductColumns';
 import BulkProductDialog from './BulkProductDialog';
+import { usePage } from '@inertiajs/react';
 
 export default function OrdersForm({
     data,
@@ -36,13 +33,14 @@ export default function OrdersForm({
     isEdit = false,
     isDisabled = false
 }) {
+    const settings = usePage().props.settings;
+
     const paymentOptions = useMemo(() => mapToSelectOptions(paymentMethods, 'id', 'payment_method_name'), [paymentMethods]);
     const shippingRatesOptions = useMemo(() => mapToSelectOptions(shippingRates, 'id', shippingRates => `${shippingRates.name} (${shippingRates.price})`, true), [shippingRates]);
 
     const {
         manualDiscountCode,
         setManualDiscountCode,
-        manualDiscountAmount,
         appliedManualDiscount,
         handleManualDiscountApply,
         orderTotalAutomaticDiscount,
@@ -56,7 +54,6 @@ export default function OrdersForm({
         toggleBulkSelection,
         selectAllBulk,
         clearBulkSelection,
-        filterProductOptions, // Si DataTable usa filtrado
     } = useProductOptions(products, data, setData, isEdit, findApplicableDiscount);
 
     const {
@@ -67,8 +64,6 @@ export default function OrdersForm({
     } = useUserManagement(data, users, setData);
 
     const {
-        handleQuantityChange,
-        handleRemoveItem,
         orderItemsColumns,
     } = useOrderItems(data, discounts, setData, isEdit, isDisabled, findApplicableDiscount, products);
 
@@ -87,14 +82,15 @@ export default function OrdersForm({
     const handleStatusChange = (selectedOption) => setData('status', selectedOption.value);
 
     const bulkProductColumns = useMemo(() =>
-        getBulkProductColumns({
-            selectedProductsBulk,
-            toggleBulkSelection,
-            isDisabled,
-            isEdit
-        }),
-        [selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit]
-    );
+    getBulkProductColumns({
+        selectedProductsBulk,
+        toggleBulkSelection,
+        isDisabled,
+        isEdit,
+        settings  // Agrega esto
+    }),
+    [selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit, settings]  // Agrega settings aquí
+);
 
     useEffect(() => {
         if (data.shipping_rate_id && shippingRates) {
@@ -226,14 +222,6 @@ export default function OrdersForm({
                                 Aplicar
                             </Button>
                         </div>
-                        {/* {appliedManualDiscount && (
-                            <p className="mt-1 text-sm text-green-600">
-                                Aplicado: {appliedManualDiscount.name} - Ahorro: ${manualDiscountAmount.toFixed(2)}
-                                {appliedManualDiscount.applied_to && (
-                                    <span className="text-xs"> (aplicado a {appliedManualDiscount.applied_to.length} ítem{appliedManualDiscount.applied_to.length > 1 ? 's' : ''})</span>
-                                )}
-                            </p>
-                        )} */}
                         <InputError message={errors.manual_discount_code} className="mt-2" />
                     </div>
 
@@ -253,33 +241,33 @@ export default function OrdersForm({
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-medium">Subtotal (post-descuentos por ítem)</TableCell>
                                 <TableCell className="font-medium">
-                                    ${(parseFloat(data.subtotal) || 0).toFixed(2)}
+                                    {settings.default_currency} {(parseFloat(data.subtotal) || 0).toFixed(2)}
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-medium">Total Descuentos</TableCell>
                                 <TableCell className="font-medium text-red-600">
-                                    -${(parseFloat(data.totaldiscounts) || 0).toFixed(2)}
+                                    -{settings.default_currency} {(parseFloat(data.totaldiscounts) || 0).toFixed(2)}
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-medium">Costo de Envío</TableCell>
-                                <TableCell className="font-medium">${(parseFloat(data.totalshipping) || 0).toFixed(2)}</TableCell>
+                                <TableCell className="font-medium">{settings.default_currency} {(parseFloat(data.totalshipping) || 0).toFixed(2)}</TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-medium">Impuestos</TableCell>
                                 <TableCell className="font-medium">
-                                    ${(parseFloat(data.tax_amount) || 0).toFixed(2)}
+                                    {settings.default_currency} {(parseFloat(data.tax_amount) || 0).toFixed(2)}
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                             <TableRow className="bg-gray-50 dark:bg-gray-800">
                                 <TableCell colSpan="3" className="text-right font-bold text-lg">Total Final</TableCell>
                                 <TableCell className="font-bold text-lg">
-                                    ${(parseFloat(data.total) || 0).toFixed(2)}
+                                    {settings.default_currency} {(parseFloat(data.total) || 0).toFixed(2)}
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>

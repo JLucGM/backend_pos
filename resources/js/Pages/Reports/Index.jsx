@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import DivSection from "@/Components/ui/div-section";
 import Loader from "@/Components/ui/loader";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -52,6 +52,8 @@ export default function Index({
   ordersByPaymentMethod = 0,
   ventasPorCategoria = {},
 }) {
+  const settings = usePage().props.settings;
+
   useEffect(() => {
     // console.log('Datos actualizados');
   }, [totalVentas, totalCompletados, totalPedidos]);
@@ -75,7 +77,7 @@ export default function Index({
         <FilterDate desde={desde} hasta={hasta} />
 
         <div className="grid grid-cols-3 gap-4">
-          <SummaryCard label="Total recaudado" value={totalVentas.toFixed(2)} prefix="$" />
+          <SummaryCard label="Total recaudado" value={totalVentas.toFixed(2)} prefix={settings.default_currency} />
           <SummaryCard label="Órdenes Completadas" value={totalCompletados} />
           <SummaryCard label="Total Pedidos Realizados" value={totalPedidos} />
         </div>
@@ -100,10 +102,10 @@ export default function Index({
           <DivSection className="col-span-full md:col-span-1 lg:col-span-1 ">
             <ul className="list-none space-y-1">
               <li>Desglose de Ventas</li>
-              <li className="flex justify-between"><strong>Descuentos:</strong> {totalDiscounts.toFixed(2)}</li>
-              <li className="flex justify-between"><strong>Envíos:</strong> {totalShipping.toFixed(2)}</li>
-              <li className="flex justify-between"><strong>Impuestos:</strong> {taxAmount.toFixed(2)}</li>
-              <li className="flex justify-between"><strong>Total Recaudado:</strong> {totalVentas.toFixed(2)}</li>
+              <li className="flex justify-between"><strong>Descuentos:</strong>{settings.default_currency} {totalDiscounts.toFixed(2)}</li>
+              <li className="flex justify-between"><strong>Envíos:</strong>{settings.default_currency} {totalShipping.toFixed(2)}</li>
+              <li className="flex justify-between"><strong>Impuestos:</strong>{settings.default_currency} {taxAmount.toFixed(2)}</li>
+              <li className="flex justify-between"><strong>Total Recaudado:</strong>{settings.default_currency} {totalVentas.toFixed(2)}</li>
             </ul>
           </DivSection>
 

@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
+import { usePage } from '@inertiajs/react';
 
 export const useSelectOptions = (categories = [], taxes = [], products = [], states = [], users = [], countries = []) => {
+    const settings = usePage().props.settings;
     // Opciones de categorías (centralizadas aquí)
     const categoryOptions = useMemo(() => 
         categories.length > 0 ? mapToSelectOptions(categories, 'id', 'category_name') : [], 
@@ -29,7 +31,7 @@ export const useSelectOptions = (categories = [], taxes = [], products = [], sta
             if (!product.combinations || product.combinations.length === 0) {
                 options.push({
                     value: `simple_${product.id}`,
-                    label: `${product.product_name} - $${parseFloat(product.product_price).toFixed(2)}`,
+                    label: `${product.product_name} - ${settings.default_currency} ${parseFloat(product.product_price).toFixed(2)}`,
                     product_id: product.id,
                     combination_id: null,
                 });
@@ -43,7 +45,7 @@ export const useSelectOptions = (categories = [], taxes = [], products = [], sta
                         ).join(', ');
                         attributes = attributes ? ` - ${attributes}` : '';
                     }
-                    const price = comb.combination_price ? ` - $${parseFloat(comb.combination_price).toFixed(2)}` : '';
+                    const price = comb.combination_price ? ` - ${settings.default_currency} ${parseFloat(comb.combination_price).toFixed(2)}` : '';
 
                     options.push({
                         value: `comb_${comb.id}`,
