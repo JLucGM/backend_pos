@@ -13,15 +13,14 @@ return new class extends Migration
     {
         Schema::create('stocks', function (Blueprint $table) {
             $table->id();
-            $table->string('quantity', 255)->default(0); //cantidad de productos entrantes o salida
-            // $table->string('slug');
-            // $table->string('status'); //estado del stock (entrada o salida)
+            $table->integer('quantity')->default(0); //cantidad de productos entrantes o salida
+            // $table->integer('reserved_quantity')->default(0)->comment('Cantidad reservada para pedidos pendientes');
             $table->string('product_barcode')->nullable();
             $table->string('product_sku')->nullable();
-            $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade'); //id del producto
+
             $table->foreignId('product_id')->nullable()->constrained(); //id del producto
+            $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade'); //id del producto
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
-            // $table->foreignId('store_id')->nullable()->constrained(); //id de la tienda
             $table->timestamps();
         });
     }

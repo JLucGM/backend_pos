@@ -76,6 +76,7 @@ export default function OrdersForm({
         { value: 'completed', label: 'Completado' },
         { value: 'cancelled', label: 'Cancelado' },
         { value: 'shipped', label: 'Enviado' },
+        { value: 'refunded', label: 'Reembolsado' },
     ];
 
     const handlePaymentChange = (selectedOption) => setData('payments_method_id', selectedOption.value);

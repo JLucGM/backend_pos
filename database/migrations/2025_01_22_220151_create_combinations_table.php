@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('combinations', function (Blueprint $table) {
             $table->id();
-            $table->string('combination_price');
+            $table->decimal('combination_price', 10, 2)->default(0);
             $table->foreignId('product_id')->nullable()->constrained();
             $table->timestamps();
         });
