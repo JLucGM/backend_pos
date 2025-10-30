@@ -723,14 +723,51 @@ class OrderController extends Controller
             }
         });
 
-        $redirect = redirect()->route('orders.edit', $orders)->with('success', 'Orden actualizada con éxito.');
-        if ($manualError) {
-            $redirect = $redirect->with('error', $manualError);
-        }
-        return $redirect;
+        // $redirect = redirect()->route('orders.edit', $orders)->with('success', 'Orden actualizada con éxito.');
+        // if ($manualError) {
+        //     $redirect = $redirect->with('error', $manualError);
+        // }
+        return redirect()->route('orders.edit', $orders)->with('success', 'Orden actualizada con éxito.');
     }
 
+    public function changeStatus(Request $request, Order $order)
+    {
+        // Validar el status entrante (agrega 'delivered' y 'completed')
+        $request->validate([
+            'status' => 'required|in:processing,shipped,delivered,completed,cancelled',
+        ]);
 
+        // Verificar permisos
+        $userAuth = Auth::user();
+        if ($order->company_id !== $userAuth->company_id) {
+            abort(403, 'No tienes permiso para esta operación.');
+        }
+
+        $newStatus = $request->input('status');
+        $currentStatus = $order->status;
+
+        // Validaciones de flujo de status (agrega para 'delivered' y 'completed')
+        if ($newStatus === 'processing' && $currentStatus !== 'pending') {
+            return response()->json(['error' => 'Solo puedes cambiar a processing desde pending.'], 400);
+        }
+        if ($newStatus === 'shipped' && $currentStatus !== 'processing') {
+            return response()->json(['error' => 'Solo puedes cambiar a shipped desde processing.'], 400);
+        }
+        if ($newStatus === 'delivered' && $currentStatus !== 'shipped') {
+            return response()->json(['error' => 'Solo puedes cambiar a delivered desde shipped.'], 400);
+        }
+        if ($newStatus === 'completed' && $currentStatus !== 'delivered') {
+            return response()->json(['error' => 'Solo puedes cambiar a completed desde delivered.'], 400);
+        }
+        if ($newStatus === 'cancelled' && in_array($currentStatus, ['refunded'])) {
+            return response()->json(['error' => 'No puedes cancelar una orden refunded.'], 400);
+        }
+
+        // Actualizar el status
+        $order->update(['status' => $newStatus]);
+
+        // return redirect()->back()->with('success', 'Estado de la orden actualizado a ' . $newStatus . '.');
+    }
 
     /**
      * Remove the specified resource from storage.

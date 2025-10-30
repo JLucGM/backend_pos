@@ -22,13 +22,13 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|string|max:255',
+            'status' => 'required|in:pending,processing,shipped,delivered,completed,cancelled,refunded|max:255', // Cambia 'enum' por 'in'
             'total' => 'required|numeric|min:0', // Asegura que el total sea no negativo
             'subtotal' => 'required|numeric|min:0', // Valida el subtotal
             'tax_amount' => 'required|numeric|min:0', // AÑADIDO: Validación para el tax_amount total del pedido
             'totaldiscounts' => 'nullable|numeric|min:0', // Valida los descuentos
             'delivery_location_id' => 'nullable|exists:delivery_locations,id', // Validación para delivery_location_id
-            'payments_method_id' => 'required|exists:payments_methods,id',
+            'payments_method_id' => 'nullable|exists:payments_methods,id',
             'order_origin' => 'required|string|max:255',
             'user_id' => 'required|exists:users,id', // Añade la validación para el usuario
             'order_items' => 'required|array|min:1', // Debe haber al menos un producto en la orden
@@ -56,8 +56,7 @@ class StoreRequest extends FormRequest
     {
         return [
             'status.required' => 'The status is required.',
-            'status.string' => 'The status must be a string.',
-            'status.max' => 'The status may not be greater than 255 characters.',
+            'status.in' => 'The status must be one of the following values: pending, processing, shipped, delivered, completed, cancelled, refunded.',
             'total.required' => 'The total is required.',
             'total.numeric' => 'The total must be a number.',
             'total.min' => 'The total must be at least 0.',
@@ -70,7 +69,7 @@ class StoreRequest extends FormRequest
             'totaldiscounts.numeric' => 'The total discounts must be a number.',
             'totaldiscounts.min' => 'The total discounts must be at least 0.',
             'delivery_location_id.exists' => 'The selected delivery location is invalid.',
-            'payments_method_id.required' => 'The payments method is required.',
+            // 'payments_method_id.required' => 'The payments method is required.',
             'payments_method_id.exists' => 'The selected payments method is invalid.',
             'order_origin.required' => 'The order origin is required.',
             'order_origin.string' => 'The order origin must be a string.',

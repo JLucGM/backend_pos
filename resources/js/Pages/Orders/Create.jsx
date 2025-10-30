@@ -16,7 +16,7 @@ export default function Create({ paymentMethods, products, users, discounts, shi
         total: 0,
         totaldiscounts: 0,
         totalshipping: 0.00,
-        payments_method_id: paymentMethods.length > 0 ? paymentMethods[0].id : null, // Primer método de pago por defecto
+        payments_method_id: null, // Primer método de pago por defecto
         order_origin: 'web', // Origen de la orden
         order_items: [], // Array vacío para los productos de la orden
         user_id: null, // Inicializa user_id como null

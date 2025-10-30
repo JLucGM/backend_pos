@@ -14,6 +14,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RefundController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingRateController;
@@ -173,6 +174,10 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('setting/{setting}', [SettingController::class, 'update'])->name('setting.update');
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reportes.index');
+
+    Route::post('/refunds', [RefundController::class, 'store'])->name('refunds.store');
+Route::post('/orders/{order}/status', [OrderController::class, 'changeStatus'])->name('orders.changeStatus');
+
 });
 
 require __DIR__ . '/auth.php';

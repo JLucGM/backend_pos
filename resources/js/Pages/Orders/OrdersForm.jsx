@@ -35,7 +35,7 @@ export default function OrdersForm({
 }) {
     const settings = usePage().props.settings;
 
-    const paymentOptions = useMemo(() => mapToSelectOptions(paymentMethods, 'id', 'payment_method_name'), [paymentMethods]);
+    const paymentOptions = useMemo(() => mapToSelectOptions(paymentMethods, 'id', 'payment_method_name', true), [paymentMethods]);
     const shippingRatesOptions = useMemo(() => mapToSelectOptions(shippingRates, 'id', shippingRates => `${shippingRates.name} (${shippingRates.price})`, true), [shippingRates]);
 
     const {
@@ -69,29 +69,18 @@ export default function OrdersForm({
 
     useOrderTotals(data, appliedManualDiscount, orderTotalAutomaticDiscount, setData, isEdit);
 
-
-    const statusOptions = [
-        { value: 'pending', label: 'Pendiente' },
-        { value: 'processing', label: 'Procesando' },
-        { value: 'completed', label: 'Completado' },
-        { value: 'cancelled', label: 'Cancelado' },
-        { value: 'shipped', label: 'Enviado' },
-        { value: 'refunded', label: 'Reembolsado' },
-    ];
-
     const handlePaymentChange = (selectedOption) => setData('payments_method_id', selectedOption.value);
-    const handleStatusChange = (selectedOption) => setData('status', selectedOption.value);
 
     const bulkProductColumns = useMemo(() =>
-    getBulkProductColumns({
-        selectedProductsBulk,
-        toggleBulkSelection,
-        isDisabled,
-        isEdit,
-        settings  // Agrega esto
-    }),
-    [selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit, settings]  // Agrega settings aquí
-);
+        getBulkProductColumns({
+            selectedProductsBulk,
+            toggleBulkSelection,
+            isDisabled,
+            isEdit,
+            settings  // Agrega esto
+        }),
+        [selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit, settings]  // Agrega settings aquí
+    );
 
     useEffect(() => {
         if (data.shipping_rate_id && shippingRates) {
@@ -123,20 +112,6 @@ export default function OrdersForm({
                                 </div>
                             </div>
                         )}
-
-                        <div className="mt-4">
-                            <InputLabel htmlFor="status" value="Status" />
-                            <Select
-                                id="status"
-                                name="status"
-                                options={statusOptions}
-                                value={statusOptions.find(option => option.value === data.status)}
-                                onChange={handleStatusChange}
-                                styles={customStyles}
-                                isDisabled={isDisabled}
-                            />
-                            <InputError message={errors.status} className="mt-2" />
-                        </div>
 
                         <div className="mt-4">
                             <InputLabel htmlFor="payments_method_id" value="Método de Pago" />

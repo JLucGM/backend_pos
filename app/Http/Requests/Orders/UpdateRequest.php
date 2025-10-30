@@ -22,7 +22,7 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|string|max:255',
+            'status' => 'required|in:pending,processing,shipped,delivered,completed,cancelled,refunded|max:255',
             'total' => 'required|numeric|min:0',
             'subtotal' => 'required|numeric|min:0',
             'totaldiscounts' => 'nullable|numeric|min:0',
@@ -54,8 +54,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             'status.required' => 'The status is required.',
-            'status.string' => 'The status must be a string.',
-            'status.max' => 'The status may not be greater than 255 characters.',
+            'status.in' => 'The status must be one of the following values: pending, processing, shipped, delivered, completed, cancelled, refunded.',
             'total.required' => 'The total is required.',
             'total.numeric' => 'The total must be a number.',
             'total.min' => 'The total must be at least 0.',

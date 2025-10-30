@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->enum('status', ['pending', 'processing', 'shipped', 'cancelled', 'refunded'])->default('pending');
+            $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'completed', 'cancelled', 'refunded'])->default('pending');
             $table->decimal('totaldiscounts', 10, 2)->default(0.00);
             $table->decimal('totalshipping', 10, 2)->default(0.00);
             $table->decimal('subtotal', 10, 2)->default(0.00);

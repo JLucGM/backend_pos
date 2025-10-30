@@ -43,4 +43,12 @@ class OrderItem extends Model
         return $this->belongsTo(Product::class);
     }
 
+    // App\Models\OrderItem.php
+
+public function combination()
+{
+    return $this->belongsTo(Combination::class, 'combination_id');
+}
+
+
 }

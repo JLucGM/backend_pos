@@ -1,9 +1,20 @@
 import { buttonVariants } from "@/Components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Ellipsis, Pen, Trash } from "lucide-react";
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
+import { formatDate } from "@/utils/dateFormatter";
+import { Badge } from "@/Components/ui/badge";
 
 export const ordersColumns = [
+    {
+        header: "",
+        accessorKey: "id",
+        cell: ({ row }) => {
+            return (
+                <p>#{row.original.id}</p>
+            );
+        },
+    },
     {
         header: "Cliente",
         accessorKey: "user_id",
@@ -14,22 +25,19 @@ export const ordersColumns = [
         },
     },
     {
-        header: "Status",
+        header: "Estado",
         accessorKey: "status",
+        cell: ({ row }) => {
+            return (
+                <Badge>{row.original.status}</Badge>
+            );
+        },
     },
     // {
     //     header: "Origen",
     //     accessorKey: "order_origin",
     // },
-    {
-        header: "Total",
-        accessorKey: "total",
-        cell: ({ row }) => {
-            return (
-                <p>${row.original.total}</p>
-            );
-        },
-    },
+    
     // {
     //     header: "Tienda",
     //     accessorKey: "stores",
@@ -45,9 +53,19 @@ export const ordersColumns = [
         accessorKey: "created_at",
         cell: ({ row }) => {
             const date = new Date(row.original.created_at);
-            const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+            const formattedDate = formatDate(date);
             return (
                 <p>{formattedDate}</p>
+            );
+        },
+    },
+    {
+        header: "Total",
+        accessorKey: "total",
+        cell: ({ row }) => {
+            const settings = usePage().props.settings.default_currency;
+            return (
+                <p>{settings} {row.original.total}</p>
             );
         },
     },

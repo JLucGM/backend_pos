@@ -7,6 +7,7 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/Components/ui/badge';
 import { WalletCards } from 'lucide-react';
 import Loader from '@/Components/ui/loader';
+import OrderStatusButtons from '@/Components/Orders/OrderStatusButtons';
 
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
@@ -24,7 +25,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
         total: parseFloat(orders.total) || 0,
         subtotal: parseFloat(orders.subtotal) || 0,
         totaldiscounts: parseFloat(orders.totaldiscounts) || 0,
-        totalshipping: parseFloat(orders.totalshipping) || 0,  
+        totalshipping: parseFloat(orders.totalshipping) || 0,
         user_id: orders.user_id || null,
         payments_method_id: orders.payments_method_id || null,
         manual_discount_code: orders.manual_discount_code || null,
@@ -118,6 +119,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                             </h2>
                             <Badge className='mx-2'>{orders.status}</Badge>
                         </div>
+                    <OrderStatusButtons orders={orders} />
                     </div>
                     <div className="flex items-center justify-start space-x-1 ps-7 mt-1">
                         <WalletCards className='size-4 text-gray-700' />
