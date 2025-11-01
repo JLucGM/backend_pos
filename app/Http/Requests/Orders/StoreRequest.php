@@ -23,6 +23,8 @@ class StoreRequest extends FormRequest
     {
         return [
             'status' => 'required|in:pending,processing,shipped,delivered,completed,cancelled,refunded|max:255', // Cambia 'enum' por 'in'
+            'payment_status' => 'required|in:pending,paid',
+        'delivery_type' => 'required|in:pickup,delivery',
             'total' => 'required|numeric|min:0', // Asegura que el total sea no negativo
             'subtotal' => 'required|numeric|min:0', // Valida el subtotal
             'tax_amount' => 'required|numeric|min:0', // AÑADIDO: Validación para el tax_amount total del pedido
@@ -57,6 +59,10 @@ class StoreRequest extends FormRequest
         return [
             'status.required' => 'The status is required.',
             'status.in' => 'The status must be one of the following values: pending, processing, shipped, delivered, completed, cancelled, refunded.',
+            'payment_status.required' => 'El estado de pago es obligatorio.',
+            'payment_status.in' => 'El estado de pago debe ser pendiente o pagado.',
+            'delivery_type.required' => 'El tipo de entrega es obligatorio.',
+            'delivery_type.in' => 'El tipo de entrega debe ser pickup o delivery.',
             'total.required' => 'The total is required.',
             'total.numeric' => 'The total must be a number.',
             'total.min' => 'The total must be at least 0.',

@@ -11,7 +11,6 @@ export const useProductAttributes = (data, setData, product) => {
     useEffect(() => {
         if (product && product.combinations.length > 0) {
             setShowAttributes(true);
-            // console.log(showAttributes)
         }
     }, [product]);
 

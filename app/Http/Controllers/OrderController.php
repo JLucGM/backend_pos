@@ -237,6 +237,8 @@ class OrderController extends Controller
         $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping) {
             $order = Order::create([
                 'status' => $request['status'],
+                'payment_status' => $request['payments_method_id'] ? 'paid' : 'pending', // Cambia aquí
+                'delivery_type' => $request['delivery_type'] ?? 'delivery',
                 'tax_amount' => $taxAmount,
                 'subtotal' => $finalSubtotal,
                 'total' => $finalTotal,
@@ -456,7 +458,7 @@ class OrderController extends Controller
             ->get();
 
         // Carga todos los usuarios
-        $users = User::all(); // Filtra por rol si necesitas: ->where('role', 'client')
+        $users = User::with('deliveryLocations')->get(); // Filtra por rol si necesitas: ->where('role', 'client')
 
         $paymentMethods = PaymentMethod::all(); // Asume modelo PaymentMethod
         $shippingRates = ShippingRate::all();  // <-- Agrega esto para pasar a la vista
@@ -642,6 +644,8 @@ class OrderController extends Controller
                 // Update orden principal
                 $orders->update([
                     'status' => $request['status'],
+                    'payment_status' => $request['payments_method_id'] ? 'paid' : 'pending',
+                    'delivery_type' => $request['delivery_type'],
                     'tax_amount' => $taxAmount,
                     'subtotal' => $finalSubtotal,
                     'total' => $finalTotal,
@@ -650,6 +654,7 @@ class OrderController extends Controller
                     'manual_discount_amount' => $manualDiscountAmount,
                     'payments_method_id' => $request['payments_method_id'],
                     'user_id' => $request['user_id'] ?? $orders->user_id,
+                    'delivery_location_id' => $request['delivery_location_id'],
                     'shipping_rate_id' => $shippingRateId,
                     'totalshipping' => $totalShipping,
                 ]);

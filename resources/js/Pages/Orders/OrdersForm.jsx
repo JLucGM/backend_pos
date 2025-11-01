@@ -19,6 +19,7 @@ import { useOrderTotals } from '@/hooks/useOrderTotals';
 import { getBulkProductColumns } from './getBulkProductColumns';
 import BulkProductDialog from './BulkProductDialog';
 import { usePage } from '@inertiajs/react';
+import DeliveryLocationForm from '../User/DeliveryLocationForm';
 
 export default function OrdersForm({
     data,
@@ -37,6 +38,18 @@ export default function OrdersForm({
 
     const paymentOptions = useMemo(() => mapToSelectOptions(paymentMethods, 'id', 'payment_method_name', true), [paymentMethods]);
     const shippingRatesOptions = useMemo(() => mapToSelectOptions(shippingRates, 'id', shippingRates => `${shippingRates.name} (${shippingRates.price})`, true), [shippingRates]);
+
+    const handleDeliveryTypeChange = (selectedOption) => {
+        const newDeliveryType = selectedOption.value;
+        setData('delivery_type', newDeliveryType);
+
+        // Si cambia a 'pickup', limpia shipping_rate_id, totalshipping y delivery_location_id
+        if (newDeliveryType === 'pickup') {
+            setData('shipping_rate_id', null);
+            setData('totalshipping', 0);
+            setData('delivery_location_id', null); // Agrega esto
+        }
+    };
 
     const {
         manualDiscountCode,
@@ -127,39 +140,43 @@ export default function OrdersForm({
                             <InputError message={errors.payments_method_id} className="mt-2" />
                         </div>
 
+                        {/* Nuevo select para delivery_type */}
                         <div className="mt-4">
-                            <InputLabel htmlFor="shipping_rate_id" value="Tarifa de envio" />
+                            <InputLabel htmlFor="delivery_type" value="Tipo de Entrega" />
                             <Select
-                                id="shipping_rate_id"
-                                name="shipping_rate_id"
-                                options={shippingRatesOptions}
-                                value={shippingRatesOptions.find(option => option.value === data.shipping_rate_id)}
-                                onChange={(selectedOption) => setData('shipping_rate_id', selectedOption ? selectedOption.value : null)}  // Handler corregido
+                                id="delivery_type"
+                                name="delivery_type"
+                                options={[
+                                    { value: 'pickup', label: 'Pickup' },
+                                    { value: 'delivery', label: 'Delivery' },
+                                ]}
+                                value={{
+                                    value: data.delivery_type,
+                                    label: data.delivery_type === 'pickup' ? 'Pickup' : 'Delivery'
+                                }}
+                                onChange={handleDeliveryTypeChange}
                                 styles={customStyles}
                                 isDisabled={isDisabled}
                             />
-                            <InputError message={errors.shipping_rate_id} className="mt-2" />
+                            <InputError message={errors.delivery_type} className="mt-2" />
                         </div>
-                    </DivSection>
-                </div>
 
-                <div className="col-span-full md:col-span-1">
-                    <DivSection>
-                        <UserInfo
-                            orders={orders}
-                            userOptions={userOptions}
-                            selectedUser={selectedUser}
-                            handleUserChange={handleUserChange}
-                            customStyles={customStyles}
-                            deliveryLocations={deliveryLocations}
-                            data={data}
-                            setData={setData}
-                            errors={errors}
-                            isDisabled={isDisabled}
-                        />
+                        {data.delivery_type === 'delivery' && (
+                            <div className="mt-4">
+                                <InputLabel htmlFor="shipping_rate_id" value="Tarifa de envio" />
+                                <Select
+                                    id="shipping_rate_id"
+                                    name="shipping_rate_id"
+                                    options={shippingRatesOptions}
+                                    value={shippingRatesOptions.find(option => option.value === data.shipping_rate_id)}
+                                    onChange={(selectedOption) => setData('shipping_rate_id', selectedOption ? selectedOption.value : null)}
+                                    styles={customStyles}
+                                    isDisabled={isDisabled}
+                                />
+                                <InputError message={errors.shipping_rate_id} className="mt-2" />
+                            </div>
+                        )}
                     </DivSection>
-                </div>
-
                 <DivSection className='col-span-full'>
                     <h3 className='font-semibold text-lg mb-4'>Productos del Pedido</h3>
 
@@ -250,6 +267,25 @@ export default function OrdersForm({
                         </TableBody>
                     </Table>
                 </DivSection>
+                </div>
+
+                <div className="col-span-full md:col-span-1">
+                    <DivSection>
+                        <UserInfo
+                            orders={orders}
+                            userOptions={userOptions}
+                            selectedUser={selectedUser}
+                            handleUserChange={handleUserChange}
+                            customStyles={customStyles}
+                            deliveryLocations={deliveryLocations}
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                            isDisabled={isDisabled}
+                        />
+                    </DivSection>
+                </div>
+
             </div>
         </>
     );

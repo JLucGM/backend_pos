@@ -3,7 +3,7 @@ import { Input } from '@/Components/ui/input';
 import { Badge } from '@/Components/ui/badge';
 import { BadgePercent, Trash2 } from 'lucide-react';
 
-export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, isDisabled, showDiscount = true, isEdit = false }) => [
+export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, isDisabled, showDiscount = true, isEdit = false, settings }) => [
     {
         id: 'name_product',
         header: 'Producto',
@@ -55,12 +55,12 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
                     <div className="flex items-center space-x-2 pt-1">
                         {hasDiscount && (
                             <span className="line-through text-gray-500 text-sm">
-                                ${originalPrice.toFixed(2)}
+                                {settings.default_currency} {originalPrice.toFixed(2)}
                             </span>
                         )}
 
                         <span className={`font-semibold ${hasDiscount ? 'text-green-600 text-sm' : 'text-gray-900 text-sm'}`}>
-                            ${discountedPrice.toFixed(2)}
+                            {settings.default_currency} {discountedPrice.toFixed(2)}
                         </span>
 
                     </div>
@@ -68,7 +68,7 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
                         <div className="flex items-center space-x-1">
                             <BadgePercent className='size-4' />
                             <span className=" text-sm font-medium">
-                                (-${discountAmount.toFixed(2)})
+                                (-{settings.default_currency} {discountAmount.toFixed(2)})
                             </span>
                         </div>
                     )}
@@ -112,7 +112,7 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
         size: 100,
         cell: ({ row, getValue }) => {
             const subtotal = parseFloat(getValue() || row.original.subtotal || 0); // Siempre post ($9)
-            return <span className="text-right font-bold">${subtotal.toFixed(2)}</span>;
+            return <span className="text-right font-bold">{settings.default_currency} {subtotal.toFixed(2)}</span>;
         },
     },
     {

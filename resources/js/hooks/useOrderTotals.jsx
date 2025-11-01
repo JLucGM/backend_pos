@@ -32,14 +32,6 @@ export const useOrderTotals = (data, appliedManualDiscount, orderTotalAutomaticD
         const totalDiscounts = itemsDiscounts + globalDiscounts;
         const finalTotal = itemsSubtotal + itemsTaxAmount + safeParseFloat(data.totalshipping) - globalDiscounts;  // Usa safeParseFloat para totalshipping
 
-        // console.log('Recalculando totales:', {
-        //     itemsSubtotal,
-        //     itemsTaxAmount,
-        //     globalDiscounts,
-        //     totalshipping: data.totalshipping,
-        //     finalTotal,  // Ahora debería ser un número válido
-        // });
-
         // Actualiza data con los nuevos valores
         setData(prevData => ({
             ...prevData,

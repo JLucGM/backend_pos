@@ -17,10 +17,10 @@ export default function Edit({ orders, paymentMethods, products, users, discount
     if (flash?.success) toast.success(flash.success);
     if (flash?.error) toast.error(flash.error);
 
-    // console.log(products); // Debug DB
-
     const initialValues = {
         status: orders.status,
+        payment_status: orders.payment_status || 'pending',
+        delivery_type: orders.delivery_type || 'delivery',
         tax_amount: parseFloat(orders.tax_amount) || 0,
         total: parseFloat(orders.total) || 0,
         subtotal: parseFloat(orders.subtotal) || 0,
@@ -73,20 +73,15 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                 index: index, // FIX: Agrega index para DataTable (qty/actions)
             };
 
-            // DEBUG: Verifica valores mapeados
-            // console.log(`Item ${index} mapped: product_price=${originalPrice} (original), discounted_price=${discountedPrice} (post), subtotal=${calculatedSubtotal} (post), attributes_display=${attributesDisplay}`);
-
             return mappedItem;
         }) : [],
     };
 
-    // DEBUG: Verifica data inicial después de useForm
     const { data, setData, errors, post, processing } = useForm(initialValues);
-    // console.log('Initial data.order_items[0]:', data.order_items[0]); // Debe mostrar product_price=10, discounted_price=9
 
     const submit = (e) => {
         e.preventDefault();
-        console.log('Submitting update data:', data);
+
         post(route('orders.update', orders), {
             _method: 'put',
             onSuccess: () => {
@@ -118,54 +113,53 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                                 #{orders.id}
                             </h2>
                             <Badge className='mx-2'>{orders.status}</Badge>
+                            <Badge
+                                variant={orders.payment_status === 'paid' ? 'success' : 'destructive'}
+                            >
+                                {orders.payment_status === 'paid' ? 'Pagado' : 'Pendiente'}
+                            </Badge>
                         </div>
-                    <OrderStatusButtons orders={orders} />
+                        <OrderStatusButtons orders={orders} />
                     </div>
-                    <div className="flex items-center justify-start space-x-1 ps-7 mt-1">
+                    {/* <div className="flex items-center justify-start space-x-1 ps-7 mt-1">
                         <WalletCards className='size-4 text-gray-700' />
                         <p className='capitalize text-sm font-medium text-gray-700 dark:text-gray-300'>
                             {orders.order_origin} - {(orders.stores && orders.stores.length > 0 ? orders.stores[0].store_name : "Sin tienda")}
                         </p>
-                    </div>
+                    </div> */}
                 </div>
             }
         >
             <Head className="capitalize" title={`Orden #${orders.id}`} />
 
             <Suspense fallback={<Loader />}>
-                <div className="max-w-7xl mx-auto">
-                    <div className="overflow-hidden">
-                        <div className="text-gray-900 dark:text-gray-100">
-                            <form onSubmit={submit} className='space-y-4'>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <OrdersForm
-                                        data={data}
-                                        orders={orders}
-                                        paymentMethods={paymentMethods}
-                                        products={products}
-                                        users={users}
-                                        discounts={discounts}
-                                        shippingRates={shippingRates}
-                                        setData={setData}
-                                        errors={errors}
-                                        isEdit={false} // FIX: Cambia a true para modo edit (bloquea agregar nuevos, preserva descuentos)
-                                    />
-                                </div>
-
-                                <div className="flex justify-end p-2.5">
-                                    <Button
-                                        variant="default"
-                                        size="sm"
-                                        disabled={processing}
-                                        type="submit"
-                                    >
-                                        {processing ? "Guardando..." : "Guardar"}
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
+                <form onSubmit={submit} className='space-y-4'>
+                    <div className="grid grid-cols-1 gap-4">
+                        <OrdersForm
+                            data={data}
+                            orders={orders}
+                            paymentMethods={paymentMethods}
+                            products={products}
+                            users={users}
+                            discounts={discounts}
+                            shippingRates={shippingRates}
+                            setData={setData}
+                            errors={errors}
+                            isEdit={false} // FIX: Cambia a true para modo edit (bloquea agregar nuevos, preserva descuentos)
+                        />
                     </div>
-                </div>
+
+                    <div className="flex justify-end p-2.5">
+                        <Button
+                            variant="default"
+                            size="sm"
+                            disabled={processing}
+                            type="submit"
+                        >
+                            {processing ? "Guardando..." : "Guardar"}
+                        </Button>
+                    </div>
+                </form>
             </Suspense>
         </AuthenticatedLayout>
     );

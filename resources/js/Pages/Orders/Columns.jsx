@@ -29,7 +29,22 @@ export const ordersColumns = [
         accessorKey: "status",
         cell: ({ row }) => {
             return (
-                <Badge>{row.original.status}</Badge>
+                <Badge>
+                    {row.original.status}
+                    </Badge>
+            );
+        },
+    },
+    {
+        header: "Pago",
+        accessorKey: "payment_status",
+        cell: ({ row }) => {
+            return (
+                <Badge
+                    variant={row.original.payment_status === 'paid' ? 'success' : 'destructive'}
+                >
+                    {row.original.payment_status === 'paid' ? 'Pagado' : 'Pendiente'}
+                </Badge>
             );
         },
     },
@@ -37,7 +52,7 @@ export const ordersColumns = [
     //     header: "Origen",
     //     accessorKey: "order_origin",
     // },
-    
+
     // {
     //     header: "Tienda",
     //     accessorKey: "stores",

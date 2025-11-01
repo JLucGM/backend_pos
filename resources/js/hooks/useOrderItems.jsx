@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { calculateDiscount, calculateDiscountedPrice, calculateDiscountedSubtotal } from '@/utils/discountUtils';
 import { calculateStock } from '@/utils/stockUtils'; // FIX: Para stock dinámico siempre
 import { getOrderItemsColumns } from '@/Pages/Orders/orderItemsColumns';
+import { usePage } from '@inertiajs/react';
 
 /**
  * Hook para manejar ítems de orden: cantidad, remover, columnas de DataTable.
@@ -18,6 +19,7 @@ import { getOrderItemsColumns } from '@/Pages/Orders/orderItemsColumns';
  */
 export const useOrderItems = (data, discounts, setData, isEdit, isDisabled, findApplicableDiscount, products = []) => {
     // handleQuantityChange: Recalcula ítem con descuento/stock (FIX: Stock SIEMPRE dinámico de products)
+    const settings = usePage().props.settings;
     const handleQuantityChange = useCallback((index, newQuantity) => {
         if (!data.order_items || !Array.isArray(data.order_items) || index < 0 || index >= data.order_items.length) {
             console.warn('Invalid quantity change:', { index, length: data.order_items?.length });
@@ -49,7 +51,7 @@ export const useOrderItems = (data, discounts, setData, isEdit, isDisabled, find
             const product = products.find(p => p.id === item.product_id);
             if (product) {
                 currentStock = calculateStock(product, item.combination_id); // e.g., 25 para camisa, 2 para pantalon comb1
-                console.log('Dynamic stock for item', item.product_id, 'comb', item.combination_id, ':', currentStock); // Temporal: ve en console (borra después)
+                // console.log('Dynamic stock for item', item.product_id, 'comb', item.combination_id, ':', currentStock); // Temporal: ve en console (borra después)
             }
         } else {
             currentStock = item.stock || 0; // Fallback si no products
@@ -103,7 +105,8 @@ export const useOrderItems = (data, discounts, setData, isEdit, isDisabled, find
         isDisabled,
         showDiscount: true,
         isEdit,
-    }), [handleQuantityChange, handleRemoveItem, isDisabled, isEdit]);
+        settings,  // ← Agrega esto para pasar settings
+    }), [handleQuantityChange, handleRemoveItem, isDisabled, isEdit, settings]);
 
     return {
         handleQuantityChange,

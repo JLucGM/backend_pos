@@ -27,7 +27,7 @@ class UpdateRequest extends FormRequest
             'subtotal' => 'required|numeric|min:0',
             'totaldiscounts' => 'nullable|numeric|min:0',
             'direction_delivery' => 'nullable|string|max:255',
-            'payments_method_id' => 'required|exists:payments_methods,id',
+            'payments_method_id' => 'nullable|exists:payments_methods,id',
             'user_id' => 'nullable|exists:users,id',
             'order_items' => 'required|array|min:1',
             'order_items.*.id' => 'nullable', // Permitir IDs numéricos (existentes) o strings (temporales)
@@ -65,7 +65,7 @@ class UpdateRequest extends FormRequest
             'totaldiscounts.min' => 'The total discounts must be at least 0.',
             'direction_delivery.string' => 'The delivery direction must be a string.',
             'direction_delivery.max' => 'The delivery direction may not be greater than 255 characters.',
-            'payments_method_id.required' => 'The payments method is required.',
+            // 'payments_method_id.required' => 'The payments method is required.',
             'payments_method_id.exists' => 'The selected payments method is invalid.',
             'user_id.exists' => 'The selected user is invalid.',
             'order_items.required' => 'The order items are required.',

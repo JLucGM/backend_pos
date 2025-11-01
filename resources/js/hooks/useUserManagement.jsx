@@ -20,8 +20,14 @@ export const useUserManagement = (data, users, setData) => {
     const handleUserChange = (selectedOption) => {
         setSelectedUser(selectedOption);
         setData('user_id', selectedOption ? selectedOption.value : null);
-        const selectedUserData = users.find(user => user.id === selectedOption.value);
-        setDeliveryLocations(selectedUserData ? selectedUserData.delivery_locations : []);
+        
+        if (selectedOption) {
+            const selectedUserData = users.find(user => user.id === selectedOption.value);
+            setDeliveryLocations(selectedUserData ? selectedUserData.delivery_locations : []);
+        } else {
+            setDeliveryLocations([]);
+        }
+        
         setData('delivery_location_id', null); // Resetea location al cambiar user
     };
 
