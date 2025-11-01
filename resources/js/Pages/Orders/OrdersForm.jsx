@@ -19,7 +19,6 @@ import { useOrderTotals } from '@/hooks/useOrderTotals';
 import { getBulkProductColumns } from './getBulkProductColumns';
 import BulkProductDialog from './BulkProductDialog';
 import { usePage } from '@inertiajs/react';
-import DeliveryLocationForm from '../User/DeliveryLocationForm';
 
 export default function OrdersForm({
     data,
@@ -58,6 +57,7 @@ export default function OrdersForm({
         handleManualDiscountApply,
         orderTotalAutomaticDiscount,
         findApplicableDiscount,
+        manualDiscountError,
     } = useDiscounts(data, discounts, setData, isEdit, products);
 
     const {
@@ -215,7 +215,8 @@ export default function OrdersForm({
                                 Aplicar
                             </Button>
                         </div>
-                        <InputError message={errors.manual_discount_code} className="mt-2" />
+                        <InputError message={errors.manual_discount_code || manualDiscountError} className="mt-2" />
+
                     </div>
 
                     {/* DataTable: Muestra order_items con columnas para discounted_price, discount_amount (intacto) */}

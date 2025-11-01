@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Orders\StoreRequest;
 use App\Http\Requests\Orders\UpdateRequest;
 use App\Models\Discount;
+use App\Models\DiscountUsage;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Product;
@@ -70,7 +71,7 @@ class OrderController extends Controller
             'products', // Completo: todos los products relacionados (con pivot combination_id)
             'categories' // Completo: todas las categories
         ])
-            // ->where('company_id', $userAuth->company_id) // Filtrar por compañía (agrega consistencia; remueve si no quieres)
+            ->withCount('usages')
             ->active() // Scope: is_active=true, fechas válidas
             ->get(); // TODOS los descuentos activos van
 
@@ -82,9 +83,9 @@ class OrderController extends Controller
     /**
      * Store a newly created order in storage.
      */
+
     public function store(StoreRequest $request)
     {
-        // dd($request->all());
         $userAuth = Auth::user();
 
         if ($userAuth->company_id !== $request->input('company_id', $userAuth->company_id)) {
@@ -141,6 +142,11 @@ class OrderController extends Controller
             $applicableDiscount = $this->findApplicableDiscount($product, $combinationId, $quantity, $subtotalPreDiscount, $discounts);
 
             if ($applicableDiscount) {
+                // **NUEVO: Validar usage_limit antes de aplicar**
+                if ($applicableDiscount->usage_limit && $applicableDiscount->usages()->count() >= $applicableDiscount->usage_limit) {
+                    throw ValidationException::withMessages(['order_items' => 'Descuento automático agotado para: ' . $product->product_name]);
+                }
+
                 $discountAmountPerItem = $this->calculateDiscount($applicableDiscount, $originalPrice, $quantity);
                 $discountedPrice = max(0, $originalPrice - ($discountAmountPerItem / $quantity));
                 $discountedSubtotal = $originalSubtotal - $discountAmountPerItem;
@@ -155,6 +161,10 @@ class OrderController extends Controller
 
                 $totalDiscounts += $discountAmountPerItem;
                 $subtotalPostDiscount += $discountedSubtotal;
+
+                // **NUEVO: Marca descuento aplicado para registrar uso**
+                $itemData['applied_discount_id'] = $applicableDiscount->id;
+                $itemData['applied_discount_amount'] = $discountAmountPerItem;
             } else {
                 // Respeta manual/frontend si no auto
                 $itemData['discount_id'] = $itemData['discount_id'] ?? null;
@@ -164,6 +174,16 @@ class OrderController extends Controller
                 $itemData['subtotal'] = $originalSubtotal - ($itemData['discount_amount'] ?? 0);
                 $totalDiscounts += $itemData['discount_amount'] ?? 0;
                 $subtotalPostDiscount += $itemData['subtotal'];
+
+                // **NUEVO: Si hay descuento manual por ítem, valida y marca**
+                if ($itemData['discount_id']) {
+                    $manualItemDiscount = $discounts->find($itemData['discount_id']);
+                    if ($manualItemDiscount && $manualItemDiscount->usage_limit && $manualItemDiscount->usages()->count() >= $manualItemDiscount->usage_limit) {
+                        throw ValidationException::withMessages(['order_items' => 'Descuento manual agotado para ítem: ' . $product->product_name]);
+                    }
+                    $itemData['applied_discount_id'] = $manualItemDiscount->id;
+                    $itemData['applied_discount_amount'] = $itemData['discount_amount'];
+                }
             }
 
             // Recalcular tax_amount post-descuento
@@ -174,28 +194,36 @@ class OrderController extends Controller
 
         // Descuento order_total automático
         $orderTotalDiscount = $this->calculateOrderTotalDiscount($subtotalPreDiscount, $discounts);
-        $totalDiscounts += $orderTotalDiscount;
+        $appliedOrderDiscount = null;
+        if ($orderTotalDiscount > 0) {
+            // Asume que encuentras el descuento aplicado (ajusta según tu lógica en calculateOrderTotalDiscount)
+            $appliedOrderDiscount = $discounts->where('applies_to', 'order_total')->where('automatic', true)->first();
+            if ($appliedOrderDiscount && $appliedOrderDiscount->usage_limit && $appliedOrderDiscount->usages()->count() >= $appliedOrderDiscount->usage_limit) {
+                throw ValidationException::withMessages(['order_items' => 'Descuento automático global agotado.']);
+            }
+        }
 
         // Descuento manual global - Valida pero fallback a 0 + message si inválido (no throw)
         $manualDiscountCode = $request['manual_discount_code'] ?? null;
         $manualDiscountAmount = $request['manual_discount_amount'] ?? 0; // Base: Siempre fallback del request
         $manualError = null; // Para message en redirect
+        $appliedManualDiscount = null;
 
         if ($manualDiscountCode) {
             $manualDiscount = $discounts->firstWhere('code', $manualDiscountCode);
             if ($manualDiscount && !$manualDiscount->automatic && $manualDiscount->applies_to === 'order_total') {
-                if ($this->isDiscountValid($manualDiscount, $subtotalPreDiscount)) {
+                if ($manualDiscount->usage_limit && $manualDiscount->usages()->count() >= $manualDiscount->usage_limit) {
+                    // **CAMBIO: Lanza ValidationException en lugar de solo setear error**
+                    throw ValidationException::withMessages(['manual_discount_code' => 'Código de descuento agotado.']);
+                } elseif ($this->isDiscountValid($manualDiscount, $subtotalPreDiscount)) {
                     $calculatedAmount = $this->calculateDiscount($manualDiscount, $subtotalPreDiscount, 1);
-                    $manualDiscountAmount = max(0, $calculatedAmount); // Sobrescribe con calculado si válido
-                    // Opcional: Decrementa usage_limit si trackeas
-                    // $manualDiscount->decrement('usage_limit');
+                    $manualDiscountAmount = max(0, $calculatedAmount);
+                    $appliedManualDiscount = $manualDiscount;
                 } else {
-                    $manualError = 'Código de descuento inválido o no aplicable (verifica fechas o monto mínimo).';
-                    Log::warning("Manual discount inválido por validación para código: {$manualDiscountCode}");
+                    throw ValidationException::withMessages(['manual_discount_code' => 'Código de descuento inválido o no aplicable (verifica fechas o monto mínimo).']);
                 }
             } else {
-                $manualError = 'Código de descuento no encontrado o no válido (debe ser un cupón manual global).';
-                Log::warning("Manual discount no encontrado o no cumple condiciones para código: {$manualDiscountCode}");
+                throw ValidationException::withMessages(['manual_discount_code' => 'Código de descuento no encontrado o no válido (debe ser un cupón manual global).']);
             }
         }
 
@@ -205,6 +233,11 @@ class OrderController extends Controller
                 $product = Product::find($itemData['product_id']); // Re-fetch si necesitas
                 $combinationId = $itemData['combination_id'] ?? null;
                 if ($this->isManualApplicableToItem($manualDiscount, $itemData, $product, $combinationId)) {
+                    // **NUEVO: Validar usage_limit para manual por ítem**
+                    if ($manualDiscount->usage_limit && $manualDiscount->usages()->count() >= $manualDiscount->usage_limit) {
+                        throw ValidationException::withMessages(['order_items' => 'Descuento manual agotado para ítem: ' . $product->product_name]);
+                    }
+
                     $itemDiscountAmount = $this->calculateDiscount($manualDiscount, $itemData['price_product'], $itemData['quantity']);
                     $itemData['discount_amount'] += $itemDiscountAmount; // Suma a auto
                     $itemData['subtotal'] -= $itemDiscountAmount;
@@ -212,10 +245,15 @@ class OrderController extends Controller
                     $totalDiscounts += $itemDiscountAmount;
                     $subtotalPostDiscount -= $itemDiscountAmount;
                     $itemData['tax_amount'] = $itemData['subtotal'] * ($product->taxes ? $product->taxes->tax_rate / 100 : 0); // Recalcula tax
+                    $taxAmount = collect($orderItemsData)->sum(fn($i) => $i['tax_amount']); // Re-sum tax
+
+                    // **NUEVO: Marca descuento aplicado**
+                    $itemData['applied_discount_id'] = $manualDiscount->id;
+                    $itemData['applied_discount_amount'] += $itemDiscountAmount;
                 }
             }
             $manualDiscountAmount = 0; // No global para product/cat
-            $taxAmount = collect($orderItemsData)->sum(fn($i) => $i['tax_amount']); // Re-sum tax
+            $appliedManualDiscount = $manualDiscount; // Para registrar uso global si aplica
         }
 
         // Obtener el shipping_rate_id del request
@@ -227,14 +265,14 @@ class OrderController extends Controller
                 $totalShipping = $shippingRate->price;  // Asume que hay un campo 'price' en la tabla shipping_rates
             }
         }
-        // dd($totalShipping);
+
         // Cálculo final
         $finalSubtotal = $subtotalPostDiscount;
         $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount + $totalShipping;  // Suma el costo de envío
         $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount;
 
         // Crear orden
-        $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping) {
+        $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping, $appliedOrderDiscount, $appliedManualDiscount, $orderTotalDiscount) {
             $order = Order::create([
                 'status' => $request['status'],
                 'payment_status' => $request['payments_method_id'] ? 'paid' : 'pending', // Cambia aquí
@@ -256,6 +294,36 @@ class OrderController extends Controller
 
             foreach ($orderItemsData as $itemData) {
                 $order->orderItems()->create($itemData); // Guarda combination_id, discount_amount, etc.
+
+                // **NUEVO: Registrar uso por ítem si hay descuento aplicado**
+                if (isset($itemData['applied_discount_id'])) {
+                    DiscountUsage::create([
+                        'discount_id' => $itemData['applied_discount_id'],
+                        'order_id' => $order->id,
+                        'user_id' => $order->user_id, // Opcional
+                        'discount_amount' => $itemData['applied_discount_amount'],
+                    ]);
+                }
+            }
+
+            // **NUEVO: Registrar uso para descuento global automático**
+            if ($appliedOrderDiscount) {
+                DiscountUsage::create([
+                    'discount_id' => $appliedOrderDiscount->id,
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'discount_amount' => $orderTotalDiscount,
+                ]);
+            }
+
+            // **NUEVO: Registrar uso para descuento manual global**
+            if ($appliedManualDiscount && $appliedManualDiscount->applies_to === 'order_total') {
+                DiscountUsage::create([
+                    'discount_id' => $appliedManualDiscount->id,
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'discount_amount' => $manualDiscountAmount,
+                ]);
             }
 
             // Decrementar stock por combination_id
@@ -435,10 +503,11 @@ class OrderController extends Controller
 
         // FIX: Carga descuentos activos (como en store, para recálculos en frontend)
         $discounts = Discount::where('is_active', true)
-            ->where(function ($query) use ($userAuth) {
-                $query->whereNull('company_id')
-                    ->orWhere('company_id', $userAuth->company_id);
-            })
+            // ->where(function ($query) use ($userAuth) {
+            //     $query->whereNull('company_id')
+            //         ->orWhere('company_id', $userAuth->company_id);
+            // })
+            ->withCount('usages')
             ->with(['products', 'categories'])
             ->get();
 

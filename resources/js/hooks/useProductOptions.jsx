@@ -3,10 +3,10 @@ import { toast } from 'sonner';
 import { Percent } from 'lucide-react';
 import { calculateStock } from '@/utils/stockUtils';
 import { formatAttributesDisplay, getBarcode, filterProductOptions } from '@/utils/productUtils';
-import { 
-    calculateDiscount, 
-    calculateDiscountedPrice, 
-    calculateDiscountedSubtotal 
+import {
+    calculateDiscount,
+    calculateDiscountedPrice,
+    calculateDiscountedSubtotal
 } from '@/utils/discountUtils';
 
 /**
@@ -60,32 +60,32 @@ export const useProductOptions = (products, data, setData, isEdit, findApplicabl
                     const effectivePrice = discount ? calculateDiscountedPrice(discount, originalPrice, 1) : originalPrice;
                     const combinationStock = calculateStock(product, combination.id);
                     if (combinationStock >= 0) {
-        // CAMBIO: Usa la función para string (compatibilidad)
-        const attributesDisplay = formatAttributesDisplay(combination, true); // Retorna string " - Talla: S, Color: Rojo"
-        
-        // CAMBIO: Usa la función para array (para badges)
-        const attributes = formatAttributesDisplay(combination, false); // Retorna array [{attribute_name: "talla", ...}]
-        
-        const barcode = getBarcode(product, combination.id);
-        
-        options.push({
-            value: `comb_${combination.id}`,
-            label: `${product.product_name}${attributesDisplay} ${barcode ? `(${barcode})` : ''} - $${originalPrice.toFixed(2)}`, // Usa string para label
-            product_id: product.id,
-            combination_id: combination.id,
-            original_price: originalPrice,
-            effective_price: effectivePrice,
-            discount,
-            is_combination: true,
-            stock: combinationStock,
-            tax_rate: product.taxes ? parseFloat(product.taxes.tax_rate) : 0,
-            product_name: product.product_name,
-            attributes_display: attributesDisplay, // String (opcional, para legacy)
-            attributes, // Array para badges (nuevo)
-            barcode,
-            combination_details: combination,
-        });
-    }
+                        // CAMBIO: Usa la función para string (compatibilidad)
+                        const attributesDisplay = formatAttributesDisplay(combination, true); // Retorna string " - Talla: S, Color: Rojo"
+
+                        // CAMBIO: Usa la función para array (para badges)
+                        const attributes = formatAttributesDisplay(combination, false); // Retorna array [{attribute_name: "talla", ...}]
+
+                        const barcode = getBarcode(product, combination.id);
+
+                        options.push({
+                            value: `comb_${combination.id}`,
+                            label: `${product.product_name}${attributesDisplay} ${barcode ? `(${barcode})` : ''} - $${originalPrice.toFixed(2)}`, // Usa string para label
+                            product_id: product.id,
+                            combination_id: combination.id,
+                            original_price: originalPrice,
+                            effective_price: effectivePrice,
+                            discount,
+                            is_combination: true,
+                            stock: combinationStock,
+                            tax_rate: product.taxes ? parseFloat(product.taxes.tax_rate) : 0,
+                            product_name: product.product_name,
+                            attributes_display: attributesDisplay, // String (opcional, para legacy)
+                            attributes, // Array para badges (nuevo)
+                            barcode,
+                            combination_details: combination,
+                        });
+                    }
                 });
             }
         });
@@ -227,7 +227,7 @@ export const useProductOptions = (products, data, setData, isEdit, findApplicabl
         // Actualiza duplicados (aumenta cantidad, etc.)
         updatedExistingIndices.forEach(index => {
             const item = updatedItems[index];
-            const option = selectedProductsBulk.find(opt => 
+            const option = selectedProductsBulk.find(opt =>
                 opt.product_id === item.product_id && opt.combination_id === item.combination_id
             );
             if (option) {

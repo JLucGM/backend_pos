@@ -12,23 +12,6 @@ class Discount extends Model
 {
     use HasFactory, HasSlug;
 
-    protected $casts = [
-        'name' => 'string',
-        'slug' => 'string',
-        'description' => 'string',
-        'discount_type' => 'string',
-        'value' => 'decimal:2',
-        'applies_to' => 'string',
-        'start_date' => 'datetime',
-        'automatic' => 'boolean',
-        'end_date' => 'datetime',
-        'minimum_order_amount' => 'decimal:2',
-        'usage_limit' => 'integer',
-        'code' => 'string',
-        'is_active' => 'boolean',
-        'company_id' => 'integer'
-    ];
-
     protected $fillable = [
         'name',
         'slug',
@@ -46,6 +29,24 @@ class Discount extends Model
         'company_id'
     ];
 
+    protected $casts = [
+        'name' => 'string',
+        'slug' => 'string',
+        'description' => 'string',
+        'discount_type' => 'string',
+        'value' => 'decimal:2',
+        'applies_to' => 'string',
+        'start_date' => 'datetime',
+        'automatic' => 'boolean',
+        'end_date' => 'datetime',
+        'minimum_order_amount' => 'decimal:2',
+        'usage_limit' => 'integer',
+        'code' => 'string',
+        'is_active' => 'boolean',
+        'company_id' => 'integer'
+    ];
+
+
     public function getRouteKeyName()
     {
         return 'slug';
@@ -60,7 +61,13 @@ class Discount extends Model
 
     protected static function booted()
     {
-        // Registra tu ámbito global aquí
+        // Lógica para forzar usage_limit a null si el descuento es automático
+        static::saving(function ($discount) {
+            if ($discount->automatic && $discount->usage_limit !== null) {
+                $discount->usage_limit = null; // Fuerza a null para descuentos automáticos
+            }
+        });
+        // Agregar el global scope para CompanyScope
         static::addGlobalScope(new CompanyScope);
     }
 
@@ -76,6 +83,21 @@ class Discount extends Model
         return $this->belongsToMany(Category::class);
     }
 
+    public function usages()
+    {
+        return $this->hasMany(DiscountUsage::class); // Asume que creas el modelo DiscountUsage
+    }
+    // Método para contar usos
+    public function getUsedCountAttribute()
+    {
+        return $this->usages()->count();
+    }
+    // Método para verificar si está agotado
+    public function isExhausted()
+    {
+        return $this->usage_limit && $this->used_count >= $this->usage_limit;
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true)
@@ -87,4 +109,6 @@ class Discount extends Model
     {
         return $query->where('automatic', true);
     }
+
+
 }
