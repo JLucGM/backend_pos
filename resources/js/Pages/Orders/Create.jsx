@@ -24,12 +24,13 @@ export default function Create({ paymentMethods, products, users, discounts, shi
         delivery_location_id: null,
         shipping_rate_id: null,
     }
-
+console.log(discounts);
     const { data, setData, errors, post, processing } = useForm(initialValues)
 
     // Función para manejar el envío del formulario
     const submit = (e) => {
         e.preventDefault();
+        console.log(data);
         post(route('orders.store'), {
             onSuccess: () => {
                 toast.success("Pedido creado con éxito.");

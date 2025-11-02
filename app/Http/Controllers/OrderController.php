@@ -86,6 +86,7 @@ class OrderController extends Controller
 
     public function store(StoreRequest $request)
     {
+        // dd($request->all());
         $userAuth = Auth::user();
 
         if ($userAuth->company_id !== $request->input('company_id', $userAuth->company_id)) {
@@ -211,19 +212,26 @@ class OrderController extends Controller
 
         if ($manualDiscountCode) {
             $manualDiscount = $discounts->firstWhere('code', $manualDiscountCode);
-            if ($manualDiscount && !$manualDiscount->automatic && $manualDiscount->applies_to === 'order_total') {
-                if ($manualDiscount->usage_limit && $manualDiscount->usages()->count() >= $manualDiscount->usage_limit) {
-                    // **CAMBIO: Lanza ValidationException en lugar de solo setear error**
-                    throw ValidationException::withMessages(['manual_discount_code' => 'Código de descuento agotado.']);
-                } elseif ($this->isDiscountValid($manualDiscount, $subtotalPreDiscount)) {
-                    $calculatedAmount = $this->calculateDiscount($manualDiscount, $subtotalPreDiscount, 1);
-                    $manualDiscountAmount = max(0, $calculatedAmount);
-                    $appliedManualDiscount = $manualDiscount;
+            if ($manualDiscount && !$manualDiscount->automatic) {
+                // Permite 'product', 'category' o 'order_total'
+                if (in_array($manualDiscount->applies_to, ['product', 'category', 'order_total'])) {
+                    if ($manualDiscount->usage_limit && $manualDiscount->usages()->count() >= $manualDiscount->usage_limit) {
+                        throw ValidationException::withMessages(['manual_discount_code' => 'Código de descuento agotado.']);
+                    } elseif ($this->isDiscountValid($manualDiscount, $subtotalPreDiscount)) {
+                        $appliedManualDiscount = $manualDiscount; // Marca como aplicado
+                        // Para 'order_total', calcula aquí; para 'product'/'category', aplica en el loop de ítems
+                        if ($manualDiscount->applies_to === 'order_total') {
+                            $calculatedAmount = $this->calculateDiscount($manualDiscount, $subtotalPreDiscount, 1);
+                            $manualDiscountAmount = max(0, $calculatedAmount);
+                        }
+                    } else {
+                        throw ValidationException::withMessages(['manual_discount_code' => 'Código de descuento inválido.']);
+                    }
                 } else {
-                    throw ValidationException::withMessages(['manual_discount_code' => 'Código de descuento inválido o no aplicable (verifica fechas o monto mínimo).']);
+                    throw ValidationException::withMessages(['manual_discount_code' => 'Tipo de descuento no soportado.']);
                 }
             } else {
-                throw ValidationException::withMessages(['manual_discount_code' => 'Código de descuento no encontrado o no válido (debe ser un cupón manual global).']);
+                throw ValidationException::withMessages(['manual_discount_code' => 'Código de descuento no encontrado.']);
             }
         }
 
