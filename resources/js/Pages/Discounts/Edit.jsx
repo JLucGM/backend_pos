@@ -90,8 +90,7 @@ export default function Edit({ discount, products, categories }) {
 
             <div className="text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>
-                    <div className="grid grid-cols-1 gap-4">
-                        <DivSection>
+                    
                             <Suspense fallback={<Loader />}>
                                 <DiscountsForm
                                     data={data}
@@ -102,8 +101,7 @@ export default function Edit({ discount, products, categories }) {
                                     isEdit={true} // NUEVO: Prop para detectar modo edit (opcional, para lógica en form)
                                 />
                             </Suspense>
-                        </DivSection>
-                    </div>
+                        
 
                     <div className="flex justify-end p-2.5 gap-2">
                         {/* <Link href={route('discounts.index')} className={buttonVariants({ variant: "outline" })}>

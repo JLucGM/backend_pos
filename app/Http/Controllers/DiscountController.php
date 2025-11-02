@@ -72,7 +72,7 @@ class DiscountController extends Controller
         }
         // Para 'order_total': No necesita relacionar
 
-        return to_route('discounts.index')->with('success', 'Descuento creado con éxito.');
+        return to_route('discounts.edit', $discount)->with('success', 'Descuento creado con éxito.');
     }
 
 

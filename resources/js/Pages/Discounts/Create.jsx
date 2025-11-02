@@ -62,19 +62,15 @@ export default function Create({ products, categories }) {
             <div className="max-w-7xl mx-auto">
                 <div className="text-gray-900 dark:text-gray-100">
                     <form onSubmit={submit} className='space-y-4'>
-                        <div className="grid grid-cols-1 gap-4">
-                            <DivSection>
-                                <Suspense fallback={<Loader />}>
-                                    <DiscountsForm
-                                        data={data}
-                                        products={products}
-                                        categories={categories}
-                                        setData={setData}
-                                        errors={errors}
-                                    />
-                                </Suspense>
-                            </DivSection>
-                        </div>
+                        <Suspense fallback={<Loader />}>
+                            <DiscountsForm
+                                data={data}
+                                products={products}
+                                categories={categories}
+                                setData={setData}
+                                errors={errors}
+                            />
+                        </Suspense>
 
                         <div className="flex justify-end p-2.5">
                             <Button variant="default" type="submit">

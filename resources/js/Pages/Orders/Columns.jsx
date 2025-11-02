@@ -41,7 +41,7 @@ export const ordersColumns = [
         cell: ({ row }) => {
             return (
                 <Badge
-                    variant={row.original.payment_status === 'paid' ? 'success' : 'destructive'}
+                    variant={row.original.payment_status === 'paid' ? 'success' : 'warning'}
                 >
                     {row.original.payment_status === 'paid' ? 'Pagado' : 'Pendiente'}
                 </Badge>

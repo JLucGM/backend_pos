@@ -13,14 +13,23 @@ export const discountColumns = [
         header: "Publicado",
         accessorKey: "is_active",
         cell: ({ row }) => {
-            const isActive = row.original.is_active === true; // Verifica si el estado es "1" (Activo)
+            const isActive = row.original.is_active === true;
             return (
-                // <Badge variant={isActive ? "default" : "secondary"}>
-                //     {isActive ? 'Activo' : 'Inactivo'}
-                // </Badge>
                 <Badge variant={isActive === true ? 'success' : 'info'}>
                     {isActive === true ? 'Publicado' : 'Borrador'}
                 </Badge>
+            );
+        },
+    },
+    {
+        header: "Método",
+        accessorKey: "automatic",
+        cell: ({ row }) => {
+            const isActive = row.original.automatic === true;
+            return (
+                <p className="font-medium text-gray-900 dark:text-gray-100">
+                    {isActive === true ? 'Automático' : 'Código'}
+                </p>
             );
         },
     },
