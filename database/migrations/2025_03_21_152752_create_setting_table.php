@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
             // $table->string('app_name');
-            $table->string('slug');
+            // $table->string('slug');
             $table->string('default_currency');
             // $table->string('admin_email');
             // $table->string('admin_phone');

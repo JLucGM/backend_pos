@@ -20,7 +20,7 @@ class SettingsSeeder extends Seeder
         $settings = [
             [
                 // 'app_name' => 'Mi empresa',
-                'default_currency' => "bs",
+                'default_currency' => "$",
                 // 'admin_email' => "joedoe@example.com",
                 // 'admin_phone' => "04125549950",
                 // 'shipping_base_price' => "2.00",

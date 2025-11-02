@@ -78,20 +78,6 @@ export default function SettingsForm({ data, setting, setData, errors }) {
             </div>
 
             <div>
-                <InputLabel htmlFor="shipping_base_price" value="shipping_base_price" />
-                <TextInput
-                    id="shipping_base_price"
-                    type="text"
-                    name="shipping_base_price"
-                    value={data.shipping_base_price}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('shipping_base_price', e.target.value)}
-                />
-                <InputError message={errors.shipping_base_price} className="mt-2" />
-            </div>
-
-            <div>
                 <InputLabel htmlFor="default_currency" value="default_currency" />
                 <TextInput
                     id="default_currency"

@@ -15,7 +15,7 @@ class StockController extends Controller
     {
         $this->middleware('can:admin.stocks.index')->only('index');
         $this->middleware('can:admin.stocks.create')->only('create', 'store');
-        $this->middleware('can:admin.stocks.edit')->only('edit', 'update');
+        // $this->middleware('can:admin.stocks.edit')->only('edit', 'update');
         $this->middleware('can:admin.stocks.delete')->only('delete');
     }
     /**
@@ -83,7 +83,10 @@ class StockController extends Controller
      */
     public function update(Request $request, Stock $stock)
     {
-        //
+        $data = $request->only('quantity');
+
+        $stock->update($data);
+
     }
 
     /**

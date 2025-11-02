@@ -13,25 +13,12 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Setting extends Model implements HasMedia
 {
-    use HasFactory, HasSlug;
-    use InteractsWithMedia;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'default_currency',
         'company_id',
     ];
-
-    public function getRouteKeyName()
-    {
-        return 'slug';
-    }
-
-    public function getSlugOptions(): SlugOptions
-    {
-        return SlugOptions::create()
-            ->generateSlugsFrom('app_name')
-            ->saveSlugsTo('slug');
-    }
 
     protected static function booted()
     {

@@ -1,5 +1,8 @@
 import { Badge } from "@/Components/ui/badge";
 import { Link } from "@inertiajs/react";
+import { useState } from "react";  // Agrega useState
+import { Input } from "@/Components/ui/input";  // Agrega Input de shadcn/ui
+import { router } from "@inertiajs/react";  // Asume que tienes router para el PUT
 
 export const StocksColumns = [
     {
@@ -17,16 +20,13 @@ export const StocksColumns = [
 
             return (
                 <div className="">
-                    {/* Add a conditional check to ensure product exists before accessing its properties */}
                     {product ? (
                         <Link
                             href={route('products.edit', product.slug)}
-                            // buttonVariants={{ variant: 'link' }} // This line is commented out in your original code, keeping it that way.
                         >
                             {product.product_name || 'Nombre de producto desconocido'}
                         </Link>
                     ) : (
-                        // Fallback text if product is null or undefined
                         <span>Producto no disponible</span>
                     )}
                     <div className="">
@@ -37,17 +37,55 @@ export const StocksColumns = [
         },
     },
     {
-        header: "Inventario",
-        accessorKey: "quantity",
+        header: "Código de barras",
+        accessorKey: "product_barcode",
+    },
+    {
+        header: "SKU",
+        accessorKey: "product_sku",
+    },
+    {
+        header: "Actualizar Stock",
+        accessorKey: "update_stock",
         cell: ({ row }) => {
-            const stockQuantity = row.original.quantity;
+            const originalQuantity = row.original.quantity;
+            const [localQuantity, setLocalQuantity] = useState(originalQuantity);
+
+            const handleBlur = () => {
+                const newQuantity = parseInt(localQuantity, 10);
+                if (isNaN(newQuantity) || newQuantity < 0) {
+                    setLocalQuantity(originalQuantity);
+                    return;
+                }
+                if (newQuantity === parseInt(originalQuantity, 10)) return;
+
+                // Cambia router.put a router.post para coincidir con la ruta POST
+                router.post(route('stocks.update', row.original.id), {
+                    quantity: newQuantity,
+                    _method: 'PUT',  // Opcional: si tu backend espera PUT, agrega esto para simularlo
+                }, {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        console.log('Stock actualizado');
+                    },
+                    onError: (errors) => {
+                        console.error('Error al actualizar stock:', errors);
+                        setLocalQuantity(originalQuantity);
+                    },
+                });
+            };
+
             return (
-                <p
-                    className={stockQuantity === "0" ? 'text-destructive' : 'text-primary'}
-                >
-                    {stockQuantity} en stock
-                </p>
-            )
+                <Input
+                    type="number"
+                    min="0"
+                    value={localQuantity}
+                    onChange={(e) => setLocalQuantity(e.target.value)}
+                    onBlur={handleBlur}
+                    className="w-20"
+                    placeholder="Cant."
+                />
+            );
         },
     },
 ];

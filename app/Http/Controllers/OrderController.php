@@ -50,7 +50,7 @@ class OrderController extends Controller
             abort(403, 'No tienes permiso para crear órdenes.');
         }
 
-        $paymentMethods = PaymentMethod::all();
+        $paymentMethods = PaymentMethod::where('is_active', true)->get();
         $users = User::with('deliveryLocations')->where('company_id', $userAuth->company_id)->where('is_active', true)->get();
 
         // Cargar TODOS los productos con relaciones completas (sin límites – como original)

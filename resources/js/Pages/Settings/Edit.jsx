@@ -10,7 +10,7 @@ import Loader from '@/Components/ui/loader';
 const SettingsForm = lazy(() => import('@/Pages/Settings/SettingsForm'));
 
 export default function Edit({ setting }) {
-    console.log("Entrada", setting);
+    // console.log("Entrada", setting);
     const initialValues = {
         name: setting.company.name,
         default_currency: setting.default_currency,
@@ -23,7 +23,7 @@ export default function Edit({ setting }) {
     const { data, setData, errors, post } = useForm(initialValues)
 
     const submit = (e) => {
-        console.log("salida", data);
+        // console.log("salida", data);
         e.preventDefault();
         post(route('setting.update', setting), {
             onSuccess: () => {

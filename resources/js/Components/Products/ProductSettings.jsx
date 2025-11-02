@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel';
 import Checkbox from '@/Components/Checkbox';
 import DivSection from '@/Components/ui/div-section';
 import { customStyles } from '@/hooks/custom-select';
+import InputData from '../InputData';
 
 export default function ProductSettings({ data, setData, errors, statusOptions, taxOptions }) {
     return (
@@ -46,6 +47,7 @@ export default function ProductSettings({ data, setData, errors, statusOptions, 
                     onChange={(selectedOption) => setData('tax_id', selectedOption ? selectedOption.value : null)}
                     styles={customStyles}
                 />
+                <InputData htmlFor="tax_id" value="No selecciones ningún impuesto si ya viene incluido en el precio." />
                 <InputError message={errors.tax_id} className="mt-2" />
             </div>
         </DivSection>

@@ -132,6 +132,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('stocks', [StockController::class, 'index'])->name('stocks.index');
     Route::get('stocks/create', [StockController::class, 'create'])->name('stocks.create');
     Route::post('stocks', [StockController::class, 'store'])->name('stocks.store');
+    Route::put('stocks/{stock}', [StockController::class, 'update'])->name('stocks.update');
 
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');

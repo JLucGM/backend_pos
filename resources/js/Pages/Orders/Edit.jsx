@@ -114,7 +114,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                             </h2>
                             <Badge className='mx-2'>{orders.status}</Badge>
                             <Badge
-                                variant={orders.payment_status === 'paid' ? 'success' : 'destructive'}
+                                variant={orders.payment_status === 'paid' ? 'success' : 'warning'}
                             >
                                 {orders.payment_status === 'paid' ? 'Pagado' : 'Pendiente'}
                             </Badge>

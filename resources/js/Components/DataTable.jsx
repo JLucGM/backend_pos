@@ -50,7 +50,7 @@ export default function DataTable({ data, columns }) {
             </div>
 
             <Table className="my-4">
-                <TableHeader className="">
+                <TableHeader className="bg-gray-100">
                     {
                         table.getHeaderGroups().map(headerGroup => (
                             <TableRow key={headerGroup.id}>

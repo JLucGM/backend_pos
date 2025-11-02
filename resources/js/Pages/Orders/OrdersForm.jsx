@@ -19,6 +19,7 @@ import { useOrderTotals } from '@/hooks/useOrderTotals';
 import { getBulkProductColumns } from './getBulkProductColumns';
 import BulkProductDialog from './BulkProductDialog';
 import { usePage } from '@inertiajs/react';
+import InputData from '@/Components/InputData';
 
 export default function OrdersForm({
     data,
@@ -137,6 +138,7 @@ export default function OrdersForm({
                                 styles={customStyles}
                                 isDisabled={isDisabled}
                             />
+                            <InputData htmlFor="payments_method_id" value="Método de Pago" />
                             <InputError message={errors.payments_method_id} className="mt-2" />
                         </div>
 
