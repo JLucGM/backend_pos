@@ -36,7 +36,7 @@ return (
     <LineChart data={chartData}>
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="fecha" />
-      <YAxis dataKey="cantidad" />
+      <YAxis dataKey="cantidad" allowDecimals={false} />
       <ChartTooltip content={<ChartTooltipContent />} />
       <Line type="monotone" dataKey="cantidad" stroke="var(--color-cantidad)" />
     </LineChart>

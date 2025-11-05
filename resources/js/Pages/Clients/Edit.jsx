@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Button, buttonVariants } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import { lazy, Suspense, useState } from 'react';
@@ -8,14 +8,16 @@ import Loader from '@/Components/ui/loader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Pen } from 'lucide-react';
-import AddressDialog from '../User/AddressDialog';
+import AddressDialog from '@/Components/Clients/AddressDialog';
+import DivSection from '@/Components/ui/div-section';
 
 // Importa los nuevos componentes
 const ClientsForm = lazy(() => import('./ClientsForm'));
 
 // Asegúrate de recibir todas las props desde el controlador
 export default function Edit({ client, roles, role, permission, countries, states, cities, deliveryLocations }) {
-    // console.log(client);
+    const settings = usePage().props.settings;
+
     const { data, setData, errors, post, processing } = useForm({
         name: client.name,
         email: client.email,
@@ -69,27 +71,22 @@ export default function Edit({ client, roles, role, permission, countries, state
                             Actualizar {client.name}
                         </h2>
                     </div>
-                    <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('client.create')}>
-                        Crear Cliente
-                    </Link>
                 </div>
             }
         >
             <Head className="capitalize" title={`Editar ${client.name}`} />
 
-            <div className="space-y-6 py-6">
+            <div className="py-6">
                 {/* FORMULARIO PRINCIPAL DEL CLIENTE */}
                 <Suspense fallback={<Loader />}>
                     <form onSubmit={submitClientForm} className='space-y-4'>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <ClientsForm
-                                data={data}
-                                setData={setData}
-                                errors={errors}
-                                roles={roles}
-                                user={client}
-                            />
-                        </div>
+                        <ClientsForm
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                            roles={roles}
+                            user={client}
+                        />
                         <div className="flex justify-end p-2.5">
                             <Button type="submit" disabled={processing}>
                                 {processing ? 'Guardando...' : 'Guardar Cambios de Cliente'}
@@ -117,11 +114,6 @@ export default function Edit({ client, roles, role, permission, countries, state
                                     <Card key={location.id}>
                                         <CardHeader>
                                             <CardTitle className="flex justify-between items-center">
-                                                {!!location.is_default && (
-                                                    <Badge className="ml-2" variant="secondary">
-                                                        Predeterminada
-                                                    </Badge>
-                                                )}
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
@@ -129,6 +121,11 @@ export default function Edit({ client, roles, role, permission, countries, state
                                                 >
                                                     <Pen className="size-4" />
                                                 </Button>
+                                                {!!location.is_default && (
+                                                    <Badge className="ml-2" variant="secondary">
+                                                        Predeterminada
+                                                    </Badge>
+                                                )}
                                             </CardTitle>
                                             {/* <CardDescription>{location.address_line_2}</CardDescription> */}
                                         </CardHeader>

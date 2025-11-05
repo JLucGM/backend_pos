@@ -13,17 +13,8 @@ export default function ClientsForm({ data, setData, errors, user = "" }) {
 
     return (
         <>
-            <div className="col-span-full flex justify-center">
-
-                <Avatar className="h-56 w-56 ">
-                    <AvatarImage className="h-56 w-56 object-cover" src={user.avatar_url} />
-                    <AvatarFallback className="h-56 w-56 object-cover bg-slate-200 border-2 border-slate-400">
-                        <p className='text-3xl' >CN</p>
-                    </AvatarFallback>
-                </Avatar>
-            </div>
-
-            <div className="col-span-1 md:col-span-2">
+        <div className="grid grid-cols-4 gap-4">
+            <div className="col-span-full md:col-span-3">
 
                 <DivSection className='my-4'>
                     <div>
@@ -99,9 +90,18 @@ export default function ClientsForm({ data, setData, errors, user = "" }) {
                 </DivSection>
             </div>
 
-            <div className="col-span-1">
+            <div className="col-span-full md:col-span-1">
 
                 <DivSection className='my-4'>
+                    {/* <div className="col-span-full flex justify-center">
+                        <Avatar className="h-44 w-44 rounded-full ">
+                            <AvatarImage className="h-44 w-44 rounded-full object-cover" src={user.avatar_url} />
+                            <AvatarFallback className="h-44 w-44 rounded-full object-cover bg-slate-200 border-2 border-slate-400">
+                                <p className='text-3xl'>CN</p>
+                            </AvatarFallback>
+                        </Avatar>
+                    </div>
+
                     <div>
                         <InputLabel htmlFor="avatar" value="Avatar" />
                         <Input
@@ -112,7 +112,7 @@ export default function ClientsForm({ data, setData, errors, user = "" }) {
                             onChange={(e) => setData('avatar', e.target.files[0])}
                         />
                         <InputError message={errors.avatar} className="mt-2" />
-                    </div>
+                    </div> */}
 
                     <div>
                         <InputLabel htmlFor="is_active" value="Estado" />
@@ -129,6 +129,7 @@ export default function ClientsForm({ data, setData, errors, user = "" }) {
 
                 </DivSection>
 
+            </div>
             </div>
         </>
     );

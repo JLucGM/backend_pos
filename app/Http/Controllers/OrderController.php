@@ -51,20 +51,19 @@ class OrderController extends Controller
         }
 
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
-        $users = User::with('deliveryLocations')->where('company_id', $userAuth->company_id)->where('is_active', true)->get();
+        $users = User::with('deliveryLocations')->where('is_active', true)->whereHas('roles', function ($query) {
+            $query->where('name', 'client');
+        })->get();
 
         // Cargar TODOS los productos con relaciones completas (sin límites – como original)
         $products = Product::with(
             'categories', // Completo: todos los campos de categories
-            'combinations', // Completo: todas combinations con precios
             'media', // Completo: todas las medias
             'stocks', // Completo: todos los stocks por combination_id
             'taxes', // Completo: todos los taxes
             'combinations.combinationAttributeValue.attributeValue.attribute', // Anidado completo para labels de variaciones
             'discounts' // Completo: descuentos con pivot full (combination_id)
-        )
-            // ->where('company_id', $userAuth->company_id)
-            ->get(); // Filtrar por compañía – TODOS los productos de la compañía van
+        )->get(); // Filtrar por compañía – TODOS los productos de la compañía van
 
         // Cargar TODOS los descuentos activos (con relaciones completas, filtrado por compañía)
         $discounts = Discount::with([
@@ -511,10 +510,6 @@ class OrderController extends Controller
 
         // FIX: Carga descuentos activos (como en store, para recálculos en frontend)
         $discounts = Discount::where('is_active', true)
-            // ->where(function ($query) use ($userAuth) {
-            //     $query->whereNull('company_id')
-            //         ->orWhere('company_id', $userAuth->company_id);
-            // })
             ->withCount('usages')
             ->with(['products', 'categories'])
             ->get();
@@ -522,20 +517,18 @@ class OrderController extends Controller
         // Carga todos los productos con sus stocks y combinaciones
         $products = Product::with(
             'categories',
-            'combinations',
             'media',
             'stocks',
             'taxes',
-            'combinations.combinationAttributeValue',
-            'combinations.combinationAttributeValue.attributeValue',
             'combinations.combinationAttributeValue.attributeValue.attribute',
             'discounts' // FIX: Carga descuentos del producto para frontend
         )
-            // ->where('company_id', Auth::user()->company_id)
             ->get();
 
         // Carga todos los usuarios
-        $users = User::with('deliveryLocations')->get(); // Filtra por rol si necesitas: ->where('role', 'client')
+        $users = User::with('deliveryLocations')->where('is_active', true)->whereHas('roles', function ($query) {
+            $query->where('name', 'client');
+        })->get();
 
         $paymentMethods = PaymentMethod::all(); // Asume modelo PaymentMethod
         $shippingRates = ShippingRate::all();  // <-- Agrega esto para pasar a la vista

@@ -7,6 +7,7 @@ use App\Http\Requests\Clients\UpdateRequest;
 use App\Models\City;
 use App\Models\Client;
 use App\Models\Country;
+use App\Models\Order;
 use App\Models\Role;
 use App\Models\State;
 use App\Models\User;
@@ -133,6 +134,8 @@ class ClientController extends Controller
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
         $deliveryLocations = $client->deliveryLocations()->with(['city', 'state', 'country'])->get();
+
+
 
         return Inertia::render('Clients/Edit', compact('client', 'role', 'permission', 'countries', 'states', 'cities', 'deliveryLocations'));
     }

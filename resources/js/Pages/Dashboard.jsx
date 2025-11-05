@@ -39,7 +39,7 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
     return (
         <AuthenticatedLayout
             header={
-                <DivSection className='flex items-center gap-4'>
+                <DivSection className='flex items-center gap-4 mx-4'>
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                         Bienvenido, {userAuth.name}
                     </h2>
@@ -55,7 +55,7 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
                     <SummaryCard label="Órdenes del Día" value={todayOrdersCount} className="col-span-1" />
                     <SummaryCard label="Recaudado Hoy" value={totalTodayOrdersAmount} prefix={settings.default_currency} className="col-span-2" />
 
-                    <DivSection className="col-span-3">
+                    {/* <DivSection className="col-span-3">
                         <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Usuarios Registrados por Mes</h3>
                         <ChartContainer config={chartConfig} className="min-h-[200px] w-full ">
                             <BarChart data={chartData}>
@@ -71,7 +71,8 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
                                     tickLine={false}
                                     axisLine={false}
                                     tickMargin={8}
-                                    tickCount={10}
+                                    tickCount={3}
+                                    allowDecimals={false}
                                 />
                                 <ChartLegend content={<ChartLegendContent />} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -103,7 +104,7 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
                                 <Bar dataKey="ordenesRealizadas" fill="var(--color-desktop)" radius={4} />
                             </BarChart>
                         </ChartContainer>
-                    </DivSection>
+                    </DivSection> */}
 
                     <DivSection className="col-span-3">
                         <h3 className="text-md font-medium mb-2 text-gray-700 dark:text-gray-200">Órdenes y Método de Pago del Día</h3>

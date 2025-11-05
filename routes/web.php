@@ -162,7 +162,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('shipping-rates/{shippingRate}/edit', [ShippingRateController::class, 'edit'])->name('shippingrate.edit');
     Route::post('shipping-rates/{shippingRate}', [ShippingRateController::class, 'update'])->name('shippingrate.update');
     Route::delete('shipping-rates/{shippingRate}', [ShippingRateController::class, 'destroy'])->name('shippingrate.destroy');
-    
+
     Route::get('pages', [PageController::class, 'index'])->name('pages.index');
     Route::get('pages/create', [PageController::class, 'create'])->name('pages.create');
     Route::post('pages', [PageController::class, 'store'])->name('pages.store');
@@ -177,8 +177,7 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reportes.index');
 
     Route::post('/refunds', [RefundController::class, 'store'])->name('refunds.store');
-Route::post('/orders/{order}/status', [OrderController::class, 'changeStatus'])->name('orders.changeStatus');
-
+    Route::post('/orders/{order}/status', [OrderController::class, 'changeStatus'])->name('orders.changeStatus');
 });
 
 require __DIR__ . '/auth.php';

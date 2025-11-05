@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { router, usePage } from "@inertiajs/react";
+import { Link, router, usePage } from "@inertiajs/react";
 import DivSection from "@/Components/ui/div-section";
 import Loader from "@/Components/ui/loader";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
@@ -13,6 +13,8 @@ import { Component } from 'react'; // Para ErrorBoundary
 import PaymentMethodsChart from "@/Components/Charts/PaymentMethodsChart";
 import SalesByCategoryChart from "@/Components/Charts/SalesByCategoryChart";
 import SummaryCard from "@/Components/SummaryCard";
+import DeliveryTypeChart from "@/Components/Charts/DeliveryTypeChart";
+import SalesByLocationChart from "@/Components/Charts/SalesByLocationChart";
 
 // ErrorBoundary simple para capturar errores en gráficos
 class ErrorBoundary extends Component {
@@ -51,6 +53,11 @@ export default function Index({
   totalPendientes = 0,
   ordersByPaymentMethod = 0,
   ventasPorCategoria = {},
+  ordersByDeliveryType = {},
+  totalReembolsos = 0,
+  ventasPorPais = {},
+  ventasPorEstado = {},
+  ventasPorCiudad = {},
 }) {
   const settings = usePage().props.settings;
 
@@ -75,6 +82,12 @@ export default function Index({
 
       <Suspense fallback={<Loader />}>
         <FilterDate desde={desde} hasta={hasta} />
+        <div className="flex justify-between items-center">
+          <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            Reporte
+          </h2>
+        </div>
+
 
         <div className="grid grid-cols-3 gap-4">
           <SummaryCard label="Total recaudado" value={totalVentas.toFixed(2)} prefix={settings.default_currency} />
@@ -84,47 +97,78 @@ export default function Index({
 
 
         {/* Reorganización de Gráficos: Grid responsiva para mejor disposición */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"> {/* Grid principal: 1 col (móvil), 2 (tablet), 3 (desktop) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6"> {/* Grid principal: 1 col (móvil), 2 (tablet), 3 (desktop) */}
           {/* Primera fila: OrdersByDays y RevenueVsOrdersChart lado a lado en desktop */}
-          {/* <DivSection className="col-span-1 md:col-span-1 lg:col-span-2"> 
+          <DivSection className="col-span-full md:col-span-1 lg:col-span-4">
+            <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Pedidos por Día</h3>
+
             <ErrorBoundary>
               <OrdersByDays data={pedidosPorDia} />
             </ErrorBoundary>
-          </DivSection> */}
+          </DivSection>
 
-          <DivSection className="col-span-full md:col-span-1 lg:col-span-3">
+          {/* <DivSection className="col-span-full md:col-span-1 lg:col-span-3">
             <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Pedidos por Día</h3>
             <ErrorBoundary>
               <RevenueVsOrdersChart data={pedidosPorDia} />
             </ErrorBoundary>
-          </DivSection>
+          </DivSection> */}
 
-          <DivSection className="col-span-full md:col-span-1 lg:col-span-1 ">
-            <ul className="list-none space-y-1">
-              <li>Desglose de Ventas</li>
+          <DivSection className="col-span-full md:col-span-1 lg:col-span-2 ">
+            <ul className="list-none space-y-1 [&>li]:flex [&>li]:mb-4 [&>li]:justify-between">
+              <li>
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Desglose de Ventas</h3>
+              </li>
               <li className="flex justify-between"><strong>Descuentos:</strong>{settings.default_currency} {totalDiscounts.toFixed(2)}</li>
               <li className="flex justify-between"><strong>Envíos:</strong>{settings.default_currency} {totalShipping.toFixed(2)}</li>
               <li className="flex justify-between"><strong>Impuestos:</strong>{settings.default_currency} {taxAmount.toFixed(2)}</li>
+              <li className="flex justify-between"><strong>Reembolsos:</strong>{settings.default_currency} {Number(totalReembolsos || 0).toFixed(2)}</li>
               <li className="flex justify-between"><strong>Total Recaudado:</strong>{settings.default_currency} {totalVentas.toFixed(2)}</li>
             </ul>
           </DivSection>
 
           {/* Segunda fila: StatusOrdersChart centrado o full width */}
-          <DivSection className="col-span-2"> {/* Ocupa full width en desktop para centrado */}
+          <DivSection className="col-span-3"> {/* Ocupa full width en desktop para centrado */}
+            <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Estado de Órdenes</h3>
             <ErrorBoundary>
               <StatusOrdersChart completados={totalCompletados} pendientes={pendientes} cancelados={cancelados} />
             </ErrorBoundary>
           </DivSection>
 
-          <DivSection className="col-span-2">
+          <DivSection className="col-span-3">
+            <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Ventas por Categoría</h3>
             <ErrorBoundary>
               <SalesByCategoryChart data={ventasPorCategoria} />
             </ErrorBoundary>
           </DivSection>
 
-          <DivSection className="col-span-2 ">
+          <DivSection className="col-span-3 ">
+            <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">Órdenes por Método de Pago</h3>
             <ErrorBoundary>
               <PaymentMethodsChart data={ordersByPaymentMethod} /> {/* Nuevo: pasa ordersByPaymentMethod */}
+            </ErrorBoundary>
+          </DivSection>
+
+          <DivSection className="col-span-3">  {/* Ajusta el span según el espacio */}
+            <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Órdenes por Tipo de Entrega</h3>
+            <ErrorBoundary>
+              <DeliveryTypeChart data={ordersByDeliveryType} />
+            </ErrorBoundary>
+          </DivSection>
+
+          <DivSection className="col-span-2">
+            <ErrorBoundary>
+              <SalesByLocationChart data={ventasPorPais} title="Ventas por País" />
+            </ErrorBoundary>
+          </DivSection>
+          <DivSection className="col-span-2">
+            <ErrorBoundary>
+              <SalesByLocationChart data={ventasPorEstado} title="Ventas por Estado" />
+            </ErrorBoundary>
+          </DivSection>
+          <DivSection className="col-span-2">
+            <ErrorBoundary>
+              <SalesByLocationChart data={ventasPorCiudad} title="Ventas por Ciudad" />
             </ErrorBoundary>
           </DivSection>
 

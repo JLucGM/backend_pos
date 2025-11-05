@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $userAuth = Auth::user();
 
         $users = User::where('company_id', $userAuth->company_id)->get();
-        $orders = Order::where('company_id', $userAuth->company_id)->get();
+        $orders = Order::all();
 
         $role = $userAuth->getRoleNames();
         $permission = $userAuth->getAllPermissions();
@@ -51,7 +51,8 @@ class DashboardController extends Controller
             ->whereDate('created_at', Carbon::today())
             ->get()
             ->groupBy(function ($order) {
-                return $order->paymentMethod->payment_method_name; // Agrupar por nombre del método de pago
+                // Verificar si paymentMethod existe; si no, usar un valor por defecto
+                return $order->paymentMethod ? $order->paymentMethod->payment_method_name : 'Sin método de pago';
             })
             ->map(function ($group) {
                 return count($group); // Contar el número de órdenes por método de pago
@@ -65,19 +66,20 @@ class DashboardController extends Controller
 
 
         // dd($lowStockProducts);
-        return Inertia::render('Dashboard'
-        , [
-            'user' => $chartData,
-            'orders' => $chartDataOrders,
-            'ordersCount' => $ordersCount,
-            'usersCount' => $usersCount,
-            'todayOrdersCount' => $todayOrdersCount,
-            'ordersByPaymentMethod' => $ordersByPaymentMethod,
-            'lowStockProducts' => $lowStockProducts, // Pasar los productos con bajo stock
-            'totalTodayOrdersAmount' => $totalTodayOrdersAmount,
-            'role' => $role,
-            'permission' => $permission,
-        ]
-    );
+        return Inertia::render(
+            'Dashboard',
+            [
+                'user' => $chartData,
+                'orders' => $chartDataOrders,
+                'ordersCount' => $ordersCount,
+                'usersCount' => $usersCount,
+                'todayOrdersCount' => $todayOrdersCount,
+                'ordersByPaymentMethod' => $ordersByPaymentMethod,
+                'lowStockProducts' => $lowStockProducts, // Pasar los productos con bajo stock
+                'totalTodayOrdersAmount' => $totalTodayOrdersAmount,
+                'role' => $role,
+                'permission' => $permission,
+            ]
+        );
     }
 }

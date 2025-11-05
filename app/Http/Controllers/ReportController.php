@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Refund;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -21,10 +22,27 @@ class ReportController extends Controller
             ? Carbon::parse($request->input('hasta'))->endOfDay()
             : Carbon::today()->endOfDay();
 
-        $orders = Order::with('orderItems.product.categories')
+        $orders = Order::with(
+            'orderItems.product.categories',
+            'deliveryLocation.country',
+            'deliveryLocation.state',
+            'deliveryLocation.city'
+        )
             ->whereBetween('created_at', [$desde, $hasta])
             ->get();
 
+        $ordersByDeliveryTypeByDay = $orders->groupBy(function ($order) {
+            return Carbon::parse($order->created_at)->format('Y-m-d') . '-' . $order->delivery_type;
+        })->map(function (Collection $group) {
+            return $group->count();
+        })->sortKeys()->toArray();
+        // Opcional: Si quieres sumar ventas por tipo en lugar de conteo
+        // $salesByDeliveryType = $orders->groupBy('delivery_type')->map(function (Collection $group) {
+        //     return $group->sum('total');
+        // })->toArray();
+
+        $totalReembolsos = Refund::whereBetween('refunded_at', [$desde, $hasta])
+            ->sum('amount');
 
         $totalDiscounts = $orders->sum('totaldiscounts');
         $totalShipping = $orders->sum('totalshipping');
@@ -68,6 +86,34 @@ class ReportController extends Controller
             }
         }
 
+        // Ventas por País
+        $ventasPorPais = $orders->filter(function ($order) {
+            return $order->deliveryLocation && $order->deliveryLocation->country;
+        })->groupBy(function ($order) {
+            return $order->deliveryLocation->country->country_name;
+        })->map(function (Collection $group) {
+            return $group->sum('total');
+        })->sortDesc()->toArray();  // Ordena por ventas descendentes
+
+        // Ventas por Estado
+        $ventasPorEstado = $orders->filter(function ($order) {
+            return $order->deliveryLocation && $order->deliveryLocation->state;
+        })->groupBy(function ($order) {
+            return $order->deliveryLocation->state->state_name;
+        })->map(function (Collection $group) {
+            return $group->sum('total');
+        })->sortDesc()->toArray();
+
+        // Ventas por Ciudad (opcional, si quieres granularidad)
+        $ventasPorCiudad = $orders->filter(function ($order) {
+            return $order->deliveryLocation && $order->deliveryLocation->city;
+        })->groupBy(function ($order) {
+            return $order->deliveryLocation->city->city_name;
+        })->map(function (Collection $group) {
+            return $group->sum('total');
+        })->sortDesc()->toArray();
+
+
         return Inertia::render('Reports/Index', [
             'desde' => $desde->toDateString(),
             'hasta' => $hasta->toDateString(),
@@ -82,6 +128,11 @@ class ReportController extends Controller
             'totalPedidos' => $totalPedidos,
             'pedidosPorDia' => $pedidosPorDia,
             'ordersByPaymentMethod' => $ordersByPaymentMethod,
+            'ordersByDeliveryType' => $ordersByDeliveryTypeByDay,
+            'totalReembolsos' => $totalReembolsos,
+            'ventasPorPais' => $ventasPorPais,
+            'ventasPorEstado' => $ventasPorEstado,
+            'ventasPorCiudad' => $ventasPorCiudad,
         ]);
     }
 }
