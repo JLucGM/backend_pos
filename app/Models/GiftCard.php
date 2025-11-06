@@ -25,6 +25,18 @@ class GiftCard extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'code' => 'string',
+        'slug' => 'string',
+        'description' => 'string',
+        'initial_balance' => 'decimal:2',
+        'current_balance' => 'decimal:2',
+        'expiration_date' => 'date',
+        'is_active' => 'boolean',
+        'company_id' => 'integer',
+        'user_id' => 'integer',
+    ];
+
     public function getRouteKeyName()
     {
         return 'slug';

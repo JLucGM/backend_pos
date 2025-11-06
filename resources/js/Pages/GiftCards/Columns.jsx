@@ -1,6 +1,7 @@
 import { Badge } from "@/Components/ui/badge";
 import { buttonVariants } from "@/Components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { formatDate } from "@/utils/dateFormatter";
 import { Link } from "@inertiajs/react";
 import { Ellipsis, Pen, Trash } from "lucide-react";
 
@@ -14,8 +15,8 @@ export const giftCardsColumns = [
         accessorKey: "is_active",
         cell: ({ row }) => {
             return (
-                <Badge variant={row.original.is_active === 1 ? 'success' : 'info'}>
-                    {row.original.is_active === 1 ? 'Publicado' : 'Borrador'}
+                <Badge variant={row.original.is_active === true ? 'success' : 'info'}>
+                    {row.original.is_active === true ? 'Publicado' : 'Borrador'}
                 </Badge>
             )
         },
@@ -23,6 +24,11 @@ export const giftCardsColumns = [
     {
         header: "Fecha de Expiración",
         accessorKey: "expiration_date",
+        cell: ({ row }) => {
+            return (
+                <p>{formatDate(row.original.expiration_date)}</p>
+            )
+        },
     },
     {
         header: "Balances",
