@@ -41,8 +41,8 @@ export default function Create({ users }) {
             header={
                 <div className='flex justify-start items-center'>
                     <Link href={route('giftCards.index')}    >
-                            <ArrowLongLeftIcon className='size-6' />
-                        </Link>
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
                     <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Crear Gift Card
                     </h2>
@@ -53,29 +53,25 @@ export default function Create({ users }) {
 
             <div className="max-w-7xl mx-auto">
                 <div className="text-gray-900 dark:text-gray-100">
-                    <form onSubmit={submit} className='space-y-4'>
+                    <Suspense fallback={<Loader />}>
+                        <form onSubmit={submit} className='space-y-4'>
 
-                        <div className="grid grid-cols-1 gap-4">
-                            <Suspense fallback={<Loader />}>
-                                <DivSection>
-                                    <GiftCardsForm
-                                        data={data}
-                                        users={users}
-                                        setData={setData}
-                                        errors={errors}
-                                    />
-                                </DivSection>
-                            </Suspense>
-                        </div>
+                            <GiftCardsForm
+                                data={data}
+                                users={users}
+                                setData={setData}
+                                errors={errors}
+                            />
 
-                        <div className="flex justify-end p-2.5">
-                            <Button
-                                variant="default">
-                                Guardar
-                            </Button>
-                        </div>
+                            <div className="flex justify-end p-2.5">
+                                <Button
+                                    variant="default">
+                                    Guardar
+                                </Button>
+                            </div>
 
-                    </form>
+                        </form>
+                    </Suspense>
                 </div>
             </div>
         </AuthenticatedLayout>
