@@ -12,14 +12,13 @@ export default function BulkProductDialog({
     selectAllBulk,
     clearBulkSelection,
     isDisabled = false,
-    isEdit = false,
 }) {
     return (
         <Dialog>
             <DialogTrigger asChild>
                 <Button
                     type="button"
-                    disabled={isDisabled || isEdit}
+                    disabled={isDisabled}
                     variant="outline"
                     size="sm"
                     className="flex items-center gap-2"
@@ -52,7 +51,7 @@ export default function BulkProductDialog({
                             type="button"
                             variant="outline"
                             onClick={selectAllBulk}
-                            disabled={isDisabled || isEdit || productOptions.length === 0}
+                            disabled={isDisabled || productOptions.length === 0}
                         >
                             Seleccionar Todos ({productOptions.length})
                         </Button>
@@ -68,7 +67,7 @@ export default function BulkProductDialog({
                     <Button
                         type="button"
                         onClick={handleAddBulkProducts}
-                        disabled={selectedProductsBulk.length === 0 || isDisabled || isEdit}
+                        disabled={selectedProductsBulk.length === 0 || isDisabled}
                     >
                         Agregar Seleccionados ({selectedProductsBulk.length})
                     </Button>

@@ -69,4 +69,11 @@ class Order extends Model
     {
         return $this->belongsTo(ShippingRate::class, 'shipping_rate_id');
     }
+
+    public function giftCardUsages()
+    {
+        return $this->hasMany(GiftCardUsage::class);
+    }
+
+    
 }

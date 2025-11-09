@@ -50,9 +50,7 @@ export default function Create({ role }) {
             <Head className="capitalize" title="Cliente" />
 
             <Suspense fallback={<Loader />}>
-                <div className="text-gray-900 dark:text-gray-100">
                     <form onSubmit={submit} className='space-y-4'>
-                        <div className="grid grid-cols-3 gap-4">
                             <ClientsForm
                                 data={data}
                                 setData={setData}
@@ -60,7 +58,6 @@ export default function Create({ role }) {
                                 // stores={stores}
                                 role={role}
                             />
-                        </div>
 
                         <div className="flex justify-end p-2.5">
                             <Button>
@@ -68,7 +65,6 @@ export default function Create({ role }) {
                             </Button>
                         </div>
                     </form>
-                </div>
             </Suspense>
         </AuthenticatedLayout>
     );

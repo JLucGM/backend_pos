@@ -11,7 +11,7 @@ import UserInfo from '@/Components/UserInfo';
 import { formatDate } from '@/utils/dateFormatter';
 import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 import { Input } from '@/Components/ui/input';
-import { useDiscounts } from '@/hooks/useDiscounts';
+import { useDiscountsAndGiftCards } from '@/hooks/useDiscountsAndGiftCards'; // Nuevo import unificado
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useOrderItems } from '@/hooks/useOrderItems';
@@ -24,6 +24,7 @@ import InputData from '@/Components/InputData';
 export default function OrdersForm({
     data,
     orders = null,
+    appliedGiftCard = null, // NUEVO: Recibe appliedGiftCard de edición
     products = [],
     users = [],
     paymentMethods = [],
@@ -31,7 +32,6 @@ export default function OrdersForm({
     shippingRates = [],
     setData,
     errors,
-    isEdit = false,
     isDisabled = false
 }) {
     const settings = usePage().props.settings;
@@ -51,15 +51,35 @@ export default function OrdersForm({
         }
     };
 
+    // Primero: Hook para gestión de usuarios (necesario para selectedUser)
     const {
-        manualDiscountCode,
-        setManualDiscountCode,
-        appliedManualDiscount,
-        handleManualDiscountApply,
+        selectedUser,
+        deliveryLocations,
+        handleUserChange,
+        userOptions, // Ahora del hook (reemplaza el memo local)
+    } = useUserManagement(data, users, setData);
+
+    // NUEVO: En edición, preselecciona el usuario si orders.user_id existe
+    useEffect(() => {
+        if (orders && orders.user_id && !selectedUser) {
+            const userOption = userOptions.find(option => option.value === orders.user_id);
+            if (userOption) {
+                handleUserChange(userOption);
+            }
+        }
+    }, [orders, userOptions, selectedUser, handleUserChange]);
+
+    // Segundo: Hook unificado para descuentos y gift cards (ahora selectedUser está disponible)
+    const {
+        code,
+        setCode,
+        appliedDiscount,
+        appliedGiftCard: appliedGiftCardHook, // Renombra para evitar conflicto
+        handleApply,
         orderTotalAutomaticDiscount,
         findApplicableDiscount,
-        manualDiscountError,
-    } = useDiscounts(data, discounts, setData, isEdit, products);
+        error,
+    } = useDiscountsAndGiftCards(data, discounts, users, selectedUser, products, setData, appliedGiftCard); // NUEVO: Pasa appliedGiftCard
 
     const {
         productOptions, // Aún útil para DataTable en Dialog
@@ -68,20 +88,14 @@ export default function OrdersForm({
         toggleBulkSelection,
         selectAllBulk,
         clearBulkSelection,
-    } = useProductOptions(products, data, setData, isEdit, findApplicableDiscount);
-
-    const {
-        selectedUser,
-        deliveryLocations,
-        handleUserChange,
-        userOptions, // Ahora del hook (reemplaza el memo local)
-    } = useUserManagement(data, users, setData);
+    } = useProductOptions(products, data, setData, findApplicableDiscount);
 
     const {
         orderItemsColumns,
-    } = useOrderItems(data, discounts, setData, isEdit, isDisabled, findApplicableDiscount, products);
+    } = useOrderItems(data, discounts, setData, isDisabled, findApplicableDiscount, products);
 
-    useOrderTotals(data, appliedManualDiscount, orderTotalAutomaticDiscount, setData, isEdit);
+    // Modifica la llamada a useOrderTotals para incluir giftCardAmount
+    useOrderTotals(data, appliedDiscount, orderTotalAutomaticDiscount, data.gift_card_amount || 0, setData);
 
     const handlePaymentChange = (selectedOption) => setData('payments_method_id', selectedOption.value);
 
@@ -90,10 +104,9 @@ export default function OrdersForm({
             selectedProductsBulk,
             toggleBulkSelection,
             isDisabled,
-            isEdit,
             settings  // Agrega esto
         }),
-        [selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit, settings]  // Agrega settings aquí
+        [selectedProductsBulk, toggleBulkSelection, isDisabled, settings]  // Agrega settings aquí
     );
 
     useEffect(() => {
@@ -191,34 +204,48 @@ export default function OrdersForm({
                             selectAllBulk={selectAllBulk}
                             clearBulkSelection={clearBulkSelection}
                             isDisabled={isDisabled}
-                            isEdit={isEdit}
                         />
 
                     </div>
 
-                    {/* Input para Código de Descuento Manual (intacto) */}
+                    {/* NUEVO: Input unificado para Código de Descuento o Gift Card */}
                     <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                        <InputLabel value="Código de Descuento (Opcional)" className="mb-2" />
+                        <InputLabel value="Código de Descuento o Gift Card (Opcional)" className="mb-2" />
                         <div className="flex gap-2">
                             <Input
                                 type="text"
-                                placeholder="Ingresa código de cupón"
-                                value={manualDiscountCode}
-                                onChange={(e) => setManualDiscountCode(e.target.value)}
-                                disabled={isDisabled || isEdit}
+                                placeholder="Ingresa código de cupón o gift card"
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                                disabled={isDisabled}
                             />
                             <Button
                                 type="button"
-                                onClick={handleManualDiscountApply}
-                                disabled={!manualDiscountCode.trim() || isDisabled || isEdit}
+                                onClick={handleApply}
+                                disabled={!code.trim() || isDisabled}
                                 variant="outline"
                                 size="sm"
                             >
                                 Aplicar
                             </Button>
                         </div>
-                        <InputError message={errors.manual_discount_code || manualDiscountError} className="mt-2" />
-
+                        <InputError message={errors.manual_discount_code || errors.gift_card_id || error} className="mt-2" />
+                        {appliedDiscount && (
+                            <p className="text-sm text-green-600 mt-1">
+                                Descuento aplicado: {appliedDiscount.name} - Tipo: {appliedDiscount.applies_to}
+                            </p>
+                        )}
+                        {appliedGiftCardHook && (
+                            <p className="text-sm text-green-600 mt-1">
+                                Gift Card aplicada: {appliedGiftCardHook.code} - Monto usado: {settings.default_currency} {appliedGiftCardHook.amount_used.toFixed(2)}
+                            </p>
+                        )}
+                        {/* NUEVO: Si hay appliedGiftCard de edición, muestra info */}
+                        {appliedGiftCard && !appliedGiftCardHook && (
+                            <p className="text-sm text-blue-600 mt-1">
+                                Gift Card aplicada previamente: Código {appliedGiftCard.code} - Monto usado: {settings.default_currency} {appliedGiftCard.amount_used}
+                            </p>
+                        )}
                     </div>
 
                     {/* DataTable: Muestra order_items con columnas para discounted_price, discount_amount (intacto) */}

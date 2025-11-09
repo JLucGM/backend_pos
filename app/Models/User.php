@@ -103,4 +103,16 @@ class User extends Authenticatable implements HasMedia
     {
         return $this->hasMany(DeliveryLocation::class);
     }
+
+    public function giftCards()
+    {
+        return $this->hasMany(GiftCard::class);
+    }
+
+    // public function giftCardUsages()
+    // {
+    //     return $this->hasMany(GiftCardUsage::class);
+    // }
+
+
 }

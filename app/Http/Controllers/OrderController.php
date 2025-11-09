@@ -6,6 +6,8 @@ use App\Http\Requests\Orders\StoreRequest;
 use App\Http\Requests\Orders\UpdateRequest;
 use App\Models\Discount;
 use App\Models\DiscountUsage;
+use App\Models\GiftCard;
+use App\Models\GiftCardUsage;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Product;
@@ -51,28 +53,34 @@ class OrderController extends Controller
         }
 
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
-        $users = User::with('deliveryLocations')->where('is_active', true)->whereHas('roles', function ($query) {
-            $query->where('name', 'client');
-        })->get();
 
-        // Cargar TODOS los productos con relaciones completas (sin límites – como original)
-        $products = Product::with(
-            'categories', // Completo: todos los campos de categories
-            'media', // Completo: todas las medias
-            'stocks', // Completo: todos los stocks por combination_id
-            'taxes', // Completo: todos los taxes
-            'combinations.combinationAttributeValue.attributeValue.attribute', // Anidado completo para labels de variaciones
-            'discounts' // Completo: descuentos con pivot full (combination_id)
-        )->get(); // Filtrar por compañía – TODOS los productos de la compañía van
-
-        // Cargar TODOS los descuentos activos (con relaciones completas, filtrado por compañía)
-        $discounts = Discount::with([
-            'products', // Completo: todos los products relacionados (con pivot combination_id)
-            'categories' // Completo: todas las categories
+        // Cargar usuarios clientes activos, con sus deliveryLocations y giftcards activas
+        $users = User::with([
+            'deliveryLocations',
+            'giftCards' => function ($query) {
+                $query->where('is_active', true); // Solo giftcards activas
+            }
         ])
+            ->where('is_active', true)
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'client');
+            })
+            ->get();
+
+        // Cargar productos, descuentos, etc. (sin cambios)
+        $products = Product::with(
+            'categories',
+            'media',
+            'stocks',
+            'taxes',
+            'combinations.combinationAttributeValue.attributeValue.attribute',
+            'discounts'
+        )->get();
+
+        $discounts = Discount::with(['products', 'categories'])
             ->withCount('usages')
-            ->active() // Scope: is_active=true, fechas válidas
-            ->get(); // TODOS los descuentos activos van
+            ->active()
+            ->get();
 
         $shippingRates = ShippingRate::all();
 
@@ -101,6 +109,18 @@ class OrderController extends Controller
             ->with(['products:id,product_name', 'categories:id,category_name']) // Limita para perf, incluye pivot si modelo tiene withPivot
             ->get();
 
+        // NUEVO: Validar giftcard si se envía
+        $giftCardId = $request->input('gift_card_id');
+        $giftCardAmount = $request->input('gift_card_amount', 0);
+        $appliedGiftCard = null;
+        if ($giftCardId && $giftCardAmount > 0) {
+            $giftCard = GiftCard::find($giftCardId);
+            if (!$giftCard || !$giftCard->is_active || $giftCard->user_id !== $request->user_id || $giftCard->current_balance < $giftCardAmount || now() > $giftCard->expiration_date) {
+                throw ValidationException::withMessages(['gift_card' => 'Giftcard inválida o insuficiente.']);
+            }
+            $appliedGiftCard = $giftCard;
+        }
+
         // Pre-calcular descuentos y totales (basado en order_items del request)
         $orderItemsData = $request['order_items'] ?? [];
         $totalDiscounts = 0;
@@ -108,7 +128,7 @@ class OrderController extends Controller
         $taxAmount = 0;
         $subtotalPreDiscount = 0;
 
-        // Validar y recalcular descuentos por ítem (automáticos + respeta manuales del frontend)
+        // MODIFICADO: Validar y recalcular descuentos por ítem (solo automáticos; respeta manuales del frontend si manual_discount_id está presente)
         foreach ($orderItemsData as &$itemData) {
             // Mapeo de campos para coincidir con modelo OrderItem
             if (isset($itemData['product_price'])) {
@@ -138,55 +158,70 @@ class OrderController extends Controller
             $originalSubtotal = $originalPrice * $quantity;
             $subtotalPreDiscount += $originalSubtotal;
 
-            // Encontrar descuento automático aplicable con match combination_id
-            $applicableDiscount = $this->findApplicableDiscount($product, $combinationId, $quantity, $subtotalPreDiscount, $discounts);
+            // MODIFICADO: Solo buscar/aplicar descuento automático si NO hay manual_discount_id (evita duplicación)
+            $isManualItem = isset($itemData['manual_discount_id']) && $itemData['manual_discount_id'];
+            if (!$isManualItem) {
+                // Encontrar descuento automático aplicable con match combination_id
+                $applicableDiscount = $this->findApplicableDiscount($product, $combinationId, $quantity, $subtotalPreDiscount, $discounts);
 
-            if ($applicableDiscount) {
-                // **NUEVO: Validar usage_limit antes de aplicar**
-                if ($applicableDiscount->usage_limit && $applicableDiscount->usages()->count() >= $applicableDiscount->usage_limit) {
-                    throw ValidationException::withMessages(['order_items' => 'Descuento automático agotado para: ' . $product->product_name]);
+                if ($applicableDiscount) {
+                    // **NUEVO: Validar usage_limit antes de aplicar**
+                    if ($applicableDiscount->usage_limit && $applicableDiscount->usages()->count() >= $applicableDiscount->usage_limit) {
+                        throw ValidationException::withMessages(['order_items' => 'Descuento automático agotado para: ' . $product->product_name]);
+                    }
+
+                    $discountAmountPerItem = $this->calculateDiscount($applicableDiscount, $originalPrice, $quantity);
+                    $discountedPrice = max(0, $originalPrice - ($discountAmountPerItem / $quantity));
+                    $discountedSubtotal = $originalSubtotal - $discountAmountPerItem;
+
+                    $itemData['discount_id'] = $applicableDiscount->id;
+                    $itemData['discount_type'] = $applicableDiscount->discount_type;
+                    $itemData['discount_amount'] = $discountAmountPerItem;
+                    $itemData['discounted_price'] = $discountedPrice;
+                    $itemData['subtotal'] = $discountedSubtotal;
+                    // Guarda detalles si frontend envía (atributos para variables)
+                    $itemData['product_details'] = $itemData['product_details'] ?? null;
+
+                    $totalDiscounts += $discountAmountPerItem;
+                    $subtotalPostDiscount += $discountedSubtotal;
+
+                    // **NUEVO: Marca descuento aplicado para registrar uso**
+                    $itemData['applied_discount_id'] = $applicableDiscount->id;
+                    $itemData['applied_discount_amount'] = $discountAmountPerItem;
+                } else {
+                    // No hay descuento (auto ni manual), usar valores base
+                    $itemData['discount_id'] = null;
+                    $itemData['discount_type'] = null;
+                    $itemData['discount_amount'] = 0;
+                    $itemData['discounted_price'] = $originalPrice;
+                    $itemData['subtotal'] = $originalSubtotal;
+                    $subtotalPostDiscount += $originalSubtotal;
+                }
+            } else {
+                // MODIFICADO: Respeta valores manuales del frontend (valida consistencia básica, no recalcula)
+                $manualDiscount = $discounts->find($itemData['manual_discount_id']);
+                if (!$manualDiscount || $manualDiscount->automatic) {
+                    throw ValidationException::withMessages(['order_items' => 'Descuento manual inválido para ítem: ' . $product->product_name]);
+                }
+                if ($manualDiscount->usage_limit && $manualDiscount->usages()->count() >= $manualDiscount->usage_limit) {
+                    throw ValidationException::withMessages(['order_items' => 'Descuento manual agotado para ítem: ' . $product->product_name]);
                 }
 
-                $discountAmountPerItem = $this->calculateDiscount($applicableDiscount, $originalPrice, $quantity);
-                $discountedPrice = max(0, $originalPrice - ($discountAmountPerItem / $quantity));
-                $discountedSubtotal = $originalSubtotal - $discountAmountPerItem;
+                // Usa valores enviados, pero valida que sean consistentes (ej: subtotal = price * quantity - discount)
+                $expectedSubtotal = ($originalPrice * $quantity) - $itemData['discount_amount'];
+                if (abs($itemData['subtotal'] - $expectedSubtotal) > 0.01) { // Tolerancia para floats
+                    throw ValidationException::withMessages(['order_items' => 'Valores de descuento inconsistentes para ítem: ' . $product->product_name]);
+                }
 
-                $itemData['discount_id'] = $applicableDiscount->id;
-                $itemData['discount_type'] = $applicableDiscount->discount_type;
-                $itemData['discount_amount'] = $discountAmountPerItem;
-                $itemData['discounted_price'] = $discountedPrice;
-                $itemData['subtotal'] = $discountedSubtotal;
-                // Guarda detalles si frontend envía (atributos para variables)
-                $itemData['product_details'] = $itemData['product_details'] ?? null;
-
-                $totalDiscounts += $discountAmountPerItem;
-                $subtotalPostDiscount += $discountedSubtotal;
-
-                // **NUEVO: Marca descuento aplicado para registrar uso**
-                $itemData['applied_discount_id'] = $applicableDiscount->id;
-                $itemData['applied_discount_amount'] = $discountAmountPerItem;
-            } else {
-                // Respeta manual/frontend si no auto
-                $itemData['discount_id'] = $itemData['discount_id'] ?? null;
-                $itemData['discount_type'] = $itemData['discount_type'] ?? null;
-                $itemData['discount_amount'] = $itemData['discount_amount'] ?? 0;
-                $itemData['discounted_price'] = $originalPrice - (($itemData['discount_amount'] ?? 0) / $quantity);
-                $itemData['subtotal'] = $originalSubtotal - ($itemData['discount_amount'] ?? 0);
-                $totalDiscounts += $itemData['discount_amount'] ?? 0;
+                $totalDiscounts += $itemData['discount_amount'];
                 $subtotalPostDiscount += $itemData['subtotal'];
 
-                // **NUEVO: Si hay descuento manual por ítem, valida y marca**
-                if ($itemData['discount_id']) {
-                    $manualItemDiscount = $discounts->find($itemData['discount_id']);
-                    if ($manualItemDiscount && $manualItemDiscount->usage_limit && $manualItemDiscount->usages()->count() >= $manualItemDiscount->usage_limit) {
-                        throw ValidationException::withMessages(['order_items' => 'Descuento manual agotado para ítem: ' . $product->product_name]);
-                    }
-                    $itemData['applied_discount_id'] = $manualItemDiscount->id;
-                    $itemData['applied_discount_amount'] = $itemData['discount_amount'];
-                }
+                // Marca para registro de uso
+                $itemData['applied_discount_id'] = $manualDiscount->id;
+                $itemData['applied_discount_amount'] = $itemData['discount_amount'];
             }
 
-            // Recalcular tax_amount post-descuento
+            // Recalcular tax_amount post-descuento (siempre recalcula para consistencia)
             $taxRate = $product->taxes ? $product->taxes->tax_rate / 100 : 0;
             $itemData['tax_amount'] = $itemData['subtotal'] * $taxRate;
             $taxAmount += $itemData['tax_amount'];
@@ -234,29 +269,32 @@ class OrderController extends Controller
             }
         }
 
-        // Si manual es por 'product' o 'category', aplica a items eligible con match combination_id
+        // MODIFICADO: Si manual es por 'product' o 'category', aplica a items eligible con match combination_id, pero solo si NO hay manual_discount_id en el ítem
         if ($manualDiscountCode && isset($manualDiscount) && $manualDiscount && in_array($manualDiscount->applies_to, ['product', 'category'])) {
             foreach ($orderItemsData as &$itemData) {
-                $product = Product::find($itemData['product_id']); // Re-fetch si necesitas
-                $combinationId = $itemData['combination_id'] ?? null;
-                if ($this->isManualApplicableToItem($manualDiscount, $itemData, $product, $combinationId)) {
-                    // **NUEVO: Validar usage_limit para manual por ítem**
-                    if ($manualDiscount->usage_limit && $manualDiscount->usages()->count() >= $manualDiscount->usage_limit) {
-                        throw ValidationException::withMessages(['order_items' => 'Descuento manual agotado para ítem: ' . $product->product_name]);
+                $isManualItem = isset($itemData['manual_discount_id']) && $itemData['manual_discount_id'];
+                if (!$isManualItem) {
+                    $product = Product::find($itemData['product_id']); // Re-fetch si necesitas
+                    $combinationId = $itemData['combination_id'] ?? null;
+                    if ($this->isManualApplicableToItem($manualDiscount, $itemData, $product, $combinationId)) {
+                        // **NUEVO: Validar usage_limit para manual por ítem**
+                        if ($manualDiscount->usage_limit && $manualDiscount->usages()->count() >= $manualDiscount->usage_limit) {
+                            throw ValidationException::withMessages(['order_items' => 'Descuento manual agotado para ítem: ' . $product->product_name]);
+                        }
+
+                        $itemDiscountAmount = $this->calculateDiscount($manualDiscount, $itemData['price_product'], $itemData['quantity']);
+                        $itemData['discount_amount'] += $itemDiscountAmount; // Suma a auto
+                        $itemData['subtotal'] -= $itemDiscountAmount;
+                        $itemData['discounted_price'] = max(0, $itemData['discounted_price'] - ($itemDiscountAmount / $itemData['quantity']));
+                        $totalDiscounts += $itemDiscountAmount;
+                        $subtotalPostDiscount -= $itemDiscountAmount;
+                        $itemData['tax_amount'] = $itemData['subtotal'] * ($product->taxes ? $product->taxes->tax_rate / 100 : 0); // Recalcula tax
+                        $taxAmount = collect($orderItemsData)->sum(fn($i) => $i['tax_amount']); // Re-sum tax
+
+                        // **NUEVO: Marca descuento aplicado**
+                        $itemData['applied_discount_id'] = $manualDiscount->id;
+                        $itemData['applied_discount_amount'] += $itemDiscountAmount;
                     }
-
-                    $itemDiscountAmount = $this->calculateDiscount($manualDiscount, $itemData['price_product'], $itemData['quantity']);
-                    $itemData['discount_amount'] += $itemDiscountAmount; // Suma a auto
-                    $itemData['subtotal'] -= $itemDiscountAmount;
-                    $itemData['discounted_price'] = max(0, $itemData['discounted_price'] - ($itemDiscountAmount / $itemData['quantity']));
-                    $totalDiscounts += $itemDiscountAmount;
-                    $subtotalPostDiscount -= $itemDiscountAmount;
-                    $itemData['tax_amount'] = $itemData['subtotal'] * ($product->taxes ? $product->taxes->tax_rate / 100 : 0); // Recalcula tax
-                    $taxAmount = collect($orderItemsData)->sum(fn($i) => $i['tax_amount']); // Re-sum tax
-
-                    // **NUEVO: Marca descuento aplicado**
-                    $itemData['applied_discount_id'] = $manualDiscount->id;
-                    $itemData['applied_discount_amount'] += $itemDiscountAmount;
                 }
             }
             $manualDiscountAmount = 0; // No global para product/cat
@@ -273,13 +311,18 @@ class OrderController extends Controller
             }
         }
 
-        // Cálculo final
+        // Cálculo final - MODIFICADO: Incluye giftCardAmount
         $finalSubtotal = $subtotalPostDiscount;
-        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount + $totalShipping;  // Suma el costo de envío
-        $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount;
+        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount - $giftCardAmount + $totalShipping;  // Resta giftCardAmount
+        $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount + $giftCardAmount;  // Suma giftCardAmount a totaldiscounts
+
+        // MODIFICADO: Validar consistencia con valores del request (lanza error si difieren mucho)
+        if (abs($request['subtotal'] - $finalSubtotal) > 0.01 || abs($request['tax_amount'] - $taxAmount) > 0.01 || abs($request['total'] - $finalTotal) > 0.01) {
+            throw ValidationException::withMessages(['order' => 'Los cálculos de subtotal, tax o total no coinciden con el backend. Verifica los descuentos.']);
+        }
 
         // Crear orden
-        $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping, $appliedOrderDiscount, $appliedManualDiscount, $orderTotalDiscount) {
+        $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping, $appliedOrderDiscount, $appliedManualDiscount, $orderTotalDiscount, $appliedGiftCard, $giftCardAmount, $giftCardId) {  // MODIFICADO: Agrega appliedGiftCard y giftCardAmount
             $order = Order::create([
                 'status' => $request['status'],
                 'payment_status' => $request['payments_method_id'] ? 'paid' : 'pending', // Cambia aquí
@@ -297,6 +340,8 @@ class OrderController extends Controller
                 'company_id' => $userAuth->company_id,
                 'shipping_rate_id' => $shippingRateId,  // Guarda el ID de la tarifa
                 'totalshipping' => $totalShipping,
+                'gift_card_id' => $giftCardId,  // NUEVO: Agrega si tienes la columna
+                'gift_card_amount' => $giftCardAmount,  // NUEVO: Agrega si tienes la columna
             ]);
 
             foreach ($orderItemsData as $itemData) {
@@ -333,6 +378,20 @@ class OrderController extends Controller
                 ]);
             }
 
+            // NUEVO: Actualizar balance de giftcard y registrar uso
+            if ($appliedGiftCard) {
+                $appliedGiftCard->update([
+                    'current_balance' => $appliedGiftCard->current_balance - $giftCardAmount,
+                ]);
+
+                GiftCardUsage::create([
+                    'gift_card_id' => $appliedGiftCard->id,
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'amount_used' => $giftCardAmount,
+                ]);
+            }
+
             // Decrementar stock por combination_id
             foreach ($orderItemsData as $itemData) {
                 $product = Product::find($itemData['product_id']);
@@ -351,6 +410,7 @@ class OrderController extends Controller
         }
         return $redirect;
     }
+
 
     // Encontrar descuento automático aplicable con match combination_id en pivot
     private function findApplicableDiscount($product, $combinationId, $quantity, $currentSubtotal, $discounts)
@@ -525,16 +585,36 @@ class OrderController extends Controller
         )
             ->get();
 
-        // Carga todos los usuarios
-        $users = User::with('deliveryLocations')->where('is_active', true)->whereHas('roles', function ($query) {
-            $query->where('name', 'client');
-        })->get();
+        // MODIFICADO: Carga usuarios con giftCards activas (igual que en create)
+        $users = User::with([
+            'deliveryLocations',
+            'giftCards' => function ($query) {
+                $query->where('is_active', true); // Solo giftcards activas
+            }
+        ])
+            ->where('is_active', true)
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'client');
+            })
+            ->get();
 
         $paymentMethods = PaymentMethod::all(); // Asume modelo PaymentMethod
         $shippingRates = ShippingRate::all();  // <-- Agrega esto para pasar a la vista
 
+        $appliedGiftCard = null;
+        if ($orders->giftCardUsages->isNotEmpty()) {
+            $usage = $orders->giftCardUsages->first(); // Asume una por orden
+            $giftCard = $usage->giftCard; // Carga la gift card relacionada
+            $appliedGiftCard = [
+                'id' => $giftCard->id,
+                'code' => $giftCard->code,
+                'amount_used' => $usage->amount_used,
+            ];
+        }
+
         return Inertia::render('Orders/Edit', [
             'orders' => $orders,
+            'appliedGiftCard' => $appliedGiftCard, // NUEVO: Pasa datos de gift card aplicada
             'shippingRates' => $shippingRates,
             'paymentMethods' => $paymentMethods,
             'products' => $products,
@@ -695,6 +775,18 @@ class OrderController extends Controller
             $taxAmount = collect($orderItemsData)->sum(fn($i) => $i['tax_amount']);
         }
 
+        // NUEVO: Lógica para gift cards (similar a store)
+        $giftCardId = $request->input('gift_card_id');
+        $giftCardAmount = $request->input('gift_card_amount', 0);
+        $appliedGiftCard = null;
+        if ($giftCardId && $giftCardAmount > 0) {
+            $giftCard = GiftCard::find($giftCardId);
+            if (!$giftCard || !$giftCard->is_active || $giftCard->user_id !== $request->user_id || $giftCard->current_balance < $giftCardAmount || now() > $giftCard->expiration_date) {
+                throw ValidationException::withMessages(['gift_card' => 'Giftcard inválida o insuficiente.']);
+            }
+            $appliedGiftCard = $giftCard;
+        }
+
         $shippingRateId = $request->input('shipping_rate_id');
         $totalShipping = 0;
         if ($shippingRateId) {
@@ -705,11 +797,11 @@ class OrderController extends Controller
         }
 
         $finalSubtotal = $subtotalPostDiscount;
-        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount + $totalShipping;  // Incluye totalShipping
-        $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount;
+        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount - $giftCardAmount + $totalShipping;  // NUEVO: Resta giftCardAmount
+        $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount + $giftCardAmount;  // NUEVO: Incluye giftCardAmount en totaldiscounts
 
         // Update con transacción – FIX: Agrega $existingItems y $sentIds en use()
-        $orders = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $shippingRateId, $totalShipping, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $orders, $stockChanges, $sentIds, $existingItems, $manualDiscountCode, $manualDiscountAmount) { // <-- FIX: Agrega $existingItems aquí
+        $orders = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $shippingRateId, $totalShipping, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $orders, $stockChanges, $sentIds, $existingItems, $manualDiscountCode, $manualDiscountAmount, $appliedGiftCard, $giftCardAmount, $giftCardId) { // NUEVO: Agrega appliedGiftCard, giftCardAmount, giftCardId
             try {
                 // Update orden principal
                 $orders->update([
@@ -717,8 +809,8 @@ class OrderController extends Controller
                     'payment_status' => $request['payments_method_id'] ? 'paid' : 'pending',
                     'delivery_type' => $request['delivery_type'],
                     'tax_amount' => $taxAmount,
-                    'subtotal' => $finalSubtotal,
                     'total' => $finalTotal,
+                    'subtotal' => $finalSubtotal,
                     'totaldiscounts' => $grandTotalDiscounts,
                     'manual_discount_code' => $manualDiscountCode,
                     'manual_discount_amount' => $manualDiscountAmount,
@@ -791,7 +883,44 @@ class OrderController extends Controller
                     }
                 }
 
-                return $orders->fresh(['orderItems.product']); // Recarga con items para response
+                // NUEVO: Manejo de gift card
+                if ($appliedGiftCard) {
+                    // Si había una gift card anterior, revierte su balance
+                    $previousUsage = $orders->giftCardUsages->first();
+                    if ($previousUsage && $previousUsage->gift_card_id !== $giftCardId) {
+                        $previousGiftCard = $previousUsage->giftCard;
+                        $previousGiftCard->update([
+                            'current_balance' => $previousGiftCard->current_balance + $previousUsage->amount_used,
+                        ]);
+                        $previousUsage->delete(); // Elimina uso anterior
+                    }
+
+                    // Aplica nueva gift card
+                    $appliedGiftCard->update([
+                        'current_balance' => $appliedGiftCard->current_balance - $giftCardAmount,
+                    ]);
+
+                    // Crea o actualiza GiftCardUsage
+                    GiftCardUsage::updateOrCreate(
+                        ['order_id' => $orders->id],
+                        [
+                            'gift_card_id' => $giftCardId,
+                            'amount_used' => $giftCardAmount,
+                        ]
+                    );
+                } else {
+                    // Si no hay gift card nueva, revierte cualquier anterior
+                    $previousUsage = $orders->giftCardUsages->first();
+                    if ($previousUsage) {
+                        $previousGiftCard = $previousUsage->giftCard;
+                        $previousGiftCard->update([
+                            'current_balance' => $previousGiftCard->current_balance + $previousUsage->amount_used,
+                        ]);
+                        $previousUsage->delete();
+                    }
+                }
+
+                return $orders->fresh(['orderItems.product', 'giftCardUsages']); // NUEVO: Recarga con giftCardUsages
             } catch (\Exception $e) {
                 Log::error('Error in update transaction: ' . $e->getMessage()); // Debug error
                 throw $e; // Re-throw para rollback

@@ -1,13 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import Loader from '@/Components/ui/loader';
 import { lazy, Suspense } from 'react';
 import { toast } from 'sonner';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
 export default function Create({ paymentMethods, products, users, discounts, shippingRates }) { // Asegúrate de recibir 'users' aquí
-
+console.log(discounts)
     const initialValues = {
         status: 'pending', // Estado inicial por defecto
         payment_status: 'pending',
@@ -44,7 +45,10 @@ export default function Create({ paymentMethods, products, users, discounts, shi
     return (
         <AuthenticatedLayout
             header={
-                <div className='flex justify-between items-center'>
+                <div className='flex justify-start items-center'>
+                    <Link href={route('orders.index')}>
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Crear Pedido
                     </h2>

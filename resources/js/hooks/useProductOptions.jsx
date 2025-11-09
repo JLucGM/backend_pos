@@ -14,18 +14,15 @@ import {
  * @param {Array} products - Array de productos (con combinations, stocks, discounts, taxes, categories).
  * @param {Object} data - Datos de la orden (order_items para chequear duplicados).
  * @param {Function} setData - Función para actualizar data (order_items).
- * @param {boolean} isEdit - Modo edición (bloquea agregar nuevos).
  * @param {Function} findApplicableDiscount - Función del hook useDiscounts para descuentos automáticos.
  * @returns {Object} Opciones, label formatter, handlers de adición (single + bulk), estados de selección.
  */
-export const useProductOptions = (products, data, setData, isEdit, findApplicableDiscount) => {
+export const useProductOptions = (products, data, setData, findApplicableDiscount) => {
     const [selectedProductToAdd, setSelectedProductToAdd] = useState(null);
     const [selectedProductsBulk, setSelectedProductsBulk] = useState([]); // Nuevo: Array de opciones seleccionadas para bulk
 
     // productOptions: Flat options para simples + variaciones (igual que antes)
     const productOptions = useMemo(() => {
-        if (isEdit) return [];
-
         const options = [];
         products.forEach(product => {
             // Simple (sin combinations)
@@ -90,7 +87,7 @@ export const useProductOptions = (products, data, setData, isEdit, findApplicabl
             }
         });
         return options;
-    }, [products, findApplicableDiscount, isEdit]);
+    }, [products, findApplicableDiscount]);
 
     // formatProductOptionLabel: JSX para label con strike si descuento (igual)
     const formatProductOptionLabel = useCallback((option) => (
@@ -105,36 +102,27 @@ export const useProductOptions = (products, data, setData, isEdit, findApplicabl
                     <span className="line-through mr-1">${option.original_price.toFixed(2)}</span>
                 )}
                 ${option.effective_price.toFixed(2)}
-                {option.discount && !isEdit && (
+                {option.discount && (
                     <span className="ml-2 text-green-600 text-xs">
                         <Percent className="inline w-3 h-3 mr-1" /> {option.discount.value}% off
                     </span>
                 )}
             </span>
         </div>
-    ), [isEdit]);
+    ), []);
 
     // handleAddProduct: Single add (igual, pero sin el toast final para bulk compat)
     const handleAddProduct = useCallback(() => {
-        if (isEdit) {
-            toast.warning('No se pueden agregar productos nuevos en modo edición.');
-            setSelectedProductToAdd(null);
-            return;
-        }
         if (!selectedProductToAdd) return;
 
         // ... (código existente de handleAddProduct, sin el toast final)
         // [Copia el código completo de handleAddProduct de tu versión original aquí, pero quita el toast.success al final]
 
         setSelectedProductToAdd(null);
-    }, [selectedProductToAdd, data.order_items, products, setData, isEdit, findApplicableDiscount]);
+    }, [selectedProductToAdd, data.order_items, products, setData, findApplicableDiscount]);
 
     // Nuevo: handleAddBulkProducts - Agrega múltiples, maneja duplicados y validaciones en batch
     const handleAddBulkProducts = useCallback(() => {
-        if (isEdit) {
-            toast.warning('No se pueden agregar productos nuevos en modo edición.');
-            return;
-        }
         if (!selectedProductsBulk || selectedProductsBulk.length === 0) {
             toast.warning('Selecciona al menos un producto.');
             return;
@@ -254,7 +242,7 @@ export const useProductOptions = (products, data, setData, isEdit, findApplicabl
         setData('order_items', updatedItems);
         setSelectedProductsBulk([]); // Limpia selección
         toast.success(`Agregados ${newItems.length + updatedExistingIndices.length} producto(s)`);
-    }, [selectedProductsBulk, data.order_items, products, setData, isEdit, findApplicableDiscount]);
+    }, [selectedProductsBulk, data.order_items, products, setData, findApplicableDiscount]);
 
     // Nuevo: Toggle selección bulk por opción
     const toggleBulkSelection = useCallback((option) => {

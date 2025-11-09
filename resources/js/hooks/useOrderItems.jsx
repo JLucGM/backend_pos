@@ -11,13 +11,12 @@ import { usePage } from '@inertiajs/react';
  * @param {Object} data - Datos de la orden (order_items).
  * @param {Array} discounts - Descuentos para edit mode.
  * @param {Function} setData - Actualiza order_items.
- * @param {boolean} isEdit - Modo edición.
  * @param {boolean} isDisabled - Deshabilita interacciones.
  * @param {Function} findApplicableDiscount - De useDiscounts para create mode.
  * @param {Array} products - Products para stock dinámico (siempre).
  * @returns {Object} Handlers y columnas para DataTable.
  */
-export const useOrderItems = (data, discounts, setData, isEdit, isDisabled, findApplicableDiscount, products = []) => {
+export const useOrderItems = (data, discounts, setData, isDisabled, findApplicableDiscount, products = []) => {
     // handleQuantityChange: Recalcula ítem con descuento/stock (FIX: Stock SIEMPRE dinámico de products)
     const settings = usePage().props.settings;
     const handleQuantityChange = useCallback((index, newQuantity) => {
@@ -33,12 +32,7 @@ export const useOrderItems = (data, discounts, setData, isEdit, isDisabled, find
         const taxRate = item.tax_rate || 0;
         const originalPrice = item.original_price || item.product_price || 0;
 
-        let discount = null;
-        if (isEdit && item.discount_id) {
-            discount = discounts.find(d => d.id === item.discount_id);
-        } else {
-            discount = findApplicableDiscount(item.product_id, item.combination_id);
-        }
+        let discount = findApplicableDiscount(item.product_id, item.combination_id);
 
         const newDiscountAmount = discount ? calculateDiscount(discount, originalPrice, quantity) : 0;
         const newDiscountedSubtotal = calculateDiscountedSubtotal(originalPrice, quantity, discount);
@@ -82,7 +76,7 @@ export const useOrderItems = (data, discounts, setData, isEdit, isDisabled, find
             return { ...it, index: i };
         });
         setData('order_items', updatedItems);
-    }, [data.order_items, discounts, findApplicableDiscount, isEdit, setData, products]); // + products en deps
+    }, [data.order_items, findApplicableDiscount, setData, products]); // + products en deps
 
     // handleRemoveItem: Intacto (no afecta stock)
     const handleRemoveItem = useCallback((index) => {
@@ -104,9 +98,8 @@ export const useOrderItems = (data, discounts, setData, isEdit, isDisabled, find
         handleRemoveItem,
         isDisabled,
         showDiscount: true,
-        isEdit,
         settings,  // ← Agrega esto para pasar settings
-    }), [handleQuantityChange, handleRemoveItem, isDisabled, isEdit, settings]);
+    }), [handleQuantityChange, handleRemoveItem, isDisabled, settings]);
 
     return {
         handleQuantityChange,

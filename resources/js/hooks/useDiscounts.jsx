@@ -13,25 +13,13 @@ import {
  * @param {Object} data - Datos de la orden (subtotal, order_items, manual_discount_*).
  * @param {Array} discounts - Array de descuentos disponibles (ahora incluye usages_count).
  * @param {Function} setData - Función para actualizar data.
- * @param {boolean} isEdit - Modo edición (bloquea nuevos descuentos).
  * @returns {Object} Estados y funciones para descuentos.
  */
-export const useDiscounts = (data, discounts, setData, isEdit, products = []) => {
+export const useDiscounts = (data, discounts, setData, products = []) => {
     const [manualDiscountCode, setManualDiscountCode] = useState(data.manual_discount_code || '');
     const [manualDiscountAmount, setManualDiscountAmount] = useState(parseFloat(data.manual_discount_amount) || 0);
     const [appliedManualDiscount, setAppliedManualDiscount] = useState(null);
     const [manualDiscountError, setManualDiscountError] = useState(''); // ← NUEVO: Estado para error local
-
-    // Inicializa manual discount en modo edit
-    useEffect(() => {
-        if (isEdit && data.manual_discount_code && discounts.length > 0) {
-            const savedDiscount = discounts.find(d => d.code === data.manual_discount_code);
-            if (savedDiscount) {
-                setAppliedManualDiscount(savedDiscount);
-                setManualDiscountAmount(parseFloat(data.manual_discount_amount) || 0);
-            }
-        }
-    }, [isEdit, data.manual_discount_code, data.manual_discount_amount, discounts]);
 
     // Limpia error al cambiar código
     useEffect(() => {
@@ -40,7 +28,6 @@ export const useDiscounts = (data, discounts, setData, isEdit, products = []) =>
 
     // findApplicableDiscount (lógica para descuentos automáticos por producto/combination)
     const findApplicableDiscount = useCallback((productId, combinationId = null) => {
-        if (isEdit) return null; // En edit, no aplica nuevos (preserva guardados)
         const product = products.find(p => p.id === productId);
         if (!product || !product.discounts) return null;
         const activeDiscounts = product.discounts.filter(discount =>
@@ -54,11 +41,10 @@ export const useDiscounts = (data, discounts, setData, isEdit, products = []) =>
                 return pivotCombId === null;
             }
         });
-    }, [isEdit, products]);
+    }, [products]);
 
     // handleManualDiscountApply (lógica completa para aplicar descuentos manuales, con validación de usage_limit)
     const handleManualDiscountApply = useCallback(async () => {
-        if (isEdit && appliedManualDiscount) return;
         if (!manualDiscountCode.trim()) return;
 
         setManualDiscountError(''); // Limpia error previo
@@ -192,11 +178,10 @@ export const useDiscounts = (data, discounts, setData, isEdit, products = []) =>
             setData('manual_discount_code', manualDiscount.code);
             toast.success(`Descuento por categoría aplicado a ${eligibleItems.length} producto(s): ${manualDiscount.name} - Ahorro: $${totalManualDiscountAmount.toFixed(2)}`);
         }
-    }, [manualDiscountCode, discounts, data.subtotal, data.order_items, setData, isEdit, appliedManualDiscount]);
+    }, [manualDiscountCode, discounts, data.subtotal, data.order_items, setData]);
 
     // orderTotalAutomaticDiscount (descuento automático por total de orden)
     const orderTotalAutomaticDiscount = useMemo(() => {
-        if (isEdit) return 0;
         const activeOrderDiscounts = discounts.filter(d =>
             d.automatic &&
             d.applies_to === 'order_total' &&
@@ -212,7 +197,7 @@ export const useDiscounts = (data, discounts, setData, isEdit, products = []) =>
             }
         });
         return applicable ? calculateDiscount(applicable, data.subtotal, 1) : 0;
-    }, [discounts, data.subtotal, isEdit]);
+    }, [discounts, data.subtotal]);
 
     return {
         manualDiscountCode,

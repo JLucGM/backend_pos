@@ -51,6 +51,8 @@ class StoreRequest extends FormRequest
             'manual_discount_amount' => 'nullable|numeric|min:0|max:999999',
             'shipping_rate_id' => 'nullable|exists:shipping_rates,id',  // Valida que exista en la tabla shipping_rates
             'totalshipping' => 'nullable|numeric',  // Valida que exista en la tabla shipping_rates
+            'gift_card_code' => 'nullable|string|exists:gift_cards,code',
+'gift_card_amount' => 'nullable|numeric|min:0',
         ];
     }
 
@@ -114,6 +116,10 @@ class StoreRequest extends FormRequest
             'manual_discount_code.max' => 'El código de descuento no puede exceder 50 caracteres.',
             'manual_discount_amount.numeric' => 'El monto de descuento manual debe ser un número.',
             'manual_discount_amount.min' => 'El monto de descuento manual no puede ser negativo.',
+            'gift_card_code.string' => 'El código de la tarjeta de regalo debe ser texto.',
+            'gift_card_code.exists' => 'El código de la tarjeta de regalo es inválido.',
+            'gift_card_amount.numeric' => 'El monto de la tarjeta de regalo debe ser un número.',
+            'gift_card_amount.min' => 'El monto de la tarjeta de regalo no puede ser negativo.',
         ];
     }
 }

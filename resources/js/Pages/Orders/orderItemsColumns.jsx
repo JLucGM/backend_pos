@@ -3,7 +3,7 @@ import { Input } from '@/Components/ui/input';
 import { Badge } from '@/Components/ui/badge';
 import { BadgePercent, Trash2 } from 'lucide-react';
 
-export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, isDisabled, showDiscount = true, isEdit = false, settings }) => [
+export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, isDisabled, showDiscount = true, settings }) => [
     {
         id: 'name_product',
         header: 'Producto',
@@ -89,7 +89,7 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
                     value={quantity}
                     onChange={(e) => handleQuantityChange(index, e.target.value)}
                     min={1}
-                    disabled={isDisabled || isEdit}
+                    disabled={isDisabled}
                     className="w-16"
                 />
             );

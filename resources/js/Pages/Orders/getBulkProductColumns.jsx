@@ -2,7 +2,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
 import { AlertTriangle } from 'lucide-react';
 
-export const getBulkProductColumns = ({ selectedProductsBulk, toggleBulkSelection, isDisabled, isEdit, settings }) => [
+export const getBulkProductColumns = ({ selectedProductsBulk, toggleBulkSelection, isDisabled, settings }) => [
     {
         id: 'select',
         header: 'Seleccionar',
@@ -13,7 +13,7 @@ export const getBulkProductColumns = ({ selectedProductsBulk, toggleBulkSelectio
                 <Checkbox
                     checked={selectedProductsBulk.some(opt => opt.value === option.value)}
                     onCheckedChange={() => toggleBulkSelection(option)}
-                    disabled={isDisabled || isEdit}
+                    disabled={isDisabled}
                 />
             );
         },
