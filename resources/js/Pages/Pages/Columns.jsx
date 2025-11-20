@@ -1,6 +1,6 @@
 import { buttonVariants } from "@/Components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Ellipsis, Pen, Trash } from "lucide-react";
+import { Ellipsis, Eye, Palette, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
 
 export const pagesColumns = [
@@ -21,8 +21,18 @@ export const pagesColumns = [
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuItem>
+                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.show', row.original)}>
+                                <Eye /> Ver
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
                             <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.edit', row.original)}>
                                 <Pen /> Editar
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.builder', row.original)}> {/* Nueva ruta para el builder */}
+                                <Palette /> Personalizar
                             </Link>
                         </DropdownMenuItem>
                         {!isDefault && ( // Solo mostrar "Eliminar" si NO es por defecto

@@ -16,6 +16,7 @@ class Page extends Model
         'title',
         'slug',
         'content',
+        'layout',
         'is_default',
         'is_published',
         'is_homepage',

@@ -36,6 +36,7 @@ Route::get('/', function () {
     ]);
 });
 
+// Frontend Page Routes
 Route::get('/page/{slug}', [FrontendController::class, 'show'])->name('pages.show');
 
 // Route::get('/dashboard', function () {
@@ -164,11 +165,14 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::delete('shipping-rates/{shippingRate}', [ShippingRateController::class, 'destroy'])->name('shippingrate.destroy');
 
     Route::get('pages', [PageController::class, 'index'])->name('pages.index');
+    Route::get('pages/{page}', [PageController::class, 'show'])->name('pages.show');
     Route::get('pages/create', [PageController::class, 'create'])->name('pages.create');
     Route::post('pages', [PageController::class, 'store'])->name('pages.store');
     Route::get('pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
     Route::post('pages/{page}', [PageController::class, 'update'])->name('pages.update');
     Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
+    Route::get('/pages/{page}/builder', [PageController::class, 'builder'])->name('pages.builder');
+Route::post('/pages/{page}/update-layout', [PageController::class, 'updateLayout'])->name('pages.updateLayout');
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');

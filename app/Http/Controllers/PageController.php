@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\Auth;
@@ -70,7 +71,17 @@ class PageController extends RoutingController
      */
     public function show(Page $page)
     {
-        //
+        $page->load('theme');
+
+        $user = Auth::user();
+        $companyId = $user->company_id;
+
+        $products = Product::with('stocks', 'combinations.combinationAttributeValue.attributeValue.attribute', 'categories', 'media')
+            ->where('company_id', $companyId)
+            ->get();
+            
+
+        return Inertia::render('Pages/Show', compact('page', 'products'));
     }
 
     /**
@@ -81,6 +92,8 @@ class PageController extends RoutingController
         $user = Auth::user();
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
+
+        $page->load('theme');
 
         return Inertia::render('Pages/Edit', compact('page', 'role', 'permission'));
     }
@@ -110,5 +123,55 @@ class PageController extends RoutingController
     public function destroy(Page $page)
     {
         $page->delete();
+    }
+
+    public function builder(Page $page)
+    {
+        $user = Auth::user();
+        $companyId = $user->company_id;
+
+        $products = Product::with('stocks', 'combinations.combinationAttributeValue.attributeValue.attribute', 'categories', 'media')
+            ->where('company_id', $companyId)
+            ->get();
+
+        // Asegúrate de que el usuario tenga permisos para editar esta página (ej. verificar company_id)
+        return Inertia::render('Pages/Builder', [
+            'page' => $page,
+            'products' => $products,
+        ]);
+    }
+
+    public function updateLayout(Request $request, Page $page)
+    {
+        $request->validate([
+            'layout' => 'required|json', // Valida que sea JSON
+        ]);
+
+        $layout = json_decode($request->layout, true);
+        if (!is_array($layout)) {
+            return back()->withErrors(['layout' => 'El layout debe ser un array válido.']);
+        }
+
+        // Sanitiza el contenido (ej. para prevenir XSS en texto)
+        foreach ($layout as &$component) {
+            if (isset($component['content']) && is_string($component['content'])) {
+                $component['content'] = strip_tags($component['content']); // Remueve HTML potencialmente peligroso
+            }
+            // Si es array (contenedor), no sanitizar aquí (puedes recursivamente sanitizar sub-componentes si quieres)
+            if (isset($component['content']) && is_array($component['content'])) {
+                foreach ($component['content'] as &$subComponent) {
+                    if (isset($subComponent['content']) && is_string($subComponent['content'])) {
+                        $subComponent['content'] = strip_tags($subComponent['content']);
+                    }
+                }
+            }
+        }
+
+
+        $page->update([
+            'layout' => json_encode($layout),
+        ]);
+
+        return redirect()->back()->with('success', 'Layout actualizado correctamente.');
     }
 }
