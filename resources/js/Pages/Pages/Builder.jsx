@@ -1,217 +1,31 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'; // Solo react-beautiful-dnd
-import { Head, Link, router } from '@inertiajs/react';
-import { Button } from '@/Components/ui/button'; // Ajusta el path si usas Shadcn
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/Components/ui/dialog'; // Dialog de Shadcn
-import { Input } from '@/Components/ui/input';
+// components/BuilderPages/Builder.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { DndContext, closestCenter,KeyboardSensor,PointerSensor,useSensor,useSensors,DragOverlay } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { router } from '@inertiajs/react';
+import { Button } from '@/Components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { toast } from 'sonner';
-import { X, Undo, Redo, Monitor, Tablet, Smartphone, ArrowLeftToLine, Eye, Save, Trash, Plus } from 'lucide-react';
-import CarouselComponent from '@/Components/BuilderPages/CarouselComponent';
+import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical } from 'lucide-react';
+import ComponentTree from '@/Components/BuilderPages/ComponentTree';
+import Canvas from '@/Components/BuilderPages/Canvas';
+import CanvasItem from '@/Components/BuilderPages/CanvasItem';
+import { addToHistory } from '@/utils/Builder/builderUtils';
+import { ScrollArea } from '@/Components/ui/scroll-area';
+import TextEditDialog from './partials/TextEditDialog';
+import ButtonEditDialog from './partials/ButtonEditDialog';
+import HeadingEditDialog from './partials/HeadingEditDialog';
+import ImageEditDialog from './partials/ImageEditDialog';
+import VideoEditDialog from './partials/VideoEditDialog';
+import LinkEditDialog from './partials/LinkEditDialog';
+import ProductEditDialog from './partials/ProductEditDialog';
+import CarouselEditDialog from './partials/CarouselEditDialog';
+import ContainerEditDialog from './partials/ContainerEditDialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/Components/ui/drawer';
 
-// Hook personalizado para lazy loading
-const useLazyLoad = (ref) => {
-    const [isVisible, setIsVisible] = useState(false);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.disconnect();
-                }
-            },
-            { threshold: 0.1 }
-        );
-
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
-
-        return () => observer.disconnect();
-    }, [ref]);
-
-    return isVisible;
-};
-
-// Componente Video con lazy loading
-const LazyVideo = ({ src, title }) => {
-    const videoRef = useRef(null);
-    const isVisible = useLazyLoad(videoRef);
-
-    return (
-        <div ref={videoRef} style={{ height: '200px', backgroundColor: '#f0f0f0' }}>
-            {isVisible ? (
-                <iframe
-                    width="100%"
-                    height="200"
-                    src={src}
-                    title={title}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                />
-            ) : (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                    <p>Cargando video...</p>
-                </div>
-            )}
-        </div>
-    );
-};
-
-// Componente Producto (usa products prop)
-const ProductComponent = ({ products }) => {
-    if (!products || products.length === 0) return <p>No hay productos disponibles.</p>;
-    return (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {products.map((product) => (
-                <div key={product.id} className="w-48 border p-4 rounded">
-                    <h4 className="font-semibold">{product.product_name}</h4>
-                    <p className="text-sm">Precio: ${product.product_price}</p>
-                    {product.media && product.media.length > 0 && (
-                        <img src={product.media[0].original_url} alt={product.product_name} className="w-full h-24 object-cover mt-2" />
-                    )}
-                </div>
-            ))}
-        </div>
-    );
-};
-
-// Componente del canvas (sin drag/drop, solo renderizado)
-const CanvasItem = memo(
-    ({ comp, onEditComponent, onDeleteComponent, themeSettings, isPreview = false, products, setComponents }) => {
-        const getStyles = () => {
-            const styles = comp.styles || {};
-            return {
-                color: styles.color || (themeSettings?.primary ? `hsl(${themeSettings.primary})` : 'inherit'),
-                fontSize: styles.fontSize || 'inherit',
-                backgroundColor: styles.backgroundColor || (themeSettings?.primary ? `hsl(${themeSettings.primary})` : 'inherit'),
-                padding: styles.padding || 'inherit',
-                fontFamily: themeSettings?.fontFamily || 'inherit',
-            };
-        };
-
-        return (
-            <div
-                className='group relative border border-transparent hover:border-slate-400'
-            >
-                <div className="opacity-0 rounded-t-lg group-hover:opacity-100 bg-slate-400 transition-opacity duration-300 absolute -top-6 px-2">
-                    {comp.type.charAt(0).toUpperCase() + comp.type.slice(1)}
-
-                </div>
-                {!isPreview && (
-                    <Button
-                        onClick={() => onDeleteComponent(comp.id)}
-                        className="absolute top-1 right-1 z-10"
-                        variant="destructive"
-                        size="icon"
-                    >
-                        <Trash size={12} />
-                    </Button>
-                )}
-                <div onDoubleClick={isPreview ? undefined : () => onEditComponent(comp)} style={{ cursor: isPreview ? 'default' : 'pointer' }}>
-                    {comp.type === 'text' && <p style={getStyles(comp)}>{comp.content}</p>}
-                    {comp.type === 'image' && <img src={comp.content} alt="Imagen" className="w-full" />}
-                    {comp.type === 'button' && <Button style={getStyles(comp)}>{comp.content}</Button>}
-                    {comp.type === 'video' && <LazyVideo src={comp.content} title="Video" />}
-                    {comp.type === 'link' && <a href={comp.content} target="_blank" rel="noopener noreferrer" style={getStyles(comp)}>{comp.content || 'Enlace'}</a>}
-                    {comp.type === 'product' && (
-                        <div style={{ position: 'relative' }}>
-                            <ProductComponent products={products} />
-                        </div>
-                    )}
-                    {comp.type === 'carousel' && (
-                        <div style={{ position: 'relative' }}>
-                            <CarouselComponent products={products.slice(0, comp.content.limit || 5)} />
-                        </div>
-                    )}
-                    {comp.type === 'container' && (
-                        <div
-                            style={{ ...getStyles(comp), border: isPreview ? 'none' : '2px dashed #ccc', minHeight: '50px', padding: '10px', borderRadius: 8 }}
-                        >
-                            {comp.content.map((subComp, subIndex) => (
-                                <CanvasItem
-                                    key={subComp.id}
-                                    comp={subComp}
-                                    onEditComponent={(subComp) => onEditComponent(subComp)}
-                                    onDeleteComponent={(id) => {
-                                        setComponents((prev) => prev.map((c) => {
-                                            if (c.id === comp.id) {
-                                                return { ...c, content: c.content.filter((sc) => sc.id !== id) };
-                                            }
-                                            return c;
-                                        }));
-                                    }}
-                                    themeSettings={themeSettings}
-                                    isPreview={isPreview}
-                                    products={products}
-                                    setComponents={setComponents}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    }
-);
-
-// Componente del canvas (sin droppable, solo renderiza items)
-const Canvas = ({ components, onEditComponent, onDeleteComponent, themeSettings, products, setComponents, canvasWidth }) => (
-    <div
-        className={`min-h-[400px]  mx-auto transition-all duration-300 ease-in-out bg-gray-100 p-4 rounded-lg border-2  relative`}
-        style={{
-            backgroundSize: '20px 20px',
-            width: canvasWidth,
-        }}>
-        {components.map((comp, index) => (
-            <CanvasItem
-                key={comp.id}
-                comp={comp}
-                onEditComponent={onEditComponent}
-                onDeleteComponent={onDeleteComponent}
-                themeSettings={themeSettings}
-                isPreview={false}
-                products={products}
-                setComponents={setComponents}
-            />
-        ))}
-    </div>
-);
-
-// Sidebar usando react-beautiful-dnd (solo aquí hay drag/drop)
-const Sidebar = ({ components }) => (
-    <Droppable droppableId="sidebar">
-        {(provided, snapshot) => (
-            <div
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                className={`space-y-2 p-2 rounded border ${snapshot.isDraggingOver ? 'bg-blue-50 border-blue-400' : 'bg-white border-gray-200'}`}
-            >
-                {components.map((comp, index) => (
-                    <Draggable key={comp.id} draggableId={comp.id.toString()} index={index}>
-                        {(provided, snapshot) => (
-                            <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`p-2 border rounded cursor-move transition ${snapshot.isDragging ? 'opacity-50 bg-gray-200' : 'bg-white'}`}
-                            >
-                                {comp.type.charAt(0).toUpperCase() + comp.type.slice(1)} {/* (ID: {comp.id}) */}
-                            </div>
-                        )}
-                    </Draggable>
-                ))}
-                {provided.placeholder}
-            </div>
-        )}
-    </Droppable>
-);
-
-// Componente principal del Builder
 export default function Builder({ page, products }) {
     const [components, setComponents] = useState([]);
     const [editingComponent, setEditingComponent] = useState(null);
@@ -227,22 +41,22 @@ export default function Builder({ page, products }) {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [selectedType, setSelectedType] = useState('');
 
+    // Estados para el drag & drop visual
+    const [activeId, setActiveId] = useState(null);
+    const [overId, setOverId] = useState(null);
+
+    // Estado para el hover
+    const [hoveredComponentId, setHoveredComponentId] = useState(null);
+
     const themeSettings = page.theme?.settings || {};
 
-    const addToHistory = (newComponents) => {
-        const newHistory = history.slice(0, historyIndex + 1);
-        newHistory.push(JSON.parse(JSON.stringify(newComponents)));
-        if (newHistory.length > 10) newHistory.shift();
-        setHistory(newHistory);
-        setHistoryIndex(newHistory.length - 1);
-    };
-
+    // Efectos
     useEffect(() => {
         if (page.layout && !hasLoaded.current) {
             try {
                 const initialComponents = JSON.parse(page.layout);
                 setComponents(initialComponents);
-                addToHistory(initialComponents);
+                addToHistory(initialComponents, history, setHistory, historyIndex, setHistoryIndex);
             } catch (error) {
                 console.error('Error parsing layout:', error);
             }
@@ -252,16 +66,18 @@ export default function Builder({ page, products }) {
         }
     }, [page.layout]);
 
-    // useEffect(() => {
-    //     if (hasUnsavedChanges) {
-    //         autoSaveRef.current = setTimeout(() => {
-    //             saveLayout(true);
-    //         }, 30000);
-    //     }
-    //     return () => clearTimeout(autoSaveRef.current);
-    // }, [components, hasUnsavedChanges]);
+    useEffect(() => {
+        if (hasUnsavedChanges) {
+            autoSaveRef.current = setTimeout(() => {
+                saveLayout(true);
+            }, 30000);
+        }
+        return () => clearTimeout(autoSaveRef.current);
+    }, [components, hasUnsavedChanges]);
 
+    // Funciones principales
     const handleEditComponent = (comp) => {
+        // console.log('Editando componente:', comp.type, 'ID:', comp.id);
         setEditingComponent(comp);
         setEditContent(comp.content);
         setEditStyles(comp.styles || {});
@@ -270,19 +86,45 @@ export default function Builder({ page, products }) {
     const saveEdit = () => {
         if (editingComponent) {
             setComponents((prev) => {
-                const newComponents = prev.map((c) => {
-                    if (c.id === editingComponent.id) {
-                        return { ...c, content: editContent, styles: editStyles };
-                    }
-                    return c;
-                });
-                addToHistory(newComponents);
+                // Función recursiva para encontrar y actualizar el componente
+                const updateComponentInTree = (components, targetId, newData) => {
+                    return components.map(component => {
+                        if (component.id === targetId) {
+                            return {
+                                ...component,
+                                content: newData.content,
+                                styles: newData.styles
+                            };
+                        }
+
+                        // Si es un contenedor, buscar recursivamente en sus hijos
+                        if (component.type === 'container' && component.content) {
+                            return {
+                                ...component,
+                                content: updateComponentInTree(component.content, targetId, newData)
+                            };
+                        }
+
+                        return component;
+                    });
+                };
+
+                const newData = {
+                    content: editContent,
+                    styles: editStyles
+                };
+
+                const newComponents = updateComponentInTree(prev, editingComponent.id, newData);
+                addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
                 setHasUnsavedChanges(true);
                 return newComponents;
             });
+
             setEditingComponent(null);
             setEditContent('');
             setEditStyles({});
+
+            toast.success("Cambios guardados correctamente");
         }
     };
 
@@ -293,9 +135,21 @@ export default function Builder({ page, products }) {
     };
 
     const deleteComponent = (id) => {
+        const removeFromTree = (items, targetId) => {
+            return items.filter(item => {
+                if (item.id === targetId) {
+                    return false;
+                }
+                if (item.type === 'container' && item.content) {
+                    item.content = removeFromTree(item.content, targetId);
+                }
+                return true;
+            });
+        };
+
         setComponents((prev) => {
-            const newComponents = prev.filter((c) => c.id !== id);
-            addToHistory(newComponents);
+            const newComponents = removeFromTree(prev, id);
+            addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
             setHasUnsavedChanges(true);
             return newComponents;
         });
@@ -338,18 +192,6 @@ export default function Builder({ page, products }) {
         });
     };
 
-    // Solo maneja reordenar desde el sidebar
-    const handleDragEnd = (result) => {
-        if (!result.destination || result.source.droppableId !== 'sidebar') return;
-
-        const items = Array.from(components);
-        const [moved] = items.splice(result.source.index, 1);
-        items.splice(result.destination.index, 0, moved);
-        setComponents(items);
-        addToHistory(items);
-        setHasUnsavedChanges(true);
-    };
-
     const handleAddComponent = () => {
         if (selectedType) {
             let content = 'Nuevo ' + selectedType;
@@ -358,10 +200,17 @@ export default function Builder({ page, products }) {
             if (selectedType === 'image') content = 'https://picsum.photos/150';
             if (selectedType === 'container') content = [];
             if (selectedType === 'carousel') content = { limit: 5 };
-            const newItem = { id: Date.now(), type: selectedType, content, styles: {} };
+
+            const newItem = {
+                id: Date.now(),
+                type: selectedType,
+                content,
+                styles: {}
+            };
+
             setComponents((prev) => {
                 const newComponents = [...prev, newItem];
-                addToHistory(newComponents);
+                addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
                 setHasUnsavedChanges(true);
                 return newComponents;
             });
@@ -370,12 +219,185 @@ export default function Builder({ page, products }) {
         }
     };
 
+    // Función para actualizar componentes desde el árbol
+    const handleComponentsUpdate = (newComponents) => {
+        setComponents(newComponents);
+        addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+        setHasUnsavedChanges(true);
+    };
+
+    // Funciones mejoradas para manejar drag & drop con feedback visual
+    const handleDragStart = (event) => {
+        setActiveId(event.active.id);
+    };
+
+    const handleDragOver = (event) => {
+        setOverId(event.over?.id || null);
+    };
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+
+        setActiveId(null);
+        setOverId(null);
+
+        if (!over) return;
+
+        const activeId = active.id;
+        const overId = over.id;
+
+        if (activeId === overId) return;
+
+        // CASO NUEVO: Mover al área raíz
+        if (overId === 'root-area') {
+            setComponents((prev) => {
+                // Función para encontrar y remover el componente activo del árbol
+                const removeComponent = (items, targetId) => {
+                    for (let i = 0; i < items.length; i++) {
+                        if (items[i].id === targetId) {
+                            // Remover el componente y devolverlo
+                            const [removed] = items.splice(i, 1);
+                            return removed;
+                        }
+                        if (items[i].type === 'container' && items[i].content) {
+                            const removed = removeComponent(items[i].content, targetId);
+                            if (removed) {
+                                return removed;
+                            }
+                        }
+                    }
+                    return null;
+                };
+
+                const newComponents = JSON.parse(JSON.stringify(prev));
+                const removedComponent = removeComponent(newComponents, activeId);
+                if (removedComponent) {
+                    newComponents.push(removedComponent);
+                }
+                handleComponentsUpdate(newComponents);
+                return newComponents;
+            });
+            return;
+        }
+
+        // Resto de tu lógica original para drag & drop normal...
+        // Función para encontrar un componente en el árbol
+        const findComponent = (items, id, parent = null, path = []) => {
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].id === id) {
+                    return {
+                        component: items[i],
+                        index: i,
+                        parent,
+                        parentArray: items,
+                        path: [...path, i]
+                    };
+                }
+                if (items[i].type === 'container' && items[i].content) {
+                    const found = findComponent(items[i].content, id, items[i], [...path, i]);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+
+        const activeInfo = findComponent(components, activeId);
+        const overInfo = findComponent(components, overId);
+
+        if (!activeInfo || !overInfo) return;
+
+        const newComponents = JSON.parse(JSON.stringify(components));
+
+        // Encontrar la información actualizada en la nueva copia
+        const findInNewComponents = (items, path) => {
+            let current = items;
+            for (const index of path.slice(0, -1)) {
+                if (current[index].type === 'container' && current[index].content) {
+                    current = current[index].content;
+                } else {
+                    return null;
+                }
+            }
+            return current;
+        };
+
+        const activePath = activeInfo.path;
+        const overPath = overInfo.path;
+
+        const activeParentArray = findInNewComponents(newComponents, activePath);
+        const overParentArray = findInNewComponents(newComponents, overPath);
+
+        if (!activeParentArray || !overParentArray) return;
+
+        const activeIndex = activePath[activePath.length - 1];
+        const overIndex = overPath[overPath.length - 1];
+
+        // Remover el componente activo de su ubicación actual
+        const [movedComponent] = activeParentArray.splice(activeIndex, 1);
+
+        // Determinar si el destino es un contenedor
+        const overComponent = overParentArray[overIndex];
+        const isOverContainer = overComponent.type === 'container';
+
+        if (isOverContainer) {
+            // Mover dentro del contenedor
+            overComponent.content = overComponent.content || [];
+            overComponent.content.push(movedComponent);
+        } else {
+            // Mover al mismo nivel que el destino
+            // Ajustar el índice si estamos moviendo dentro del mismo array
+            const adjustedIndex = activeParentArray === overParentArray && activeIndex < overIndex ?
+                overIndex - 1 : overIndex;
+
+            overParentArray.splice(adjustedIndex, 0, movedComponent);
+        }
+
+        handleComponentsUpdate(newComponents);
+    };
+
+    const handleDragCancel = () => {
+        setActiveId(null);
+        setOverId(null);
+    };
+
+    // Función para encontrar el componente activo
+    const findActiveComponent = (id) => {
+        const findComponent = (items, targetId) => {
+            for (const item of items) {
+                if (item.id === targetId) {
+                    return item;
+                }
+                if (item.type === 'container' && item.content) {
+                    const found = findComponent(item.content, targetId);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+
+        return findComponent(components, id);
+    };
+
+    // Sensors para dnd-kit
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const activeComponent = activeId ? findActiveComponent(activeId) : null;
+
+    // JSX Principal
     return (
-        <DragDropContext onDragEnd={handleDragEnd}>
-            <Head title={page.title} />
+        <div className="min-h-screen bg-gray-50">
             {isPreviewMode ? (
                 // Modo Preview: Vista completa sin herramientas de edición
-                <div style={{ padding: '20px' }}>
+                <div>
                     <Button
                         className="fixed top-10 right-10 z-50"
                         variant="destructive"
@@ -395,8 +417,8 @@ export default function Builder({ page, products }) {
                                 key={comp.id}
                                 comp={comp}
                                 index={index}
-                                onEditComponent={() => { }} // No editar en preview
-                                onDeleteComponent={() => { }} // No eliminar en preview
+                                onEditComponent={() => { }}
+                                onDeleteComponent={() => { }}
                                 themeSettings={themeSettings}
                                 isPreview={true}
                                 products={products}
@@ -406,8 +428,8 @@ export default function Builder({ page, products }) {
                     </div>
                 </div>
             ) : (
-                // Modo Edición: Builder completo con sidebar drag/drop y canvas estático
-                <div className="min-h-screen bg-gray-50">
+                // Modo Edición: Builder completo con árbol de componentes
+                <>
                     {/* Toolbar Superior con Tooltips */}
                     <TooltipProvider>
                         <div className="flex justify-between items-center px-4 py-2 border-b bg-white shadow-sm">
@@ -479,17 +501,46 @@ export default function Builder({ page, products }) {
 
                     {/* Contenido Principal */}
                     <div className="flex gap-6 p-6">
-                        {/* Sidebar Plano usando react-beautiful-dnd */}
-                        <div className="w-64 bg-white p-4 rounded-lg shadow-md">
-                            <h3 className="font-semibold mb-4">Jerarquía de Componentes</h3>
-                            <Sidebar components={components} />
+                        {/* Árbol de Componentes */}
+                        <div className="w-80 bg-white p-4 rounded-lg shadow-md">
+                            <h3 className="font-semibold mb-4">Árbol de Componentes</h3>
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragStart={handleDragStart}
+                                onDragOver={handleDragOver}
+                                onDragEnd={handleDragEnd}
+                                onDragCancel={handleDragCancel}
+                            >
+                                <ComponentTree
+                                    components={components}
+                                    onEditComponent={handleEditComponent}
+                                    onDeleteComponent={deleteComponent}
+                                    activeId={activeId}
+                                    overId={overId}
+                                    hoveredComponentId={hoveredComponentId}
+                                    setHoveredComponentId={setHoveredComponentId}
+                                />
+                                <DragOverlay dropAnimation={null}>
+                                    {activeComponent ? (
+                                        <div className="flex items-center gap-1 p-2 border-2 border-blue-500 rounded bg-blue-50 shadow-lg opacity-90">
+                                            <div className="cursor-grab p-1">
+                                                <GripVertical size={14} />
+                                            </div>
+                                            <span className="flex-1 text-sm font-medium">
+                                                {activeComponent.type.charAt(0).toUpperCase() + activeComponent.type.slice(1)}
+                                            </span>
+                                        </div>
+                                    ) : null}
+                                </DragOverlay>
+                            </DndContext>
                             <Button onClick={() => setIsAddDialogOpen(true)} className="w-full mt-4" variant="outline">
                                 <Plus size={16} className="mr-2" />
                                 Agregar Componente
                             </Button>
                         </div>
 
-                        {/* Canvas Estático (sin drag/drop) */}
+                        {/* Canvas */}
                         <div className="flex-1">
                             <Canvas
                                 components={components}
@@ -499,120 +550,98 @@ export default function Builder({ page, products }) {
                                 products={products}
                                 setComponents={setComponents}
                                 canvasWidth={canvasWidth}
+                                hoveredComponentId={hoveredComponentId}
+                                setHoveredComponentId={setHoveredComponentId}
                             />
                         </div>
                     </div>
-                </div>
+                </>
             )}
 
-            {/* Dialog de Edición con Shadcn */}
-            <Dialog open={!!editingComponent} onOpenChange={() => setEditingComponent(null)}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Editar {editingComponent?.type}</DialogTitle>
-                    </DialogHeader>
-                    {editingComponent?.type === 'product' ? (
-                        <p>Los productos son dinámicos y se cargan automáticamente desde la base de datos. No se editan aquí.</p>
-                    ) : editingComponent?.type === 'carousel' ? (
-                        <div className="space-y-4">
-                            <Label htmlFor="limit">Número de productos a mostrar</Label>
-                            <Input
-                                id="limit"
-                                type="number"
-                                value={editContent.limit || 5}
-                                onChange={(e) => setEditContent({ ...editContent, limit: parseInt(e.target.value) })}
+            {/* Drawer de Edición */}
+            <Drawer open={!!editingComponent} onOpenChange={() => setEditingComponent(null)} direction="left" modal={false}>
+                <DrawerContent className="w-72 flex flex-col h-full">
+                    <DrawerHeader>
+                        <DrawerTitle>Editar {editingComponent?.type}</DrawerTitle>
+                    </DrawerHeader>
+                    <ScrollArea className="flex-1 p-4">
+                        {editingComponent?.type === 'text' && (
+                            <TextEditDialog
+                                editContent={editContent}
+                                setEditContent={setEditContent}
+                                editStyles={editStyles}
+                                setEditStyles={setEditStyles}
                             />
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <Label htmlFor="content">Contenido</Label>
-                            <textarea
-                                id="content"
-                                value={editContent}
-                                onChange={(e) => setEditContent(e.target.value)}
-                                className="w-full h-20 p-2 border rounded"
+                        )}
+                        {editingComponent?.type === 'button' && (
+                            <ButtonEditDialog
+                                editContent={editContent}
+                                setEditContent={setEditContent}
+                                editStyles={editStyles}
+                                setEditStyles={setEditStyles}
                             />
-                            {(editingComponent?.type === 'text' || editingComponent?.type === 'button' || editingComponent?.type === 'link') && (
-                                <>
-                                    <Label htmlFor="color">Color</Label>
-                                    <Input
-                                        id="color"
-                                        type="color"
-                                        value={editStyles.color || '#000000'}
-                                        onChange={(e) => setEditStyles({ ...editStyles, color: e.target.value })}
-                                    />
-                                    <Label htmlFor="fontSize">Tamaño de fuente</Label>
-                                    <Select value={editStyles.fontSize || '16px'} onValueChange={(value) => setEditStyles({ ...editStyles, fontSize: value })}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="12px">12px</SelectItem>
-                                            <SelectItem value="16px">16px</SelectItem>
-                                            <SelectItem value="20px">20px</SelectItem>
-                                            <SelectItem value="24px">24px</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </>
-                            )}
-                            {editingComponent?.type === 'button' && (
-                                <>
-                                    <Label htmlFor="bgColor">Color de fondo</Label>
-                                    <Input
-                                        id="bgColor"
-                                        type="color"
-                                        value={editStyles.backgroundColor || '#007bff'}
-                                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                                    />
-                                    <Label htmlFor="padding">Padding</Label>
-                                    <Select value={editStyles.padding || '10px'} onValueChange={(value) => setEditStyles({ ...editStyles, padding: value })}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="5px">5px</SelectItem>
-                                            <SelectItem value="10px">10px</SelectItem>
-                                            <SelectItem value="15px">15px</SelectItem>
-                                            <SelectItem value="20px">20px</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </>
-                            )}
-                            {editingComponent?.type === 'container' && (
-                                <>
-                                    <Label htmlFor="bgColor">Fondo</Label>
-                                    <Input
-                                        id="bgColor"
-                                        type="color"
-                                        value={editStyles.backgroundColor || '#f9f9f9'}
-                                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                                    />
-                                    <Label htmlFor="padding">Padding</Label>
-                                    <Select value={editStyles.padding || '10px'} onValueChange={(value) => setEditStyles({ ...editStyles, padding: value })}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="5px">5px</SelectItem>
-                                            <SelectItem value="10px">10px</SelectItem>
-                                            <SelectItem value="15px">15px</SelectItem>
-                                            <SelectItem value="20px">20px</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </>
-                            )}
+                        )}
+                        {editingComponent?.type === 'heading' && (
+                            <HeadingEditDialog
+                                editContent={editContent}
+                                setEditContent={setEditContent}
+                                editStyles={editStyles}
+                                setEditStyles={setEditStyles}
+                            />
+                        )}
+                        {editingComponent?.type === 'image' && (
+                            <ImageEditDialog
+                                editContent={editContent}
+                                setEditContent={setEditContent}
+                            />
+                        )}
+                        {editingComponent?.type === 'video' && (
+                            <VideoEditDialog
+                                editContent={editContent}
+                                setEditContent={setEditContent}
+                            />
+                        )}
+                        {editingComponent?.type === 'link' && (
+                            <LinkEditDialog
+                                editContent={editContent}
+                                setEditContent={setEditContent}
+                                editStyles={editStyles}
+                                setEditStyles={setEditStyles}
+                            />
+                        )}
+                        {editingComponent?.type === 'product' && (
+                            <ProductEditDialog
+                                editContent={editContent}
+                                setEditContent={setEditContent}
+                                editStyles={editStyles}
+                                setEditStyles={setEditStyles}
+                            />
+                        )}
+                        {editingComponent?.type === 'carousel' && (
+                            <CarouselEditDialog
+                                editContent={editContent}
+                                setEditContent={setEditContent}
+                            />
+                        )}
+                        {editingComponent?.type === 'container' && (
+                            <ContainerEditDialog
+                                editStyles={editStyles}
+                                setEditStyles={setEditStyles}
+                            />
+                        )}
+                    </ScrollArea>
+                    <DrawerFooter>
+                        <div className="flex justify-between">
+                            <Button variant="outline" onClick={cancelEdit}>
+                                Cancelar
+                            </Button>
+                            <Button onClick={saveEdit}>
+                                Guardar
+                            </Button>
                         </div>
-                    )}
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => {
-                            setEditingComponent(null);
-                            setEditContent('');
-                            setEditStyles({});
-                        }}>Cancelar</Button>
-                        <Button onClick={saveEdit}>Guardar</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                    </DrawerFooter>
+                </DrawerContent>
+            </Drawer>
 
             {/* Dialog Agregar Componente */}
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -627,6 +656,7 @@ export default function Builder({ page, products }) {
                                 <SelectValue placeholder="Selecciona un tipo" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="heading">Encabezado</SelectItem>
                                 <SelectItem value="text">Texto</SelectItem>
                                 <SelectItem value="image">Imagen</SelectItem>
                                 <SelectItem value="button">Botón</SelectItem>
@@ -644,6 +674,6 @@ export default function Builder({ page, products }) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </DragDropContext>
+        </div>
     );
 }
