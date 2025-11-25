@@ -6,6 +6,7 @@ import {
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { ChevronRight, ChevronDown, GripVertical, Edit, Trash2 } from 'lucide-react';
+import { Button } from '../ui/button';
 
 // Componente para el área de drop raíz
 const RootDroppable = ({ children, isOver }) => {
@@ -17,15 +18,30 @@ const RootDroppable = ({ children, isOver }) => {
         <div
             ref={setNodeRef}
             className={`min-h-20 transition-colors duration-200 ${
-                isOver ? 'bg-blue-100 border-2 border-blue-400 border-dashed rounded-lg' : ''
+                isOver ? 'bg-blue-100 border-2 border-blue-400 border-dashed rounded-lg p-4' : ''
             }`}
         >
+            {isOver && (
+                <div className="text-center text-blue-600 text-sm mb-2">
+                    Soltar aquí para mover al nivel raíz
+                </div>
+            )}
             {children}
         </div>
     );
 };
 
-const SortableItem = ({ component, onDelete, onEdit, level = 0, activeId, overId }) => {
+const SortableItem = ({ 
+    component, 
+    onDelete, 
+    onEdit, 
+    level = 0, 
+    activeId, 
+    overId,
+    dropPosition,
+    hoveredComponentId,
+    setHoveredComponentId 
+}) => {
     const {
         attributes,
         listeners,
@@ -49,20 +65,46 @@ const SortableItem = ({ component, onDelete, onEdit, level = 0, activeId, overId
     const isOver = overId === component.id;
     const isContainer = component.type === 'container';
     
+    // Verificar si hay un indicador de posición para este componente
+    const hasDropIndicator = dropPosition && dropPosition.id === component.id;
+    const dropPositionType = hasDropIndicator ? dropPosition.position : null;
+    
+    // Funciones para manejar hover sincronizado
+    const handleMouseEnter = () => {
+        if (setHoveredComponentId) {
+            setHoveredComponentId(component.id);
+        }
+    };
+
+    const handleMouseLeave = (e) => {
+        if (setHoveredComponentId) {
+            setTimeout(() => {
+                if (hoveredComponentId === component.id) {
+                    setHoveredComponentId(null);
+                }
+            }, 50);
+        }
+    };
+
     // Estilos dinámicos basados en el estado
     const getItemStyles = () => {
-        let styles = "flex items-center gap-1 p-2 border rounded mb-1 group transition-all duration-200 ";
+        let styles = "flex items-center gap-1 p-2 border rounded mb-1 group transition-all duration-200 cursor-pointer ";
         
         if (isActive) {
-            styles += "bg-blue-100 border-blue-400 shadow-md ";
+            styles += "bg-blue-100 border-blue-400 ";
         } else if (isOver && isContainer) {
-            styles += "bg-green-100 border-green-400 shadow-sm ";
+            styles += "bg-green-100 border-green-400 ";
         } else if (isOver) {
-            styles += "bg-yellow-100 border-yellow-400 shadow-sm ";
+            styles += "bg-yellow-100 border-yellow-400 ";
         } else if (isDragging) {
-            styles += "bg-blue-50 border-blue-300 shadow ";
+            styles += "bg-blue-50 border-blue-300 ";
         } else {
             styles += "bg-white border-gray-200 hover:bg-gray-50 ";
+        }
+
+        // Efecto de hover sincronizado
+        if (hoveredComponentId === component.id) {
+            styles += "border-blue-400 bg-blue-50 ";
         }
         
         return styles;
@@ -72,55 +114,99 @@ const SortableItem = ({ component, onDelete, onEdit, level = 0, activeId, overId
         <div 
             ref={setNodeRef} 
             style={style} 
-            className={`pl-${level * 4} transition-all duration-200 ${isDragging ? 'z-10' : ''}`}
+            className={`pl-${level * 4} transition-all duration-200 relative ${isDragging ? 'z-10' : ''}`}
+            id={`component-${component.id}`} // ID para calcular posición
         >
+            {/* Indicador de posición - ARRIBA (fuera del flujo del layout) */}
+            {hasDropIndicator && dropPositionType === 'top' && (
+                <div className="absolute -top-1 left-0 right-0 h-0.5 bg-blue-500 z-30 pointer-events-none">
+                    <div className="absolute -top-1 left-2 w-2 h-2 bg-blue-500 rounded-full"></div>
+                </div>
+            )}
+            
+            {/* Área principal del componente */}
             <div className={getItemStyles()}>
                 <div 
                     {...attributes} 
                     {...listeners} 
                     className="cursor-grab p-1 hover:bg-gray-200 rounded transition-colors active:cursor-grabbing"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                 >
                     <GripVertical size={14} className={isActive ? "text-blue-500" : "text-gray-500"} />
                 </div>
                 
                 {hasChildren && (
-                    <button
+                    <Button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors"
+                        // className="p-1 hover:bg-gray-100 rounded transition-colors"
+                        variant="ghost"
+                        size="icon"
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
                     >
                         {isExpanded ? 
                             <ChevronDown size={14} className={isActive ? "text-blue-500" : "text-gray-500"} /> : 
                             <ChevronRight size={14} className={isActive ? "text-blue-500" : "text-gray-500"} />}
-                    </button>
+                    </Button>
                 )}
                 
                 {!hasChildren && <div className="w-6" />}
                 
-                <span className={`flex-1 text-sm font-medium transition-colors ${isActive ? "text-blue-700" : ""}`}>
+                <span 
+                    className={`flex-1 text-sm font-medium transition-colors ${
+                        isActive || hoveredComponentId === component.id ? "text-blue-700" : ""
+                    }`}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
                     {component.type.charAt(0).toUpperCase() + component.type.slice(1)}
-                    <span className="text-xs text-gray-500 ml-2">(ID: {component.id})</span>
+                    {/* <span className="text-xs text-gray-500 ml-2">(ID: {component.id})</span> */}
                 </span>
                 
-                <div className={`transition-opacity ${isActive ? "opacity-0" : "opacity-0 group-hover:opacity-100"} flex gap-1`}>
-                    <button
+                <div 
+                    className={`transition-opacity ${
+                        isActive || hoveredComponentId === component.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    } flex gap-1`}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    <Button
                         onClick={() => onEdit(component)}
-                        className="p-1 hover:bg-blue-100 rounded text-blue-600 transition-colors"
                         title="Editar"
+                        size="icon"
                     >
                         <Edit size={14} />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={() => onDelete(component.id)}
-                        className="p-1 hover:bg-red-100 rounded text-red-600 transition-colors"
                         title="Eliminar"
+                        size="icon"
+                        variant="destructive"
                     >
                         <Trash2 size={14} />
-                    </button>
+                    </Button>
                 </div>
             </div>
 
+            {/* Indicador de posición - ABAJO (fuera del flujo del layout) */}
+            {hasDropIndicator && dropPositionType === 'bottom' && (
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500 z-30 pointer-events-none">
+                    <div className="absolute -top-1 left-2 w-2 h-2 bg-blue-500 rounded-full"></div>
+                </div>
+            )}
+
             {hasChildren && isExpanded && (
-                <div className="border-l-2 border-gray-200 ml-3 mt-1 transition-all duration-200">
+                <div 
+                    className="border-l-2 border-gray-200 ml-3 mt-1 transition-all duration-200 relative"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
+                    {/* Indicador de área de drop para contenedores */}
+                    {isOver && isContainer && dropPositionType === 'inside' && (
+                        <div className="absolute inset-x-0 -top-1 h-2 bg-green-400 rounded opacity-50 z-20 pointer-events-none"></div>
+                    )}
+                    
                     {component.content.map((child) => (
                         <SortableItem
                             key={child.id}
@@ -130,25 +216,35 @@ const SortableItem = ({ component, onDelete, onEdit, level = 0, activeId, overId
                             level={level + 1}
                             activeId={activeId}
                             overId={overId}
+                            dropPosition={dropPosition}
+                            hoveredComponentId={hoveredComponentId}
+                            setHoveredComponentId={setHoveredComponentId}
                         />
                     ))}
                 </div>
-            )}
-            
-            {/* Indicador visual para contenedores durante el drag */}
-            {isOver && isContainer && (
-                <div className="absolute inset-0 border-2 border-green-400 rounded bg-green-50 bg-opacity-50 pointer-events-none animate-pulse"></div>
             )}
         </div>
     );
 };
 
-const ComponentTree = ({ components, onEditComponent, onDeleteComponent, activeId, overId }) => {
+const ComponentTree = ({ 
+    components, 
+    onEditComponent, 
+    onDeleteComponent, 
+    activeId, 
+    overId,
+    dropPosition,
+    hoveredComponentId,
+    setHoveredComponentId 
+}) => {
     const isRootOver = overId === 'root-area';
 
     return (
         <RootDroppable isOver={isRootOver}>
-            <div className="space-y-1 max-h-[600px] overflow-y-auto relative">
+            <div 
+                className="space-y-1 max-h-[600px] overflow-y-auto relative"
+                onMouseLeave={() => setHoveredComponentId(null)}
+            >
                 {components.length === 0 ? (
                     <div className="text-center text-gray-500 py-8">
                         <p>No hay componentes</p>
@@ -161,8 +257,12 @@ const ComponentTree = ({ components, onEditComponent, onDeleteComponent, activeI
                             component={component}
                             onDelete={onDeleteComponent}
                             onEdit={onEditComponent}
+                            level={0}
                             activeId={activeId}
                             overId={overId}
+                            dropPosition={dropPosition}
+                            hoveredComponentId={hoveredComponentId}
+                            setHoveredComponentId={setHoveredComponentId}
                         />
                     ))
                 )}

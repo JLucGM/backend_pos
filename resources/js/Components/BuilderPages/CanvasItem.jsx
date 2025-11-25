@@ -24,7 +24,7 @@ const CanvasItem = memo(
         products, 
         setComponents,
         hoveredComponentId,
-        setHoveredComponentId 
+        setHoveredComponentId
     }) => {
         const getStyles = () => {
             const styles = comp.styles || {};
@@ -38,6 +38,19 @@ const CanvasItem = memo(
         };
 
         const isHovered = hoveredComponentId === comp.id;
+
+        // Funciones seguras para eventos de mouse
+        const handleMouseEnter = () => {
+            if (setHoveredComponentId && !isPreview) {
+                setHoveredComponentId(comp.id);
+            }
+        };
+
+        const handleMouseLeave = () => {
+            if (setHoveredComponentId && !isPreview) {
+                setHoveredComponentId(null);
+            }
+        };
 
         const renderComponent = () => {
             switch (comp.type) {
@@ -94,48 +107,23 @@ const CanvasItem = memo(
 
         return (
             <div 
-                className={`relative rounded-lg transition-all  ${
-                    isHovered ? 'border border-blue-400 bg-blue-50 bg-opacity-50' : 'border border-transparent'
+                className={`relative rounded-lg transition-all duration-200 ${
+                    isHovered && !isPreview 
+                        ? 'border-2 border-blue-400 bg-blue-50' 
+                        : 'border border-transparent'
                 }`}
-                onMouseEnter={() => setHoveredComponentId(comp.id)}
-                onMouseLeave={() => setHoveredComponentId(null)}
-                
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
             >
-                <div className={`rounded-t-lg bg-blue-500 text-white text-xs px-2 py-1 transition-opacity duration-300 absolute -top-6 left-0 z-50 ${
-                    isHovered ? 'opacity-100' : 'opacity-0'
-                }`}>
-                    {getComponentTypeName(comp.type)}
-                </div>
-                
+                {/* Solo mostrar el tooltip en modo edición */}
                 {!isPreview && (
-                    <div className={`absolute top-2 right-2 z-40 flex gap-1 transition-opacity ${
+                    <div className={`rounded-t-lg bg-blue-500 text-white text-xs px-2 py-1 transition-opacity duration-300 absolute -top-6 left-0 z-50 ${
                         isHovered ? 'opacity-100' : 'opacity-0'
                     }`}>
-                        <Button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                // console.log('🟢 Edit button clicked:', comp.type, comp.id);
-                                onEditComponent(comp);
-                            }}
-                            variant="secondary"
-                            size="icon"
-                            className="h-6 w-6 bg-white border shadow-sm"
-                        >
-                            <Edit size={12} />
-                        </Button>
-                        <Button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDeleteComponent(comp.id);
-                            }}
-                            variant="destructive"
-                            size="icon"
-                            className="h-6 w-6 shadow-sm"
-                        >
-                            <Trash size={12} />
-                        </Button>
+                        {getComponentTypeName(comp.type)}
                     </div>
                 )}
+                
                 <div className="">
                     {renderComponent()}
                 </div>

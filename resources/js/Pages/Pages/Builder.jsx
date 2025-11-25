@@ -1,8 +1,8 @@
 // components/BuilderPages/Builder.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { DndContext, closestCenter,KeyboardSensor,PointerSensor,useSensor,useSensors,DragOverlay } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { router } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
@@ -44,8 +44,9 @@ export default function Builder({ page, products }) {
     // Estados para el drag & drop visual
     const [activeId, setActiveId] = useState(null);
     const [overId, setOverId] = useState(null);
+    const [dropPosition, setDropPosition] = useState(null); // Nueva: posición del drop
 
-    // Estado para el hover
+    // Estado para el hover sincronizado
     const [hoveredComponentId, setHoveredComponentId] = useState(null);
 
     const themeSettings = page.theme?.settings || {};
@@ -77,7 +78,6 @@ export default function Builder({ page, products }) {
 
     // Funciones principales
     const handleEditComponent = (comp) => {
-        // console.log('Editando componente:', comp.type, 'ID:', comp.id);
         setEditingComponent(comp);
         setEditContent(comp.content);
         setEditStyles(comp.styles || {});
@@ -86,7 +86,6 @@ export default function Builder({ page, products }) {
     const saveEdit = () => {
         if (editingComponent) {
             setComponents((prev) => {
-                // Función recursiva para encontrar y actualizar el componente
                 const updateComponentInTree = (components, targetId, newData) => {
                     return components.map(component => {
                         if (component.id === targetId) {
@@ -97,7 +96,6 @@ export default function Builder({ page, products }) {
                             };
                         }
 
-                        // Si es un contenedor, buscar recursivamente en sus hijos
                         if (component.type === 'container' && component.content) {
                             return {
                                 ...component,
@@ -229,10 +227,59 @@ export default function Builder({ page, products }) {
     // Funciones mejoradas para manejar drag & drop con feedback visual
     const handleDragStart = (event) => {
         setActiveId(event.active.id);
+        setHoveredComponentId(null); // Limpiar hover durante drag
+        setDropPosition(null); // Limpiar posición anterior
     };
 
+    // En Builder.jsx - mejora la función handleDragOver
     const handleDragOver = (event) => {
-        setOverId(event.over?.id || null);
+        const { active, over } = event;
+        setOverId(over?.id || null);
+
+        if (!over) {
+            setDropPosition(null);
+            return;
+        }
+
+        // Calcular posición del drop usando requestAnimationFrame para mejor rendimiento
+        requestAnimationFrame(() => {
+            if (over.id === 'root-area') {
+                setDropPosition({ id: 'root-area', position: 'inside' });
+                return;
+            }
+
+            const overElement = document.getElementById(`component-${over.id}`);
+            if (overElement) {
+                const rect = overElement.getBoundingClientRect();
+                const cursorY = event.activatorEvent.clientY;
+
+                // Determinar si el drop es arriba o abajo basado en la posición del cursor
+                const overTop = rect.top;
+                const overHeight = rect.height;
+
+                const relativeY = cursorY - overTop;
+                const threshold = overHeight / 3; // Usar 1/3 para hacerlo menos sensible
+
+                let position;
+                if (relativeY < threshold) {
+                    position = 'top';
+                } else if (relativeY > overHeight - threshold) {
+                    position = 'bottom';
+                } else {
+                    position = 'inside';
+                }
+
+                // Solo actualizar si la posición cambió
+                setDropPosition(prev => {
+                    if (prev && prev.id === over.id && prev.position === position) {
+                        return prev; // No cambiar si es la misma posición
+                    }
+                    return { id: over.id, position };
+                });
+            } else {
+                setDropPosition(null);
+            }
+        });
     };
 
     const handleDragEnd = (event) => {
@@ -240,6 +287,7 @@ export default function Builder({ page, products }) {
 
         setActiveId(null);
         setOverId(null);
+        setDropPosition(null); // Limpiar posición del drop
 
         if (!over) return;
 
@@ -248,14 +296,12 @@ export default function Builder({ page, products }) {
 
         if (activeId === overId) return;
 
-        // CASO NUEVO: Mover al área raíz
+        // CASO: Mover al área raíz
         if (overId === 'root-area') {
             setComponents((prev) => {
-                // Función para encontrar y remover el componente activo del árbol
                 const removeComponent = (items, targetId) => {
                     for (let i = 0; i < items.length; i++) {
                         if (items[i].id === targetId) {
-                            // Remover el componente y devolverlo
                             const [removed] = items.splice(i, 1);
                             return removed;
                         }
@@ -280,9 +326,8 @@ export default function Builder({ page, products }) {
             return;
         }
 
-        // Resto de tu lógica original para drag & drop normal...
-        // Función para encontrar un componente en el árbol
-        const findComponent = (items, id, parent = null, path = []) => {
+        // Función mejorada para encontrar componentes
+        const findComponentInfo = (items, id, parent = null, path = []) => {
             for (let i = 0; i < items.length; i++) {
                 if (items[i].id === id) {
                     return {
@@ -294,25 +339,51 @@ export default function Builder({ page, products }) {
                     };
                 }
                 if (items[i].type === 'container' && items[i].content) {
-                    const found = findComponent(items[i].content, id, items[i], [...path, i]);
+                    const found = findComponentInfo(items[i].content, id, items[i], [...path, i]);
                     if (found) return found;
                 }
             }
             return null;
         };
 
-        const activeInfo = findComponent(components, activeId);
-        const overInfo = findComponent(components, overId);
+        const activeInfo = findComponentInfo(components, activeId);
+        const overInfo = findComponentInfo(components, overId);
 
-        if (!activeInfo || !overInfo) return;
+        if (!activeInfo || !overInfo) {
+            console.error('No se encontró información del componente activo o destino');
+            return;
+        }
+
+        // PREVENIR: No permitir soltar un contenedor dentro de sí mismo o sus hijos
+        const isDroppingInSelfOrChildren = (containerId, targetId) => {
+            if (containerId === targetId) return true;
+
+            const container = findComponentInfo(components, containerId);
+            if (container && container.component.type === 'container' && container.component.content) {
+                for (const child of container.component.content) {
+                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        if (activeInfo.component.type === 'container' &&
+            isDroppingInSelfOrChildren(activeId, overId)) {
+            console.log("No puedes soltar un contenedor dentro de sí mismo o sus hijos");
+            toast.error("No puedes soltar un contenedor dentro de sí mismo");
+            return;
+        }
 
         const newComponents = JSON.parse(JSON.stringify(components));
 
-        // Encontrar la información actualizada en la nueva copia
-        const findInNewComponents = (items, path) => {
+        // Función para encontrar arrays padre en la nueva copia
+        const findParentArrayByPath = (items, path) => {
             let current = items;
-            for (const index of path.slice(0, -1)) {
-                if (current[index].type === 'container' && current[index].content) {
+            for (let i = 0; i < path.length - 1; i++) {
+                const index = path[i];
+                if (current[index] && current[index].type === 'container' && current[index].content) {
                     current = current[index].content;
                 } else {
                     return null;
@@ -324,40 +395,79 @@ export default function Builder({ page, products }) {
         const activePath = activeInfo.path;
         const overPath = overInfo.path;
 
-        const activeParentArray = findInNewComponents(newComponents, activePath);
-        const overParentArray = findInNewComponents(newComponents, overPath);
+        const activeParentArray = findParentArrayByPath(newComponents, activePath);
+        const overParentArray = findParentArrayByPath(newComponents, overPath);
 
-        if (!activeParentArray || !overParentArray) return;
+        if (!activeParentArray || !overParentArray) {
+            console.error('No se pudo encontrar los arrays padre');
+            return;
+        }
 
         const activeIndex = activePath[activePath.length - 1];
         const overIndex = overPath[overPath.length - 1];
 
+        // Validar que los índices estén dentro de los límites
+        if (activeIndex < 0 || activeIndex >= activeParentArray.length ||
+            overIndex < 0 || overIndex >= overParentArray.length) {
+            console.error('Índices fuera de rango:', { activeIndex, overIndex });
+            return;
+        }
+
         // Remover el componente activo de su ubicación actual
         const [movedComponent] = activeParentArray.splice(activeIndex, 1);
 
-        // Determinar si el destino es un contenedor
+        // Obtener el componente destino con validación
         const overComponent = overParentArray[overIndex];
+        if (!overComponent) {
+            console.error('Componente destino no encontrado');
+            return;
+        }
+
         const isOverContainer = overComponent.type === 'container';
 
-        if (isOverContainer) {
+        // Usar la posición del drop para determinar la ubicación exacta
+        const dropInfo = dropPosition || { position: 'bottom' };
+
+        if (isOverContainer && dropInfo.position === 'inside') {
             // Mover dentro del contenedor
             overComponent.content = overComponent.content || [];
-            overComponent.content.push(movedComponent);
+
+            // Verificar que no estamos moviendo el contenedor dentro de sí mismo
+            if (movedComponent.id !== overComponent.id) {
+                overComponent.content.push(movedComponent);
+            } else {
+                console.log("No puedes mover un contenedor dentro de sí mismo");
+                return;
+            }
         } else {
             // Mover al mismo nivel que el destino
-            // Ajustar el índice si estamos moviendo dentro del mismo array
-            const adjustedIndex = activeParentArray === overParentArray && activeIndex < overIndex ?
-                overIndex - 1 : overIndex;
+            let adjustedIndex = overIndex;
+
+            if (activeParentArray === overParentArray) {
+                if (activeIndex < overIndex) {
+                    adjustedIndex = overIndex - 1;
+                }
+            }
+
+            // Ajustar basado en la posición del drop
+            if (dropInfo.position === 'bottom') {
+                adjustedIndex += 1;
+            }
+
+            // Asegurar que el índice esté dentro de los límites
+            adjustedIndex = Math.max(0, Math.min(adjustedIndex, overParentArray.length));
 
             overParentArray.splice(adjustedIndex, 0, movedComponent);
         }
 
         handleComponentsUpdate(newComponents);
+        toast.success("Componente movido correctamente");
     };
 
     const handleDragCancel = () => {
         setActiveId(null);
         setOverId(null);
+        setDropPosition(null);
     };
 
     // Función para encontrar el componente activo
@@ -382,7 +492,7 @@ export default function Builder({ page, products }) {
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8,
+                distance: 5, // Reducido para mayor sensibilidad
             },
         }),
         useSensor(KeyboardSensor, {
@@ -395,6 +505,7 @@ export default function Builder({ page, products }) {
     // JSX Principal
     return (
         <div className="min-h-screen bg-gray-50">
+            <Head title={`${page.title}`} />
             {isPreviewMode ? (
                 // Modo Preview: Vista completa sin herramientas de edición
                 <div>
@@ -412,19 +523,18 @@ export default function Builder({ page, products }) {
                         fontFamily: themeSettings?.fontFamily || 'inherit',
                         padding: '10px',
                     }}>
-                        {components.map((comp, index) => (
-                            <CanvasItem
-                                key={comp.id}
-                                comp={comp}
-                                index={index}
-                                onEditComponent={() => { }}
-                                onDeleteComponent={() => { }}
-                                themeSettings={themeSettings}
-                                isPreview={true}
-                                products={products}
-                                setComponents={setComponents}
-                            />
-                        ))}
+                        <Canvas
+                            components={components}
+                            onEditComponent={() => { }}
+                            onDeleteComponent={() => { }}
+                            themeSettings={themeSettings}
+                            products={products}
+                            setComponents={setComponents}
+                            canvasWidth={canvasWidth}
+                            hoveredComponentId={null}
+                            setHoveredComponentId={() => { }}
+                            isPreview={true}
+                        />
                     </div>
                 </div>
             ) : (
@@ -503,7 +613,7 @@ export default function Builder({ page, products }) {
                     <div className="flex gap-6 p-6">
                         {/* Árbol de Componentes */}
                         <div className="w-80 bg-white p-4 rounded-lg shadow-md">
-                            <h3 className="font-semibold mb-4">Árbol de Componentes</h3>
+                            {/* <h3 className="font-semibold mb-4">Árbol de Componentes</h3> */}
                             <DndContext
                                 sensors={sensors}
                                 collisionDetection={closestCenter}
@@ -511,6 +621,7 @@ export default function Builder({ page, products }) {
                                 onDragOver={handleDragOver}
                                 onDragEnd={handleDragEnd}
                                 onDragCancel={handleDragCancel}
+                                modifiers={[]} // Elimina modificadores que puedan interferir
                             >
                                 <ComponentTree
                                     components={components}
@@ -518,6 +629,7 @@ export default function Builder({ page, products }) {
                                     onDeleteComponent={deleteComponent}
                                     activeId={activeId}
                                     overId={overId}
+                                    dropPosition={dropPosition}
                                     hoveredComponentId={hoveredComponentId}
                                     setHoveredComponentId={setHoveredComponentId}
                                 />
@@ -560,7 +672,7 @@ export default function Builder({ page, products }) {
 
             {/* Drawer de Edición */}
             <Drawer open={!!editingComponent} onOpenChange={() => setEditingComponent(null)} direction="left" modal={false}>
-                <DrawerContent className="w-72 flex flex-col h-full">
+                <DrawerContent className="w-80 flex flex-col h-full">
                     <DrawerHeader>
                         <DrawerTitle>Editar {editingComponent?.type}</DrawerTitle>
                     </DrawerHeader>

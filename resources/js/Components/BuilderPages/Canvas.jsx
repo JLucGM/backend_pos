@@ -11,14 +11,16 @@ const Canvas = memo(({
     setComponents, 
     canvasWidth,
     hoveredComponentId,
-    setHoveredComponentId 
+    setHoveredComponentId,
+    isPreview = false
 }) => (
     <div
-        className="min-h-[400px] w-full mx-auto transition-all duration-300 ease-in-out bg-gray-100 p-4 rounded-lg border-2 border-dashed border-gray-300 relative"
+        className={`min-h-[400px] w-full mx-auto transition-all duration-300 ease-in-out bg-gray-100 rounded-lg border-2 ${isPreview ? 'border-transparent' : 'border-dashed border-gray-300'} relative`}
         style={{ 
             width: canvasWidth, 
-            backgroundImage: 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)', 
+            backgroundImage: isPreview ? 'none' : 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)', 
             backgroundSize: '20px 20px',
+            backgroundColor: isPreview ? 'transparent' : '#f3f4f6',
         }}
     >
         {components.length === 0 ? (
@@ -36,7 +38,7 @@ const Canvas = memo(({
                     onEditComponent={onEditComponent}
                     onDeleteComponent={onDeleteComponent}
                     themeSettings={themeSettings}
-                    isPreview={false}
+                    isPreview={isPreview}
                     products={products}
                     setComponents={setComponents}
                     hoveredComponentId={hoveredComponentId}

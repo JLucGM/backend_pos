@@ -12,16 +12,28 @@ const ContainerComponent = ({
     products, 
     setComponents,
     hoveredComponentId,
-    setHoveredComponentId 
+    setHoveredComponentId // Puede ser undefined en preview
 }) => {
     const containerStyles = {
         ...getStyles(comp),
         border: isPreview ? 'none' : '2px dashed #ccc',
         minHeight: '50px',
-        // padding: '10px',
         borderRadius: 8,
         backgroundColor: comp.styles?.backgroundColor || 'transparent',
         position: 'relative',
+    };
+
+    // Funciones seguras para eventos de mouse
+    const handleMouseEnter = () => {
+        if (setHoveredComponentId && !isPreview) {
+            setHoveredComponentId(comp.id);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (setHoveredComponentId && !isPreview) {
+            setHoveredComponentId(null);
+        }
     };
 
     const handleDeleteChild = (childId) => {
@@ -52,8 +64,8 @@ const ContainerComponent = ({
         <div
             style={containerStyles}
             className="group relative"
-            onMouseEnter={() => setHoveredComponentId(comp.id)}
-            onMouseLeave={() => setHoveredComponentId(null)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
         >
             {/* Los hijos */}
             {comp.content && comp.content.map((subComp) => (
@@ -76,7 +88,7 @@ const ContainerComponent = ({
                     className="text-center text-gray-400 py-8 border-2 border-dashed border-gray-300 rounded cursor-pointer"
                     onClick={(e) => {
                         e.stopPropagation();
-                        // console.log('🔵 Empty container click');
+                        console.log('🔵 Empty container click');
                         onEdit();
                     }}
                 >
