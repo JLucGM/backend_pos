@@ -33,6 +33,9 @@ const TextComponent = ({ comp, getStyles, isPreview }) => {
             backgroundColor,
             borderRadius,
             display,
+            color: customStyles.color || '#000000',
+            fontSize: customStyles.fontSize || '16px',
+            fontWeight: customStyles.fontWeight || 'normal',
         };
     };
 

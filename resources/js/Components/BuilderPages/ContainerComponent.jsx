@@ -12,15 +12,79 @@ const ContainerComponent = ({
     products, 
     setComponents,
     hoveredComponentId,
-    setHoveredComponentId // Puede ser undefined en preview
+    setHoveredComponentId
 }) => {
+    // Extraer estilos personalizados
+    const customStyles = comp.styles || {};
+
+    // Padding individual
+    const paddingTop = customStyles.paddingTop || '0px';
+    const paddingRight = customStyles.paddingRight || '0px';
+    const paddingBottom = customStyles.paddingBottom || '0px';
+    const paddingLeft = customStyles.paddingLeft || '0px';
+
+    // Alignment 
+    const alignment = customStyles.alignment || 'left';
+
+    // Dirección (flex direction)
+    const direction = customStyles.direction || 'row';
+
+    // Gap entre elementos hijos
+    const gap = customStyles.gap || '0px';
+
+    // Background y border radius
+    const backgroundColor = customStyles.backgroundColor || 'transparent';
+    const borderRadius = customStyles.borderRadius || '0px';
+
+    // Determinar alineación basada en dirección
+    const getFlexAlignment = () => {
+        if (direction === 'row') {
+            // Para dirección horizontal
+            switch (alignment) {
+                case 'left': return 'flex-start';
+                case 'center': return 'center';
+                case 'right': return 'flex-end';
+                default: return 'flex-start';
+            }
+        } else {
+            // Para dirección vertical
+            switch (alignment) {
+                case 'left': return 'flex-start';
+                case 'center': return 'center';
+                case 'right': return 'flex-end';
+                default: return 'flex-start';
+            }
+        }
+    };
+
+    const flexAlignment = getFlexAlignment();
+
     const containerStyles = {
         ...getStyles(comp),
+        // Layout - SIEMPRE ANCHO COMPLETO
+        width: '100%',
+        // Padding individual
+        paddingTop,
+        paddingRight,
+        paddingBottom,
+        paddingLeft,
+        // Background y borde
+        backgroundColor,
+        borderRadius,
+        // Flexbox para organizar hijos
+        display: 'flex',
+        flexDirection: direction,
+        gap,
+        // Alineación basada en dirección
+        justifyContent: direction === 'row' ? flexAlignment : 'flex-start',
+        alignItems: direction === 'row' ? 'flex-start' : flexAlignment,
+        // Permitir que los hijos se envuelvan si no caben
+        flexWrap: 'wrap',
+        // Estilos de borde para modo edición
         border: isPreview ? 'none' : '2px dashed #ccc',
         minHeight: '50px',
-        borderRadius: 8,
-        backgroundColor: comp.styles?.backgroundColor || 'transparent',
         position: 'relative',
+        boxSizing: 'border-box',
     };
 
     // Funciones seguras para eventos de mouse
@@ -85,7 +149,7 @@ const ContainerComponent = ({
 
             {(!comp.content || comp.content.length === 0) && !isPreview && (
                 <div 
-                    className="text-center text-gray-400 py-8 border-2 border-dashed border-gray-300 rounded cursor-pointer"
+                    className="w-full text-center text-gray-400 py-8 border-1 border-dashed border-gray-300 rounded cursor-pointer"
                     onClick={(e) => {
                         e.stopPropagation();
                         console.log('🔵 Empty container click');
