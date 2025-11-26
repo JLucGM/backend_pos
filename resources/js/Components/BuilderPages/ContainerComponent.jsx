@@ -149,10 +149,9 @@ const ContainerComponent = ({
 
             {(!comp.content || comp.content.length === 0) && !isPreview && (
                 <div 
-                    className="w-full text-center text-gray-400 py-8 border-1 border-dashed border-gray-300 rounded cursor-pointer"
+                    className="w-full text-center text-gray-400 py-8 border border-dashed border-gray-300 rounded cursor-pointer"
                     onClick={(e) => {
                         e.stopPropagation();
-                        console.log('🔵 Empty container click');
                         onEdit();
                     }}
                 >

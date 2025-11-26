@@ -29,7 +29,6 @@ const CanvasItem = ({
             backgroundColor: styles.backgroundColor || (themeSettings?.primary ? `hsl(${themeSettings.primary})` : 'inherit'),
             padding: styles.padding || 'inherit',
             fontFamily: themeSettings?.fontFamily || 'inherit',
-            border: hoveredComponentId === comp.id ? '2px solid blue' : 'none',
         };
         return baseStyles;
     };

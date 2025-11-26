@@ -17,7 +17,7 @@ const TextComponent = ({ comp, getStyles, isPreview }) => {
         const alignment = customStyles.alignment || 'left';
         const textAlign = layout === 'fill' ? alignment : 'left';
 
-        const backgroundColor = layout === 'fit' ? (customStyles.backgroundColor || 'transparent') : 'transparent';
+        const backgroundColor = layout === 'fit' ? (customStyles.backgroundColor || 'transparent') : (customStyles.backgroundColor || 'transparent');
         const borderRadius = layout === 'fit' ? (customStyles.borderRadius || '0px') : '0px';
 
         const display = layout === 'fit' ? 'inline-block' : 'block';
