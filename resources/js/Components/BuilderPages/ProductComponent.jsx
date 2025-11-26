@@ -19,8 +19,8 @@ const ProductComponent = ({
 
     // Configuración del grid
     const columns = productConfig.columns || 3;
-    const gapX = productConfig.gapX || '10px';
-    const gapY = productConfig.gapY || '10px';
+    const gapX = productConfig.gapX || '0';
+    const gapY = productConfig.gapY || '0';
     const limit = productConfig.limit || 8;
 
     // Estilos de la carta
@@ -119,11 +119,14 @@ const ProductComponent = ({
                     type: 'text',
                     content: productConfig.sectionTitle || 'Productos Destacados',
                     styles: {
-                        layout: 'fill',
-                        alignment: 'center',
-                        fontSize: '24px',
-                        fontWeight: 'bold',
-                        ...sectionTitleStyles // Solo sectionTitleStyles aquí
+                        // Aplicar layout y alignment desde sectionTitleStyles
+                        layout: sectionTitleStyles.layout || 'fit',
+                        alignment: sectionTitleStyles.alignment || 'center',
+                        fontSize: sectionTitleStyles.fontSize || '24px',
+                        fontWeight: sectionTitleStyles.fontWeight || 'bold',
+                        color: sectionTitleStyles.color || '#000000',
+                        // Incluir todos los estilos de sectionTitleStyles
+                        ...sectionTitleStyles
                     }
                 }}
                 getStyles={() => ({})}
@@ -150,12 +153,15 @@ const ProductComponent = ({
                                 type: 'text',
                                 content: product.product_name,
                                 styles: {
-                                    layout: 'fill',
-                                    alignment: 'left',
-                                    fontSize: '16px',
-                                    fontWeight: '600',
+                                    // Aplicar layout y alignment desde productTitleStyles
+                                    layout: productTitleStyles.layout || 'fit',
+                                    alignment: productTitleStyles.alignment || 'left',
+                                    fontSize: productTitleStyles.fontSize || '16px',
+                                    fontWeight: productTitleStyles.fontWeight || '600',
+                                    color: productTitleStyles.color || '#000000',
                                     marginTop: '10px',
-                                    ...productTitleStyles // Solo productTitleStyles aquí
+                                    // Incluir todos los estilos de productTitleStyles
+                                    ...productTitleStyles
                                 }
                             }}
                             getStyles={() => ({})}
@@ -169,10 +175,14 @@ const ProductComponent = ({
                                 type: 'text',
                                 content: `$${parseFloat(product.product_price).toFixed(2)}`,
                                 styles: {
-                                    layout: 'fill',
-                                    alignment: 'left',
-                                    fontSize: '14px',
+                                    // Aplicar layout y alignment desde priceStyles
+                                    layout: priceStyles.layout || 'fit',
+                                    alignment: priceStyles.alignment || 'left',
+                                    fontSize: priceStyles.fontSize || '14px',
+                                    fontWeight: priceStyles.fontWeight || 'normal',
+                                    color: priceStyles.color || '#666666',
                                     marginTop: '5px',
+                                    // Incluir todos los estilos de priceStyles
                                     ...priceStyles
                                 }
                             }}

@@ -246,11 +246,46 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                     />
                 </TabsContent>
 
-                {/* Pestaña Textos */}
+                {/* Pestaña Textos - CORREGIDA */}
                 <TabsContent value="textos" className="space-y-6">
                     <div className="space-y-4">
                         <h4 className="font-semibold">Estilos del Título de Sección</h4>
                         
+                        {/* Layout para título de sección */}
+                        <Label htmlFor="sectionTitleLayout">Layout</Label>
+                        <Select 
+                            value={editContent.sectionTitleStyles?.layout || 'fit'} 
+                            onValueChange={(value) => updateSectionTitleStyles('layout', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
+                                <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        {/* Alignment (solo si layout es fill) */}
+                        {editContent.sectionTitleStyles?.layout === 'fill' && (
+                            <>
+                                <Label htmlFor="sectionTitleAlignment">Alineación</Label>
+                                <Select 
+                                    value={editContent.sectionTitleStyles?.alignment || 'center'} 
+                                    onValueChange={(value) => updateSectionTitleStyles('alignment', value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="left">Izquierda</SelectItem>
+                                        <SelectItem value="center">Centro</SelectItem>
+                                        <SelectItem value="right">Derecha</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </>
+                        )}
+
                         <Label htmlFor="sectionTitleColor">Color del Texto</Label>
                         <Input
                             id="sectionTitleColor"
@@ -297,6 +332,41 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                     <div className="space-y-4">
                         <h4 className="font-semibold">Estilos del Nombre del Producto</h4>
                         
+                        {/* Layout para nombre del producto */}
+                        <Label htmlFor="productTitleLayout">Layout</Label>
+                        <Select 
+                            value={editContent.productTitleStyles?.layout || 'fit'} 
+                            onValueChange={(value) => updateProductTitleStyles('layout', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
+                                <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        {/* Alignment (solo si layout es fill) */}
+                        {editContent.productTitleStyles?.layout === 'fill' && (
+                            <>
+                                <Label htmlFor="productTitleAlignment">Alineación</Label>
+                                <Select 
+                                    value={editContent.productTitleStyles?.alignment || 'left'} 
+                                    onValueChange={(value) => updateProductTitleStyles('alignment', value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="left">Izquierda</SelectItem>
+                                        <SelectItem value="center">Centro</SelectItem>
+                                        <SelectItem value="right">Derecha</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </>
+                        )}
+
                         <Label htmlFor="productTitleColor">Color del Texto</Label>
                         <Input
                             id="productTitleColor"
@@ -341,6 +411,41 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
 
                     <div className="space-y-4">
                         <h4 className="font-semibold">Estilos del Precio</h4>
+                        
+                        {/* Layout para precio */}
+                        <Label htmlFor="priceLayout">Layout</Label>
+                        <Select 
+                            value={editContent.priceStyles?.layout || 'fit'} 
+                            onValueChange={(value) => updatePriceStyles('layout', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
+                                <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        {/* Alignment (solo si layout es fill) */}
+                        {editContent.priceStyles?.layout === 'fill' && (
+                            <>
+                                <Label htmlFor="priceAlignment">Alineación</Label>
+                                <Select 
+                                    value={editContent.priceStyles?.alignment || 'left'} 
+                                    onValueChange={(value) => updatePriceStyles('alignment', value)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="left">Izquierda</SelectItem>
+                                        <SelectItem value="center">Centro</SelectItem>
+                                        <SelectItem value="right">Derecha</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </>
+                        )}
                         
                         <Label htmlFor="priceColor">Color del Texto</Label>
                         <Input
