@@ -24,7 +24,6 @@ import LinkEditDialog from './partials/LinkEditDialog';
 import ProductEditDialog from './partials/ProductEditDialog';
 import CarouselEditDialog from './partials/CarouselEditDialog';
 import ContainerEditDialog from './partials/ContainerEditDialog';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/Components/ui/drawer';
 
 export default function Builder({ page, products }) {
     const [components, setComponents] = useState([]);
@@ -197,13 +196,56 @@ export default function Builder({ page, products }) {
             if (selectedType === 'link') content = 'https://example.com';
             if (selectedType === 'image') content = 'https://picsum.photos/150';
             if (selectedType === 'container') content = [];
-            if (selectedType === 'carousel') content = { limit: 5 };
+            if (selectedType === 'carousel') {
+                content = {
+                    sectionTitle: 'Productos en Carrusel',
+                    limit: 5,
+                    slidesToShow: 3,
+                    gapX: '10px',
+                    gapY: '10px',
+                    backgroundColor: '#ffffff',
+                    cardBorder: 'none',
+                    cardBorderThickness: '1px',
+                    cardBorderOpacity: '1',
+                    cardBorderRadius: '0px',
+                    cardPaddingTop: '0px',
+                    cardPaddingRight: '0px',
+                    cardPaddingBottom: '0px',
+                    cardPaddingLeft: '0px',
+                    imageBorder: 'none',
+                    imageBorderThickness: '1px',
+                    imageBorderOpacity: '1',
+                    imageBorderRadius: '0px',
+                    sectionTitleStyles: {
+                        layout: 'fit',
+                        alignment: 'center',
+                        color: '#000000',
+                        fontSize: '24px',
+                        fontWeight: 'bold'
+                    },
+                    productTitleStyles: {
+                        layout: 'fit',
+                        alignment: 'left',
+                        color: '#000000',
+                        fontSize: '16px',
+                        fontWeight: '600'
+                    },
+                    priceStyles: {
+                        layout: 'fit',
+                        alignment: 'left',
+                        color: '#666666',
+                        fontSize: '14px',
+                        fontWeight: 'normal'
+                    }
+                };
+            }
             if (selectedType === 'product') {
                 content = {
                     sectionTitle: 'Productos Destacados',
                     columns: 3,
                     gapX: '10px',
                     gapY: '10px',
+                    backgroundColor: '#ffffff',
                     limit: 8,
                     cardBorder: 'none',
                     cardBorderThickness: '1px',
@@ -531,7 +573,6 @@ export default function Builder({ page, products }) {
                     <div style={{
                         backgroundColor: themeSettings?.background ? `hsl(${themeSettings.background})` : '#fff',
                         fontFamily: themeSettings?.fontFamily || 'inherit',
-                        // padding: '10px',
                     }}>
                         <Canvas
                             components={components}
@@ -549,7 +590,7 @@ export default function Builder({ page, products }) {
                 </div>
             ) : (
                 <>
-                    <TooltipProvider>
+                    <TooltipProvider >
                         <div className="flex justify-between items-center px-4 py-2 border-b bg-white shadow-sm">
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -617,44 +658,150 @@ export default function Builder({ page, products }) {
                         </div>
                     </TooltipProvider>
 
-                    <div className="flex gap-6 p-6">
-                        <div className="w-80 bg-white p-4 rounded-lg shadow-md">
-                            <DndContext
-                                sensors={sensors}
-                                collisionDetection={closestCenter}
-                                onDragStart={handleDragStart}
-                                onDragOver={handleDragOver}
-                                onDragEnd={handleDragEnd}
-                                onDragCancel={handleDragCancel}
-                                modifiers={[]}
-                            >
-                                <ComponentTree
-                                    components={components}
-                                    onEditComponent={handleEditComponent}
-                                    onDeleteComponent={deleteComponent}
-                                    activeId={activeId}
-                                    overId={overId}
-                                    dropPosition={dropPosition}
-                                    hoveredComponentId={hoveredComponentId}
-                                    setHoveredComponentId={setHoveredComponentId}
-                                />
-                                <DragOverlay dropAnimation={null}>
-                                    {activeComponent ? (
-                                        <div className="flex items-center gap-1 p-2 border-2 border-blue-500 rounded bg-blue-50 shadow-lg opacity-90">
-                                            <div className="cursor-grab p-1">
-                                                <GripVertical size={14} />
-                                            </div>
-                                            <span className="flex-1 text-sm font-medium">
-                                                {activeComponent.type.charAt(0).toUpperCase() + activeComponent.type.slice(1)}
-                                            </span>
-                                        </div>
-                                    ) : null}
-                                </DragOverlay>
-                            </DndContext>
-                            <Button onClick={() => setIsAddDialogOpen(true)} className="w-full mt-4" variant="outline">
-                                <Plus size={16} className="mr-2" />
-                                Agregar Componente
-                            </Button>
+                    <div className="flex gap-6 p-4">
+                        <div className="w-80 h-full sticky top-0 bg-white p-4 rounded-lg shadow-md">
+                            {editingComponent ? (
+                                // MODO EDICIÓN - Mostrar formularios de edición
+                                <ScrollArea className="h-[80vh] flex flex-col">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-semibold">
+                                            Editando {editingComponent.type}
+                                        </h3>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={cancelEdit}
+                                        >
+                                            <X size={16} />
+                                        </Button>
+                                    </div>
+                                    
+                                    <ScrollArea className="flex-1">
+                                        {editingComponent?.type === 'text' && (
+                                            <TextEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'button' && (
+                                            <ButtonEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'heading' && (
+                                            <HeadingEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'image' && (
+                                            <ImageEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'video' && (
+                                            <VideoEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'link' && (
+                                            <LinkEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'product' && (
+                                            <ProductEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'carousel' && (
+                                            <CarouselEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'container' && (
+                                            <ContainerEditDialog
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                    </ScrollArea>
+                                    
+                                    <div className="flex gap-2 pt-4 border-t mt-4">
+                                        <Button 
+                                            variant="outline" 
+                                            onClick={cancelEdit}
+                                            className="flex-1"
+                                        >
+                                            Cancelar
+                                        </Button>
+                                        <Button 
+                                            onClick={saveEdit}
+                                            className="flex-1"
+                                        >
+                                            Guardar
+                                        </Button>
+                                    </div>
+                                </ScrollArea>
+                            ) : (
+                                // MODO NORMAL - Mostrar árbol de componentes
+                                <>
+                                    <DndContext
+                                        sensors={sensors}
+                                        collisionDetection={closestCenter}
+                                        onDragStart={handleDragStart}
+                                        onDragOver={handleDragOver}
+                                        onDragEnd={handleDragEnd}
+                                        onDragCancel={handleDragCancel}
+                                        modifiers={[]}
+                                    >
+                                        <ComponentTree
+                                            components={components}
+                                            onEditComponent={handleEditComponent}
+                                            onDeleteComponent={deleteComponent}
+                                            activeId={activeId}
+                                            overId={overId}
+                                            dropPosition={dropPosition}
+                                            hoveredComponentId={hoveredComponentId}
+                                            setHoveredComponentId={setHoveredComponentId}
+                                        />
+                                        <DragOverlay dropAnimation={null}>
+                                            {activeComponent ? (
+                                                <div className="flex items-center gap-1 p-2 border-2 border-blue-500 rounded bg-blue-50 shadow-lg opacity-90">
+                                                    <div className="cursor-grab p-1">
+                                                        <GripVertical size={14} />
+                                                    </div>
+                                                    <span className="flex-1 text-sm font-medium">
+                                                        {activeComponent.type.charAt(0).toUpperCase() + activeComponent.type.slice(1)}
+                                                    </span>
+                                                </div>
+                                            ) : null}
+                                        </DragOverlay>
+                                    </DndContext>
+                                    <Button onClick={() => setIsAddDialogOpen(true)} className="w-full mt-4" variant="outline">
+                                        <Plus size={16} className="mr-2" />
+                                        Agregar Componente
+                                    </Button>
+                                </>
+                            )}
                         </div>
 
                         <div className="flex-1">
@@ -673,90 +820,6 @@ export default function Builder({ page, products }) {
                     </div>
                 </>
             )}
-
-            <Drawer open={!!editingComponent} onOpenChange={() => setEditingComponent(null)} direction="left" modal={false}>
-                <DrawerContent className="w-80 flex flex-col h-full">
-                    <DrawerHeader>
-                        <DrawerTitle>Editar {editingComponent?.type}</DrawerTitle>
-                    </DrawerHeader>
-                    <ScrollArea className="flex-1 p-4">
-                        {editingComponent?.type === 'text' && (
-                            <TextEditDialog
-                                editContent={editContent}
-                                setEditContent={setEditContent}
-                                editStyles={editStyles}
-                                setEditStyles={setEditStyles}
-                            />
-                        )}
-                        {editingComponent?.type === 'button' && (
-                            <ButtonEditDialog
-                                editContent={editContent}
-                                setEditContent={setEditContent}
-                                editStyles={editStyles}
-                                setEditStyles={setEditStyles}
-                            />
-                        )}
-                        {editingComponent?.type === 'heading' && (
-                            <HeadingEditDialog
-                                editContent={editContent}
-                                setEditContent={setEditContent}
-                                editStyles={editStyles}
-                                setEditStyles={setEditStyles}
-                            />
-                        )}
-                        {editingComponent?.type === 'image' && (
-                            <ImageEditDialog
-                                editContent={editContent}
-                                setEditContent={setEditContent}
-                            />
-                        )}
-                        {editingComponent?.type === 'video' && (
-                            <VideoEditDialog
-                                editContent={editContent}
-                                setEditContent={setEditContent}
-                            />
-                        )}
-                        {editingComponent?.type === 'link' && (
-                            <LinkEditDialog
-                                editContent={editContent}
-                                setEditContent={setEditContent}
-                                editStyles={editStyles}
-                                setEditStyles={setEditStyles}
-                            />
-                        )}
-                        {editingComponent?.type === 'product' && (
-                            <ProductEditDialog
-                                editContent={editContent}
-                                setEditContent={setEditContent}
-                                editStyles={editStyles}
-                                setEditStyles={setEditStyles}
-                            />
-                        )}
-                        {editingComponent?.type === 'carousel' && (
-                            <CarouselEditDialog
-                                editContent={editContent}
-                                setEditContent={setEditContent}
-                            />
-                        )}
-                        {editingComponent?.type === 'container' && (
-                            <ContainerEditDialog
-                                editStyles={editStyles}
-                                setEditStyles={setEditStyles}
-                            />
-                        )}
-                    </ScrollArea>
-                    <DrawerFooter>
-                        <div className="flex justify-between">
-                            <Button variant="outline" onClick={cancelEdit}>
-                                Cancelar
-                            </Button>
-                            <Button onClick={saveEdit}>
-                                Guardar
-                            </Button>
-                        </div>
-                    </DrawerFooter>
-                </DrawerContent>
-            </Drawer>
 
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogContent className="max-w-md">

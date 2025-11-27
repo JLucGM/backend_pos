@@ -4,6 +4,9 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import { Button } from '@/Components/ui/button';
+import { AlignCenter, AlignLeft, AlignRight } from 'lucide-react';
 
 const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
     const updateProductConfig = (key, value) => {
@@ -63,8 +66,8 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                     />
 
                     <Label htmlFor="columns">Columnas</Label>
-                    <Select 
-                        value={editContent.columns?.toString() || '3'} 
+                    <Select
+                        value={editContent.columns?.toString() || '3'}
                         onValueChange={(value) => updateProductConfig('columns', parseInt(value))}
                     >
                         <SelectTrigger>
@@ -86,6 +89,14 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                         type="number"
                         value={editContent.limit || 8}
                         onChange={(e) => updateProductConfig('limit', parseInt(e.target.value))}
+                    />
+
+                    <Label htmlFor="backgroundColor">Color de Fondo</Label>
+                    <Input
+                        id="backgroundColor"
+                        type="color"
+                        value={editContent.backgroundColor || '#ffffff'}
+                        onChange={(e) => updateProductConfig('backgroundColor', e.target.value)}
                     />
 
                     <div className="grid grid-cols-2 gap-4">
@@ -113,8 +124,8 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                 {/* Pestaña Cartas */}
                 <TabsContent value="cards" className="space-y-4">
                     <Label htmlFor="cardBorder">Borde de la Carta</Label>
-                    <Select 
-                        value={editContent.cardBorder || 'none'} 
+                    <Select
+                        value={editContent.cardBorder || 'none'}
                         onValueChange={(value) => updateProductConfig('cardBorder', value)}
                     >
                         <SelectTrigger>
@@ -201,8 +212,8 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                 {/* Pestaña Imágenes */}
                 <TabsContent value="images" className="space-y-4">
                     <Label htmlFor="imageBorder">Borde de la Imagen</Label>
-                    <Select 
-                        value={editContent.imageBorder || 'none'} 
+                    <Select
+                        value={editContent.imageBorder || 'none'}
                         onValueChange={(value) => updateProductConfig('imageBorder', value)}
                     >
                         <SelectTrigger>
@@ -250,40 +261,60 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                 <TabsContent value="textos" className="space-y-6">
                     <div className="space-y-4">
                         <h4 className="font-semibold">Estilos del Título de Sección</h4>
-                        
-                        {/* Layout para título de sección */}
-                        <Label htmlFor="sectionTitleLayout">Layout</Label>
-                        <Select 
-                            value={editContent.sectionTitleStyles?.layout || 'fit'} 
-                            onValueChange={(value) => updateSectionTitleStyles('layout', value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
-                                <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
-                            </SelectContent>
-                        </Select>
 
-                        {/* Alignment (solo si layout es fill) */}
-                        {editContent.sectionTitleStyles?.layout === 'fill' && (
-                            <>
-                                <Label htmlFor="sectionTitleAlignment">Alineación</Label>
-                                <Select 
-                                    value={editContent.sectionTitleStyles?.alignment || 'center'} 
-                                    onValueChange={(value) => updateSectionTitleStyles('alignment', value)}
+                        {/* Layout para título de sección */}
+                        <div className='flex justify-between items-center gap-2'>
+                            <Label htmlFor="sectionTitleLayout">Anchura</Label>
+                            <ButtonGroup>
+                                <Button
+                                    type="button"
+                                    variant={editContent.sectionTitleStyles?.layout === 'fit' ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => updateSectionTitleStyles('layout', 'fit')}
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="left">Izquierda</SelectItem>
-                                        <SelectItem value="center">Centro</SelectItem>
-                                        <SelectItem value="right">Derecha</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </>
+                                    fit
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant={editContent.sectionTitleStyles?.layout === 'fill' ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => updateSectionTitleStyles('layout', 'fill')}
+                                >
+                                    fill
+                                </Button>
+                            </ButtonGroup>
+                        </div>
+
+                        {editContent.sectionTitleStyles?.layout === 'fill' && (
+                            <div className='flex justify-between items-center gap-2'>
+                                <Label>Alineación</Label>
+                                <ButtonGroup>
+                                    <Button
+                                        type="button"
+                                        variant={editContent.sectionTitleStyles?.alignment === 'left' ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => updateSectionTitleStyles('alignment', 'left')}
+                                    >
+                                        <AlignLeft size={16} />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={editContent.sectionTitleStyles?.alignment === 'center' ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => updateSectionTitleStyles('alignment', 'center')}
+                                    >
+                                        <AlignCenter size={16} />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={editContent.sectionTitleStyles?.alignment === 'right' ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => updateSectionTitleStyles('alignment', 'right')}
+                                    >
+                                        <AlignRight size={16} />
+                                    </Button>
+                                </ButtonGroup>
+                            </div>
                         )}
 
                         <Label htmlFor="sectionTitleColor">Color del Texto</Label>
@@ -295,8 +326,8 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                         />
 
                         <Label htmlFor="sectionTitleFontSize">Tamaño de Fuente</Label>
-                        <Select 
-                            value={editContent.sectionTitleStyles?.fontSize || '24px'} 
+                        <Select
+                            value={editContent.sectionTitleStyles?.fontSize || '24px'}
                             onValueChange={(value) => updateSectionTitleStyles('fontSize', value)}
                         >
                             <SelectTrigger>
@@ -313,8 +344,8 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                         </Select>
 
                         <Label htmlFor="sectionTitleFontWeight">Grosor de Fuente</Label>
-                        <Select 
-                            value={editContent.sectionTitleStyles?.fontWeight || 'bold'} 
+                        <Select
+                            value={editContent.sectionTitleStyles?.fontWeight || 'bold'}
                             onValueChange={(value) => updateSectionTitleStyles('fontWeight', value)}
                         >
                             <SelectTrigger>
@@ -331,40 +362,60 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
 
                     <div className="space-y-4">
                         <h4 className="font-semibold">Estilos del Nombre del Producto</h4>
-                        
-                        {/* Layout para nombre del producto */}
-                        <Label htmlFor="productTitleLayout">Layout</Label>
-                        <Select 
-                            value={editContent.productTitleStyles?.layout || 'fit'} 
-                            onValueChange={(value) => updateProductTitleStyles('layout', value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
-                                <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
-                            </SelectContent>
-                        </Select>
 
-                        {/* Alignment (solo si layout es fill) */}
-                        {editContent.productTitleStyles?.layout === 'fill' && (
-                            <>
-                                <Label htmlFor="productTitleAlignment">Alineación</Label>
-                                <Select 
-                                    value={editContent.productTitleStyles?.alignment || 'left'} 
-                                    onValueChange={(value) => updateProductTitleStyles('alignment', value)}
+                        {/* Layout para título de sección */}
+                        <div className='flex justify-between items-center gap-2'>
+                            <Label htmlFor="sectionTitleLayout">Anchura</Label>
+                            <ButtonGroup>
+                                <Button
+                                    type="button"
+                                    variant={editContent.productTitleStyles?.layout === 'fit' ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => updateProductTitleStyles('layout', 'fit')}
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="left">Izquierda</SelectItem>
-                                        <SelectItem value="center">Centro</SelectItem>
-                                        <SelectItem value="right">Derecha</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </>
+                                    fit
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant={editContent.productTitleStyles?.layout === 'fill' ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => updateProductTitleStyles('layout', 'fill')}
+                                >
+                                    fill
+                                </Button>
+                            </ButtonGroup>
+                        </div>
+
+                        {editContent.productTitleStyles?.layout === 'fill' && (
+                            <div className='flex justify-between items-center gap-2'>
+                                <Label>Alineación</Label>
+                                <ButtonGroup>
+                                    <Button
+                                        type="button"
+                                        variant={editContent.productTitleStyles?.alignment === 'left' ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => updateProductTitleStyles('alignment', 'left')}
+                                    >
+                                        <AlignLeft size={16} />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={editContent.productTitleStyles?.alignment === 'center' ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => updateProductTitleStyles('alignment', 'center')}
+                                    >
+                                        <AlignCenter size={16} />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={editContent.productTitleStyles?.alignment === 'right' ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => updateProductTitleStyles('alignment', 'right')}
+                                    >
+                                        <AlignRight size={16} />
+                                    </Button>
+                                </ButtonGroup>
+                            </div>
                         )}
 
                         <Label htmlFor="productTitleColor">Color del Texto</Label>
@@ -376,8 +427,8 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                         />
 
                         <Label htmlFor="productTitleFontSize">Tamaño de Fuente</Label>
-                        <Select 
-                            value={editContent.productTitleStyles?.fontSize || '16px'} 
+                        <Select
+                            value={editContent.productTitleStyles?.fontSize || '16px'}
                             onValueChange={(value) => updateProductTitleStyles('fontSize', value)}
                         >
                             <SelectTrigger>
@@ -394,8 +445,8 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                         </Select>
 
                         <Label htmlFor="productTitleFontWeight">Grosor de Fuente</Label>
-                        <Select 
-                            value={editContent.productTitleStyles?.fontWeight || '600'} 
+                        <Select
+                            value={editContent.productTitleStyles?.fontWeight || '600'}
                             onValueChange={(value) => updateProductTitleStyles('fontWeight', value)}
                         >
                             <SelectTrigger>
@@ -411,42 +462,62 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
 
                     <div className="space-y-4">
                         <h4 className="font-semibold">Estilos del Precio</h4>
-                        
-                        {/* Layout para precio */}
-                        <Label htmlFor="priceLayout">Layout</Label>
-                        <Select 
-                            value={editContent.priceStyles?.layout || 'fit'} 
-                            onValueChange={(value) => updatePriceStyles('layout', value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
-                                <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
-                            </SelectContent>
-                        </Select>
 
-                        {/* Alignment (solo si layout es fill) */}
-                        {editContent.priceStyles?.layout === 'fill' && (
-                            <>
-                                <Label htmlFor="priceAlignment">Alineación</Label>
-                                <Select 
-                                    value={editContent.priceStyles?.alignment || 'left'} 
-                                    onValueChange={(value) => updatePriceStyles('alignment', value)}
+                        {/* Layout para título de sección */}
+                        <div className='flex justify-between items-center gap-2'>
+                            <Label htmlFor="sectionTitleLayout">Anchura</Label>
+                            <ButtonGroup>
+                                <Button
+                                    type="button"
+                                    variant={editContent.priceStyles?.layout === 'fit' ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => updatePriceStyles('layout', 'fit')}
                                 >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="left">Izquierda</SelectItem>
-                                        <SelectItem value="center">Centro</SelectItem>
-                                        <SelectItem value="right">Derecha</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </>
+                                    fit
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant={editContent.priceStyles?.layout === 'fill' ? "default" : "outline"}
+                                    size="icon"
+                                    onClick={() => updatePriceStyles('layout', 'fill')}
+                                >
+                                    fill
+                                </Button>
+                            </ButtonGroup>
+                        </div>
+
+                        {editContent.priceStyles?.layout === 'fill' && (
+                            <div className='flex justify-between items-center gap-2'>
+                                <Label>Alineación</Label>
+                                <ButtonGroup>
+                                    <Button
+                                        type="button"
+                                        variant={editContent.priceStyles?.alignment === 'left' ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => updatePriceStyles('alignment', 'left')}
+                                    >
+                                        <AlignLeft size={16} />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={editContent.priceStyles?.alignment === 'center' ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => updatePriceStyles('alignment', 'center')}
+                                    >
+                                        <AlignCenter size={16} />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={editContent.priceStyles?.alignment === 'right' ? "default" : "outline"}
+                                        size="icon"
+                                        onClick={() => updatePriceStyles('alignment', 'right')}
+                                    >
+                                        <AlignRight size={16} />
+                                    </Button>
+                                </ButtonGroup>
+                            </div>
                         )}
-                        
+
                         <Label htmlFor="priceColor">Color del Texto</Label>
                         <Input
                             id="priceColor"
@@ -456,8 +527,8 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                         />
 
                         <Label htmlFor="priceFontSize">Tamaño de Fuente</Label>
-                        <Select 
-                            value={editContent.priceStyles?.fontSize || '14px'} 
+                        <Select
+                            value={editContent.priceStyles?.fontSize || '14px'}
                             onValueChange={(value) => updatePriceStyles('fontSize', value)}
                         >
                             <SelectTrigger>
@@ -472,8 +543,8 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                         </Select>
 
                         <Label htmlFor="priceFontWeight">Grosor de Fuente</Label>
-                        <Select 
-                            value={editContent.priceStyles?.fontWeight || 'normal'} 
+                        <Select
+                            value={editContent.priceStyles?.fontWeight || 'normal'}
                             onValueChange={(value) => updatePriceStyles('fontWeight', value)}
                         >
                             <SelectTrigger>

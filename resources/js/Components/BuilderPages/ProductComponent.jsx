@@ -55,6 +55,8 @@ const ProductComponent = ({
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
+                        backgroundColor: productConfig.backgroundColor || '#ffffff', // Agregar esta línea
+
     };
 
     // Grid styles
