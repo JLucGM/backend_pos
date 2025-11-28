@@ -1,14 +1,10 @@
 // components/BuilderPages/partials/ProductNameEditDialog.jsx
 import React from 'react';
-import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Input } from '@/Components/ui/input';
 
 const ProductNameEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
-    const updateContent = (value) => {
-        setEditContent(value);
-    };
-
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({
             ...prev,
@@ -18,15 +14,6 @@ const ProductNameEditDialog = ({ editContent, setEditContent, editStyles, setEdi
 
     return (
         <div className="space-y-4">
-            <div>
-                <Label htmlFor="nameContent">Texto del Nombre</Label>
-                <Input
-                    id="nameContent"
-                    value={editContent}
-                    onChange={(e) => updateContent(e.target.value)}
-                />
-            </div>
-
             <div>
                 <Label htmlFor="nameLayout">Layout</Label>
                 <Select 

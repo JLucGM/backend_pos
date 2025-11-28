@@ -19,7 +19,7 @@ const ProductPriceComponent = ({
         width: styles.layout === 'fill' ? '100%' : 'auto',
     };
 
-    // Manejo de eventos de mouse para edición
+    // Manejo de eventos de mouse para edición (solo estilos)
     const handleClick = () => {
         if (!isPreview && onEdit) {
             onEdit(comp);
@@ -32,7 +32,11 @@ const ProductPriceComponent = ({
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
-            {comp.content}
+            {comp.content || (
+                <span className="text-gray-400 italic">
+                    Precio del producto (se obtiene de la base de datos)
+                </span>
+            )}
         </div>
     );
 };

@@ -1,14 +1,10 @@
 // components/BuilderPages/partials/ProductImageEditDialog.jsx
 import React from 'react';
-import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Input } from '@/Components/ui/input';
 
 const ProductImageEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
-    const updateContent = (value) => {
-        setEditContent(value);
-    };
-
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({
             ...prev,
@@ -18,14 +14,27 @@ const ProductImageEditDialog = ({ editContent, setEditContent, editStyles, setEd
 
     return (
         <div className="space-y-4">
+            <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">
+                    La imagen del producto se obtiene automáticamente de la base de datos.
+                </p>
+            </div>
+
             <div>
-                <Label htmlFor="imageUrl">URL de la Imagen</Label>
-                <Input
-                    id="imageUrl"
-                    value={editContent}
-                    onChange={(e) => updateContent(e.target.value)}
-                    placeholder="https://ejemplo.com/imagen.jpg"
-                />
+                <Label htmlFor="aspectRatio">Aspect Ratio</Label>
+                <Select
+                    value={editStyles.aspectRatio || 'square'}
+                    onValueChange={(value) => updateStyle('aspectRatio', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="landscape">Landscape (16:9)</SelectItem>
+                        <SelectItem value="square">Square (1:1)</SelectItem>
+                        <SelectItem value="portrait">Portrait (4:5)</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
             <div>

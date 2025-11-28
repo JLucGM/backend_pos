@@ -10,9 +10,42 @@ const ProductImageComponent = ({
 }) => {
     const styles = comp.styles || {};
     
+    // Función para obtener las dimensiones según el aspect ratio
+    const getAspectRatioStyles = () => {
+        switch (styles.aspectRatio) {
+            case 'landscape':
+                return {
+                    width: '100%',
+                    height: '0',
+                    paddingBottom: '56.25%', // 16:9 aspect ratio (9/16 = 0.5625)
+                    position: 'relative'
+                };
+            case 'portrait':
+                return {
+                    width: '100%',
+                    height: '0',
+                    paddingBottom: '125%', // 4:5 aspect ratio (5/4 = 1.25)
+                    position: 'relative'
+                };
+            case 'square':
+            default:
+                return {
+                    width: '100%',
+                    height: '0',
+                    paddingBottom: '100%', // 1:1 aspect ratio
+                    position: 'relative'
+                };
+        }
+    };
+
+    const containerStyles = getAspectRatioStyles();
+    
     const imageStyles = {
+        position: 'absolute',
+        top: 0,
+        left: 0,
         width: '100%',
-        height: 'auto',
+        height: '100%',
         border: styles.imageBorder === 'solid' 
             ? `${styles.imageBorderThickness} solid rgba(0, 0, 0, ${styles.imageBorderOpacity})` 
             : 'none',
@@ -20,7 +53,7 @@ const ProductImageComponent = ({
         objectFit: 'cover',
     };
 
-    // Manejo de eventos de mouse para edición
+    // Manejo de eventos de mouse para edición (solo estilos)
     const handleClick = () => {
         if (!isPreview && onEdit) {
             onEdit(comp);
@@ -28,16 +61,20 @@ const ProductImageComponent = ({
     };
 
     return (
-        <img 
-            src={comp.content || 'https://via.placeholder.com/150'} 
-            alt="Producto"
-            style={imageStyles}
-            onError={(e) => {
-                e.target.src = 'https://via.placeholder.com/150';
-            }}
+        <div 
+            style={containerStyles}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
-        />
+        >
+            <img 
+                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'} 
+                alt="Producto"
+                style={imageStyles}
+                onError={(e) => {
+                    e.target.src = 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+                }}
+            />
+        </div>
     );
 };
 

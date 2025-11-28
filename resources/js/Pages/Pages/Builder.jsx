@@ -297,6 +297,7 @@ export default function Builder({ page, products }) {
             }
 
             // NUEVA ESTRUCTURA PARA PRODUCT
+            // En la función handleAddComponent de Builder.jsx, en la parte de product
             if (selectedType === 'product') {
                 const productId = Date.now();
                 const titleId = productId + 1;
@@ -304,7 +305,7 @@ export default function Builder({ page, products }) {
                 const imageId = productId + 3;
                 const nameId = productId + 4;
                 const priceId = productId + 5;
-                
+
                 content = {
                     // Configuración del grid
                     columns: 3,
@@ -312,7 +313,7 @@ export default function Builder({ page, products }) {
                     gapY: '10px',
                     backgroundColor: '#ffffff',
                     limit: 8,
-                    
+
                     // Los hijos como componentes independientes
                     children: [
                         {
@@ -347,6 +348,7 @@ export default function Builder({ page, products }) {
                                         type: 'productImage',
                                         content: '',
                                         styles: {
+                                            aspectRatio: 'square', // Agregar aspect ratio por defecto
                                             imageBorder: 'none',
                                             imageBorderThickness: '1px',
                                             imageBorderOpacity: '1',
@@ -390,7 +392,7 @@ export default function Builder({ page, products }) {
                 const bannerId = Date.now();
                 const titleId = bannerId + 1;
                 const textId = bannerId + 2;
-                
+
                 content = {
                     // Configuración del contenedor principal
                     containerHeight: '400px',
@@ -411,7 +413,7 @@ export default function Builder({ page, products }) {
                     containerVerticalPosition: 'center',
                     containerHorizontalPosition: 'center',
                     contentDirection: 'vertical',
-                    
+
                     // Los hijos se almacenan como componentes independientes
                     children: [
                         {
