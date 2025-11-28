@@ -9,6 +9,14 @@ import LinkComponent from './LinkComponent';
 import ProductComponent from './ProductComponent';
 import CarouselComponent from './CarouselComponent';
 import ContainerComponent from './ContainerComponent';
+import BannerComponent from './BannerComponent';
+import BannerTitleComponent from './BannerTitleComponent';
+import BannerTextComponent from './BannerTextComponent';
+import ProductTitleComponent from './ProductTitleComponent';
+import ProductCardComponent from './ProductCardComponent';
+import ProductImageComponent from './ProductImageComponent';
+import ProductNameComponent from './ProductNameComponent';
+import ProductPriceComponent from './ProductPriceComponent';
 
 const CanvasItem = ({
     comp,
@@ -143,6 +151,126 @@ const CanvasItem = ({
                         setHoveredComponentId={setHoveredComponentId}
                     />
                 );
+            case 'banner':
+                return (
+                    <BannerComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'bannerTitle':
+                return (
+                    <BannerTitleComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'bannerText':
+                return (
+                    <BannerTextComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'productTitle':
+                return (
+                    <ProductTitleComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'productCard':
+                return (
+                    <ProductCardComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'productImage':
+                return (
+                    <ProductImageComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'productName':
+                return (
+                    <ProductNameComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'productPrice':
+                return (
+                    <ProductPriceComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
             default:
                 return <div>Componente no reconocido: {comp.type}</div>;
         }
@@ -158,7 +286,15 @@ const CanvasItem = ({
             'link': 'Enlace',
             'product': 'Producto',
             'carousel': 'Carrusel',
-            'container': 'Contenedor'
+            'container': 'Contenedor',
+            'banner': 'Sección Banner',
+            'bannerTitle': 'Título del Banner',
+            'bannerText': 'Texto del Banner',
+            'productTitle': 'Título de Productos',
+            'productCard': 'Carta de Producto',
+            'productImage': 'Imagen de Producto',
+            'productName': 'Nombre de Producto',
+            'productPrice': 'Precio de Producto'
         };
         return typeNames[type] || type;
     };

@@ -1,48 +1,28 @@
 // components/BuilderPages/components/ProductComponent.jsx
 import React from 'react';
-import TextComponent from './TextComponent';
+import ProductTitleComponent from './ProductTitleComponent';
+import ProductCardComponent from './ProductCardComponent';
 
-const ProductComponent = ({ 
-    comp, 
-    getStyles, 
-    onEdit, 
-    onDelete, 
-    themeSettings, 
-    isPreview, 
-    products, 
+const ProductComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    onDelete,
+    themeSettings,
+    isPreview,
+    products,
     setComponents,
     hoveredComponentId,
     setHoveredComponentId
 }) => {
-    const customStyles = comp.styles || {};
     const productConfig = comp.content || {};
+    const children = productConfig.children || [];
 
     // Configuración del grid
     const columns = productConfig.columns || 3;
-    const gapX = productConfig.gapX || '0';
-    const gapY = productConfig.gapY || '0';
+    const gapX = productConfig.gapX || '10px';
+    const gapY = productConfig.gapY || '10px';
     const limit = productConfig.limit || 8;
-
-    // Estilos de la carta
-    const cardBorder = productConfig.cardBorder || 'none';
-    const cardBorderThickness = productConfig.cardBorderThickness || '1px';
-    const cardBorderOpacity = productConfig.cardBorderOpacity || '1';
-    const cardBorderRadius = productConfig.cardBorderRadius || '0px';
-    const cardPaddingTop = productConfig.cardPaddingTop || '0px';
-    const cardPaddingRight = productConfig.cardPaddingRight || '0px';
-    const cardPaddingBottom = productConfig.cardPaddingBottom || '0px';
-    const cardPaddingLeft = productConfig.cardPaddingLeft || '0px';
-
-    // Estilos de la imagen
-    const imageBorder = productConfig.imageBorder || 'none';
-    const imageBorderThickness = productConfig.imageBorderThickness || '1px';
-    const imageBorderOpacity = productConfig.imageBorderOpacity || '1';
-    const imageBorderRadius = productConfig.imageBorderRadius || '0px';
-
-    // Estilos SEPARADOS para título de sección y nombres de productos
-    const sectionTitleStyles = productConfig.sectionTitleStyles || {};
-    const productTitleStyles = productConfig.productTitleStyles || {};
-    const priceStyles = productConfig.priceStyles || {};
 
     // Container styles para el wrapper
     const containerStyles = {
@@ -55,8 +35,7 @@ const ProductComponent = ({
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
-                        backgroundColor: productConfig.backgroundColor || '#ffffff', // Agregar esta línea
-
+        backgroundColor: productConfig.backgroundColor || '#ffffff',
     };
 
     // Grid styles
@@ -67,32 +46,7 @@ const ProductComponent = ({
         width: '100%',
     };
 
-    // Card styles
-    const getCardStyles = () => ({
-        paddingTop: cardPaddingTop,
-        paddingRight: cardPaddingRight,
-        paddingBottom: cardPaddingBottom,
-        paddingLeft: cardPaddingLeft,
-        border: cardBorder === 'solid' 
-            ? `${cardBorderThickness} solid rgba(0, 0, 0, ${cardBorderOpacity})` 
-            : 'none',
-        borderRadius: cardBorderRadius,
-        backgroundColor: 'white',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    });
-
-    // Image styles
-    const getImageStyles = () => ({
-        width: '100%',
-        height: 'auto',
-        border: imageBorder === 'solid' 
-            ? `${imageBorderThickness} solid rgba(0, 0, 0, ${imageBorderOpacity})` 
-            : 'none',
-        borderRadius: imageBorderRadius,
-        objectFit: 'cover',
-    });
-
-    // Funciones seguras para eventos de mouse
+    // Manejo de eventos de mouse
     const handleMouseEnter = () => {
         if (setHoveredComponentId && !isPreview) {
             setHoveredComponentId(comp.id);
@@ -105,6 +59,11 @@ const ProductComponent = ({
         }
     };
 
+    // Encontrar los componentes hijos
+    const titleComponent = children.find(child => child.type === 'productTitle');
+    const cardComponent = children.find(child => child.type === 'productCard');
+
+    // Obtener productos para mostrar
     const productsToShow = products ? products.slice(0, limit) : [];
 
     return (
@@ -114,86 +73,43 @@ const ProductComponent = ({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
-            {/* Título de la sección - usa sectionTitleStyles */}
-            <TextComponent
-                comp={{
-                    id: comp.id + '-title',
-                    type: 'text',
-                    content: productConfig.sectionTitle || 'Productos Destacados',
-                    styles: {
-                        // Aplicar layout y alignment desde sectionTitleStyles
-                        layout: sectionTitleStyles.layout || 'fit',
-                        alignment: sectionTitleStyles.alignment || 'center',
-                        fontSize: sectionTitleStyles.fontSize || '24px',
-                        fontWeight: sectionTitleStyles.fontWeight || 'bold',
-                        color: sectionTitleStyles.color || '#000000',
-                        // Incluir todos los estilos de sectionTitleStyles
-                        ...sectionTitleStyles
-                    }
-                }}
-                getStyles={() => ({})}
-                isPreview={isPreview}
-            />
+            {/* Renderizar título si existe */}
+            {titleComponent && (
+                <ProductTitleComponent
+                    comp={titleComponent}
+                    getStyles={() => ({})}
+                    isPreview={isPreview}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                />
+            )}
 
             {/* Grid de productos */}
-            <div style={gridStyles}>
-                {productsToShow.map((product, index) => (
-                    <div key={product.id} style={getCardStyles()}>
-                        {/* Imagen del producto */}
-                        {product.media && product.media.length > 0 && (
-                            <img 
-                                src={product.media[0].original_url} 
-                                alt={product.product_name}
-                                style={getImageStyles()}
-                            />
-                        )}
-                        
-                        {/* Nombre del producto - usa productTitleStyles */}
-                        <TextComponent
+            {cardComponent && (
+                <div style={gridStyles}>
+                    {productsToShow.map((product, index) => (
+                        <ProductCardComponent
+                            key={product.id}
                             comp={{
-                                id: `${comp.id}-product-${product.id}-name`,
-                                type: 'text',
-                                content: product.product_name,
-                                styles: {
-                                    // Aplicar layout y alignment desde productTitleStyles
-                                    layout: productTitleStyles.layout || 'fit',
-                                    alignment: productTitleStyles.alignment || 'left',
-                                    fontSize: productTitleStyles.fontSize || '16px',
-                                    fontWeight: productTitleStyles.fontWeight || '600',
-                                    color: productTitleStyles.color || '#000000',
-                                    marginTop: '10px',
-                                    // Incluir todos los estilos de productTitleStyles
-                                    ...productTitleStyles
+                                ...cardComponent,
+                                content: {
+                                    ...cardComponent.content,
+                                    productData: product // Pasar datos del producto específico
                                 }
                             }}
                             getStyles={() => ({})}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
+                            themeSettings={themeSettings}
                             isPreview={isPreview}
+                            products={products}
+                            setComponents={setComponents}
+                            hoveredComponentId={hoveredComponentId}
+                            setHoveredComponentId={setHoveredComponentId}
                         />
-                        
-                        {/* Precio del producto */}
-                        <TextComponent
-                            comp={{
-                                id: `${comp.id}-product-${product.id}-price`,
-                                type: 'text',
-                                content: `$${parseFloat(product.product_price).toFixed(2)}`,
-                                styles: {
-                                    // Aplicar layout y alignment desde priceStyles
-                                    layout: priceStyles.layout || 'fit',
-                                    alignment: priceStyles.alignment || 'left',
-                                    fontSize: priceStyles.fontSize || '14px',
-                                    fontWeight: priceStyles.fontWeight || 'normal',
-                                    color: priceStyles.color || '#666666',
-                                    marginTop: '5px',
-                                    // Incluir todos los estilos de priceStyles
-                                    ...priceStyles
-                                }
-                            }}
-                            getStyles={() => ({})}
-                            isPreview={isPreview}
-                        />
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
 
             {(!products || products.length === 0) && !isPreview && (
                 <div className="text-center text-gray-400 py-8">

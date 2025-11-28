@@ -24,6 +24,14 @@ import LinkEditDialog from './partials/LinkEditDialog';
 import ProductEditDialog from './partials/ProductEditDialog';
 import CarouselEditDialog from './partials/CarouselEditDialog';
 import ContainerEditDialog from './partials/ContainerEditDialog';
+import BannerEditDialog from './partials/BannerEditDialog';
+import BannerTitleEditDialog from './partials/BannerTitleEditDialog';
+import BannerTextEditDialog from './partials/BannerTextEditDialog';
+import ProductTitleEditDialog from './partials/ProductTitleEditDialog';
+import ProductCardEditDialog from './partials/ProductCardEditDialog';
+import ProductImageEditDialog from './partials/ProductImageEditDialog';
+import ProductNameEditDialog from './partials/ProductNameEditDialog';
+import ProductPriceEditDialog from './partials/ProductPriceEditDialog';
 
 export default function Builder({ page, products }) {
     const [components, setComponents] = useState([]);
@@ -102,6 +110,42 @@ export default function Builder({ page, products }) {
                             };
                         }
 
+                        // Actualizar para banners con hijos
+                        if (component.type === 'banner' && component.content && component.content.children) {
+                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                            return {
+                                ...component,
+                                content: {
+                                    ...component.content,
+                                    children: updatedChildren
+                                }
+                            };
+                        }
+
+                        // Actualizar para product con hijos
+                        if (component.type === 'product' && component.content && component.content.children) {
+                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                            return {
+                                ...component,
+                                content: {
+                                    ...component.content,
+                                    children: updatedChildren
+                                }
+                            };
+                        }
+
+                        // Actualizar para productCard con hijos
+                        if (component.type === 'productCard' && component.content && component.content.children) {
+                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                            return {
+                                ...component,
+                                content: {
+                                    ...component.content,
+                                    children: updatedChildren
+                                }
+                            };
+                        }
+
                         return component;
                     });
                 };
@@ -139,6 +183,18 @@ export default function Builder({ page, products }) {
                 }
                 if (item.type === 'container' && item.content) {
                     item.content = removeFromTree(item.content, targetId);
+                }
+                // Eliminar de banners con hijos
+                if (item.type === 'banner' && item.content && item.content.children) {
+                    item.content.children = removeFromTree(item.content.children, targetId);
+                }
+                // Eliminar de product con hijos
+                if (item.type === 'product' && item.content && item.content.children) {
+                    item.content.children = removeFromTree(item.content.children, targetId);
+                }
+                // Eliminar de productCard con hijos
+                if (item.type === 'productCard' && item.content && item.content.children) {
+                    item.content.children = removeFromTree(item.content.children, targetId);
                 }
                 return true;
             });
@@ -239,41 +295,169 @@ export default function Builder({ page, products }) {
                     }
                 };
             }
+
+            // NUEVA ESTRUCTURA PARA PRODUCT
             if (selectedType === 'product') {
+                const productId = Date.now();
+                const titleId = productId + 1;
+                const cardId = productId + 2;
+                const imageId = productId + 3;
+                const nameId = productId + 4;
+                const priceId = productId + 5;
+                
                 content = {
-                    sectionTitle: 'Productos Destacados',
+                    // Configuración del grid
                     columns: 3,
                     gapX: '10px',
                     gapY: '10px',
                     backgroundColor: '#ffffff',
                     limit: 8,
-                    cardBorder: 'none',
-                    cardBorderThickness: '1px',
-                    cardBorderOpacity: '1',
-                    cardBorderRadius: '0px',
-                    cardPaddingTop: '0',
-                    cardPaddingRight: '0',
-                    cardPaddingBottom: '0',
-                    cardPaddingLeft: '0',
-                    imageBorder: 'none',
-                    imageBorderThickness: '1px',
-                    imageBorderOpacity: '1',
-                    imageBorderRadius: '0px',
-                    titleStyles: {
-                        color: '#000000',
-                        fontSize: '16px',
-                        fontWeight: '600'
-                    },
-                    priceStyles: {
-                        color: '#666666',
-                        fontSize: '14px',
-                        fontWeight: 'normal'
-                    }
+                    
+                    // Los hijos como componentes independientes
+                    children: [
+                        {
+                            id: titleId,
+                            type: 'productTitle',
+                            content: 'Productos Destacados',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'center',
+                                color: '#000000',
+                                fontSize: '24px',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        {
+                            id: cardId,
+                            type: 'productCard',
+                            content: {
+                                // Configuración de la carta
+                                cardBorder: 'none',
+                                cardBorderThickness: '1px',
+                                cardBorderOpacity: '1',
+                                cardBorderRadius: '0px',
+                                cardPaddingTop: '0px',
+                                cardPaddingRight: '0px',
+                                cardPaddingBottom: '0px',
+                                cardPaddingLeft: '0px',
+                                // Los hijos de la carta
+                                children: [
+                                    {
+                                        id: imageId,
+                                        type: 'productImage',
+                                        content: '',
+                                        styles: {
+                                            imageBorder: 'none',
+                                            imageBorderThickness: '1px',
+                                            imageBorderOpacity: '1',
+                                            imageBorderRadius: '0px'
+                                        }
+                                    },
+                                    {
+                                        id: nameId,
+                                        type: 'productName',
+                                        content: '',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#000000',
+                                            fontSize: '16px',
+                                            fontWeight: '600'
+                                        }
+                                    },
+                                    {
+                                        id: priceId,
+                                        type: 'productPrice',
+                                        content: '',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#666666',
+                                            fontSize: '14px',
+                                            fontWeight: 'normal'
+                                        }
+                                    }
+                                ]
+                            },
+                            styles: {}
+                        }
+                    ]
+                };
+            }
+
+            // NUEVA ESTRUCTURA PARA BANNER
+            if (selectedType === 'banner') {
+                const bannerId = Date.now();
+                const titleId = bannerId + 1;
+                const textId = bannerId + 2;
+                
+                content = {
+                    // Configuración del contenedor principal
+                    containerHeight: '400px',
+                    containerWidth: '100%',
+                    marginTop: '0px',
+                    marginRight: '0px',
+                    marginBottom: '0px',
+                    marginLeft: '0px',
+                    paddingTop: '20px',
+                    paddingRight: '20px',
+                    paddingBottom: '20px',
+                    paddingLeft: '20px',
+                    backgroundColor: '#ffffff',
+                    backgroundImage: null,
+                    backgroundVideo: null,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    containerVerticalPosition: 'center',
+                    containerHorizontalPosition: 'center',
+                    contentDirection: 'vertical',
+                    
+                    // Los hijos se almacenan como componentes independientes
+                    children: [
+                        {
+                            id: titleId,
+                            type: 'bannerTitle',
+                            content: 'Título del Banner',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'center',
+                                background: 'transparent',
+                                backgroundOpacity: '1',
+                                borderRadius: '0px',
+                                paddingTop: '10px',
+                                paddingRight: '10px',
+                                paddingBottom: '10px',
+                                paddingLeft: '10px',
+                                color: '#000000',
+                                fontSize: '32px',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        {
+                            id: textId,
+                            type: 'bannerText',
+                            content: 'Texto descriptivo del banner',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'center',
+                                background: 'transparent',
+                                backgroundOpacity: '1',
+                                borderRadius: '0px',
+                                paddingTop: '10px',
+                                paddingRight: '10px',
+                                paddingBottom: '10px',
+                                paddingLeft: '10px',
+                                color: '#000000',
+                                fontSize: '16px',
+                                fontWeight: 'normal'
+                            }
+                        }
+                    ]
                 };
             }
 
             const newItem = {
-                id: Date.now(),
+                id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
                 type: selectedType,
                 content,
                 styles: {}
@@ -297,7 +481,7 @@ export default function Builder({ page, products }) {
         setHasUnsavedChanges(true);
     };
 
-    // Funciones para drag & drop
+    // Funciones para drag & drop (mantener igual)
     const handleDragStart = (event) => {
         setActiveId(event.active.id);
         setHoveredComponentId(null);
@@ -379,6 +563,27 @@ export default function Builder({ page, products }) {
                                 return removed;
                             }
                         }
+                        // Buscar en banners con hijos
+                        if (items[i].type === 'banner' && items[i].content && items[i].content.children) {
+                            const removed = removeComponent(items[i].content.children, targetId);
+                            if (removed) {
+                                return removed;
+                            }
+                        }
+                        // Buscar en product con hijos
+                        if (items[i].type === 'product' && items[i].content && items[i].content.children) {
+                            const removed = removeComponent(items[i].content.children, targetId);
+                            if (removed) {
+                                return removed;
+                            }
+                        }
+                        // Buscar en productCard con hijos
+                        if (items[i].type === 'productCard' && items[i].content && items[i].content.children) {
+                            const removed = removeComponent(items[i].content.children, targetId);
+                            if (removed) {
+                                return removed;
+                            }
+                        }
                     }
                     return null;
                 };
@@ -409,6 +614,21 @@ export default function Builder({ page, products }) {
                     const found = findComponentInfo(items[i].content, id, items[i], [...path, i]);
                     if (found) return found;
                 }
+                // Buscar en banners con hijos
+                if (items[i].type === 'banner' && items[i].content && items[i].content.children) {
+                    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
+                    if (found) return found;
+                }
+                // Buscar en product con hijos
+                if (items[i].type === 'product' && items[i].content && items[i].content.children) {
+                    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
+                    if (found) return found;
+                }
+                // Buscar en productCard con hijos
+                if (items[i].type === 'productCard' && items[i].content && items[i].content.children) {
+                    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
+                    if (found) return found;
+                }
             }
             return null;
         };
@@ -432,6 +652,30 @@ export default function Builder({ page, products }) {
                     }
                 }
             }
+            // Verificar banners con hijos
+            if (container && container.component.type === 'banner' && container.component.content && container.component.content.children) {
+                for (const child of container.component.content.children) {
+                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
+                        return true;
+                    }
+                }
+            }
+            // Verificar product con hijos
+            if (container && container.component.type === 'product' && container.component.content && container.component.content.children) {
+                for (const child of container.component.content.children) {
+                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
+                        return true;
+                    }
+                }
+            }
+            // Verificar productCard con hijos
+            if (container && container.component.type === 'productCard' && container.component.content && container.component.content.children) {
+                for (const child of container.component.content.children) {
+                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
+                        return true;
+                    }
+                }
+            }
             return false;
         };
 
@@ -450,6 +694,12 @@ export default function Builder({ page, products }) {
                 const index = path[i];
                 if (current[index] && current[index].type === 'container' && current[index].content) {
                     current = current[index].content;
+                } else if (current[index] && current[index].type === 'banner' && current[index].content && current[index].content.children) {
+                    current = current[index].content.children;
+                } else if (current[index] && current[index].type === 'product' && current[index].content && current[index].content.children) {
+                    current = current[index].content.children;
+                } else if (current[index] && current[index].type === 'productCard' && current[index].content && current[index].content.children) {
+                    current = current[index].content.children;
                 } else {
                     return null;
                 }
@@ -486,16 +736,35 @@ export default function Builder({ page, products }) {
         }
 
         const isOverContainer = overComponent.type === 'container';
+        const isOverBanner = overComponent.type === 'banner';
+        const isOverProduct = overComponent.type === 'product';
+        const isOverProductCard = overComponent.type === 'productCard';
 
         const dropInfo = dropPosition || { position: 'bottom' };
 
-        if (isOverContainer && dropInfo.position === 'inside') {
-            overComponent.content = overComponent.content || [];
+        if ((isOverContainer || isOverBanner || isOverProduct || isOverProductCard) && dropInfo.position === 'inside') {
+            let targetArray;
+            if (isOverContainer) {
+                overComponent.content = overComponent.content || [];
+                targetArray = overComponent.content;
+            } else if (isOverBanner) {
+                overComponent.content = overComponent.content || {};
+                overComponent.content.children = overComponent.content.children || [];
+                targetArray = overComponent.content.children;
+            } else if (isOverProduct) {
+                overComponent.content = overComponent.content || {};
+                overComponent.content.children = overComponent.content.children || [];
+                targetArray = overComponent.content.children;
+            } else if (isOverProductCard) {
+                overComponent.content = overComponent.content || {};
+                overComponent.content.children = overComponent.content.children || [];
+                targetArray = overComponent.content.children;
+            }
 
             if (movedComponent.id !== overComponent.id) {
-                overComponent.content.push(movedComponent);
+                targetArray.push(movedComponent);
             } else {
-                console.log("No puedes mover un contenedor dentro de sí mismo");
+                console.log("No puedes mover un componente dentro de sí mismo");
                 return;
             }
         } else {
@@ -534,6 +803,21 @@ export default function Builder({ page, products }) {
                 }
                 if (item.type === 'container' && item.content) {
                     const found = findComponent(item.content, targetId);
+                    if (found) return found;
+                }
+                // Buscar en banners con hijos
+                if (item.type === 'banner' && item.content && item.content.children) {
+                    const found = findComponent(item.content.children, targetId);
+                    if (found) return found;
+                }
+                // Buscar en product con hijos
+                if (item.type === 'product' && item.content && item.content.children) {
+                    const found = findComponent(item.content.children, targetId);
+                    if (found) return found;
+                }
+                // Buscar en productCard con hijos
+                if (item.type === 'productCard' && item.content && item.content.children) {
+                    const found = findComponent(item.content.children, targetId);
                     if (found) return found;
                 }
             }
@@ -667,15 +951,15 @@ export default function Builder({ page, products }) {
                                         <h3 className="font-semibold">
                                             Editando {editingComponent.type}
                                         </h3>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             onClick={cancelEdit}
                                         >
                                             <X size={16} />
                                         </Button>
                                     </div>
-                                    
+
                                     <ScrollArea className="flex-1">
                                         {editingComponent?.type === 'text' && (
                                             <TextEditDialog
@@ -743,17 +1027,81 @@ export default function Builder({ page, products }) {
                                                 setEditStyles={setEditStyles}
                                             />
                                         )}
+                                        {editingComponent?.type === 'banner' && (
+                                            <BannerEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'bannerTitle' && (
+                                            <BannerTitleEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'bannerText' && (
+                                            <BannerTextEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productTitle' && (
+                                            <ProductTitleEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productCard' && (
+                                            <ProductCardEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productImage' && (
+                                            <ProductImageEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productName' && (
+                                            <ProductNameEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productPrice' && (
+                                            <ProductPriceEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
                                     </ScrollArea>
-                                    
+
                                     <div className="flex gap-2 pt-4 border-t mt-4">
-                                        <Button 
-                                            variant="outline" 
+                                        <Button
+                                            variant="outline"
                                             onClick={cancelEdit}
                                             className="flex-1"
                                         >
                                             Cancelar
                                         </Button>
-                                        <Button 
+                                        <Button
                                             onClick={saveEdit}
                                             className="flex-1"
                                         >
@@ -833,13 +1181,14 @@ export default function Builder({ page, products }) {
                                 <SelectValue placeholder="Selecciona un tipo" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="banner">Banner</SelectItem>
+                                <SelectItem value="product">Productos</SelectItem>
                                 <SelectItem value="heading">Encabezado</SelectItem>
                                 <SelectItem value="text">Texto</SelectItem>
                                 <SelectItem value="image">Imagen</SelectItem>
                                 <SelectItem value="button">Botón</SelectItem>
                                 <SelectItem value="video">Video</SelectItem>
                                 <SelectItem value="link">Enlace</SelectItem>
-                                <SelectItem value="product">Producto</SelectItem>
                                 <SelectItem value="carousel">Carrusel de Productos</SelectItem>
                                 <SelectItem value="container">Contenedor</SelectItem>
                             </SelectContent>

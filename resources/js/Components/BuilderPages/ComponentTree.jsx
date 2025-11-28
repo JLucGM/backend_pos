@@ -58,12 +58,35 @@ const SortableItem = ({
     };
 
     const [isExpanded, setIsExpanded] = React.useState(true);
-    const hasChildren = component.type === 'container' && component.content && component.content.length > 0;
+    
+    // Determinar si tiene hijos
+    const hasChildren = 
+        (component.type === 'container' && component.content && component.content.length > 0) ||
+        (component.type === 'banner' && component.content?.children && component.content.children.length > 0) ||
+        (component.type === 'product' && component.content?.children && component.content.children.length > 0) ||
+        (component.type === 'productCard' && component.content?.children && component.content.children.length > 0);
+
+    // Función para obtener los hijos según el tipo de componente
+    const getChildren = () => {
+        if (component.type === 'container') {
+            return component.content || [];
+        } else if (component.type === 'banner') {
+            return component.content?.children || [];
+        } else if (component.type === 'product') {
+            return component.content?.children || [];
+        } else if (component.type === 'productCard') {
+            return component.content?.children || [];
+        }
+        return [];
+    };
 
     // Efectos visuales para el drag & drop
     const isActive = activeId === component.id;
     const isOver = overId === component.id;
     const isContainer = component.type === 'container';
+    const isBanner = component.type === 'banner';
+    const isProduct = component.type === 'product';
+    const isProductCard = component.type === 'productCard';
     
     // Verificar si hay un indicador de posición para este componente
     const hasDropIndicator = dropPosition && dropPosition.id === component.id;
@@ -92,7 +115,7 @@ const SortableItem = ({
         
         if (isActive) {
             styles += "bg-blue-100 border-blue-400 ";
-        } else if (isOver && isContainer) {
+        } else if (isOver && (isContainer || isBanner || isProduct || isProductCard)) {
             styles += "bg-green-100 border-green-400 ";
         } else if (isOver) {
             styles += "bg-yellow-100 border-yellow-400 ";
@@ -115,9 +138,9 @@ const SortableItem = ({
             ref={setNodeRef} 
             style={style} 
             className={`pl-${level * 4} transition-all duration-200 relative ${isDragging ? 'z-10' : ''}`}
-            id={`component-${component.id}`} // ID para calcular posición
+            id={`component-${component.id}`}
         >
-            {/* Indicador de posición - ARRIBA (fuera del flujo del layout) */}
+            {/* Indicador de posición - ARRIBA */}
             {hasDropIndicator && dropPositionType === 'top' && (
                 <div className="absolute -top-1 left-0 right-0 h-0.5 bg-blue-500 z-30 pointer-events-none">
                     <div className="absolute -top-1 left-2 w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -139,7 +162,6 @@ const SortableItem = ({
                 {hasChildren && (
                     <Button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        // className="p-1 hover:bg-gray-100 rounded transition-colors"
                         variant="ghost"
                         size="icon"
                         onMouseEnter={handleMouseEnter}
@@ -160,8 +182,7 @@ const SortableItem = ({
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >
-                    {component.type.charAt(0).toUpperCase() + component.type.slice(1)}
-                    {/* <span className="text-xs text-gray-500 ml-2">(ID: {component.id})</span> */}
+                    {getComponentTypeName(component.type)}
                 </span>
                 
                 <div 
@@ -189,7 +210,7 @@ const SortableItem = ({
                 </div>
             </div>
 
-            {/* Indicador de posición - ABAJO (fuera del flujo del layout) */}
+            {/* Indicador de posición - ABAJO */}
             {hasDropIndicator && dropPositionType === 'bottom' && (
                 <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500 z-30 pointer-events-none">
                     <div className="absolute -top-1 left-2 w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -202,12 +223,12 @@ const SortableItem = ({
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >
-                    {/* Indicador de área de drop para contenedores */}
-                    {isOver && isContainer && dropPositionType === 'inside' && (
+                    {/* Indicador de área de drop para contenedores y banners */}
+                    {(isOver && (isContainer || isBanner || isProduct || isProductCard) && dropPositionType === 'inside') && (
                         <div className="absolute inset-x-0 -top-1 h-2 bg-green-400 rounded opacity-50 z-20 pointer-events-none"></div>
                     )}
                     
-                    {component.content.map((child) => (
+                    {getChildren().map((child) => (
                         <SortableItem
                             key={child.id}
                             component={child}
@@ -225,6 +246,30 @@ const SortableItem = ({
             )}
         </div>
     );
+};
+
+// Función auxiliar para obtener nombres de componentes
+const getComponentTypeName = (type) => {
+    const typeNames = {
+        'text': 'Texto',
+        'heading': 'Encabezado',
+        'button': 'Botón',
+        'image': 'Imagen',
+        'video': 'Video',
+        'link': 'Enlace',
+        'product': 'Producto',
+        'carousel': 'Carrusel',
+        'container': 'Contenedor',
+        'banner': 'Sección Banner',
+        'bannerTitle': 'Título del Banner',
+        'bannerText': 'Texto del Banner',
+        'productTitle': 'Título de Productos',
+        'productCard': 'Carta de Producto',
+        'productImage': 'Imagen de Producto',
+        'productName': 'Nombre de Producto',
+        'productPrice': 'Precio de Producto'
+    };
+    return typeNames[type] || type;
 };
 
 const ComponentTree = ({ 
@@ -267,7 +312,7 @@ const ComponentTree = ({
                     ))
                 )}
                 
-                {/* Área de drop vacía - ahora funcional */}
+                {/* Área de drop vacía */}
                 {activeId && (
                     <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 ${
                         isRootOver ? 'border-blue-400 bg-blue-100 text-blue-700' : 'border-gray-300 text-gray-500'
