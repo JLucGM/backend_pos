@@ -17,6 +17,11 @@ import ProductCardComponent from './ProductCardComponent';
 import ProductImageComponent from './ProductImageComponent';
 import ProductNameComponent from './ProductNameComponent';
 import ProductPriceComponent from './ProductPriceComponent';
+import CarouselPriceComponent from './CarouselPriceComponent';
+import CarouselNameComponent from './CarouselNameComponent';
+import CarouselImageComponent from './CarouselImageComponent';
+import CarouselCardComponent from './CarouselCardComponent';
+import CarouselTitleComponent from './CarouselTitleComponent';
 
 const CanvasItem = ({
     comp,
@@ -134,6 +139,63 @@ const CanvasItem = ({
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+
+            // En el switch de CanvasItem.jsx, agrega:
+            case 'carouselTitle':
+                return (
+                    <CarouselTitleComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                    />
+                );
+            case 'carouselCard':
+                return (
+                    <CarouselCardComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'carouselImage':
+                return (
+                    <CarouselImageComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                    />
+                );
+            case 'carouselName':
+                return (
+                    <CarouselNameComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                    />
+                );
+            case 'carouselPrice':
+                return (
+                    <CarouselPriceComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
                     />
                 );
             case 'container':

@@ -1,6 +1,6 @@
-// components/BuilderPages/components/CarouselComponent.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import TextComponent from './TextComponent';
+import React, { useState, useRef } from 'react';
+import CarouselTitleComponent from './CarouselTitleComponent';
+import CarouselCardComponent from './CarouselCardComponent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
 
@@ -16,8 +16,8 @@ const CarouselComponent = ({
     hoveredComponentId,
     setHoveredComponentId
 }) => {
-    const customStyles = comp.styles || {};
     const carouselConfig = comp.content || {};
+    const children = carouselConfig.children || [];
     const carouselRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -27,30 +27,9 @@ const CarouselComponent = ({
     const gapX = carouselConfig.gapX || '10px';
     const gapY = carouselConfig.gapY || '10px';
 
-    // Estilos de la carta
-    const cardBorder = carouselConfig.cardBorder || 'none';
-    const cardBorderThickness = carouselConfig.cardBorderThickness || '1px';
-    const cardBorderOpacity = carouselConfig.cardBorderOpacity || '1';
-    const cardBorderRadius = carouselConfig.cardBorderRadius || '0px';
-    const cardPaddingTop = carouselConfig.cardPaddingTop || '10px';
-    const cardPaddingRight = carouselConfig.cardPaddingRight || '10px';
-    const cardPaddingBottom = carouselConfig.cardPaddingBottom || '10px';
-    const cardPaddingLeft = carouselConfig.cardPaddingLeft || '10px';
-
-    // Estilos de la imagen
-    const imageBorder = carouselConfig.imageBorder || 'none';
-    const imageBorderThickness = carouselConfig.imageBorderThickness || '1px';
-    const imageBorderOpacity = carouselConfig.imageBorderOpacity || '1';
-    const imageBorderRadius = carouselConfig.imageBorderRadius || '0px';
-
-    // Estilos para textos
-    const sectionTitleStyles = carouselConfig.sectionTitleStyles || {};
-    const productTitleStyles = carouselConfig.productTitleStyles || {};
-    const priceStyles = carouselConfig.priceStyles || {};
-
-    // Container styles para el wrapper
+    // Container styles para el wrapper - USAR getStyles CORRECTAMENTE
     const containerStyles = {
-        ...getStyles(comp),
+        ...getStyles(comp), // Esto aplica los estilos del carrusel
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -59,35 +38,35 @@ const CarouselComponent = ({
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
-                backgroundColor: carouselConfig.backgroundColor || '#ffffff', // Agregar esta línea
+        backgroundColor: carouselConfig.backgroundColor || '#ffffff',
+        padding: '20px 0', // Agregar padding general
     };
 
-    // Card styles
-    const getCardStyles = () => ({
-        paddingTop: cardPaddingTop,
-        paddingRight: cardPaddingRight,
-        paddingBottom: cardPaddingBottom,
-        paddingLeft: cardPaddingLeft,
-        border: cardBorder === 'solid' 
-            ? `${cardBorderThickness} solid rgba(0, 0, 0, ${cardBorderOpacity})` 
-            : 'none',
-        borderRadius: cardBorderRadius,
-        backgroundColor: 'white',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        flex: `0 0 calc(${100 / slidesToShow}% - ${parseInt(gapX) * (slidesToShow - 1) / slidesToShow}px)`,
-        minWidth: 0, // Important for flexbox sizing
-    });
+    // Encontrar los componentes hijos
+    const titleComponent = children.find(child => child.type === 'carouselTitle');
+    const cardComponent = children.find(child => child.type === 'carouselCard');
 
-    // Image styles
-    const getImageStyles = () => ({
-        width: '100%',
-        height: '200px',
-        border: imageBorder === 'solid' 
-            ? `${imageBorderThickness} solid rgba(0, 0, 0, ${imageBorderOpacity})` 
-            : 'none',
-        borderRadius: imageBorderRadius,
-        objectFit: 'cover',
-    });
+    // Si no hay cardComponent, mostrar mensaje de error
+    if (!cardComponent) {
+        return (
+            <div style={containerStyles} className="p-4 border border-red-300 bg-red-50 rounded">
+                <p className="text-red-600 text-center">
+                    Error: No se encontró el componente de carta del carrusel.
+                </p>
+                {!isPreview && (
+                    <p className="text-red-500 text-sm text-center mt-2">
+                        Por favor, edita el carrusel y asegúrate de que tenga un componente de carta.
+                    </p>
+                )}
+            </div>
+        );
+    }
+
+    // Asegurarnos de que cardComponent.content existe
+    const safeCardComponent = {
+        ...cardComponent,
+        content: cardComponent.content || {}
+    };
 
     // Funciones para eventos de mouse
     const handleMouseEnter = () => {
@@ -127,24 +106,16 @@ const CarouselComponent = ({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
-            {/* Título de la sección */}
-            <TextComponent
-                comp={{
-                    id: comp.id + '-title',
-                    type: 'text',
-                    content: carouselConfig.sectionTitle || 'Productos en Carrusel',
-                    styles: {
-                        layout: sectionTitleStyles.layout || 'fit',
-                        alignment: sectionTitleStyles.alignment || 'center',
-                        fontSize: sectionTitleStyles.fontSize || '24px',
-                        fontWeight: sectionTitleStyles.fontWeight || 'bold',
-                        color: sectionTitleStyles.color || '#000000',
-                        ...sectionTitleStyles
-                    }
-                }}
-                getStyles={() => ({})}
-                isPreview={isPreview}
-            />
+            {/* Título del carrusel */}
+            {titleComponent && (
+                <CarouselTitleComponent
+                    comp={titleComponent}
+                    getStyles={getStyles} // Pasar getStyles al componente hijo
+                    isPreview={isPreview}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                />
+            )}
 
             {/* Contenedor del carrusel */}
             <div className="relative">
@@ -154,23 +125,17 @@ const CarouselComponent = ({
                         <Button
                             onClick={prevSlide}
                             disabled={currentIndex === 0}
-                            className={`absolute left-2 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
-                                currentIndex === 0 ? 'opacity-50' : 'opacity-100'
-                            }`}
+                            className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                             size="icon"
-                            // style={{ left: '-20px' }}
-                            >
+                        >
                             <ChevronLeft size={20} className='text-black' />
                         </Button>
                         
                         <Button
                             onClick={nextSlide}
                             disabled={currentIndex >= productsToShow.length - slidesToShow}
-                            className={`absolute right-2 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
-                                currentIndex >= productsToShow.length - slidesToShow ? 'opacity-50' : 'opacity-100'
-                            }`}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                             size="icon"
-                            // style={{ right: '-20px' }}
                         >
                             <ChevronRight size={20} className='text-black' />
                         </Button>
@@ -187,54 +152,30 @@ const CarouselComponent = ({
                     }}
                 >
                     {visibleProducts.map((product, index) => (
-                        <div key={product.id} style={getCardStyles()}>
-                            {/* Imagen del producto */}
-                            {product.media && product.media.length > 0 && (
-                                <img 
-                                    src={product.media[0].original_url} 
-                                    alt={product.product_name}
-                                    style={getImageStyles()}
-                                />
-                            )}
-                            
-                            {/* Nombre del producto */}
-                            <TextComponent
+                        <div 
+                            key={product.id} 
+                            style={{
+                                flex: `0 0 calc(${100 / slidesToShow}% - ${parseInt(gapX) * (slidesToShow - 1) / slidesToShow}px)`,
+                                minWidth: 0,
+                            }}
+                        >
+                            <CarouselCardComponent
                                 comp={{
-                                    id: `${comp.id}-product-${product.id}-name`,
-                                    type: 'text',
-                                    content: product.product_name,
-                                    styles: {
-                                        layout: productTitleStyles.layout || 'fit',
-                                        alignment: productTitleStyles.alignment || 'left',
-                                        fontSize: productTitleStyles.fontSize || '16px',
-                                        fontWeight: productTitleStyles.fontWeight || '600',
-                                        color: productTitleStyles.color || '#000000',
-                                        marginTop: '10px',
-                                        ...productTitleStyles
+                                    ...safeCardComponent,
+                                    content: {
+                                        ...safeCardComponent.content,
+                                        productData: product
                                     }
                                 }}
-                                getStyles={() => ({})}
+                                getStyles={getStyles} // Pasar getStyles al componente hijo
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                themeSettings={themeSettings}
                                 isPreview={isPreview}
-                            />
-                            
-                            {/* Precio del producto */}
-                            <TextComponent
-                                comp={{
-                                    id: `${comp.id}-product-${product.id}-price`,
-                                    type: 'text',
-                                    content: `$${parseFloat(product.product_price).toFixed(2)}`,
-                                    styles: {
-                                        layout: priceStyles.layout || 'fit',
-                                        alignment: priceStyles.alignment || 'left',
-                                        fontSize: priceStyles.fontSize || '14px',
-                                        fontWeight: priceStyles.fontWeight || 'normal',
-                                        color: priceStyles.color || '#666666',
-                                        marginTop: '5px',
-                                        ...priceStyles
-                                    }
-                                }}
-                                getStyles={() => ({})}
-                                isPreview={isPreview}
+                                products={products}
+                                setComponents={setComponents}
+                                hoveredComponentId={hoveredComponentId}
+                                setHoveredComponentId={setHoveredComponentId}
                             />
                         </div>
                     ))}
@@ -245,12 +186,12 @@ const CarouselComponent = ({
                     <div className="flex justify-center mt-4 space-x-2">
                         {Array.from({ length: productsToShow.length - slidesToShow + 1 }).map((_, index) => (
                             <Button
-                            size="icon"
                                 key={index}
                                 onClick={() => setCurrentIndex(index)}
                                 className={`w-2 h-2 rounded-full transition-all duration-200 ${
                                     index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'
                                 }`}
+                                size="icon"
                             />
                         ))}
                     </div>

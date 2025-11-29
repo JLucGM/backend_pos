@@ -1,4 +1,3 @@
-// components/BuilderPages/ComponentTree.jsx
 import React from 'react';
 import {
     useSortable,
@@ -17,9 +16,8 @@ const RootDroppable = ({ children, isOver }) => {
     return (
         <div
             ref={setNodeRef}
-            className={`min-h-20 transition-colors duration-200 ${
-                isOver ? 'bg-blue-100 border-2 border-blue-400 border-dashed rounded-lg p-4' : ''
-            }`}
+            className={`min-h-20 transition-colors duration-200 ${isOver ? 'bg-blue-100 border-2 border-blue-400 border-dashed rounded-lg p-4' : ''
+                }`}
         >
             {isOver && (
                 <div className="text-center text-blue-600 text-sm mb-2">
@@ -31,16 +29,16 @@ const RootDroppable = ({ children, isOver }) => {
     );
 };
 
-const SortableItem = ({ 
-    component, 
-    onDelete, 
-    onEdit, 
-    level = 0, 
-    activeId, 
+const SortableItem = ({
+    component,
+    onDelete,
+    onEdit,
+    level = 0,
+    activeId,
     overId,
     dropPosition,
     hoveredComponentId,
-    setHoveredComponentId 
+    setHoveredComponentId
 }) => {
     const {
         attributes,
@@ -58,15 +56,17 @@ const SortableItem = ({
     };
 
     const [isExpanded, setIsExpanded] = React.useState(true);
-    
-    // Determinar si tiene hijos
-    const hasChildren = 
+
+    // Determinar si tiene hijos - AGREGAR CARRUSEL Y CARRUSEL CARD
+    const hasChildren =
         (component.type === 'container' && component.content && component.content.length > 0) ||
         (component.type === 'banner' && component.content?.children && component.content.children.length > 0) ||
         (component.type === 'product' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'productCard' && component.content?.children && component.content.children.length > 0);
+        (component.type === 'productCard' && component.content?.children && component.content.children.length > 0) ||
+        (component.type === 'carousel' && component.content?.children && component.content.children.length > 0) ||
+        (component.type === 'carouselCard' && component.content?.children && component.content.children.length > 0);
 
-    // Función para obtener los hijos según el tipo de componente
+    // Función para obtener los hijos según el tipo de componente - AGREGAR CARRUSEL
     const getChildren = () => {
         if (component.type === 'container') {
             return component.content || [];
@@ -76,17 +76,23 @@ const SortableItem = ({
             return component.content?.children || [];
         } else if (component.type === 'productCard') {
             return component.content?.children || [];
+        } else if (component.type === 'carousel') {
+            return component.content?.children || [];
+        } else if (component.type === 'carouselCard') {
+            return component.content?.children || [];
         }
         return [];
     };
 
-    // Efectos visuales para el drag & drop
+    // Efectos visuales para el drag & drop - AGREGAR CARRUSEL
     const isActive = activeId === component.id;
     const isOver = overId === component.id;
     const isContainer = component.type === 'container';
     const isBanner = component.type === 'banner';
     const isProduct = component.type === 'product';
     const isProductCard = component.type === 'productCard';
+    const isCarousel = component.type === 'carousel';
+    const isCarouselCard = component.type === 'carouselCard';
     
     // Verificar si hay un indicador de posición para este componente
     const hasDropIndicator = dropPosition && dropPosition.id === component.id;
@@ -109,13 +115,13 @@ const SortableItem = ({
         }
     };
 
-    // Estilos dinámicos basados en el estado
+    // Estilos dinámicos basados en el estado - ACTUALIZAR CON CARRUSEL
     const getItemStyles = () => {
         let styles = "flex items-center gap-1 p-2 border rounded mb-1 group transition-all duration-200 cursor-pointer ";
         
         if (isActive) {
             styles += "bg-blue-100 border-blue-400 ";
-        } else if (isOver && (isContainer || isBanner || isProduct || isProductCard)) {
+        } else if (isOver && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard)) {
             styles += "bg-green-100 border-green-400 ";
         } else if (isOver) {
             styles += "bg-yellow-100 border-yellow-400 ";
@@ -223,8 +229,8 @@ const SortableItem = ({
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >
-                    {/* Indicador de área de drop para contenedores y banners */}
-                    {(isOver && (isContainer || isBanner || isProduct || isProductCard) && dropPositionType === 'inside') && (
+                    {/* Indicador de área de drop para contenedores y banners - ACTUALIZAR CON CARRUSEL */}
+                    {(isOver && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard) && dropPositionType === 'inside') && (
                         <div className="absolute inset-x-0 -top-1 h-2 bg-green-400 rounded opacity-50 z-20 pointer-events-none"></div>
                     )}
                     
@@ -248,7 +254,7 @@ const SortableItem = ({
     );
 };
 
-// Función auxiliar para obtener nombres de componentes
+// Función auxiliar para obtener nombres de componentes - ACTUALIZAR CON CARRUSEL
 const getComponentTypeName = (type) => {
     const typeNames = {
         'text': 'Texto',
@@ -267,7 +273,12 @@ const getComponentTypeName = (type) => {
         'productCard': 'Carta de Producto',
         'productImage': 'Imagen de Producto',
         'productName': 'Nombre de Producto',
-        'productPrice': 'Precio de Producto'
+        'productPrice': 'Precio de Producto',
+        'carouselTitle': 'Título del Carrusel',
+        'carouselCard': 'Carta del Carrusel',
+        'carouselImage': 'Imagen del Carrusel',
+        'carouselName': 'Nombre del Carrusel',
+        'carouselPrice': 'Precio del Carrusel'
     };
     return typeNames[type] || type;
 };

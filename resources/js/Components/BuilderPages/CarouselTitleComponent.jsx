@@ -1,7 +1,6 @@
-// components/BuilderPages/components/ProductTitleComponent.jsx
 import React from 'react';
 
-const ProductTitleComponent = ({
+const CarouselTitleComponent = ({
     comp,
     getStyles,
     isPreview,
@@ -10,6 +9,7 @@ const ProductTitleComponent = ({
 }) => {
     const styles = comp.styles || {};
     
+    // COMBINAR estilos del componente con getStyles
     const componentStyles = {
         ...getStyles(comp),
         color: styles.color || '#000000',
@@ -21,7 +21,6 @@ const ProductTitleComponent = ({
         padding: '10px 0'
     };
 
-    // Manejo de eventos de mouse para edición
     const handleClick = () => {
         if (!isPreview && onEdit) {
             onEdit(comp);
@@ -39,4 +38,4 @@ const ProductTitleComponent = ({
     );
 };
 
-export default ProductTitleComponent;
+export default CarouselTitleComponent;

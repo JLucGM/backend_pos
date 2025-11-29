@@ -1,7 +1,6 @@
-// components/BuilderPages/components/ProductTitleComponent.jsx
 import React from 'react';
 
-const ProductTitleComponent = ({
+const CarouselPriceComponent = ({
     comp,
     getStyles,
     isPreview,
@@ -11,17 +10,15 @@ const ProductTitleComponent = ({
     const styles = comp.styles || {};
     
     const componentStyles = {
-        ...getStyles(comp),
-        color: styles.color || '#000000',
-        fontSize: styles.fontSize || '24px',
-        fontWeight: styles.fontWeight || 'bold',
-        textAlign: styles.alignment || 'center',
-        margin: 0,
+        color: styles.color || '#666666',
+        fontSize: styles.fontSize || '14px',
+        fontWeight: styles.fontWeight || 'normal',
+        textAlign: styles.alignment || 'left',
+        margin: '5px 0',
+        padding: '0 10px',
         width: styles.layout === 'fill' ? '100%' : 'auto',
-        padding: '10px 0'
     };
 
-    // Manejo de eventos de mouse para edición
     const handleClick = () => {
         if (!isPreview && onEdit) {
             onEdit(comp);
@@ -34,9 +31,13 @@ const ProductTitleComponent = ({
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
-            {comp.content}
+            {comp.content || (
+                <span className="text-gray-400 italic">
+                    Precio del producto (se obtiene de la base de datos)
+                </span>
+            )}
         </div>
     );
 };
 
-export default ProductTitleComponent;
+export default CarouselPriceComponent;

@@ -49,26 +49,16 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
 
     return (
         <div className="space-y-4">
-            <Tabs defaultValue="carrusel" className="w-full">
-                <TabsList className="grid grid-cols-4 mb-4">
-                    <TabsTrigger value="carrusel">Carrusel</TabsTrigger>
-                    <TabsTrigger value="cartas">Cartas</TabsTrigger>
-                    <TabsTrigger value="imagenes">Imágenes</TabsTrigger>
-                    <TabsTrigger value="textos">Textos</TabsTrigger>
-                </TabsList>
+            {/* <Tabs defaultValue="carrusel" className="w-full"> */}
+                {/* <TabsList className="grid grid-cols-4 mb-4"> */}
+                    {/* <TabsTrigger value="carrusel">Carrusel</TabsTrigger> */}
+                    {/* <TabsTrigger value="cartas">Cartas</TabsTrigger> */}
+                    {/* <TabsTrigger value="imagenes">Imágenes</TabsTrigger>
+                    <TabsTrigger value="textos">Textos</TabsTrigger> */}
+                {/* </TabsList> */}
 
                 {/* Pestaña Carrusel */}
-                <TabsContent value="carrusel" className="space-y-4">
-                    <div className="">
-
-                        <Label htmlFor="sectionTitle">Título de la Sección</Label>
-                        <Input
-                            id="sectionTitle"
-                            value={editContent.sectionTitle || 'Productos en Carrusel'}
-                            onChange={(e) => updateCarouselConfig('sectionTitle', e.target.value)}
-                        />
-                    </div>
-
+                {/* <TabsContent value="carrusel" className="space-y-4"> */}
                     <div className="">
 
                         <Label htmlFor="limit">Conteo de Productos</Label>
@@ -132,10 +122,10 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
                             />
                         </div>
                     </div>
-                </TabsContent>
+                {/* </TabsContent> */}
 
                 {/* Pestaña Cartas */}
-                <TabsContent value="cartas" className="space-y-4">
+                {/* <TabsContent value="cartas" className="space-y-4">
                     <Label htmlFor="cardBorder">Borde de la Carta</Label>
                     <Select
                         value={editContent.cardBorder || 'none'}
@@ -222,10 +212,10 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
                             />
                         </div>
                     </div>
-                </TabsContent>
+                </TabsContent> */}
 
                 {/* Pestaña Imágenes */}
-                <TabsContent value="imagenes" className="space-y-4">
+                {/* <TabsContent value="imagenes" className="space-y-4">
                     <Label htmlFor="imageBorder">Borde de la Imagen</Label>
                     <Select
                         value={editContent.imageBorder || 'none'}
@@ -270,10 +260,10 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
                         value={parseInt(editContent.imageBorderRadius) || 0}
                         onChange={(e) => updateCarouselConfig('imageBorderRadius', `${e.target.value}px`)}
                     />
-                </TabsContent>
+                </TabsContent> */}
 
                 {/* Pestaña Textos */}
-                <TabsContent value="textos" className="space-y-6">
+                {/* <TabsContent value="textos" className="space-y-6">
                     <div className="space-y-4">
                         <h5 className="font-semibold">Estilos del Título de Sección</h5>
 
@@ -573,8 +563,8 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
                             </SelectContent>
                         </Select>
                     </div>
-                </TabsContent>
-            </Tabs>
+                </TabsContent> */}
+            {/* </Tabs> */}
         </div>
     );
 };

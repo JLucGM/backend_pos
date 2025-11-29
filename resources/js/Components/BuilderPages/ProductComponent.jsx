@@ -77,7 +77,7 @@ const ProductComponent = ({
             {titleComponent && (
                 <ProductTitleComponent
                     comp={titleComponent}
-                    getStyles={() => ({})}
+                    getStyles={getStyles}
                     isPreview={isPreview}
                     onEdit={onEdit}
                     onDelete={onDelete}
@@ -97,7 +97,7 @@ const ProductComponent = ({
                                     productData: product // Pasar datos del producto específico
                                 }
                             }}
-                            getStyles={() => ({})}
+                            getStyles={getStyles}
                             onEdit={onEdit}
                             onDelete={onDelete}
                             themeSettings={themeSettings}

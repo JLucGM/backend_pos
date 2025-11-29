@@ -32,6 +32,11 @@ import ProductCardEditDialog from './partials/ProductCardEditDialog';
 import ProductImageEditDialog from './partials/ProductImageEditDialog';
 import ProductNameEditDialog from './partials/ProductNameEditDialog';
 import ProductPriceEditDialog from './partials/ProductPriceEditDialog';
+import CarouselTitleEditDialog from './partials/Carousel/CarouselTitleEditDialog';
+import CarouselCardEditDialog from './partials/Carousel/CarouselCardEditDialog';
+import CarouselImageEditDialog from './partials/Carousel/CarouselImageEditDialog';
+import CarouselNameEditDialog from './partials/Carousel/CarouselNameEditDialog';
+import CarouselPriceEditDialog from './partials/Carousel/CarouselPriceEditDialog';
 
 export default function Builder({ page, products }) {
     const [components, setComponents] = useState([]);
@@ -107,6 +112,30 @@ export default function Builder({ page, products }) {
                             return {
                                 ...component,
                                 content: updateComponentInTree(component.content, targetId, newData)
+                            };
+                        }
+
+                        // Actualizar para banners con hijos
+                        if (component.type === 'carousel' && component.content && component.content.children) {
+                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                            return {
+                                ...component,
+                                content: {
+                                    ...component.content,
+                                    children: updatedChildren
+                                }
+                            };
+                        }
+                        
+                        // Actualizar para productCard con hijos
+                        if (component.type === 'carouselCard' && component.content && component.content.children) {
+                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                            return {
+                                ...component,
+                                content: {
+                                    ...component.content,
+                                    children: updatedChildren
+                                }
                             };
                         }
 
@@ -253,46 +282,95 @@ export default function Builder({ page, products }) {
             if (selectedType === 'image') content = 'https://picsum.photos/150';
             if (selectedType === 'container') content = [];
             if (selectedType === 'carousel') {
+                const carouselId = Date.now();
+                const titleId = carouselId + 1;
+                const cardId = carouselId + 2;
+                const imageId = carouselId + 3;
+                const nameId = carouselId + 4;
+                const priceId = carouselId + 5;
+
                 content = {
-                    sectionTitle: 'Productos en Carrusel',
+                    // Configuración del carrusel
                     limit: 5,
                     slidesToShow: 3,
                     gapX: '10px',
                     gapY: '10px',
                     backgroundColor: '#ffffff',
-                    cardBorder: 'none',
-                    cardBorderThickness: '1px',
-                    cardBorderOpacity: '1',
-                    cardBorderRadius: '0px',
-                    cardPaddingTop: '0px',
-                    cardPaddingRight: '0px',
-                    cardPaddingBottom: '0px',
-                    cardPaddingLeft: '0px',
-                    imageBorder: 'none',
-                    imageBorderThickness: '1px',
-                    imageBorderOpacity: '1',
-                    imageBorderRadius: '0px',
-                    sectionTitleStyles: {
-                        layout: 'fit',
-                        alignment: 'center',
-                        color: '#000000',
-                        fontSize: '24px',
-                        fontWeight: 'bold'
-                    },
-                    productTitleStyles: {
-                        layout: 'fit',
-                        alignment: 'left',
-                        color: '#000000',
-                        fontSize: '16px',
-                        fontWeight: '600'
-                    },
-                    priceStyles: {
-                        layout: 'fit',
-                        alignment: 'left',
-                        color: '#666666',
-                        fontSize: '14px',
-                        fontWeight: 'normal'
-                    }
+
+                    // Los hijos como componentes independientes - AQUÍ ESTÁ LA CLAVE
+                    children: [
+                        {
+                            id: titleId,
+                            type: 'carouselTitle',
+                            content: 'Productos en Carrusel',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'center',
+                                color: '#000000',
+                                fontSize: '24px',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        {
+                            id: cardId,
+                            type: 'carouselCard',
+                            content: { // Asegúrate de que content es un objeto
+                                // Configuración de la carta
+                                cardBorder: 'none',
+                                cardBorderThickness: '1px',
+                                cardBorderOpacity: '1',
+                                cardBorderRadius: '0px',
+                                cardPaddingTop: '10px',
+                                cardPaddingRight: '10px',
+                                cardPaddingBottom: '10px',
+                                cardPaddingLeft: '10px',
+                                imageBorder: 'none',
+                                imageBorderThickness: '1px',
+                                imageBorderOpacity: '1',
+                                imageBorderRadius: '0px',
+                                // Los hijos de la carta
+                                children: [
+                                    {
+                                        id: imageId,
+                                        type: 'carouselImage',
+                                        content: '',
+                                        styles: {
+                                            aspectRatio: 'square',
+                                            imageBorder: 'none',
+                                            imageBorderThickness: '1px',
+                                            imageBorderOpacity: '1',
+                                            imageBorderRadius: '0px'
+                                        }
+                                    },
+                                    {
+                                        id: nameId,
+                                        type: 'carouselName',
+                                        content: '',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#000000',
+                                            fontSize: '16px',
+                                            fontWeight: '600'
+                                        }
+                                    },
+                                    {
+                                        id: priceId,
+                                        type: 'carouselPrice',
+                                        content: '',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#666666',
+                                            fontSize: '14px',
+                                            fontWeight: 'normal'
+                                        }
+                                    }
+                                ]
+                            },
+                            styles: {}
+                        }
+                    ]
                 };
             }
 
@@ -1017,6 +1095,46 @@ export default function Builder({ page, products }) {
                                         )}
                                         {editingComponent?.type === 'carousel' && (
                                             <CarouselEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'carouselTitle' && (
+                                            <CarouselTitleEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'carouselCard' && (
+                                            <CarouselCardEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'carouselImage' && (
+                                            <CarouselImageEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'carouselName' && (
+                                            <CarouselNameEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'carouselPrice' && (
+                                            <CarouselPriceEditDialog
                                                 editContent={editContent}
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
