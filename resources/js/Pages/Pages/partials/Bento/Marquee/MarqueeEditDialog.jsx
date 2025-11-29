@@ -1,0 +1,201 @@
+import React from 'react';
+import { Label } from '@/Components/ui/label';
+import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+
+const MarqueeEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles
+}) => {
+    const updateStyle = (key, value) => {
+        setEditStyles(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    return (
+        <div className="space-y-4">
+            {/* Texto del Marquee */}
+            <div>
+                <Label htmlFor="marquee-text">Texto del Marquee</Label>
+                <Input
+                    id="marquee-text"
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    placeholder="Ingresa el texto para el marquee..."
+                />
+            </div>
+
+            {/* Velocidad */}
+            <div>
+                <Label htmlFor="marquee-speed">Velocidad (1-10)</Label>
+                <Input
+                    type="range"
+                    id="marquee-speed"
+                    value={editStyles.speed || 2}
+                    onChange={(e) => updateStyle('speed', parseFloat(e.target.value))}
+                    min="1"
+                    max="10"
+                    step="0.5"
+                    className="w-full"
+                />
+                <div className="text-xs text-gray-500 mt-1">
+                    Velocidad actual: {editStyles.speed || 2}
+                </div>
+            </div>
+
+            {/* Dirección */}
+            <div>
+                <Label htmlFor="marquee-direction">Dirección</Label>
+                <Select
+                    value={editStyles.direction || 'left'}
+                    onValueChange={(value) => updateStyle('direction', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="left">Izquierda →</SelectItem>
+                        <SelectItem value="right">← Derecha</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Tamaño de texto */}
+            <div>
+                <Label htmlFor="marquee-fontSize">Tamaño de texto</Label>
+                <Input
+                    id="marquee-fontSize"
+                    value={editStyles.fontSize || '16px'}
+                    onChange={(e) => updateStyle('fontSize', e.target.value)}
+                    placeholder="ej: 16px, 1rem, 2em"
+                />
+            </div>
+
+            {/* Grosor de texto */}
+            <div>
+                <Label htmlFor="marquee-fontWeight">Grosor del texto</Label>
+                <Select
+                    value={editStyles.fontWeight || 'normal'}
+                    onValueChange={(value) => updateStyle('fontWeight', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="normal">Normal</SelectItem>
+                        <SelectItem value="bold">Negrita</SelectItem>
+                        <SelectItem value="600">Seminegrita</SelectItem>
+                        <SelectItem value="300">Ligero</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Color de texto */}
+            <div>
+                <Label htmlFor="marquee-color">Color del texto</Label>
+                <div className="flex gap-2">
+                    <Input
+                        id="marquee-color"
+                        value={editStyles.color || '#000000'}
+                        onChange={(e) => updateStyle('color', e.target.value)}
+                        placeholder="#000000"
+                    />
+                    <Input
+                        type="color"
+                        value={editStyles.color || '#000000'}
+                        onChange={(e) => updateStyle('color', e.target.value)}
+                        className="w-12"
+                    />
+                </div>
+            </div>
+
+            {/* Color de fondo */}
+            <div>
+                <Label htmlFor="marquee-backgroundColor">Color de fondo</Label>
+                <div className="flex gap-2">
+                    <Input
+                        id="marquee-backgroundColor"
+                        value={editStyles.backgroundColor || 'transparent'}
+                        onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                        placeholder="transparent"
+                    />
+                    <Input
+                        type="color"
+                        value={editStyles.backgroundColor === 'transparent' ? '#ffffff' : editStyles.backgroundColor || '#ffffff'}
+                        onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                        className="w-12"
+                    />
+                </div>
+            </div>
+
+            {/* Padding individual */}
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <Label htmlFor="marquee-paddingTop">Padding Superior</Label>
+                    <Input
+                        id="marquee-paddingTop"
+                        value={editStyles.paddingTop || '10px'}
+                        onChange={(e) => updateStyle('paddingTop', e.target.value)}
+                        placeholder="10px"
+                    />
+                </div>
+                <div>
+                    <Label htmlFor="marquee-paddingBottom">Padding Inferior</Label>
+                    <Input
+                        id="marquee-paddingBottom"
+                        value={editStyles.paddingBottom || '10px'}
+                        onChange={(e) => updateStyle('paddingBottom', e.target.value)}
+                        placeholder="10px"
+                    />
+                </div>
+                <div>
+                    <Label htmlFor="marquee-paddingLeft">Padding Izquierdo</Label>
+                    <Input
+                        id="marquee-paddingLeft"
+                        value={editStyles.paddingLeft || '0px'}
+                        onChange={(e) => updateStyle('paddingLeft', e.target.value)}
+                        placeholder="0px"
+                    />
+                </div>
+                <div>
+                    <Label htmlFor="marquee-paddingRight">Padding Derecho</Label>
+                    <Input
+                        id="marquee-paddingRight"
+                        value={editStyles.paddingRight || '0px'}
+                        onChange={(e) => updateStyle('paddingRight', e.target.value)}
+                        placeholder="0px"
+                    />
+                </div>
+            </div>
+
+            {/* Border Radius */}
+            <div>
+                <Label htmlFor="marquee-borderRadius">Border Radius</Label>
+                <Input
+                    id="marquee-borderRadius"
+                    value={editStyles.borderRadius || '0px'}
+                    onChange={(e) => updateStyle('borderRadius', e.target.value)}
+                    placeholder="0px"
+                />
+            </div>
+
+            {/* Interactivo */}
+            <div className="flex items-center space-x-2">
+                <input
+                    type="checkbox"
+                    id="marquee-interactive"
+                    checked={editStyles.interactive !== false}
+                    onChange={(e) => updateStyle('interactive', e.target.checked)}
+                    className="rounded border-gray-300"
+                />
+                <Label htmlFor="marquee-interactive">Interactivo (pausa al pasar el mouse)</Label>
+            </div>
+        </div>
+    );
+};
+
+export default MarqueeEditDialog;

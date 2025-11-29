@@ -42,6 +42,7 @@ import BentoTitleEditDialog from './partials/Bento/BentoTitleEditDialog';
 import BentoFeatureEditDialog from './partials/Bento/BentoFeatureEditDialog';
 import BentoFeatureTitleEditDialog from './partials/Bento/BentoFeatureTitleEditDialog';
 import BentoFeatureTextEditDialog from './partials/Bento/BentoFeatureTextEditDialog';
+import MarqueeEditDialog from './partials/Bento/Marquee/MarqueeEditDialog';
 
 export default function Builder({ page, products }) {
     const [components, setComponents] = useState([]);
@@ -343,6 +344,9 @@ export default function Builder({ page, products }) {
             if (selectedType === 'link') content = 'https://example.com';
             if (selectedType === 'image') content = 'https://picsum.photos/150';
             if (selectedType === 'container') content = [];
+            if (selectedType === 'marquee') {
+    content = '¡Texto en movimiento! Personaliza este texto.';
+}
             if (selectedType === 'carousel') {
                 const carouselId = Date.now();
                 const titleId = carouselId + 1;
@@ -1428,6 +1432,14 @@ if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.chi
                                                 setEditStyles={setEditStyles}
                                             />
                                         )}
+                                        {editingComponent?.type === 'marquee' && (
+    <MarqueeEditDialog
+        editContent={editContent}
+        setEditContent={setEditContent}
+        editStyles={editStyles}
+        setEditStyles={setEditStyles}
+    />
+)}
                                         {editingComponent?.type === 'carouselImage' && (
                                             <CarouselImageEditDialog
                                                 editContent={editContent}
@@ -1522,7 +1534,6 @@ if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.chi
                                                 setEditStyles={setEditStyles}
                                             />
                                         )}
-                                        // Agregar después de los otros casos de edición
                                         {editingComponent?.type === 'bento' && (
                                             <BentoEditDialog
                                                 editContent={editContent}
@@ -1654,6 +1665,7 @@ if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.chi
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="bento">Bento</SelectItem>
+                                <SelectItem value="marquee">Texto en Movimiento</SelectItem>
                                 <SelectItem value="banner">Banner</SelectItem>
                                 <SelectItem value="product">Productos</SelectItem>
                                 <SelectItem value="heading">Encabezado</SelectItem>

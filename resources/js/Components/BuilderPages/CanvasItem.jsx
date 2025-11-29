@@ -27,6 +27,7 @@ import BentoTitleComponent from './BentoComponent/BentoTitleComponent';
 import BentoFeatureComponent from './BentoComponent/BentoFeatureComponent';
 import BentoFeatureTitleComponent from './BentoComponent/BentoFeatureTitleComponent';
 import BentoFeatureTextComponent from './BentoComponent/BentoFeatureTextComponent';
+import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
 
 const CanvasItem = ({
     comp,
@@ -395,6 +396,16 @@ const CanvasItem = ({
                         onDelete={onDeleteComponent}
                     />
                 );
+                case 'marquee':
+    return (
+        <MarqueeTextComponent
+            comp={comp}
+            getStyles={getStyles}
+            isPreview={isPreview}
+            onEdit={onEditComponent}
+            onDelete={onDeleteComponent}
+        />
+    );
             default:
                 return <div>Componente no reconocido: {comp.type}</div>;
         }
@@ -418,7 +429,9 @@ const CanvasItem = ({
             'productCard': 'Carta de Producto',
             'productImage': 'Imagen de Producto',
             'productName': 'Nombre de Producto',
-            'productPrice': 'Precio de Producto'
+            'productPrice': 'Precio de Producto',
+            'marquee': 'Texto en Movimiento',
+            
         };
         return typeNames[type] || type;
     };
