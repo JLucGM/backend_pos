@@ -28,6 +28,7 @@ import BentoFeatureComponent from './BentoComponent/BentoFeatureComponent';
 import BentoFeatureTitleComponent from './BentoComponent/BentoFeatureTitleComponent';
 import BentoFeatureTextComponent from './BentoComponent/BentoFeatureTextComponent';
 import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
+import DividerComponent from './DividerComponent/DividerComponent';
 
 const CanvasItem = ({
     comp,
@@ -406,6 +407,16 @@ const CanvasItem = ({
             onDelete={onDeleteComponent}
         />
     );
+    case 'divider':
+    return (
+        <DividerComponent
+            comp={comp}
+            getStyles={getStyles}
+            isPreview={isPreview}
+            onEdit={onEditComponent}
+            onDelete={onDeleteComponent}
+        />
+    );
             default:
                 return <div>Componente no reconocido: {comp.type}</div>;
         }
@@ -431,7 +442,8 @@ const CanvasItem = ({
             'productName': 'Nombre de Producto',
             'productPrice': 'Precio de Producto',
             'marquee': 'Texto en Movimiento',
-            
+            'divider': 'Divider ',
+
         };
         return typeNames[type] || type;
     };

@@ -42,7 +42,8 @@ import BentoTitleEditDialog from './partials/Bento/BentoTitleEditDialog';
 import BentoFeatureEditDialog from './partials/Bento/BentoFeatureEditDialog';
 import BentoFeatureTitleEditDialog from './partials/Bento/BentoFeatureTitleEditDialog';
 import BentoFeatureTextEditDialog from './partials/Bento/BentoFeatureTextEditDialog';
-import MarqueeEditDialog from './partials/Bento/Marquee/MarqueeEditDialog';
+import MarqueeEditDialog from './partials/Marquee/MarqueeEditDialog';
+import DividerEditDialog from './partials/Divider/DividerEditDialog';
 
 export default function Builder({ page, products }) {
     const [components, setComponents] = useState([]);
@@ -120,6 +121,12 @@ export default function Builder({ page, products }) {
                                 content: updateComponentInTree(component.content, targetId, newData)
                             };
                         }
+
+                        // Buscar en divider (aunque no tiene hijos, por consistencia)
+if (component.type === 'divider') {
+    // No necesita procesamiento especial ya que no tiene hijos
+    return component;
+}
 
                         // Actualizar para banners con hijos
                         if (component.type === 'carousel' && component.content && component.content.children) {
@@ -344,6 +351,9 @@ export default function Builder({ page, products }) {
             if (selectedType === 'link') content = 'https://example.com';
             if (selectedType === 'image') content = 'https://picsum.photos/150';
             if (selectedType === 'container') content = [];
+            if (selectedType === 'divider') {
+    content = ''; // El divider no necesita contenido de texto
+}
             if (selectedType === 'marquee') {
     content = '¡Texto en movimiento! Personaliza este texto.';
 }
@@ -1440,6 +1450,12 @@ if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.chi
         setEditStyles={setEditStyles}
     />
 )}
+{editingComponent?.type === 'divider' && (
+    <DividerEditDialog
+        editStyles={editStyles}
+        setEditStyles={setEditStyles}
+    />
+)}
                                         {editingComponent?.type === 'carouselImage' && (
                                             <CarouselImageEditDialog
                                                 editContent={editContent}
@@ -1676,6 +1692,7 @@ if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.chi
                                 <SelectItem value="link">Enlace</SelectItem>
                                 <SelectItem value="carousel">Carrusel de Productos</SelectItem>
                                 <SelectItem value="container">Contenedor</SelectItem>
+                                <SelectItem value="divider">Divider (Línea)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
