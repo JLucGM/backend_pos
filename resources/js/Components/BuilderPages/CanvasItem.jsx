@@ -364,7 +364,7 @@ const CanvasItem = ({
     return (
         <div
             id={`component-${comp.id}`}
-            className={`relative group rounded-lg transition-all duration-200 ${isHovered && !isPreview
+            className={`relative group rounded-lgs transition-all duration-200 ${isHovered && !isPreview
                 ? 'border border-blue-400 bg-blue-50'
                 : 'border border-transparent'
                 }`}

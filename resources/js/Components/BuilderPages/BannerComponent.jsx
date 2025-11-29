@@ -1,7 +1,7 @@
-// components/BuilderPages/components/BannerComponent.jsx
 import React from 'react';
 import BannerTitleComponent from './BannerTitleComponent';
 import BannerTextComponent from './BannerTextComponent';
+import ComponentWithHover from './ComponentWithHover';
 
 const BannerComponent = ({
     comp,
@@ -16,6 +16,35 @@ const BannerComponent = ({
 }) => {
     const customStyles = comp.styles || {};
     const bannerConfig = comp.content || {};
+
+    // Función para obtener el nombre del tipo de componente
+    const getComponentTypeName = (type) => {
+        const typeNames = {
+            'text': 'Texto',
+            'heading': 'Encabezado',
+            'button': 'Botón',
+            'image': 'Imagen',
+            'video': 'Video',
+            'link': 'Enlace',
+            'product': 'Producto',
+            'carousel': 'Carrusel',
+            'container': 'Contenedor',
+            'banner': 'Sección Banner',
+            'bannerTitle': 'Título del Banner',
+            'bannerText': 'Texto del Banner',
+            'productTitle': 'Título de Productos',
+            'productCard': 'Carta de Producto',
+            'productImage': 'Imagen de Producto',
+            'productName': 'Nombre de Producto',
+            'productPrice': 'Precio de Producto',
+            'carouselTitle': 'Título del Carrusel',
+            'carouselCard': 'Carta del Carrusel',
+            'carouselImage': 'Imagen del Carrusel',
+            'carouselName': 'Nombre del Carrusel',
+            'carouselPrice': 'Precio del Carrusel'
+        };
+        return typeNames[type] || type;
+    };
 
     // Configuración del contenedor principal
     const containerHeight = bannerConfig.containerHeight || '400px';
@@ -146,25 +175,45 @@ const BannerComponent = ({
                     switch (child.type) {
                         case 'bannerTitle':
                             return (
-                                <BannerTitleComponent
+                                <ComponentWithHover
                                     key={child.id}
-                                    comp={child}
-                                    getStyles={() => ({})}
+                                    component={child}
                                     isPreview={isPreview}
-                                    onEdit={onEdit}
-                                    onDelete={onDelete}
-                                />
+                                    hoveredComponentId={hoveredComponentId}
+                                    setHoveredComponentId={setHoveredComponentId}
+                                    getComponentTypeName={getComponentTypeName}
+                                >
+                                    <BannerTitleComponent
+                                        comp={child}
+                                        getStyles={getStyles}
+                                        isPreview={isPreview}
+                                        onEdit={onEdit}
+                                        onDelete={onDelete}
+                                        hoveredComponentId={hoveredComponentId}
+                                        setHoveredComponentId={setHoveredComponentId}
+                                    />
+                                </ComponentWithHover>
                             );
                         case 'bannerText':
                             return (
-                                <BannerTextComponent
+                                <ComponentWithHover
                                     key={child.id}
-                                    comp={child}
-                                    getStyles={() => ({})}
+                                    component={child}
                                     isPreview={isPreview}
-                                    onEdit={onEdit}
-                                    onDelete={onDelete}
-                                />
+                                    hoveredComponentId={hoveredComponentId}
+                                    setHoveredComponentId={setHoveredComponentId}
+                                    getComponentTypeName={getComponentTypeName}
+                                >
+                                    <BannerTextComponent
+                                        comp={child}
+                                        getStyles={getStyles}
+                                        isPreview={isPreview}
+                                        onEdit={onEdit}
+                                        onDelete={onDelete}
+                                        hoveredComponentId={hoveredComponentId}
+                                        setHoveredComponentId={setHoveredComponentId}
+                                    />
+                                </ComponentWithHover>
                             );
                         default:
                             return null;

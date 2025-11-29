@@ -18,7 +18,7 @@ const CarouselTitleComponent = ({
         textAlign: styles.alignment || 'center',
         margin: 0,
         width: styles.layout === 'fill' ? '100%' : 'auto',
-        padding: '10px 0'
+        // padding: '10px 0'
     };
 
     const handleClick = () => {

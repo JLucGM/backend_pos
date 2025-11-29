@@ -2,6 +2,7 @@ import React from 'react';
 import CarouselImageComponent from './CarouselImageComponent';
 import CarouselNameComponent from './CarouselNameComponent';
 import CarouselPriceComponent from './CarouselPriceComponent';
+import ComponentWithHover from './ComponentWithHover';
 
 const CarouselCardComponent = ({
     comp,
@@ -20,9 +21,38 @@ const CarouselCardComponent = ({
     const children = cardConfig.children || [];
     const productData = cardConfig.productData;
 
-    // Estilos de la carta con valores por defecto - USAR getStyles
+    // Función para obtener el nombre del tipo de componente
+    const getComponentTypeName = (type) => {
+        const typeNames = {
+            'text': 'Texto',
+            'heading': 'Encabezado',
+            'button': 'Botón',
+            'image': 'Imagen',
+            'video': 'Video',
+            'link': 'Enlace',
+            'product': 'Producto',
+            'carousel': 'Carrusel',
+            'container': 'Contenedor',
+            'banner': 'Sección Banner',
+            'bannerTitle': 'Título del Banner',
+            'bannerText': 'Texto del Banner',
+            'productTitle': 'Título de Productos',
+            'productCard': 'Carta de Producto',
+            'productImage': 'Imagen de Producto',
+            'productName': 'Nombre de Producto',
+            'productPrice': 'Precio de Producto',
+            'carouselTitle': 'Título del Carrusel',
+            'carouselCard': 'Carta del Carrusel',
+            'carouselImage': 'Imagen del Carrusel',
+            'carouselName': 'Nombre del Carrusel',
+            'carouselPrice': 'Precio del Carrusel'
+        };
+        return typeNames[type] || type;
+    };
+
+    // Estilos de la carta
     const cardStyles = {
-        ...getStyles(comp), // Aplicar estilos del componente
+        ...getStyles(comp),
         paddingTop: cardConfig.cardPaddingTop || '10px',
         paddingRight: cardConfig.cardPaddingRight || '10px',
         paddingBottom: cardConfig.cardPaddingBottom || '10px',
@@ -36,7 +66,7 @@ const CarouselCardComponent = ({
         height: '100%',
     };
 
-    // Encontrar los componentes hijos con manejo de errores
+    // Encontrar los componentes hijos
     const imageComponent = children.find(child => child.type === 'carouselImage');
     const nameComponent = children.find(child => child.type === 'carouselName');
     const priceComponent = children.find(child => child.type === 'carouselPrice');
@@ -60,20 +90,30 @@ const CarouselCardComponent = ({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
-            {/* Imagen */}
+            {/* Imagen con ComponentWithHover */}
             {imageComponent && productData && (
-                <CarouselImageComponent
-                    comp={{
-                        ...imageComponent,
-                        content: productData.media && productData.media.length > 0 
-                            ? productData.media[0].original_url 
-                            : imageComponent.content
-                    }}
-                    getStyles={getStyles} // Pasar getStyles
+                <ComponentWithHover
+                    component={imageComponent}
                     isPreview={isPreview}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                />
+                    hoveredComponentId={hoveredComponentId}
+                    setHoveredComponentId={setHoveredComponentId}
+                    getComponentTypeName={getComponentTypeName}
+                >
+                    <CarouselImageComponent
+                        comp={{
+                            ...imageComponent,
+                            content: productData.media && productData.media.length > 0 
+                                ? productData.media[0].original_url 
+                                : imageComponent.content
+                        }}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                </ComponentWithHover>
             )}
 
             {/* Mostrar placeholder si no hay imagen */}
@@ -83,34 +123,54 @@ const CarouselCardComponent = ({
                 </div>
             )}
 
-            {/* Nombre */}
+            {/* Nombre con ComponentWithHover */}
             {nameComponent && productData && (
-                <CarouselNameComponent
-                    comp={{
-                        ...nameComponent,
-                        content: productData.product_name || nameComponent.content
-                    }}
-                    getStyles={getStyles} // Pasar getStyles
+                <ComponentWithHover
+                    component={nameComponent}
                     isPreview={isPreview}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                />
+                    hoveredComponentId={hoveredComponentId}
+                    setHoveredComponentId={setHoveredComponentId}
+                    getComponentTypeName={getComponentTypeName}
+                >
+                    <CarouselNameComponent
+                        comp={{
+                            ...nameComponent,
+                            content: productData.product_name || nameComponent.content
+                        }}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                </ComponentWithHover>
             )}
 
-            {/* Precio */}
+            {/* Precio con ComponentWithHover */}
             {priceComponent && productData && (
-                <CarouselPriceComponent
-                    comp={{
-                        ...priceComponent,
-                        content: productData.product_price 
-                            ? `$${parseFloat(productData.product_price).toFixed(2)}`
-                            : priceComponent.content
-                    }}
-                    getStyles={getStyles} // Pasar getStyles
+                <ComponentWithHover
+                    component={priceComponent}
                     isPreview={isPreview}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                />
+                    hoveredComponentId={hoveredComponentId}
+                    setHoveredComponentId={setHoveredComponentId}
+                    getComponentTypeName={getComponentTypeName}
+                >
+                    <CarouselPriceComponent
+                        comp={{
+                            ...priceComponent,
+                            content: productData.product_price 
+                                ? `$${parseFloat(productData.product_price).toFixed(2)}`
+                                : priceComponent.content
+                        }}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                </ComponentWithHover>
             )}
 
             {/* Mostrar placeholders si no hay componentes de nombre o precio */}

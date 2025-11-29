@@ -1,8 +1,8 @@
-// components/BuilderPages/components/ProductCardComponent.jsx
 import React from 'react';
 import ProductImageComponent from './ProductImageComponent';
 import ProductNameComponent from './ProductNameComponent';
 import ProductPriceComponent from './ProductPriceComponent';
+import ComponentWithHover from './ComponentWithHover';
 
 const ProductCardComponent = ({
     comp,
@@ -19,6 +19,35 @@ const ProductCardComponent = ({
     const cardConfig = comp.content || {};
     const children = cardConfig.children || [];
     const productData = cardConfig.productData;
+
+    // Función para obtener el nombre del tipo de componente
+    const getComponentTypeName = (type) => {
+        const typeNames = {
+            'text': 'Texto',
+            'heading': 'Encabezado',
+            'button': 'Botón',
+            'image': 'Imagen',
+            'video': 'Video',
+            'link': 'Enlace',
+            'product': 'Producto',
+            'carousel': 'Carrusel',
+            'container': 'Contenedor',
+            'banner': 'Sección Banner',
+            'bannerTitle': 'Título del Banner',
+            'bannerText': 'Texto del Banner',
+            'productTitle': 'Título de Productos',
+            'productCard': 'Carta de Producto',
+            'productImage': 'Imagen de Producto',
+            'productName': 'Nombre de Producto',
+            'productPrice': 'Precio de Producto',
+            'carouselTitle': 'Título del Carrusel',
+            'carouselCard': 'Carta del Carrusel',
+            'carouselImage': 'Imagen del Carrusel',
+            'carouselName': 'Nombre del Carrusel',
+            'carouselPrice': 'Precio del Carrusel'
+        };
+        return typeNames[type] || type;
+    };
 
     // Estilos de la carta
     const cardStyles = {
@@ -71,36 +100,66 @@ const ProductCardComponent = ({
                 switch (child.type) {
                     case 'productImage':
                         return (
-                            <ProductImageComponent
+                            <ComponentWithHover
                                 key={child.id}
-                                comp={enhancedChild}
-                                getStyles={() => ({})}
+                                component={child}
                                 isPreview={isPreview}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                            />
+                                hoveredComponentId={hoveredComponentId}
+                                setHoveredComponentId={setHoveredComponentId}
+                                getComponentTypeName={getComponentTypeName}
+                            >
+                                <ProductImageComponent
+                                    comp={enhancedChild}
+                                    getStyles={getStyles}
+                                    isPreview={isPreview}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    hoveredComponentId={hoveredComponentId}
+                                    setHoveredComponentId={setHoveredComponentId}
+                                />
+                            </ComponentWithHover>
                         );
                     case 'productName':
                         return (
-                            <ProductNameComponent
+                            <ComponentWithHover
                                 key={child.id}
-                                comp={enhancedChild}
-                                getStyles={() => ({})}
+                                component={child}
                                 isPreview={isPreview}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                            />
+                                hoveredComponentId={hoveredComponentId}
+                                setHoveredComponentId={setHoveredComponentId}
+                                getComponentTypeName={getComponentTypeName}
+                            >
+                                <ProductNameComponent
+                                    comp={enhancedChild}
+                                    getStyles={getStyles}
+                                    isPreview={isPreview}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    hoveredComponentId={hoveredComponentId}
+                                    setHoveredComponentId={setHoveredComponentId}
+                                />
+                            </ComponentWithHover>
                         );
                     case 'productPrice':
                         return (
-                            <ProductPriceComponent
+                            <ComponentWithHover
                                 key={child.id}
-                                comp={enhancedChild}
-                                getStyles={() => ({})}
+                                component={child}
                                 isPreview={isPreview}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                            />
+                                hoveredComponentId={hoveredComponentId}
+                                setHoveredComponentId={setHoveredComponentId}
+                                getComponentTypeName={getComponentTypeName}
+                            >
+                                <ProductPriceComponent
+                                    comp={enhancedChild}
+                                    getStyles={getStyles}
+                                    isPreview={isPreview}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    hoveredComponentId={hoveredComponentId}
+                                    setHoveredComponentId={setHoveredComponentId}
+                                />
+                            </ComponentWithHover>
                         );
                     default:
                         return null;

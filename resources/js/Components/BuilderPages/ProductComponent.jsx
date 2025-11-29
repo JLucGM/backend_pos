@@ -1,7 +1,7 @@
-// components/BuilderPages/components/ProductComponent.jsx
 import React from 'react';
 import ProductTitleComponent from './ProductTitleComponent';
 import ProductCardComponent from './ProductCardComponent';
+import ComponentWithHover from './ComponentWithHover';
 
 const ProductComponent = ({
     comp,
@@ -17,6 +17,35 @@ const ProductComponent = ({
 }) => {
     const productConfig = comp.content || {};
     const children = productConfig.children || [];
+
+    // Función para obtener el nombre del tipo de componente
+    const getComponentTypeName = (type) => {
+        const typeNames = {
+            'text': 'Texto',
+            'heading': 'Encabezado',
+            'button': 'Botón',
+            'image': 'Imagen',
+            'video': 'Video',
+            'link': 'Enlace',
+            'product': 'Producto',
+            'carousel': 'Carrusel',
+            'container': 'Contenedor',
+            'banner': 'Sección Banner',
+            'bannerTitle': 'Título del Banner',
+            'bannerText': 'Texto del Banner',
+            'productTitle': 'Título de Productos',
+            'productCard': 'Carta de Producto',
+            'productImage': 'Imagen de Producto',
+            'productName': 'Nombre de Producto',
+            'productPrice': 'Precio de Producto',
+            'carouselTitle': 'Título del Carrusel',
+            'carouselCard': 'Carta del Carrusel',
+            'carouselImage': 'Imagen del Carrusel',
+            'carouselName': 'Nombre del Carrusel',
+            'carouselPrice': 'Precio del Carrusel'
+        };
+        return typeNames[type] || type;
+    };
 
     // Configuración del grid
     const columns = productConfig.columns || 3;
@@ -73,40 +102,58 @@ const ProductComponent = ({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
-            {/* Renderizar título si existe */}
+            {/* Renderizar título con ComponentWithHover */}
             {titleComponent && (
-                <ProductTitleComponent
-                    comp={titleComponent}
-                    getStyles={getStyles}
+                <ComponentWithHover
+                    component={titleComponent}
                     isPreview={isPreview}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                />
+                    hoveredComponentId={hoveredComponentId}
+                    setHoveredComponentId={setHoveredComponentId}
+                    getComponentTypeName={getComponentTypeName}
+                >
+                    <ProductTitleComponent
+                        comp={titleComponent}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                </ComponentWithHover>
             )}
 
             {/* Grid de productos */}
             {cardComponent && (
                 <div style={gridStyles}>
                     {productsToShow.map((product, index) => (
-                        <ProductCardComponent
+                        <ComponentWithHover
                             key={product.id}
-                            comp={{
-                                ...cardComponent,
-                                content: {
-                                    ...cardComponent.content,
-                                    productData: product // Pasar datos del producto específico
-                                }
-                            }}
-                            getStyles={getStyles}
-                            onEdit={onEdit}
-                            onDelete={onDelete}
-                            themeSettings={themeSettings}
+                            component={cardComponent}
                             isPreview={isPreview}
-                            products={products}
-                            setComponents={setComponents}
                             hoveredComponentId={hoveredComponentId}
                             setHoveredComponentId={setHoveredComponentId}
-                        />
+                            getComponentTypeName={getComponentTypeName}
+                        >
+                            <ProductCardComponent
+                                comp={{
+                                    ...cardComponent,
+                                    content: {
+                                        ...cardComponent.content,
+                                        productData: product // Pasar datos del producto específico
+                                    }
+                                }}
+                                getStyles={getStyles}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                themeSettings={themeSettings}
+                                isPreview={isPreview}
+                                products={products}
+                                setComponents={setComponents}
+                                hoveredComponentId={hoveredComponentId}
+                                setHoveredComponentId={setHoveredComponentId}
+                            />
+                        </ComponentWithHover>
                     ))}
                 </div>
             )}

@@ -3,15 +3,16 @@ import CarouselTitleComponent from './CarouselTitleComponent';
 import CarouselCardComponent from './CarouselCardComponent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
+import ComponentWithHover from './ComponentWithHover';
 
-const CarouselComponent = ({ 
-    comp, 
-    getStyles, 
-    onEdit, 
-    onDelete, 
-    themeSettings, 
-    isPreview, 
-    products, 
+const CarouselComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    onDelete,
+    themeSettings,
+    isPreview,
+    products,
     setComponents,
     hoveredComponentId,
     setHoveredComponentId
@@ -27,9 +28,38 @@ const CarouselComponent = ({
     const gapX = carouselConfig.gapX || '10px';
     const gapY = carouselConfig.gapY || '10px';
 
-    // Container styles para el wrapper - USAR getStyles CORRECTAMENTE
+    // Función para obtener el nombre del tipo de componente
+    const getComponentTypeName = (type) => {
+        const typeNames = {
+            'text': 'Texto',
+            'heading': 'Encabezado',
+            'button': 'Botón',
+            'image': 'Imagen',
+            'video': 'Video',
+            'link': 'Enlace',
+            'product': 'Producto',
+            'carousel': 'Carrusel',
+            'container': 'Contenedor',
+            'banner': 'Sección Banner',
+            'bannerTitle': 'Título del Banner',
+            'bannerText': 'Texto del Banner',
+            'productTitle': 'Título de Productos',
+            'productCard': 'Carta de Producto',
+            'productImage': 'Imagen de Producto',
+            'productName': 'Nombre de Producto',
+            'productPrice': 'Precio de Producto',
+            'carouselTitle': 'Título del Carrusel',
+            'carouselCard': 'Carta del Carrusel',
+            'carouselImage': 'Imagen del Carrusel',
+            'carouselName': 'Nombre del Carrusel',
+            'carouselPrice': 'Precio del Carrusel'
+        };
+        return typeNames[type] || type;
+    };
+
+    // Container styles
     const containerStyles = {
-        ...getStyles(comp), // Esto aplica los estilos del carrusel
+        ...getStyles(comp),
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -39,7 +69,7 @@ const CarouselComponent = ({
         position: 'relative',
         boxSizing: 'border-box',
         backgroundColor: carouselConfig.backgroundColor || '#ffffff',
-        padding: '20px 0', // Agregar padding general
+        padding: '20px 0',
     };
 
     // Encontrar los componentes hijos
@@ -108,13 +138,23 @@ const CarouselComponent = ({
         >
             {/* Título del carrusel */}
             {titleComponent && (
-                <CarouselTitleComponent
-                    comp={titleComponent}
-                    getStyles={getStyles} // Pasar getStyles al componente hijo
+                <ComponentWithHover
+                    component={titleComponent}
                     isPreview={isPreview}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                />
+                    hoveredComponentId={hoveredComponentId}
+                    setHoveredComponentId={setHoveredComponentId}
+                    getComponentTypeName={getComponentTypeName}
+                >
+                    <CarouselTitleComponent
+                        comp={titleComponent}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                </ComponentWithHover>
             )}
 
             {/* Contenedor del carrusel */}
@@ -130,7 +170,7 @@ const CarouselComponent = ({
                         >
                             <ChevronLeft size={20} className='text-black' />
                         </Button>
-                        
+
                         <Button
                             onClick={nextSlide}
                             disabled={currentIndex >= productsToShow.length - slidesToShow}
@@ -143,40 +183,48 @@ const CarouselComponent = ({
                 )}
 
                 {/* Carrusel de productos */}
-                <div 
+                <div
                     ref={carouselRef}
                     className="flex transition-all duration-300 ease-in-out"
-                    style={{ 
+                    style={{
                         gap: gapX,
                         padding: `${gapY} 0`,
                     }}
                 >
                     {visibleProducts.map((product, index) => (
-                        <div 
-                            key={product.id} 
+                        <div
+                            key={product.id}
                             style={{
                                 flex: `0 0 calc(${100 / slidesToShow}% - ${parseInt(gapX) * (slidesToShow - 1) / slidesToShow}px)`,
                                 minWidth: 0,
                             }}
                         >
-                            <CarouselCardComponent
-                                comp={{
-                                    ...safeCardComponent,
-                                    content: {
-                                        ...safeCardComponent.content,
-                                        productData: product
-                                    }
-                                }}
-                                getStyles={getStyles} // Pasar getStyles al componente hijo
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                                themeSettings={themeSettings}
+                            <ComponentWithHover
+                                component={safeCardComponent}
                                 isPreview={isPreview}
-                                products={products}
-                                setComponents={setComponents}
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
-                            />
+                                getComponentTypeName={getComponentTypeName}
+                            >
+                                <CarouselCardComponent
+                                    comp={{
+                                        ...safeCardComponent,
+                                        content: {
+                                            ...safeCardComponent.content,
+                                            productData: product
+                                        }
+                                    }}
+                                    getStyles={getStyles}
+                                    onEdit={onEdit}
+                                    onDelete={onDelete}
+                                    themeSettings={themeSettings}
+                                    isPreview={isPreview}
+                                    products={products}
+                                    setComponents={setComponents}
+                                    hoveredComponentId={hoveredComponentId}
+                                    setHoveredComponentId={setHoveredComponentId}
+                                />
+                            </ComponentWithHover>
                         </div>
                     ))}
                 </div>
@@ -188,9 +236,8 @@ const CarouselComponent = ({
                             <Button
                                 key={index}
                                 onClick={() => setCurrentIndex(index)}
-                                className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                                    index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'
-                                }`}
+                                className={`w-2 h-2 rounded-full transition-all duration-200 ${index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'
+                                    }`}
                                 size="icon"
                             />
                         ))}
