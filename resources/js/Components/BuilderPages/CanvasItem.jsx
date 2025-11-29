@@ -22,6 +22,11 @@ import CarouselNameComponent from './CarouselNameComponent';
 import CarouselImageComponent from './CarouselImageComponent';
 import CarouselCardComponent from './CarouselCardComponent';
 import CarouselTitleComponent from './CarouselTitleComponent';
+import BentoComponent from './BentoComponent/BentoComponent';
+import BentoTitleComponent from './BentoComponent/BentoTitleComponent';
+import BentoFeatureComponent from './BentoComponent/BentoFeatureComponent';
+import BentoFeatureTitleComponent from './BentoComponent/BentoFeatureTitleComponent';
+import BentoFeatureTextComponent from './BentoComponent/BentoFeatureTextComponent';
 
 const CanvasItem = ({
     comp,
@@ -331,6 +336,63 @@ const CanvasItem = ({
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            // En el switch de CanvasItem.jsx, agrega:
+            case 'bento':
+                return (
+                    <BentoComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'bentoTitle':
+                return (
+                    <BentoTitleComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                    />
+                );
+            case 'bentoFeature':
+                return (
+                    <BentoFeatureComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'bentoFeatureTitle':
+                return (
+                    <BentoFeatureTitleComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                    />
+                );
+            case 'bentoFeatureText':
+                return (
+                    <BentoFeatureTextComponent
+                        comp={comp}
+                        getStyles={getStyles}
+                        isPreview={isPreview}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
                     />
                 );
             default:

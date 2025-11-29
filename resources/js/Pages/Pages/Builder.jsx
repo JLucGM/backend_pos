@@ -37,6 +37,11 @@ import CarouselCardEditDialog from './partials/Carousel/CarouselCardEditDialog';
 import CarouselImageEditDialog from './partials/Carousel/CarouselImageEditDialog';
 import CarouselNameEditDialog from './partials/Carousel/CarouselNameEditDialog';
 import CarouselPriceEditDialog from './partials/Carousel/CarouselPriceEditDialog';
+import BentoEditDialog from './partials/Bento/BentoEditDialog';
+import BentoTitleEditDialog from './partials/Bento/BentoTitleEditDialog';
+import BentoFeatureEditDialog from './partials/Bento/BentoFeatureEditDialog';
+import BentoFeatureTitleEditDialog from './partials/Bento/BentoFeatureTitleEditDialog';
+import BentoFeatureTextEditDialog from './partials/Bento/BentoFeatureTextEditDialog';
 
 export default function Builder({ page, products }) {
     const [components, setComponents] = useState([]);
@@ -126,7 +131,7 @@ export default function Builder({ page, products }) {
                                 }
                             };
                         }
-                        
+
                         // Actualizar para productCard con hijos
                         if (component.type === 'carouselCard' && component.content && component.content.children) {
                             const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
@@ -174,6 +179,54 @@ export default function Builder({ page, products }) {
                                 }
                             };
                         }
+
+                        // Buscar en bento con hijos
+                        if (component.type === 'bento' && component.content && component.content.children) {
+                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                            return {
+                                ...component,
+                                content: {
+                                    ...component.content,
+                                    children: updatedChildren
+                                }
+                            };
+                        }
+
+                        // Buscar en bentoFeature con hijos
+                        if (component.type === 'bentoFeature' && component.content && component.content.children) {
+                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                            return {
+                                ...component,
+                                content: {
+                                    ...component.content,
+                                    children: updatedChildren
+                                }
+                            };
+                        }
+
+                        // Buscar en bentoFeatureTitle con hijos
+                        // if (component.type === 'bentoFeatureTitle' && component.content && component.content.children) {
+                        //     const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                        //     return {
+                        //         ...component,
+                        //         content: {
+                        //             ...component.content,
+                        //             children: updatedChildren
+                        //         }
+                        //     };
+                        // }
+
+                        // // Buscar en bentoFeatureText con hijos
+                        // if (component.type === 'bentoFeatureText' && component.content && component.content.children) {
+                        //     const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                        //     return {
+                        //         ...component,
+                        //         content: {
+                        //             ...component.content,
+                        //             children: updatedChildren
+                        //         }
+                        //     };
+                        // }
 
                         return component;
                     });
@@ -223,6 +276,15 @@ export default function Builder({ page, products }) {
                 }
                 // Eliminar de productCard con hijos
                 if (item.type === 'productCard' && item.content && item.content.children) {
+                    item.content.children = removeFromTree(item.content.children, targetId);
+                }
+                // Eliminar de bento con hijos
+                if (item.type === 'bento' && item.content && item.content.children) {
+                    item.content.children = removeFromTree(item.content.children, targetId);
+                }
+
+                // Eliminar de bentoFeature con hijos
+                if (item.type === 'bentoFeature' && item.content && item.content.children) {
                     item.content.children = removeFromTree(item.content.children, targetId);
                 }
                 return true;
@@ -536,6 +598,217 @@ export default function Builder({ page, products }) {
                 };
             }
 
+            // NUEVA ESTRUCTURA PARA BENTO
+            if (selectedType === 'bento') {
+                const bentoId = Date.now();
+                const titleId = bentoId + 1;
+                const feature1Id = bentoId + 2;
+                const feature1TitleId = bentoId + 3;
+                const feature1TextId = bentoId + 4;
+                const feature2Id = bentoId + 5;
+                const feature2TitleId = bentoId + 6;
+                const feature2TextId = bentoId + 7;
+                const feature3Id = bentoId + 8;
+                const feature3TitleId = bentoId + 9;
+                const feature3TextId = bentoId + 10;
+                const feature4Id = bentoId + 11;
+                const feature4TitleId = bentoId + 12;
+                const feature4TextId = bentoId + 13;
+
+                content = {
+                    // Configuración del contenedor principal
+                    gridColumns: 2,
+                    gridGap: '20px',
+                    backgroundColor: '#ffffff',
+                    containerBorderRadius: '0px',
+                    containerBorder: 'none',
+                    containerBorderThickness: '1px',
+                    containerBorderColor: '#e5e7eb',
+
+                    // Los hijos como componentes independientes
+                    children: [
+                        {
+                            id: titleId,
+                            type: 'bentoTitle',
+                            content: 'Características Principales',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'center',
+                                color: '#000000',
+                                fontSize: '32px',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        {
+                            id: feature1Id,
+                            type: 'bentoFeature',
+                            content: {
+                                // Configuración de la carta de característica
+                                backgroundColor: '#f8fafc',
+                                backgroundImage: null,
+                                border: 'none',
+                                borderThickness: '1px',
+                                borderColor: '#e5e7eb',
+                                borderRadius: '12px',
+                                padding: '24px',
+                                opacity: 1,
+                                // Los hijos de la característica
+                                children: [
+                                    {
+                                        id: feature1TitleId,
+                                        type: 'bentoFeatureTitle',
+                                        content: 'Característica 1',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#1f2937',
+                                            fontSize: '20px',
+                                            fontWeight: '600'
+                                        }
+                                    },
+                                    {
+                                        id: feature1TextId,
+                                        type: 'bentoFeatureText',
+                                        content: 'Descripción de la característica 1.',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#6b7280',
+                                            fontSize: '16px',
+                                            fontWeight: 'normal'
+                                        }
+                                    }
+                                ]
+                            },
+                            styles: {}
+                        },
+                        {
+                            id: feature2Id,
+                            type: 'bentoFeature',
+                            content: {
+                                backgroundColor: '#f8fafc',
+                                backgroundImage: null,
+                                border: 'none',
+                                borderThickness: '1px',
+                                borderColor: '#e5e7eb',
+                                borderRadius: '12px',
+                                padding: '24px',
+                                opacity: 1,
+                                children: [
+                                    {
+                                        id: feature2TitleId,
+                                        type: 'bentoFeatureTitle',
+                                        content: 'Característica 2',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#1f2937',
+                                            fontSize: '20px',
+                                            fontWeight: '600'
+                                        }
+                                    },
+                                    {
+                                        id: feature2TextId,
+                                        type: 'bentoFeatureText',
+                                        content: 'Descripción de la característica 2.',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#6b7280',
+                                            fontSize: '16px',
+                                            fontWeight: 'normal'
+                                        }
+                                    }
+                                ]
+                            },
+                            styles: {}
+                        },
+                        {
+                            id: feature3Id,
+                            type: 'bentoFeature',
+                            content: {
+                                backgroundColor: '#f8fafc',
+                                backgroundImage: null,
+                                border: 'none',
+                                borderThickness: '1px',
+                                borderColor: '#e5e7eb',
+                                borderRadius: '12px',
+                                padding: '24px',
+                                opacity: 1,
+                                children: [
+                                    {
+                                        id: feature3TitleId,
+                                        type: 'bentoFeatureTitle',
+                                        content: 'Característica 3',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#1f2937',
+                                            fontSize: '20px',
+                                            fontWeight: '600'
+                                        }
+                                    },
+                                    {
+                                        id: feature3TextId,
+                                        type: 'bentoFeatureText',
+                                        content: 'Descripción de la característica 3.',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#6b7280',
+                                            fontSize: '16px',
+                                            fontWeight: 'normal'
+                                        }
+                                    }
+                                ]
+                            },
+                            styles: {}
+                        },
+                        {
+                            id: feature4Id,
+                            type: 'bentoFeature',
+                            content: {
+                                backgroundColor: '#f8fafc',
+                                backgroundImage: null,
+                                border: 'none',
+                                borderThickness: '1px',
+                                borderColor: '#e5e7eb',
+                                borderRadius: '12px',
+                                padding: '24px',
+                                opacity: 1,
+                                children: [
+                                    {
+                                        id: feature4TitleId,
+                                        type: 'bentoFeatureTitle',
+                                        content: 'Característica 4',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#1f2937',
+                                            fontSize: '20px',
+                                            fontWeight: '600'
+                                        }
+                                    },
+                                    {
+                                        id: feature4TextId,
+                                        type: 'bentoFeatureText',
+                                        content: 'Descripción de la característica 4.',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: '#6b7280',
+                                            fontSize: '16px',
+                                            fontWeight: 'normal'
+                                        }
+                                    }
+                                ]
+                            },
+                            styles: {}
+                        }
+                    ]
+                };
+            }
+
             const newItem = {
                 id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
                 type: selectedType,
@@ -664,6 +937,17 @@ export default function Builder({ page, products }) {
                                 return removed;
                             }
                         }
+                        // Buscar en bento con hijos
+                        if (items[i].type === 'bento' && items[i].content && items[i].content.children) {
+                            const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
+                            if (found) return found;
+                        }
+
+                        // Buscar en bentoFeature con hijos
+                        if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.children) {
+                            const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
+                            if (found) return found;
+                        }
                     }
                     return null;
                 };
@@ -709,6 +993,17 @@ export default function Builder({ page, products }) {
                     const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
                     if (found) return found;
                 }
+                // Buscar en bento con hijos
+if (items[i].type === 'bento' && items[i].content && items[i].content.children) {
+    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
+    if (found) return found;
+}
+
+// Buscar en bentoFeature con hijos
+if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.children) {
+    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
+    if (found) return found;
+}
             }
             return null;
         };
@@ -750,6 +1045,22 @@ export default function Builder({ page, products }) {
             }
             // Verificar productCard con hijos
             if (container && container.component.type === 'productCard' && container.component.content && container.component.content.children) {
+                for (const child of container.component.content.children) {
+                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
+                        return true;
+                    }
+                }
+            }
+            // Verificar bento con hijos
+            if (container && container.component.type === 'bento' && container.component.content && container.component.content.children) {
+                for (const child of container.component.content.children) {
+                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
+                        return true;
+                    }
+                }
+            }
+            // Verificar bentoFeature con hijos
+            if (container && container.component.type === 'bentoFeature' && container.component.content && container.component.content.children) {
                 for (const child of container.component.content.children) {
                     if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
                         return true;
@@ -1211,6 +1522,47 @@ export default function Builder({ page, products }) {
                                                 setEditStyles={setEditStyles}
                                             />
                                         )}
+                                        // Agregar después de los otros casos de edición
+                                        {editingComponent?.type === 'bento' && (
+                                            <BentoEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'bentoTitle' && (
+                                            <BentoTitleEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'bentoFeature' && (
+                                            <BentoFeatureEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'bentoFeatureTitle' && (
+                                            <BentoFeatureTitleEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'bentoFeatureText' && (
+                                            <BentoFeatureTextEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
                                     </ScrollArea>
 
                                     <div className="flex gap-2 pt-4 border-t mt-4">
@@ -1301,6 +1653,7 @@ export default function Builder({ page, products }) {
                                 <SelectValue placeholder="Selecciona un tipo" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="bento">Bento</SelectItem>
                                 <SelectItem value="banner">Banner</SelectItem>
                                 <SelectItem value="product">Productos</SelectItem>
                                 <SelectItem value="heading">Encabezado</SelectItem>

@@ -64,7 +64,9 @@ const SortableItem = ({
         (component.type === 'product' && component.content?.children && component.content.children.length > 0) ||
         (component.type === 'productCard' && component.content?.children && component.content.children.length > 0) ||
         (component.type === 'carousel' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'carouselCard' && component.content?.children && component.content.children.length > 0);
+        (component.type === 'carouselCard' && component.content?.children && component.content.children.length > 0) ||
+        (component.type === 'bento' && component.content?.children && component.content.children.length > 0) ||
+        (component.type === 'bentoFeature' && component.content?.children && component.content.children.length > 0);
 
     // Función para obtener los hijos según el tipo de componente - AGREGAR CARRUSEL
     const getChildren = () => {
@@ -79,6 +81,10 @@ const SortableItem = ({
         } else if (component.type === 'carousel') {
             return component.content?.children || [];
         } else if (component.type === 'carouselCard') {
+            return component.content?.children || [];
+        }else if (component.type === 'bento') {
+            return component.content?.children || [];
+        } else if (component.type === 'bentoFeature') {
             return component.content?.children || [];
         }
         return [];
@@ -278,7 +284,12 @@ const getComponentTypeName = (type) => {
         'carouselCard': 'Carta del Carrusel',
         'carouselImage': 'Imagen del Carrusel',
         'carouselName': 'Nombre del Carrusel',
-        'carouselPrice': 'Precio del Carrusel'
+        'carouselPrice': 'Precio del Carrusel',
+        'bento': 'Bento',
+        'bentoTitle': 'Título del Bento',
+        'bentoFeature': 'Característica del Bento',
+        'bentoFeatureTitle': 'Título de la Característica',
+        'bentoFeatureText': 'Texto de la Característica',
     };
     return typeNames[type] || type;
 };
