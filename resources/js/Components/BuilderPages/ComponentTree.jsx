@@ -47,17 +47,22 @@ const SortableItem = ({
         transform,
         transition,
         isDragging,
-    } = useSortable({ id: component.id });
+        isOver,
+    } = useSortable({ 
+        id: component.id,
+        // Configuración optimizada para mejor rendimiento
+        animateLayoutChanges: () => false,
+    });
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition: isDragging ? 'transform 200ms ease, opacity 200ms ease' : transition,
-        opacity: isDragging ? 0.6 : 1,
+        transition: isDragging ? 'none' : transition, // Remover transición durante el drag
+        opacity: isDragging ? 0.8 : 1,
     };
 
     const [isExpanded, setIsExpanded] = React.useState(true);
 
-    // Determinar si tiene hijos - AGREGAR CARRUSEL Y CARRUSEL CARD
+    // Determinar si tiene hijos
     const hasChildren =
         (component.type === 'container' && component.content && component.content.length > 0) ||
         (component.type === 'banner' && component.content?.children && component.content.children.length > 0) ||
@@ -68,7 +73,7 @@ const SortableItem = ({
         (component.type === 'bento' && component.content?.children && component.content.children.length > 0) ||
         (component.type === 'bentoFeature' && component.content?.children && component.content.children.length > 0);
 
-    // Función para obtener los hijos según el tipo de componente - AGREGAR CARRUSEL
+    // Función para obtener los hijos según el tipo de componente
     const getChildren = () => {
         if (component.type === 'container') {
             return component.content || [];
@@ -82,7 +87,7 @@ const SortableItem = ({
             return component.content?.children || [];
         } else if (component.type === 'carouselCard') {
             return component.content?.children || [];
-        }else if (component.type === 'bento') {
+        } else if (component.type === 'bento') {
             return component.content?.children || [];
         } else if (component.type === 'bentoFeature') {
             return component.content?.children || [];
@@ -90,9 +95,9 @@ const SortableItem = ({
         return [];
     };
 
-    // Efectos visuales para el drag & drop - AGREGAR CARRUSEL
+    // Efectos visuales para el drag & drop
     const isActive = activeId === component.id;
-    const isOver = overId === component.id;
+    const isOverCurrent = overId === component.id;
     const isContainer = component.type === 'container';
     const isBanner = component.type === 'banner';
     const isProduct = component.type === 'product';
@@ -111,25 +116,21 @@ const SortableItem = ({
         }
     };
 
-    const handleMouseLeave = (e) => {
+    const handleMouseLeave = () => {
         if (setHoveredComponentId) {
-            setTimeout(() => {
-                if (hoveredComponentId === component.id) {
-                    setHoveredComponentId(null);
-                }
-            }, 50);
+            setHoveredComponentId(null);
         }
     };
 
-    // Estilos dinámicos basados en el estado - ACTUALIZAR CON CARRUSEL
+    // Estilos dinámicos basados en el estado
     const getItemStyles = () => {
-        let styles = "flex items-center gap-1 p-2 border rounded mb-1 group transition-all duration-200 cursor-pointer ";
+        let styles = "flex items-center gap-1 p-2 border rounded mb-1 group transition-colors duration-150 cursor-pointer ";
         
         if (isActive) {
             styles += "bg-blue-100 border-blue-400 ";
-        } else if (isOver && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard)) {
+        } else if (isOverCurrent && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard)) {
             styles += "bg-green-100 border-green-400 ";
-        } else if (isOver) {
+        } else if (isOverCurrent) {
             styles += "bg-yellow-100 border-yellow-400 ";
         } else if (isDragging) {
             styles += "bg-blue-50 border-blue-300 ";
@@ -149,24 +150,26 @@ const SortableItem = ({
         <div 
             ref={setNodeRef} 
             style={style} 
-            className={`pl-${level * 4} transition-all duration-200 relative ${isDragging ? 'z-10' : ''}`}
+            className={`pl-${level * 4} transition-colors duration-150 relative ${isDragging ? 'z-50' : ''}`}
             id={`component-${component.id}`}
         >
             {/* Indicador de posición - ARRIBA */}
             {hasDropIndicator && dropPositionType === 'top' && (
-                <div className="absolute -top-1 left-0 right-0 h-0.5 bg-blue-500 z-30 pointer-events-none">
+                <div className="absolute -top-1 left-0 right-0 h-0.5 bg-blue-500 z-40 pointer-events-none">
                     <div className="absolute -top-1 left-2 w-2 h-2 bg-blue-500 rounded-full"></div>
                 </div>
             )}
             
             {/* Área principal del componente */}
-            <div className={getItemStyles()}>
+            <div 
+                className={getItemStyles()}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+            >
                 <div 
                     {...attributes} 
                     {...listeners} 
-                    className="cursor-grab p-1 hover:bg-gray-200 rounded transition-colors active:cursor-grabbing"
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
+                    className="cursor-grab p-1 hover:bg-gray-200 rounded transition-colors active:cursor-grabbing touch-none" // Agregado touch-none para mobile
                 >
                     <GripVertical size={14} className={isActive ? "text-blue-500" : "text-gray-500"} />
                 </div>
@@ -176,8 +179,7 @@ const SortableItem = ({
                         onClick={() => setIsExpanded(!isExpanded)}
                         variant="ghost"
                         size="icon"
-                        onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}
+                        className="touch-none" // Prevenir interferencia con drag en mobile
                     >
                         {isExpanded ? 
                             <ChevronDown size={14} className={isActive ? "text-blue-500" : "text-gray-500"} /> : 
@@ -188,34 +190,34 @@ const SortableItem = ({
                 {!hasChildren && <div className="w-6" />}
                 
                 <span 
-                    className={`flex-1 text-sm font-medium transition-colors ${
-                        isActive || hoveredComponentId === component.id ? "text-blue-700" : ""
-                    }`}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
+                    className={`flex-1 text-sm font-medium transition-colors ${isActive || hoveredComponentId === component.id ? "text-blue-700" : ""}`}
                 >
                     {getComponentTypeName(component.type)}
                 </span>
                 
                 <div 
-                    className={`transition-opacity ${
-                        isActive || hoveredComponentId === component.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                    } flex gap-1`}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
+                    className={`transition-opacity ${isActive || hoveredComponentId === component.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"} flex gap-1`}
                 >
                     <Button
-                        onClick={() => onEdit(component)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(component);
+                        }}
                         title="Editar"
                         size="icon"
+                        className="touch-none"
                     >
                         <Edit size={14} />
                     </Button>
                     <Button
-                        onClick={() => onDelete(component.id)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(component.id);
+                        }}
                         title="Eliminar"
                         size="icon"
                         variant="destructive"
+                        className="touch-none"
                     >
                         <Trash2 size={14} />
                     </Button>
@@ -224,20 +226,18 @@ const SortableItem = ({
 
             {/* Indicador de posición - ABAJO */}
             {hasDropIndicator && dropPositionType === 'bottom' && (
-                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500 z-30 pointer-events-none">
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500 z-40 pointer-events-none">
                     <div className="absolute -top-1 left-2 w-2 h-2 bg-blue-500 rounded-full"></div>
                 </div>
             )}
 
             {hasChildren && isExpanded && (
                 <div 
-                    className="border-l-2 border-gray-200 ml-3 mt-1 transition-all duration-200 relative"
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
+                    className="border-l-2 border-gray-200 ml-3 mt-1 transition-colors duration-150 relative"
                 >
-                    {/* Indicador de área de drop para contenedores y banners - ACTUALIZAR CON CARRUSEL */}
-                    {(isOver && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard) && dropPositionType === 'inside') && (
-                        <div className="absolute inset-x-0 -top-1 h-2 bg-green-400 rounded opacity-50 z-20 pointer-events-none"></div>
+                    {/* Indicador de área de drop para contenedores */}
+                    {(isOverCurrent && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard) && dropPositionType === 'inside') && (
+                        <div className="absolute inset-x-0 -top-1 h-2 bg-green-400 rounded opacity-50 z-30 pointer-events-none"></div>
                     )}
                     
                     {getChildren().map((child) => (
@@ -260,7 +260,7 @@ const SortableItem = ({
     );
 };
 
-// Función auxiliar para obtener nombres de componentes - ACTUALIZAR CON CARRUSEL
+// Función auxiliar para obtener nombres de componentes
 const getComponentTypeName = (type) => {
     const typeNames = {
         'text': 'Texto',
@@ -290,6 +290,8 @@ const getComponentTypeName = (type) => {
         'bentoFeature': 'Característica del Bento',
         'bentoFeatureTitle': 'Título de la Característica',
         'bentoFeatureText': 'Texto de la Característica',
+        'marquee': 'Texto en Movimiento',
+        'divider': 'Divider (Línea)',
     };
     return typeNames[type] || type;
 };
@@ -310,7 +312,7 @@ const ComponentTree = ({
         <RootDroppable isOver={isRootOver}>
             <div 
                 className="space-y-1 max-h-[600px] overflow-y-auto relative"
-                onMouseLeave={() => setHoveredComponentId(null)}
+                onMouseLeave={() => setHoveredComponentId && setHoveredComponentId(null)}
             >
                 {components.length === 0 ? (
                     <div className="text-center text-gray-500 py-8">
@@ -336,7 +338,7 @@ const ComponentTree = ({
                 
                 {/* Área de drop vacía */}
                 {activeId && (
-                    <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 ${
+                    <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors duration-150 ${
                         isRootOver ? 'border-blue-400 bg-blue-100 text-blue-700' : 'border-gray-300 text-gray-500'
                     }`}>
                         Suelta aquí para mover al nivel raíz

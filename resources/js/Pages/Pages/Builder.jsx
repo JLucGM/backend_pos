@@ -1,6 +1,6 @@
 // components/BuilderPages/Builder.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay, MeasuringStrategy } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Head, router } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
@@ -123,10 +123,10 @@ export default function Builder({ page, products }) {
                         }
 
                         // Buscar en divider (aunque no tiene hijos, por consistencia)
-if (component.type === 'divider') {
-    // No necesita procesamiento especial ya que no tiene hijos
-    return component;
-}
+                        if (component.type === 'divider') {
+                            // No necesita procesamiento especial ya que no tiene hijos
+                            return component;
+                        }
 
                         // Actualizar para banners con hijos
                         if (component.type === 'carousel' && component.content && component.content.children) {
@@ -352,11 +352,11 @@ if (component.type === 'divider') {
             if (selectedType === 'image') content = 'https://picsum.photos/150';
             if (selectedType === 'container') content = [];
             if (selectedType === 'divider') {
-    content = ''; // El divider no necesita contenido de texto
-}
+                content = ''; // El divider no necesita contenido de texto
+            }
             if (selectedType === 'marquee') {
-    content = '¡Texto en movimiento! Personaliza este texto.';
-}
+                content = '¡Texto en movimiento! Personaliza este texto.';
+            }
             if (selectedType === 'carousel') {
                 const carouselId = Date.now();
                 const titleId = carouselId + 1;
@@ -855,344 +855,339 @@ if (component.type === 'divider') {
         setDropPosition(null);
     };
 
-    const handleDragOver = (event) => {
-        const { active, over } = event;
-        setOverId(over?.id || null);
-
-        if (!over) {
-            setDropPosition(null);
-            return;
-        }
-
-        requestAnimationFrame(() => {
-            if (over.id === 'root-area') {
-                setDropPosition({ id: 'root-area', position: 'inside' });
-                return;
-            }
-
-            const overElement = document.getElementById(`component-${over.id}`);
-            if (overElement) {
-                const rect = overElement.getBoundingClientRect();
-                const cursorY = event.activatorEvent.clientY;
-
-                const overTop = rect.top;
-                const overHeight = rect.height;
-
-                const relativeY = cursorY - overTop;
-                const threshold = overHeight / 3;
-
-                let position;
-                if (relativeY < threshold) {
-                    position = 'top';
-                } else if (relativeY > overHeight - threshold) {
-                    position = 'bottom';
-                } else {
-                    position = 'inside';
-                }
-
-                setDropPosition(prev => {
-                    if (prev && prev.id === over.id && prev.position === position) {
-                        return prev;
-                    }
-                    return { id: over.id, position };
-                });
-            } else {
-                setDropPosition(null);
-            }
+    const debugStructure = () => {
+    console.log('=== ESTRUCTURA ACTUAL DE COMPONENTES ===');
+    const debug = (items, level = 0) => {
+        items.forEach((item, index) => {
+            const indent = '  '.repeat(level);
+            console.log(`${indent}[${index}] ${item.type} (id: ${item.id}) - Array length: ${items.length}`);
         });
     };
+    debug(components);
+    console.log('=== FIN ESTRUCTURA ===');
+};
+
+    const handleDragOver = (event) => {
+    const { active, over } = event;
+    
+    if (over?.id !== overId) {
+        setOverId(over?.id || null);
+    }
+
+    if (!over) {
+        setDropPosition(null);
+        return;
+    }
+
+    requestAnimationFrame(() => {
+        if (over.id === 'root-area') {
+            setDropPosition({ id: 'root-area', position: 'inside' });
+            return;
+        }
+
+        const overElement = document.getElementById(`component-${over.id}`);
+        if (overElement) {
+            const rect = overElement.getBoundingClientRect();
+            const cursorY = event.activatorEvent.clientY;
+
+            const overTop = rect.top;
+            const overHeight = rect.height;
+            const relativeY = cursorY - overTop;
+            
+            // Threshold más sensible para bordes
+            const threshold = Math.max(overHeight / 6, 10); // Más pequeño para mejor detección
+
+            let position;
+            if (relativeY < threshold) {
+                position = 'top';
+            } else if (relativeY > overHeight - threshold) {
+                position = 'bottom';
+            } else {
+                position = 'inside';
+            }
+
+            setDropPosition(prev => {
+                if (prev && prev.id === over.id && prev.position === position) {
+                    return prev;
+                }
+                return { id: over.id, position };
+            });
+        } else {
+            setDropPosition(null);
+        }
+    });
+};
 
     const handleDragEnd = (event) => {
-        const { active, over } = event;
+    const { active, over } = event;
 
-        setActiveId(null);
-        setOverId(null);
-        setDropPosition(null);
+    setActiveId(null);
+    setOverId(null);
+    setDropPosition(null);
 
-        if (!over) return;
+    if (!over) {
+        console.log('Drag ended without valid drop target');
+        return;
+    }
 
-        const activeId = active.id;
-        const overId = over.id;
+    const activeId = active.id;
+    const overId = over.id;
 
-        if (activeId === overId) return;
+    if (activeId === overId) {
+        console.log('Dragging over same component, ignoring');
+        return;
+    }
 
-        if (overId === 'root-area') {
-            setComponents((prev) => {
-                const removeComponent = (items, targetId) => {
-                    for (let i = 0; i < items.length; i++) {
-                        if (items[i].id === targetId) {
-                            const [removed] = items.splice(i, 1);
-                            return removed;
-                        }
-                        if (items[i].type === 'container' && items[i].content) {
-                            const removed = removeComponent(items[i].content, targetId);
-                            if (removed) {
-                                return removed;
-                            }
-                        }
-                        // Buscar en banners con hijos
-                        if (items[i].type === 'banner' && items[i].content && items[i].content.children) {
-                            const removed = removeComponent(items[i].content.children, targetId);
-                            if (removed) {
-                                return removed;
-                            }
-                        }
-                        // Buscar en product con hijos
-                        if (items[i].type === 'product' && items[i].content && items[i].content.children) {
-                            const removed = removeComponent(items[i].content.children, targetId);
-                            if (removed) {
-                                return removed;
-                            }
-                        }
-                        // Buscar en productCard con hijos
-                        if (items[i].type === 'productCard' && items[i].content && items[i].content.children) {
-                            const removed = removeComponent(items[i].content.children, targetId);
-                            if (removed) {
-                                return removed;
-                            }
-                        }
-                        // Buscar en bento con hijos
-                        if (items[i].type === 'bento' && items[i].content && items[i].content.children) {
-                            const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
-                            if (found) return found;
-                        }
-
-                        // Buscar en bentoFeature con hijos
-                        if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.children) {
-                            const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
-                            if (found) return found;
-                        }
+    // Manejar drop en el área raíz
+    if (overId === 'root-area') {
+        console.log('Dropping to root area');
+        setComponents((prev) => {
+            const newComponents = JSON.parse(JSON.stringify(prev));
+            
+            const removeComponent = (items, targetId) => {
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].id === targetId) {
+                        const [removed] = items.splice(i, 1);
+                        return removed;
                     }
-                    return null;
-                };
-
-                const newComponents = JSON.parse(JSON.stringify(prev));
-                const removedComponent = removeComponent(newComponents, activeId);
-                if (removedComponent) {
-                    newComponents.push(removedComponent);
+                    
+                    // Buscar recursivamente en todos los tipos de componentes anidados
+                    let childArray = null;
+                    if (items[i].type === 'container' && items[i].content) {
+                        childArray = items[i].content;
+                    } else if (items[i].type === 'banner' && items[i].content?.children) {
+                        childArray = items[i].content.children;
+                    } else if (items[i].type === 'product' && items[i].content?.children) {
+                        childArray = items[i].content.children;
+                    } else if (items[i].type === 'productCard' && items[i].content?.children) {
+                        childArray = items[i].content.children;
+                    } else if (items[i].type === 'carousel' && items[i].content?.children) {
+                        childArray = items[i].content.children;
+                    } else if (items[i].type === 'carouselCard' && items[i].content?.children) {
+                        childArray = items[i].content.children;
+                    } else if (items[i].type === 'bento' && items[i].content?.children) {
+                        childArray = items[i].content.children;
+                    } else if (items[i].type === 'bentoFeature' && items[i].content?.children) {
+                        childArray = items[i].content.children;
+                    }
+                    
+                    if (childArray) {
+                        const removed = removeComponent(childArray, targetId);
+                        if (removed) return removed;
+                    }
                 }
+                return null;
+            };
+
+            const removedComponent = removeComponent(newComponents, activeId);
+            if (removedComponent) {
+                newComponents.push(removedComponent);
                 handleComponentsUpdate(newComponents);
-                return newComponents;
-            });
-            return;
-        }
-
-        const findComponentInfo = (items, id, parent = null, path = []) => {
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].id === id) {
-                    return {
-                        component: items[i],
-                        index: i,
-                        parent,
-                        parentArray: items,
-                        path: [...path, i]
-                    };
-                }
-                if (items[i].type === 'container' && items[i].content) {
-                    const found = findComponentInfo(items[i].content, id, items[i], [...path, i]);
-                    if (found) return found;
-                }
-                // Buscar en banners con hijos
-                if (items[i].type === 'banner' && items[i].content && items[i].content.children) {
-                    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
-                    if (found) return found;
-                }
-                // Buscar en product con hijos
-                if (items[i].type === 'product' && items[i].content && items[i].content.children) {
-                    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
-                    if (found) return found;
-                }
-                // Buscar en productCard con hijos
-                if (items[i].type === 'productCard' && items[i].content && items[i].content.children) {
-                    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
-                    if (found) return found;
-                }
-                // Buscar en bento con hijos
-if (items[i].type === 'bento' && items[i].content && items[i].content.children) {
-    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
-    if (found) return found;
-}
-
-// Buscar en bentoFeature con hijos
-if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.children) {
-    const found = findComponentInfo(items[i].content.children, id, items[i], [...path, i]);
-    if (found) return found;
-}
-            }
-            return null;
-        };
-
-        const activeInfo = findComponentInfo(components, activeId);
-        const overInfo = findComponentInfo(components, overId);
-
-        if (!activeInfo || !overInfo) {
-            console.error('No se encontró información del componente activo o destino');
-            return;
-        }
-
-        const isDroppingInSelfOrChildren = (containerId, targetId) => {
-            if (containerId === targetId) return true;
-
-            const container = findComponentInfo(components, containerId);
-            if (container && container.component.type === 'container' && container.component.content) {
-                for (const child of container.component.content) {
-                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
-                        return true;
-                    }
-                }
-            }
-            // Verificar banners con hijos
-            if (container && container.component.type === 'banner' && container.component.content && container.component.content.children) {
-                for (const child of container.component.content.children) {
-                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
-                        return true;
-                    }
-                }
-            }
-            // Verificar product con hijos
-            if (container && container.component.type === 'product' && container.component.content && container.component.content.children) {
-                for (const child of container.component.content.children) {
-                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
-                        return true;
-                    }
-                }
-            }
-            // Verificar productCard con hijos
-            if (container && container.component.type === 'productCard' && container.component.content && container.component.content.children) {
-                for (const child of container.component.content.children) {
-                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
-                        return true;
-                    }
-                }
-            }
-            // Verificar bento con hijos
-            if (container && container.component.type === 'bento' && container.component.content && container.component.content.children) {
-                for (const child of container.component.content.children) {
-                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
-                        return true;
-                    }
-                }
-            }
-            // Verificar bentoFeature con hijos
-            if (container && container.component.type === 'bentoFeature' && container.component.content && container.component.content.children) {
-                for (const child of container.component.content.children) {
-                    if (child.id === targetId || isDroppingInSelfOrChildren(child.id, targetId)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        };
-
-        if (activeInfo.component.type === 'container' &&
-            isDroppingInSelfOrChildren(activeId, overId)) {
-            console.log("No puedes soltar un contenedor dentro de sí mismo o sus hijos");
-            toast.error("No puedes soltar un contenedor dentro de sí mismo");
-            return;
-        }
-
-        const newComponents = JSON.parse(JSON.stringify(components));
-
-        const findParentArrayByPath = (items, path) => {
-            let current = items;
-            for (let i = 0; i < path.length - 1; i++) {
-                const index = path[i];
-                if (current[index] && current[index].type === 'container' && current[index].content) {
-                    current = current[index].content;
-                } else if (current[index] && current[index].type === 'banner' && current[index].content && current[index].content.children) {
-                    current = current[index].content.children;
-                } else if (current[index] && current[index].type === 'product' && current[index].content && current[index].content.children) {
-                    current = current[index].content.children;
-                } else if (current[index] && current[index].type === 'productCard' && current[index].content && current[index].content.children) {
-                    current = current[index].content.children;
-                } else {
-                    return null;
-                }
-            }
-            return current;
-        };
-
-        const activePath = activeInfo.path;
-        const overPath = overInfo.path;
-
-        const activeParentArray = findParentArrayByPath(newComponents, activePath);
-        const overParentArray = findParentArrayByPath(newComponents, overPath);
-
-        if (!activeParentArray || !overParentArray) {
-            console.error('No se pudo encontrar los arrays padre');
-            return;
-        }
-
-        const activeIndex = activePath[activePath.length - 1];
-        const overIndex = overPath[overPath.length - 1];
-
-        if (activeIndex < 0 || activeIndex >= activeParentArray.length ||
-            overIndex < 0 || overIndex >= overParentArray.length) {
-            console.error('Índices fuera de rango:', { activeIndex, overIndex });
-            return;
-        }
-
-        const [movedComponent] = activeParentArray.splice(activeIndex, 1);
-
-        const overComponent = overParentArray[overIndex];
-        if (!overComponent) {
-            console.error('Componente destino no encontrado');
-            return;
-        }
-
-        const isOverContainer = overComponent.type === 'container';
-        const isOverBanner = overComponent.type === 'banner';
-        const isOverProduct = overComponent.type === 'product';
-        const isOverProductCard = overComponent.type === 'productCard';
-
-        const dropInfo = dropPosition || { position: 'bottom' };
-
-        if ((isOverContainer || isOverBanner || isOverProduct || isOverProductCard) && dropInfo.position === 'inside') {
-            let targetArray;
-            if (isOverContainer) {
-                overComponent.content = overComponent.content || [];
-                targetArray = overComponent.content;
-            } else if (isOverBanner) {
-                overComponent.content = overComponent.content || {};
-                overComponent.content.children = overComponent.content.children || [];
-                targetArray = overComponent.content.children;
-            } else if (isOverProduct) {
-                overComponent.content = overComponent.content || {};
-                overComponent.content.children = overComponent.content.children || [];
-                targetArray = overComponent.content.children;
-            } else if (isOverProductCard) {
-                overComponent.content = overComponent.content || {};
-                overComponent.content.children = overComponent.content.children || [];
-                targetArray = overComponent.content.children;
-            }
-
-            if (movedComponent.id !== overComponent.id) {
-                targetArray.push(movedComponent);
+                toast.success("Componente movido al nivel raíz");
             } else {
-                console.log("No puedes mover un componente dentro de sí mismo");
-                return;
+                console.error('No se pudo encontrar el componente a mover');
             }
+            return newComponents;
+        });
+        return;
+    }
+
+    // Función mejorada para buscar componentes
+    const findComponentInfo = (items, targetId, parent = null, path = []) => {
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            
+            if (item.id === targetId) {
+                return {
+                    component: item,
+                    index: i,
+                    parent,
+                    parentArray: items,
+                    path: [...path, i]
+                };
+            }
+
+            // Buscar recursivamente en todos los tipos de componentes anidados
+            let childArray = null;
+            if (item.type === 'container' && item.content) {
+                childArray = item.content;
+            } else if (item.type === 'banner' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'product' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'productCard' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'carousel' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'carouselCard' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'bento' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'bentoFeature' && item.content?.children) {
+                childArray = item.content.children;
+            }
+
+            if (childArray) {
+                const found = findComponentInfo(childArray, targetId, item, [...path, i]);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    const activeInfo = findComponentInfo(components, activeId);
+    const overInfo = findComponentInfo(components, overId);
+
+    if (!activeInfo || !overInfo) {
+        console.error('No se encontró información del componente activo o destino');
+        return;
+    }
+
+    console.log('Drag info:', {
+        active: activeInfo.component.type,
+        over: overInfo.component.type,
+        activeIndex: activeInfo.index,
+        overIndex: overInfo.index,
+        activeParentLength: activeInfo.parentArray.length,
+        overParentLength: overInfo.parentArray.length
+    });
+
+    // Crear nueva copia de los componentes
+    const newComponents = JSON.parse(JSON.stringify(components));
+
+    // Re-encontrar la información en la nueva copia
+    const findInNewComponents = (items, targetId) => {
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (item.id === targetId) {
+                return {
+                    component: item,
+                    index: i,
+                    parentArray: items
+                };
+            }
+
+            let childArray = null;
+            if (item.type === 'container' && item.content) {
+                childArray = item.content;
+            } else if (item.type === 'banner' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'product' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'productCard' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'carousel' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'carouselCard' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'bento' && item.content?.children) {
+                childArray = item.content.children;
+            } else if (item.type === 'bentoFeature' && item.content?.children) {
+                childArray = item.content.children;
+            }
+
+            if (childArray) {
+                const found = findInNewComponents(childArray, targetId);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    const newActiveInfo = findInNewComponents(newComponents, activeId);
+    const newOverInfo = findInNewComponents(newComponents, overId);
+
+    if (!newActiveInfo || !newOverInfo) {
+        console.error('No se pudo encontrar componentes en la nueva estructura');
+        return;
+    }
+
+    // Obtener arrays padre e índices
+    const activeParentArray = newActiveInfo.parentArray;
+    const overParentArray = newOverInfo.parentArray;
+    const activeIndex = newActiveInfo.index;
+    const overIndex = newOverInfo.index;
+
+    // Validar índices
+    if (activeIndex < 0 || activeIndex >= activeParentArray.length) {
+        console.error('Índice activo fuera de rango');
+        return;
+    }
+
+    if (overIndex < 0 || overIndex >= overParentArray.length) {
+        console.error('Índice destino fuera de rango');
+        return;
+    }
+
+    // Remover componente activo
+    const [movedComponent] = activeParentArray.splice(activeIndex, 1);
+
+    // Obtener información del drop
+    const dropInfo = dropPosition || { position: 'bottom' };
+    
+    // Determinar si el destino es un contenedor
+    const overComponent = newOverInfo.component;
+    const isContainerType = [
+        'container', 'banner', 'product', 'productCard', 
+        'carousel', 'carouselCard', 'bento', 'bentoFeature'
+    ].includes(overComponent.type);
+
+    // Lógica de inserción
+    if (isContainerType && dropInfo.position === 'inside') {
+        let targetArray;
+        
+        if (overComponent.type === 'container') {
+            overComponent.content = overComponent.content || [];
+            targetArray = overComponent.content;
         } else {
-            let adjustedIndex = overIndex;
-
-            if (activeParentArray === overParentArray) {
-                if (activeIndex < overIndex) {
-                    adjustedIndex = overIndex - 1;
-                }
-            }
-
-            if (dropInfo.position === 'bottom') {
-                adjustedIndex += 1;
-            }
-
-            adjustedIndex = Math.max(0, Math.min(adjustedIndex, overParentArray.length));
-
-            overParentArray.splice(adjustedIndex, 0, movedComponent);
+            overComponent.content = overComponent.content || {};
+            overComponent.content.children = overComponent.content.children || [];
+            targetArray = overComponent.content.children;
         }
 
-        handleComponentsUpdate(newComponents);
-        toast.success("Componente movido correctamente");
-    };
+        if (movedComponent.id !== overComponent.id) {
+            targetArray.push(movedComponent);
+        } else {
+            toast.error("No puedes mover un componente dentro de sí mismo");
+            return;
+        }
+    } else {
+        // CORRECCIÓN CRÍTICA: Lógica simplificada y corregida para mover entre elementos
+        let targetIndex = overIndex;
+
+        // Solo ajustar si estamos en el mismo array padre
+        const isSameParent = activeParentArray === overParentArray;
+        
+        if (isSameParent) {
+            if (activeIndex < overIndex) {
+                targetIndex = overIndex - 1;
+            }
+        }
+
+        // Aplicar posición del drop
+        if (dropInfo.position === 'bottom') {
+            targetIndex += 1;
+        }
+
+        // CORRECCIÓN: Validación más estricta del índice
+        // El índice debe estar entre 0 y la longitud actual del array (no length)
+        const maxValidIndex = overParentArray.length; // Sí, length es válido para insertar al final
+        targetIndex = Math.max(0, Math.min(targetIndex, maxValidIndex));
+
+        console.log('Insertando en posición:', targetIndex, 'de array con longitud:', overParentArray.length);
+
+        // Insertar en la posición calculada
+        if (targetIndex >= 0 && targetIndex <= overParentArray.length) {
+            overParentArray.splice(targetIndex, 0, movedComponent);
+        } else {
+            console.error('Índice de destino inválido después de validación:', targetIndex);
+            return;
+        }
+    }
+
+    handleComponentsUpdate(newComponents);
+    toast.success("Componente movido correctamente");
+};
 
     const handleDragCancel = () => {
         setActiveId(null);
@@ -1235,7 +1230,7 @@ if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.chi
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 5,
+                distance: 2, // Más sensible
             },
         }),
         useSensor(KeyboardSensor, {
@@ -1443,19 +1438,19 @@ if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.chi
                                             />
                                         )}
                                         {editingComponent?.type === 'marquee' && (
-    <MarqueeEditDialog
-        editContent={editContent}
-        setEditContent={setEditContent}
-        editStyles={editStyles}
-        setEditStyles={setEditStyles}
-    />
-)}
-{editingComponent?.type === 'divider' && (
-    <DividerEditDialog
-        editStyles={editStyles}
-        setEditStyles={setEditStyles}
-    />
-)}
+                                            <MarqueeEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'divider' && (
+                                            <DividerEditDialog
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
                                         {editingComponent?.type === 'carouselImage' && (
                                             <CarouselImageEditDialog
                                                 editContent={editContent}
@@ -1619,6 +1614,12 @@ if (items[i].type === 'bentoFeature' && items[i].content && items[i].content.chi
                                         onDragEnd={handleDragEnd}
                                         onDragCancel={handleDragCancel}
                                         modifiers={[]}
+                                            autoScroll={false}
+                                        measuring={{
+                                            droppable: {
+                                                strategy: MeasuringStrategy.Always,
+                                            },
+                                        }}
                                     >
                                         <ComponentTree
                                             components={components}

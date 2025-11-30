@@ -101,3 +101,33 @@
 .ql-container .ql-editor{
   max-height: 400px;
 }
+
+/* Mejores indicadores visuales para drag & drop */
+.dnd-kit-dragging {
+    cursor: grabbing !important;
+}
+
+.dnd-kit-drag-overlay {
+    z-index: 1000;
+}
+
+/* Indicadores más visibles para primera y última posición */
+.drop-indicator-top {
+    top: -2px;
+    height: 4px;
+    background: #3b82f6;
+}
+
+.drop-indicator-bottom {
+    bottom: -2px;
+    height: 4px;
+    background: #3b82f6;
+}
+
+/* Área de drop raíz más visible */
+.root-drop-area-active {
+    background: #dbeafe;
+    border: 2px dashed #3b82f6;
+    border-radius: 8px;
+    min-height: 60px;
+}
