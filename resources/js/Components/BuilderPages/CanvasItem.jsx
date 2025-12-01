@@ -29,6 +29,7 @@ import BentoFeatureTitleComponent from './BentoComponent/BentoFeatureTitleCompon
 import BentoFeatureTextComponent from './BentoComponent/BentoFeatureTextComponent';
 import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
 import DividerComponent from './DividerComponent/DividerComponent';
+import PageContentComponent from './PageContentComponent';
 
 const CanvasItem = ({
     comp,
@@ -39,7 +40,8 @@ const CanvasItem = ({
     products,
     setComponents,
     hoveredComponentId,
-    setHoveredComponentId
+    setHoveredComponentId,
+    pageContent 
 }) => {
     const getStyles = (comp) => {
         const styles = comp.styles || {};
@@ -415,6 +417,17 @@ const CanvasItem = ({
             isPreview={isPreview}
             onEdit={onEditComponent}
             onDelete={onDeleteComponent}
+        />
+    );
+    case 'pageContent':
+    return (
+        <PageContentComponent
+            comp={comp}
+            getStyles={getStyles}
+            isPreview={isPreview}
+            hoveredComponentId={hoveredComponentId}
+            setHoveredComponentId={setHoveredComponentId}
+            pageContent={pageContent}
         />
     );
             default:

@@ -44,6 +44,7 @@ import BentoFeatureTitleEditDialog from './partials/Bento/BentoFeatureTitleEditD
 import BentoFeatureTextEditDialog from './partials/Bento/BentoFeatureTextEditDialog';
 import MarqueeEditDialog from './partials/Marquee/MarqueeEditDialog';
 import DividerEditDialog from './partials/Divider/DividerEditDialog';
+import PageContentEditDialog from './partials/PageContentEditDialog';
 
 export default function Builder({ page, products }) {
     const [components, setComponents] = useState([]);
@@ -59,7 +60,7 @@ export default function Builder({ page, products }) {
     const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [selectedType, setSelectedType] = useState('');
-
+    console.log(page)
     // Estados para el drag & drop visual
     const [activeId, setActiveId] = useState(null);
     const [overId, setOverId] = useState(null);
@@ -122,6 +123,12 @@ export default function Builder({ page, products }) {
                             };
                         }
 
+                        if (editingComponent.type === 'pageContent') {
+                            toast.error("El contenido de página no puede ser editado aquí");
+                            cancelEdit();
+                            return;
+                        }
+
                         // Buscar en divider (aunque no tiene hijos, por consistencia)
                         if (component.type === 'divider') {
                             // No necesita procesamiento especial ya que no tiene hijos
@@ -138,6 +145,11 @@ export default function Builder({ page, products }) {
                                     children: updatedChildren
                                 }
                             };
+                        }
+                        if (editingComponent?.type === 'pageContent') {
+                            toast.error("El contenido de página no puede ser editado aquí");
+                            cancelEdit();
+                            return;
                         }
 
                         // Actualizar para productCard con hijos
@@ -266,6 +278,63 @@ export default function Builder({ page, products }) {
     };
 
     const deleteComponent = (id) => {
+        // Primero buscar el componente para verificar su tipo
+        const findComponentType = (items, targetId) => {
+            for (const item of items) {
+                if (item.id === targetId) {
+                    return item.type;
+                }
+                if (item.type === 'container' && item.content) {
+                    const found = findComponentType(item.content, targetId);
+                    if (found) return found;
+                }
+                // Buscar en banners con hijos
+                if (item.type === 'banner' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
+                // Buscar en product con hijos
+                if (item.type === 'product' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
+                // Buscar en productCard con hijos
+                if (item.type === 'productCard' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
+                // Buscar en carousel con hijos
+                if (item.type === 'carousel' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
+                // Buscar en carouselCard con hijos
+                if (item.type === 'carouselCard' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
+                // Buscar en bento con hijos
+                if (item.type === 'bento' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
+                // Buscar en bentoFeature con hijos
+                if (item.type === 'bentoFeature' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+
+        const componentType = findComponentType(components, id);
+
+        // Verificar si es pageContent y evitar eliminarlo
+        if (componentType === 'pageContent') {
+            toast.error("El contenido de página no puede ser eliminado");
+            return;
+        }
+
         const removeFromTree = (items, targetId) => {
             return items.filter(item => {
                 if (item.id === targetId) {
@@ -274,6 +343,7 @@ export default function Builder({ page, products }) {
                 if (item.type === 'container' && item.content) {
                     item.content = removeFromTree(item.content, targetId);
                 }
+
                 // Eliminar de banners con hijos
                 if (item.type === 'banner' && item.content && item.content.children) {
                     item.content.children = removeFromTree(item.content.children, targetId);
@@ -286,11 +356,18 @@ export default function Builder({ page, products }) {
                 if (item.type === 'productCard' && item.content && item.content.children) {
                     item.content.children = removeFromTree(item.content.children, targetId);
                 }
+                // Eliminar de carousel con hijos
+                if (item.type === 'carousel' && item.content && item.content.children) {
+                    item.content.children = removeFromTree(item.content.children, targetId);
+                }
+                // Eliminar de carouselCard con hijos
+                if (item.type === 'carouselCard' && item.content && item.content.children) {
+                    item.content.children = removeFromTree(item.content.children, targetId);
+                }
                 // Eliminar de bento con hijos
                 if (item.type === 'bento' && item.content && item.content.children) {
                     item.content.children = removeFromTree(item.content.children, targetId);
                 }
-
                 // Eliminar de bentoFeature con hijos
                 if (item.type === 'bentoFeature' && item.content && item.content.children) {
                     item.content.children = removeFromTree(item.content.children, targetId);
@@ -823,6 +900,10 @@ export default function Builder({ page, products }) {
                 };
             }
 
+            if (selectedType === 'pageContent') {
+                content = null; // No almacenamos el contenido, se tomará directamente de la página
+            }
+
             const newItem = {
                 id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
                 type: selectedType,
@@ -856,338 +937,338 @@ export default function Builder({ page, products }) {
     };
 
     const debugStructure = () => {
-    console.log('=== ESTRUCTURA ACTUAL DE COMPONENTES ===');
-    const debug = (items, level = 0) => {
-        items.forEach((item, index) => {
-            const indent = '  '.repeat(level);
-            console.log(`${indent}[${index}] ${item.type} (id: ${item.id}) - Array length: ${items.length}`);
-        });
+        console.log('=== ESTRUCTURA ACTUAL DE COMPONENTES ===');
+        const debug = (items, level = 0) => {
+            items.forEach((item, index) => {
+                const indent = '  '.repeat(level);
+                console.log(`${indent}[${index}] ${item.type} (id: ${item.id}) - Array length: ${items.length}`);
+            });
+        };
+        debug(components);
+        console.log('=== FIN ESTRUCTURA ===');
     };
-    debug(components);
-    console.log('=== FIN ESTRUCTURA ===');
-};
 
     const handleDragOver = (event) => {
-    const { active, over } = event;
-    
-    if (over?.id !== overId) {
-        setOverId(over?.id || null);
-    }
+        const { active, over } = event;
 
-    if (!over) {
-        setDropPosition(null);
-        return;
-    }
+        if (over?.id !== overId) {
+            setOverId(over?.id || null);
+        }
 
-    requestAnimationFrame(() => {
-        if (over.id === 'root-area') {
-            setDropPosition({ id: 'root-area', position: 'inside' });
+        if (!over) {
+            setDropPosition(null);
             return;
         }
 
-        const overElement = document.getElementById(`component-${over.id}`);
-        if (overElement) {
-            const rect = overElement.getBoundingClientRect();
-            const cursorY = event.activatorEvent.clientY;
-
-            const overTop = rect.top;
-            const overHeight = rect.height;
-            const relativeY = cursorY - overTop;
-            
-            // Threshold más sensible para bordes
-            const threshold = Math.max(overHeight / 6, 10); // Más pequeño para mejor detección
-
-            let position;
-            if (relativeY < threshold) {
-                position = 'top';
-            } else if (relativeY > overHeight - threshold) {
-                position = 'bottom';
-            } else {
-                position = 'inside';
+        requestAnimationFrame(() => {
+            if (over.id === 'root-area') {
+                setDropPosition({ id: 'root-area', position: 'inside' });
+                return;
             }
 
-            setDropPosition(prev => {
-                if (prev && prev.id === over.id && prev.position === position) {
-                    return prev;
+            const overElement = document.getElementById(`component-${over.id}`);
+            if (overElement) {
+                const rect = overElement.getBoundingClientRect();
+                const cursorY = event.activatorEvent.clientY;
+
+                const overTop = rect.top;
+                const overHeight = rect.height;
+                const relativeY = cursorY - overTop;
+
+                // Threshold más sensible para bordes
+                const threshold = Math.max(overHeight / 6, 10); // Más pequeño para mejor detección
+
+                let position;
+                if (relativeY < threshold) {
+                    position = 'top';
+                } else if (relativeY > overHeight - threshold) {
+                    position = 'bottom';
+                } else {
+                    position = 'inside';
                 }
-                return { id: over.id, position };
-            });
-        } else {
-            setDropPosition(null);
-        }
-    });
-};
+
+                setDropPosition(prev => {
+                    if (prev && prev.id === over.id && prev.position === position) {
+                        return prev;
+                    }
+                    return { id: over.id, position };
+                });
+            } else {
+                setDropPosition(null);
+            }
+        });
+    };
 
     const handleDragEnd = (event) => {
-    const { active, over } = event;
+        const { active, over } = event;
 
-    setActiveId(null);
-    setOverId(null);
-    setDropPosition(null);
+        setActiveId(null);
+        setOverId(null);
+        setDropPosition(null);
 
-    if (!over) {
-        console.log('Drag ended without valid drop target');
-        return;
-    }
+        if (!over) {
+            console.log('Drag ended without valid drop target');
+            return;
+        }
 
-    const activeId = active.id;
-    const overId = over.id;
+        const activeId = active.id;
+        const overId = over.id;
 
-    if (activeId === overId) {
-        console.log('Dragging over same component, ignoring');
-        return;
-    }
+        if (activeId === overId) {
+            console.log('Dragging over same component, ignoring');
+            return;
+        }
 
-    // Manejar drop en el área raíz
-    if (overId === 'root-area') {
-        console.log('Dropping to root area');
-        setComponents((prev) => {
-            const newComponents = JSON.parse(JSON.stringify(prev));
-            
-            const removeComponent = (items, targetId) => {
-                for (let i = 0; i < items.length; i++) {
-                    if (items[i].id === targetId) {
-                        const [removed] = items.splice(i, 1);
-                        return removed;
+        // Manejar drop en el área raíz
+        if (overId === 'root-area') {
+            console.log('Dropping to root area');
+            setComponents((prev) => {
+                const newComponents = JSON.parse(JSON.stringify(prev));
+
+                const removeComponent = (items, targetId) => {
+                    for (let i = 0; i < items.length; i++) {
+                        if (items[i].id === targetId) {
+                            const [removed] = items.splice(i, 1);
+                            return removed;
+                        }
+
+                        // Buscar recursivamente en todos los tipos de componentes anidados
+                        let childArray = null;
+                        if (items[i].type === 'container' && items[i].content) {
+                            childArray = items[i].content;
+                        } else if (items[i].type === 'banner' && items[i].content?.children) {
+                            childArray = items[i].content.children;
+                        } else if (items[i].type === 'product' && items[i].content?.children) {
+                            childArray = items[i].content.children;
+                        } else if (items[i].type === 'productCard' && items[i].content?.children) {
+                            childArray = items[i].content.children;
+                        } else if (items[i].type === 'carousel' && items[i].content?.children) {
+                            childArray = items[i].content.children;
+                        } else if (items[i].type === 'carouselCard' && items[i].content?.children) {
+                            childArray = items[i].content.children;
+                        } else if (items[i].type === 'bento' && items[i].content?.children) {
+                            childArray = items[i].content.children;
+                        } else if (items[i].type === 'bentoFeature' && items[i].content?.children) {
+                            childArray = items[i].content.children;
+                        }
+
+                        if (childArray) {
+                            const removed = removeComponent(childArray, targetId);
+                            if (removed) return removed;
+                        }
                     }
-                    
-                    // Buscar recursivamente en todos los tipos de componentes anidados
-                    let childArray = null;
-                    if (items[i].type === 'container' && items[i].content) {
-                        childArray = items[i].content;
-                    } else if (items[i].type === 'banner' && items[i].content?.children) {
-                        childArray = items[i].content.children;
-                    } else if (items[i].type === 'product' && items[i].content?.children) {
-                        childArray = items[i].content.children;
-                    } else if (items[i].type === 'productCard' && items[i].content?.children) {
-                        childArray = items[i].content.children;
-                    } else if (items[i].type === 'carousel' && items[i].content?.children) {
-                        childArray = items[i].content.children;
-                    } else if (items[i].type === 'carouselCard' && items[i].content?.children) {
-                        childArray = items[i].content.children;
-                    } else if (items[i].type === 'bento' && items[i].content?.children) {
-                        childArray = items[i].content.children;
-                    } else if (items[i].type === 'bentoFeature' && items[i].content?.children) {
-                        childArray = items[i].content.children;
-                    }
-                    
-                    if (childArray) {
-                        const removed = removeComponent(childArray, targetId);
-                        if (removed) return removed;
-                    }
+                    return null;
+                };
+
+                const removedComponent = removeComponent(newComponents, activeId);
+                if (removedComponent) {
+                    newComponents.push(removedComponent);
+                    handleComponentsUpdate(newComponents);
+                    toast.success("Componente movido al nivel raíz");
+                } else {
+                    console.error('No se pudo encontrar el componente a mover');
                 }
-                return null;
-            };
+                return newComponents;
+            });
+            return;
+        }
 
-            const removedComponent = removeComponent(newComponents, activeId);
-            if (removedComponent) {
-                newComponents.push(removedComponent);
-                handleComponentsUpdate(newComponents);
-                toast.success("Componente movido al nivel raíz");
-            } else {
-                console.error('No se pudo encontrar el componente a mover');
+        // Función mejorada para buscar componentes
+        const findComponentInfo = (items, targetId, parent = null, path = []) => {
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+
+                if (item.id === targetId) {
+                    return {
+                        component: item,
+                        index: i,
+                        parent,
+                        parentArray: items,
+                        path: [...path, i]
+                    };
+                }
+
+                // Buscar recursivamente en todos los tipos de componentes anidados
+                let childArray = null;
+                if (item.type === 'container' && item.content) {
+                    childArray = item.content;
+                } else if (item.type === 'banner' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'product' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'productCard' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'carousel' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'carouselCard' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'bento' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'bentoFeature' && item.content?.children) {
+                    childArray = item.content.children;
+                }
+
+                if (childArray) {
+                    const found = findComponentInfo(childArray, targetId, item, [...path, i]);
+                    if (found) return found;
+                }
             }
-            return newComponents;
+            return null;
+        };
+
+        const activeInfo = findComponentInfo(components, activeId);
+        const overInfo = findComponentInfo(components, overId);
+
+        if (!activeInfo || !overInfo) {
+            console.error('No se encontró información del componente activo o destino');
+            return;
+        }
+
+        console.log('Drag info:', {
+            active: activeInfo.component.type,
+            over: overInfo.component.type,
+            activeIndex: activeInfo.index,
+            overIndex: overInfo.index,
+            activeParentLength: activeInfo.parentArray.length,
+            overParentLength: overInfo.parentArray.length
         });
-        return;
-    }
 
-    // Función mejorada para buscar componentes
-    const findComponentInfo = (items, targetId, parent = null, path = []) => {
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            
-            if (item.id === targetId) {
-                return {
-                    component: item,
-                    index: i,
-                    parent,
-                    parentArray: items,
-                    path: [...path, i]
-                };
+        // Crear nueva copia de los componentes
+        const newComponents = JSON.parse(JSON.stringify(components));
+
+        // Re-encontrar la información en la nueva copia
+        const findInNewComponents = (items, targetId) => {
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.id === targetId) {
+                    return {
+                        component: item,
+                        index: i,
+                        parentArray: items
+                    };
+                }
+
+                let childArray = null;
+                if (item.type === 'container' && item.content) {
+                    childArray = item.content;
+                } else if (item.type === 'banner' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'product' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'productCard' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'carousel' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'carouselCard' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'bento' && item.content?.children) {
+                    childArray = item.content.children;
+                } else if (item.type === 'bentoFeature' && item.content?.children) {
+                    childArray = item.content.children;
+                }
+
+                if (childArray) {
+                    const found = findInNewComponents(childArray, targetId);
+                    if (found) return found;
+                }
             }
+            return null;
+        };
 
-            // Buscar recursivamente en todos los tipos de componentes anidados
-            let childArray = null;
-            if (item.type === 'container' && item.content) {
-                childArray = item.content;
-            } else if (item.type === 'banner' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'product' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'productCard' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'carousel' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'carouselCard' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'bento' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'bentoFeature' && item.content?.children) {
-                childArray = item.content.children;
-            }
+        const newActiveInfo = findInNewComponents(newComponents, activeId);
+        const newOverInfo = findInNewComponents(newComponents, overId);
 
-            if (childArray) {
-                const found = findComponentInfo(childArray, targetId, item, [...path, i]);
-                if (found) return found;
-            }
-        }
-        return null;
-    };
-
-    const activeInfo = findComponentInfo(components, activeId);
-    const overInfo = findComponentInfo(components, overId);
-
-    if (!activeInfo || !overInfo) {
-        console.error('No se encontró información del componente activo o destino');
-        return;
-    }
-
-    console.log('Drag info:', {
-        active: activeInfo.component.type,
-        over: overInfo.component.type,
-        activeIndex: activeInfo.index,
-        overIndex: overInfo.index,
-        activeParentLength: activeInfo.parentArray.length,
-        overParentLength: overInfo.parentArray.length
-    });
-
-    // Crear nueva copia de los componentes
-    const newComponents = JSON.parse(JSON.stringify(components));
-
-    // Re-encontrar la información en la nueva copia
-    const findInNewComponents = (items, targetId) => {
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (item.id === targetId) {
-                return {
-                    component: item,
-                    index: i,
-                    parentArray: items
-                };
-            }
-
-            let childArray = null;
-            if (item.type === 'container' && item.content) {
-                childArray = item.content;
-            } else if (item.type === 'banner' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'product' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'productCard' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'carousel' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'carouselCard' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'bento' && item.content?.children) {
-                childArray = item.content.children;
-            } else if (item.type === 'bentoFeature' && item.content?.children) {
-                childArray = item.content.children;
-            }
-
-            if (childArray) {
-                const found = findInNewComponents(childArray, targetId);
-                if (found) return found;
-            }
-        }
-        return null;
-    };
-
-    const newActiveInfo = findInNewComponents(newComponents, activeId);
-    const newOverInfo = findInNewComponents(newComponents, overId);
-
-    if (!newActiveInfo || !newOverInfo) {
-        console.error('No se pudo encontrar componentes en la nueva estructura');
-        return;
-    }
-
-    // Obtener arrays padre e índices
-    const activeParentArray = newActiveInfo.parentArray;
-    const overParentArray = newOverInfo.parentArray;
-    const activeIndex = newActiveInfo.index;
-    const overIndex = newOverInfo.index;
-
-    // Validar índices
-    if (activeIndex < 0 || activeIndex >= activeParentArray.length) {
-        console.error('Índice activo fuera de rango');
-        return;
-    }
-
-    if (overIndex < 0 || overIndex >= overParentArray.length) {
-        console.error('Índice destino fuera de rango');
-        return;
-    }
-
-    // Remover componente activo
-    const [movedComponent] = activeParentArray.splice(activeIndex, 1);
-
-    // Obtener información del drop
-    const dropInfo = dropPosition || { position: 'bottom' };
-    
-    // Determinar si el destino es un contenedor
-    const overComponent = newOverInfo.component;
-    const isContainerType = [
-        'container', 'banner', 'product', 'productCard', 
-        'carousel', 'carouselCard', 'bento', 'bentoFeature'
-    ].includes(overComponent.type);
-
-    // Lógica de inserción
-    if (isContainerType && dropInfo.position === 'inside') {
-        let targetArray;
-        
-        if (overComponent.type === 'container') {
-            overComponent.content = overComponent.content || [];
-            targetArray = overComponent.content;
-        } else {
-            overComponent.content = overComponent.content || {};
-            overComponent.content.children = overComponent.content.children || [];
-            targetArray = overComponent.content.children;
-        }
-
-        if (movedComponent.id !== overComponent.id) {
-            targetArray.push(movedComponent);
-        } else {
-            toast.error("No puedes mover un componente dentro de sí mismo");
+        if (!newActiveInfo || !newOverInfo) {
+            console.error('No se pudo encontrar componentes en la nueva estructura');
             return;
         }
-    } else {
-        // CORRECCIÓN CRÍTICA: Lógica simplificada y corregida para mover entre elementos
-        let targetIndex = overIndex;
 
-        // Solo ajustar si estamos en el mismo array padre
-        const isSameParent = activeParentArray === overParentArray;
-        
-        if (isSameParent) {
-            if (activeIndex < overIndex) {
-                targetIndex = overIndex - 1;
+        // Obtener arrays padre e índices
+        const activeParentArray = newActiveInfo.parentArray;
+        const overParentArray = newOverInfo.parentArray;
+        const activeIndex = newActiveInfo.index;
+        const overIndex = newOverInfo.index;
+
+        // Validar índices
+        if (activeIndex < 0 || activeIndex >= activeParentArray.length) {
+            console.error('Índice activo fuera de rango');
+            return;
+        }
+
+        if (overIndex < 0 || overIndex >= overParentArray.length) {
+            console.error('Índice destino fuera de rango');
+            return;
+        }
+
+        // Remover componente activo
+        const [movedComponent] = activeParentArray.splice(activeIndex, 1);
+
+        // Obtener información del drop
+        const dropInfo = dropPosition || { position: 'bottom' };
+
+        // Determinar si el destino es un contenedor
+        const overComponent = newOverInfo.component;
+        const isContainerType = [
+            'container', 'banner', 'product', 'productCard',
+            'carousel', 'carouselCard', 'bento', 'bentoFeature'
+        ].includes(overComponent.type);
+
+        // Lógica de inserción
+        if (isContainerType && dropInfo.position === 'inside') {
+            let targetArray;
+
+            if (overComponent.type === 'container') {
+                overComponent.content = overComponent.content || [];
+                targetArray = overComponent.content;
+            } else {
+                overComponent.content = overComponent.content || {};
+                overComponent.content.children = overComponent.content.children || [];
+                targetArray = overComponent.content.children;
+            }
+
+            if (movedComponent.id !== overComponent.id) {
+                targetArray.push(movedComponent);
+            } else {
+                toast.error("No puedes mover un componente dentro de sí mismo");
+                return;
+            }
+        } else {
+            // CORRECCIÓN CRÍTICA: Lógica simplificada y corregida para mover entre elementos
+            let targetIndex = overIndex;
+
+            // Solo ajustar si estamos en el mismo array padre
+            const isSameParent = activeParentArray === overParentArray;
+
+            if (isSameParent) {
+                if (activeIndex < overIndex) {
+                    targetIndex = overIndex - 1;
+                }
+            }
+
+            // Aplicar posición del drop
+            if (dropInfo.position === 'bottom') {
+                targetIndex += 1;
+            }
+
+            // CORRECCIÓN: Validación más estricta del índice
+            // El índice debe estar entre 0 y la longitud actual del array (no length)
+            const maxValidIndex = overParentArray.length; // Sí, length es válido para insertar al final
+            targetIndex = Math.max(0, Math.min(targetIndex, maxValidIndex));
+
+            console.log('Insertando en posición:', targetIndex, 'de array con longitud:', overParentArray.length);
+
+            // Insertar en la posición calculada
+            if (targetIndex >= 0 && targetIndex <= overParentArray.length) {
+                overParentArray.splice(targetIndex, 0, movedComponent);
+            } else {
+                console.error('Índice de destino inválido después de validación:', targetIndex);
+                return;
             }
         }
 
-        // Aplicar posición del drop
-        if (dropInfo.position === 'bottom') {
-            targetIndex += 1;
-        }
-
-        // CORRECCIÓN: Validación más estricta del índice
-        // El índice debe estar entre 0 y la longitud actual del array (no length)
-        const maxValidIndex = overParentArray.length; // Sí, length es válido para insertar al final
-        targetIndex = Math.max(0, Math.min(targetIndex, maxValidIndex));
-
-        console.log('Insertando en posición:', targetIndex, 'de array con longitud:', overParentArray.length);
-
-        // Insertar en la posición calculada
-        if (targetIndex >= 0 && targetIndex <= overParentArray.length) {
-            overParentArray.splice(targetIndex, 0, movedComponent);
-        } else {
-            console.error('Índice de destino inválido después de validación:', targetIndex);
-            return;
-        }
-    }
-
-    handleComponentsUpdate(newComponents);
-    toast.success("Componente movido correctamente");
-};
+        handleComponentsUpdate(newComponents);
+        toast.success("Componente movido correctamente");
+    };
 
     const handleDragCancel = () => {
         setActiveId(null);
@@ -1253,7 +1334,6 @@ export default function Builder({ page, products }) {
                     >
                         <X size={16} />
                     </Button>
-                    <h1>{page.title}</h1>
                     <div style={{
                         backgroundColor: themeSettings?.background ? `hsl(${themeSettings.background})` : '#fff',
                         fontFamily: themeSettings?.fontFamily || 'inherit',
@@ -1269,11 +1349,13 @@ export default function Builder({ page, products }) {
                             hoveredComponentId={null}
                             setHoveredComponentId={() => { }}
                             isPreview={true}
+                            pageContent={page.content}
                         />
                     </div>
                 </div>
             ) : (
                 <>
+                {/* Layout de builder */}
                     <TooltipProvider >
                         <div className="flex justify-between items-center px-4 py-2 border-b bg-white shadow-sm">
                             <Tooltip>
@@ -1342,7 +1424,7 @@ export default function Builder({ page, products }) {
                         </div>
                     </TooltipProvider>
 
-                    <div className="flex gap-6 p-4">
+                    <div className="flex gap-2 p-4">
                         <div className="w-80 h-full sticky top-0 bg-white p-4 rounded-lg shadow-md">
                             {editingComponent ? (
                                 // MODO EDICIÓN - Mostrar formularios de edición
@@ -1529,6 +1611,11 @@ export default function Builder({ page, products }) {
                                                 setEditStyles={setEditStyles}
                                             />
                                         )}
+                                        {editingComponent?.type === 'pageContent' && (
+                                            <PageContentEditDialog
+                                                editContent={editContent}
+                                            />
+                                        )}
                                         {editingComponent?.type === 'productName' && (
                                             <ProductNameEditDialog
                                                 editContent={editContent}
@@ -1614,7 +1701,7 @@ export default function Builder({ page, products }) {
                                         onDragEnd={handleDragEnd}
                                         onDragCancel={handleDragCancel}
                                         modifiers={[]}
-                                            autoScroll={false}
+                                        autoScroll={false}
                                         measuring={{
                                             droppable: {
                                                 strategy: MeasuringStrategy.Always,
@@ -1663,6 +1750,7 @@ export default function Builder({ page, products }) {
                                 canvasWidth={canvasWidth}
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
+                                pageContent={page.content}
                             />
                         </div>
                     </div>
@@ -1688,6 +1776,7 @@ export default function Builder({ page, products }) {
                                 <SelectItem value="heading">Encabezado</SelectItem>
                                 <SelectItem value="text">Texto</SelectItem>
                                 <SelectItem value="image">Imagen</SelectItem>
+                                <SelectItem value="pageContent">Contenido de Página</SelectItem>
                                 <SelectItem value="button">Botón</SelectItem>
                                 <SelectItem value="video">Video</SelectItem>
                                 <SelectItem value="link">Enlace</SelectItem>

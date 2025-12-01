@@ -195,33 +195,37 @@ const SortableItem = ({
                     {getComponentTypeName(component.type)}
                 </span>
                 
-                <div 
-                    className={`transition-opacity ${isActive || hoveredComponentId === component.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"} flex gap-1`}
-                >
-                    <Button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit(component);
-                        }}
-                        title="Editar"
-                        size="icon"
-                        className="touch-none"
-                    >
-                        <Edit size={14} />
-                    </Button>
-                    <Button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(component.id);
-                        }}
-                        title="Eliminar"
-                        size="icon"
-                        variant="destructive"
-                        className="touch-none"
-                    >
-                        <Trash2 size={14} />
-                    </Button>
-                </div>
+<div 
+    className={`transition-opacity ${isActive || hoveredComponentId === component.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"} flex gap-1`}
+>
+    <Button
+        onClick={(e) => {
+            e.stopPropagation();
+            onEdit(component);
+        }}
+        title="Editar"
+        size="icon"
+        className="touch-none"
+    >
+        <Edit size={14} />
+    </Button>
+    
+    {/* Solo mostrar botón de eliminar si NO es pageContent */}
+    {component.type !== 'pageContent' && (
+        <Button
+            onClick={(e) => {
+                e.stopPropagation();
+                onDelete(component.id);
+            }}
+            title="Eliminar"
+            size="icon"
+            variant="destructive"
+            className="touch-none"
+        >
+            <Trash2 size={14} />
+        </Button>
+    )}
+</div>
             </div>
 
             {/* Indicador de posición - ABAJO */}
@@ -292,6 +296,7 @@ const getComponentTypeName = (type) => {
         'bentoFeatureText': 'Texto de la Característica',
         'marquee': 'Texto en Movimiento',
         'divider': 'Divider (Línea)',
+        'pageContent': 'Contenido de Página',
     };
     return typeNames[type] || type;
 };
