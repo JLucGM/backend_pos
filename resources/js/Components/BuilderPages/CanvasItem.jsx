@@ -1,6 +1,5 @@
 // components/BuilderPages/CanvasItem.jsx
 import React from 'react';
-import TextComponent from './TextComponent';
 import HeadingComponent from './HeadingComponent';
 import ButtonComponent from './ButtonComponent';
 import ImageComponent from './ImageComponent';
@@ -17,42 +16,55 @@ import ProductCardComponent from './ProductCardComponent';
 import ProductImageComponent from './ProductImageComponent';
 import ProductNameComponent from './ProductNameComponent';
 import ProductPriceComponent from './ProductPriceComponent';
-import CarouselPriceComponent from './CarouselPriceComponent';
 import CarouselNameComponent from './CarouselNameComponent';
 import CarouselImageComponent from './CarouselImageComponent';
 import CarouselCardComponent from './CarouselCardComponent';
 import CarouselTitleComponent from './CarouselTitleComponent';
-import BentoComponent from './BentoComponent/BentoComponent';
 import BentoTitleComponent from './BentoComponent/BentoTitleComponent';
 import BentoFeatureComponent from './BentoComponent/BentoFeatureComponent';
 import BentoFeatureTitleComponent from './BentoComponent/BentoFeatureTitleComponent';
 import BentoFeatureTextComponent from './BentoComponent/BentoFeatureTextComponent';
-import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
-import DividerComponent from './DividerComponent/DividerComponent';
 import PageContentComponent from './PageContentComponent';
+import TextComponent from './TextComponent';
+import BentoComponent from './BentoComponent/BentoComponent';
+import DividerComponent from './DividerComponent/DividerComponent';
+import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
+import CarouselPriceComponent from './CarouselPriceComponent';
 
 const CanvasItem = ({
     comp,
     onEditComponent,
     onDeleteComponent,
     themeSettings,
+    appliedTheme,
     isPreview,
     products,
     setComponents,
     hoveredComponentId,
     setHoveredComponentId,
-    pageContent 
+    pageContent
 }) => {
     const getStyles = (comp) => {
         const styles = comp.styles || {};
-        const baseStyles = {
-            color: styles.color || (themeSettings?.primary ? `hsl(${themeSettings.primary})` : 'inherit'),
-            fontSize: styles.fontSize || 'inherit',
-            backgroundColor: styles.backgroundColor || (themeSettings?.primary ? `hsl(${themeSettings.primary})` : 'inherit'),
-            padding: styles.padding || 'inherit',
+
+        // Estilos base del tema aplicado
+        const themeStyles = {
+            color: themeSettings?.foreground ? `hsl(${themeSettings.foreground})` : '#000000',
+            backgroundColor: themeSettings?.background ? `hsl(${themeSettings.background})` : 'transparent',
             fontFamily: themeSettings?.fontFamily || 'inherit',
+            borderRadius: themeSettings?.borderRadius || '0',
+            // Agregar más propiedades del tema si existen
+            ...(themeSettings?.primary && {
+                '--primary-color': `hsl(${themeSettings.primary})`
+            }),
         };
-        return baseStyles;
+
+        // Combinar estilos del tema con estilos específicos del componente
+        // Los estilos del componente tienen prioridad sobre los del tema
+        return {
+            ...themeStyles,
+            ...styles, // Los estilos del componente sobrescriben los del tema
+        };
     };
 
     const isHovered = hoveredComponentId === comp.id;
@@ -71,64 +83,34 @@ const CanvasItem = ({
     };
 
     const renderComponent = () => {
+        // Propiedades comunes para todos los componentes
+        const commonProps = {
+            comp,
+            getStyles,
+            isPreview,
+            themeSettings,
+            appliedTheme,
+        };
+
         switch (comp.type) {
             case 'text':
-                return (
-                    <TextComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
-                    />
-                );
+                return <TextComponent {...commonProps} />;
             case 'heading':
-                return (
-                    <HeadingComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
-                    />
-                );
+                return <HeadingComponent {...commonProps} />;
             case 'button':
-                return (
-                    <ButtonComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
-                    />
-                );
+                return <ButtonComponent {...commonProps} />;
             case 'image':
-                return (
-                    <ImageComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
-                    />
-                );
+                return <ImageComponent {...commonProps} />;
             case 'video':
-                return (
-                    <VideoComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
-                    />
-                );
+                return <VideoComponent {...commonProps} />;
             case 'link':
-                return (
-                    <LinkComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
-                    />
-                );
+                return <LinkComponent {...commonProps} />;
             case 'product':
                 return (
                     <ProductComponent
-                        comp={comp}
-                        getStyles={getStyles}
+                        {...commonProps}
                         onEdit={() => onEditComponent(comp)}
                         onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
                         products={products}
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
@@ -138,26 +120,19 @@ const CanvasItem = ({
             case 'carousel':
                 return (
                     <CarouselComponent
-                        comp={comp}
-                        getStyles={getStyles}
+                        {...commonProps}
                         onEdit={() => onEditComponent(comp)}
                         onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
                         products={products}
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                     />
                 );
-
-            // En el switch de CanvasItem.jsx, agrega:
             case 'carouselTitle':
                 return (
                     <CarouselTitleComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
+                        {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -165,12 +140,9 @@ const CanvasItem = ({
             case 'carouselCard':
                 return (
                     <CarouselCardComponent
-                        comp={comp}
-                        getStyles={getStyles}
+                        {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
                         products={products}
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
@@ -180,9 +152,7 @@ const CanvasItem = ({
             case 'carouselImage':
                 return (
                     <CarouselImageComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
+                        {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -190,9 +160,7 @@ const CanvasItem = ({
             case 'carouselName':
                 return (
                     <CarouselNameComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
+                        {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -200,9 +168,7 @@ const CanvasItem = ({
             case 'carouselPrice':
                 return (
                     <CarouselPriceComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
+                        {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -210,12 +176,9 @@ const CanvasItem = ({
             case 'container':
                 return (
                     <ContainerComponent
-                        comp={comp}
-                        getStyles={getStyles}
+                        {...commonProps}
                         onEdit={() => onEditComponent(comp)}
                         onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
                         products={products}
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
@@ -225,12 +188,9 @@ const CanvasItem = ({
             case 'banner':
                 return (
                     <BannerComponent
-                        comp={comp}
-                        getStyles={getStyles}
+                        {...commonProps}
                         onEdit={() => onEditComponent(comp)}
                         onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
                         products={products}
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
@@ -240,57 +200,33 @@ const CanvasItem = ({
             case 'bannerTitle':
                 return (
                     <BannerTitleComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        onEdit={() => onEditComponent(comp)}
-                        onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
-                        products={products}
-                        setComponents={setComponents}
-                        hoveredComponentId={hoveredComponentId}
-                        setHoveredComponentId={setHoveredComponentId}
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
                     />
                 );
             case 'bannerText':
                 return (
                     <BannerTextComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        onEdit={() => onEditComponent(comp)}
-                        onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
-                        products={products}
-                        setComponents={setComponents}
-                        hoveredComponentId={hoveredComponentId}
-                        setHoveredComponentId={setHoveredComponentId}
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
                     />
                 );
             case 'productTitle':
                 return (
                     <ProductTitleComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        onEdit={() => onEditComponent(comp)}
-                        onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
-                        products={products}
-                        setComponents={setComponents}
-                        hoveredComponentId={hoveredComponentId}
-                        setHoveredComponentId={setHoveredComponentId}
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
                     />
                 );
             case 'productCard':
                 return (
                     <ProductCardComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        onEdit={() => onEditComponent(comp)}
-                        onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
                         products={products}
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
@@ -300,58 +236,33 @@ const CanvasItem = ({
             case 'productImage':
                 return (
                     <ProductImageComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        onEdit={() => onEditComponent(comp)}
-                        onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
-                        products={products}
-                        setComponents={setComponents}
-                        hoveredComponentId={hoveredComponentId}
-                        setHoveredComponentId={setHoveredComponentId}
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
                     />
                 );
             case 'productName':
                 return (
                     <ProductNameComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        onEdit={() => onEditComponent(comp)}
-                        onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
-                        products={products}
-                        setComponents={setComponents}
-                        hoveredComponentId={hoveredComponentId}
-                        setHoveredComponentId={setHoveredComponentId}
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
                     />
                 );
             case 'productPrice':
                 return (
                     <ProductPriceComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        onEdit={() => onEditComponent(comp)}
-                        onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
-                        products={products}
-                        setComponents={setComponents}
-                        hoveredComponentId={hoveredComponentId}
-                        setHoveredComponentId={setHoveredComponentId}
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
                     />
                 );
-            // En el switch de CanvasItem.jsx, agrega:
             case 'bento':
                 return (
                     <BentoComponent
-                        comp={comp}
-                        getStyles={getStyles}
+                        {...commonProps}
                         onEdit={() => onEditComponent(comp)}
                         onDelete={() => onDeleteComponent(comp.id)}
-                        themeSettings={themeSettings}
-                        isPreview={isPreview}
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
@@ -360,9 +271,7 @@ const CanvasItem = ({
             case 'bentoTitle':
                 return (
                     <BentoTitleComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
+                        {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -370,9 +279,7 @@ const CanvasItem = ({
             case 'bentoFeature':
                 return (
                     <BentoFeatureComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
+                        {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                         hoveredComponentId={hoveredComponentId}
@@ -382,9 +289,7 @@ const CanvasItem = ({
             case 'bentoFeatureTitle':
                 return (
                     <BentoFeatureTitleComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
+                        {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -392,46 +297,50 @@ const CanvasItem = ({
             case 'bentoFeatureText':
                 return (
                     <BentoFeatureTextComponent
-                        comp={comp}
-                        getStyles={getStyles}
-                        isPreview={isPreview}
+                        {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
                 );
-                case 'marquee':
-    return (
-        <MarqueeTextComponent
-            comp={comp}
-            getStyles={getStyles}
-            isPreview={isPreview}
-            onEdit={onEditComponent}
-            onDelete={onDeleteComponent}
-        />
-    );
-    case 'divider':
-    return (
-        <DividerComponent
-            comp={comp}
-            getStyles={getStyles}
-            isPreview={isPreview}
-            onEdit={onEditComponent}
-            onDelete={onDeleteComponent}
-        />
-    );
-    case 'pageContent':
-    return (
-        <PageContentComponent
-            comp={comp}
-            getStyles={getStyles}
-            isPreview={isPreview}
-            hoveredComponentId={hoveredComponentId}
-            setHoveredComponentId={setHoveredComponentId}
-            pageContent={pageContent}
-        />
-    );
+            case 'marquee':
+                return (
+                    <MarqueeTextComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                    />
+                );
+            case 'divider':
+                return (
+                    <DividerComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                    />
+                );
+            case 'pageContent':
+                return (
+                    <PageContentComponent
+                        {...commonProps}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                        pageContent={pageContent}
+                    />
+                );
             default:
-                return <div>Componente no reconocido: {comp.type}</div>;
+                return (
+                    <div
+                        className="p-4 border border-red-300 bg-red-50 rounded"
+                        style={getStyles(comp)}
+                    >
+                        <div className="font-bold text-red-600">
+                            Componente no reconocido: {comp.type}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                            ID: {comp.id}
+                        </div>
+                    </div>
+                );
         }
     };
 
@@ -455,35 +364,177 @@ const CanvasItem = ({
             'productName': 'Nombre de Producto',
             'productPrice': 'Precio de Producto',
             'marquee': 'Texto en Movimiento',
-            'divider': 'Divider ',
-
+            'divider': 'Divider',
+            'pageContent': 'Contenido de Página',
+            'bento': 'Bento',
+            'bentoTitle': 'Título Bento',
+            'bentoFeature': 'Característica Bento',
+            'bentoFeatureTitle': 'Título Característica',
+            'bentoFeatureText': 'Texto Característica',
+            'carouselTitle': 'Título del Carrusel',
+            'carouselCard': 'Carta del Carrusel',
+            'carouselImage': 'Imagen del Carrusel',
+            'carouselName': 'Nombre del Carrusel',
+            'carouselPrice': 'Precio del Carrusel'
         };
         return typeNames[type] || type;
+    };
+
+    // Obtener información del origen del tema
+    const getThemeSource = () => {
+        if (!appliedTheme) return 'Sin tema';
+
+        // Determinar de dónde viene el tema
+        if (comp.appliedThemeSource === 'page') {
+            return 'Página';
+        } else if (comp.appliedThemeSource === 'template') {
+            return 'Plantilla';
+        } else {
+            return 'Global';
+        }
     };
 
     return (
         <div
             id={`component-${comp.id}`}
-            className={`relative group rounded-lgs transition-all duration-200 ${isHovered && !isPreview
-                ? 'border border-blue-400 bg-blue-50'
-                : 'border border-transparent'
+            className={`relative group rounded-lg transition-all duration-200 ${isHovered && !isPreview
+                    ? 'border-2 border-blue-400 bg-blue-50/30'
+                    : 'border border-transparent'
                 }`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            // style={{
+            //     // Aplicar bordes redondeados del tema a los contenedores
+            //     borderRadius: themeSettings?.borderRadius || '0.375rem',
+            //     // Fondo sutil basado en el tema
+            //     backgroundColor: isHovered && !isPreview
+            //         ? themeSettings?.primary
+            //             ? `hsla(${themeSettings.primary}, 0.05)`
+            //             : '#eff6ff'
+            //         : 'transparent',
+            // }}
         >
             {/* Solo mostrar el tooltip en modo edición */}
             {!isPreview && (
-                <div className={`rounded-t-lg bg-blue-500 text-white text-xs px-2 py-1 transition-opacity duration-300 absolute -top-6 left-0 z-50 ${isHovered ? 'opacity-100' : 'opacity-0'
-                    }`}>
-                    {getComponentTypeName(comp.type)}
+                <div
+                    className={`rounded-t-lg text-white text-xs px-3 py-1.5 transition-all duration-300 absolute -top-7 left-0 z-50 flex items-center gap-2 shadow-md ${isHovered ? 'bg-blue-400 opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+                        }`}
+                    // style={{
+                    //     backgroundColor: "#60a5fa" ?
+                    //         `#60a5fa` : '#60a5fa',
+                    // }}
+                >
+                    <span className="font-medium">{getComponentTypeName(comp.type)}</span>
+                    {/* {appliedTheme?.name && (
+                        <>
+                            <span className="opacity-75">•</span>
+                            <span className="text-xs opacity-90 bg-white/20 px-1.5 py-0.5 rounded">
+                                {appliedTheme.name}ddd
+                            </span>
+                        </>
+                    )} */}
                 </div>
             )}
 
-            <div className="">
+            {/* Indicador visual del tema aplicado (solo en hover) */}
+            {/* {!isPreview && isHovered && appliedTheme && (
+                <div className="absolute top-1 right-1 z-40">
+                    <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs shadow-sm border">
+                        <div className="flex items-center gap-1">
+                            <div
+                                className="w-2 h-2 rounded-full"
+                                style={{
+                                    backgroundColor: themeSettings?.primary
+                                        ? `hsl(${themeSettings.primary})`
+                                        : '#3b82f6',
+                                }}
+                            />
+                            <span className="text-gray-700 font-medium">{getThemeSource()}</span>
+                        </div>
+                    </div>
+                </div>
+            )} */}
+
+            <div className="relative z-10">
                 {renderComponent()}
             </div>
+
+            {/* Controles de edición (solo en modo edición) */}
+            {/* {!isPreview && isHovered && (
+                <div className="absolute -bottom-8 left-0 right-0 flex justify-center gap-1 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button
+                        onClick={() => onEditComponent(comp)}
+                        className="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded shadow"
+                        style={{
+                            backgroundColor: themeSettings?.primary
+                                ? `hsl(${themeSettings.primary})`
+                                : '#3b82f6',
+                        }}
+                    >
+                        Editarsss
+                    </button>
+                    {comp.type !== 'pageContent' && (
+                        <button
+                            onClick={() => onDeleteComponent(comp.id)}
+                            className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded shadow"
+                        >
+                            Eliminar
+                        </button>
+                    )}
+                </div>
+            )} */}
         </div>
     );
 };
+
+// Componente de debug para ver información del tema
+// const ThemeDebugInfo = ({ themeSettings, appliedTheme }) => {
+//     if (!themeSettings || !appliedTheme) return null;
+
+//     return (
+//         <div className="fixed bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg border z-50 max-w-xs">
+//             <div className="text-xs font-medium text-gray-700 mb-2">DEBUG - Tema Aplicado</div>
+//             <div className="space-y-1">
+//                 <div className="flex items-center justify-between">
+//                     <span className="text-xs text-gray-500">Nombre:</span>
+//                     <span className="text-xs font-medium">{appliedTheme.name}</span>
+//                 </div>
+//                 <div className="flex items-center justify-between">
+//                     <span className="text-xs text-gray-500">Primario:</span>
+//                     <div
+//                         className="w-4 h-4 rounded border"
+//                         style={{
+//                             backgroundColor: themeSettings.primary
+//                                 ? `hsl(${themeSettings.primary})`
+//                                 : '#3b82f6'
+//                         }}
+//                     />
+//                 </div>
+//                 <div className="flex items-center justify-between">
+//                     <span className="text-xs text-gray-500">Fondo:</span>
+//                     <div
+//                         className="w-4 h-4 rounded border"
+//                         style={{
+//                             backgroundColor: themeSettings.background
+//                                 ? `hsl(${themeSettings.background})`
+//                                 : '#ffffff'
+//                         }}
+//                     />
+//                 </div>
+//                 <div className="flex items-center justify-between">
+//                     <span className="text-xs text-gray-500">Texto:</span>
+//                     <div
+//                         className="w-4 h-4 rounded border"
+//                         style={{
+//                             backgroundColor: themeSettings.foreground
+//                                 ? `hsl(${themeSettings.foreground})`
+//                                 : '#000000'
+//                         }}
+//                     />
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
 
 export default CanvasItem;

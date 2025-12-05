@@ -22,6 +22,10 @@ class Page extends Model
         'is_homepage',
         'sort_order',
         'company_id',
+        'template_id',
+        'template_overrides',
+        'uses_template',
+        'theme_id',
     ];
 
     protected $casts = [
@@ -29,6 +33,8 @@ class Page extends Model
         'is_default' => 'boolean',
         'is_published' => 'boolean',
         'is_homepage' => 'boolean',
+        'template_overrides' => 'array',
+        'uses_template' => 'boolean'
     ];
 
     public function getRouteKeyName()
@@ -61,5 +67,55 @@ class Page extends Model
     public function theme()
     {
         return $this->belongsTo(Theme::class);
+    }
+
+    public function template()
+    {
+        return $this->belongsTo(Template::class);
+    }
+
+    // Método para obtener layout combinado
+    public function getCombinedLayout()
+    {
+        if (!$this->uses_template || !$this->template) {
+            return $this->layout;
+        }
+
+        $templateLayout = $this->template->layout_structure ?? [];
+        $pageLayout = $this->layout ?? [];
+        $overrides = $this->template_overrides ?? [];
+
+        // Combinar lógica (template base + personalizaciones página)
+        return $this->mergeLayouts($templateLayout, $pageLayout, $overrides);
+    }
+
+    // Método para aplicar tema
+    public function getAppliedTheme()
+    {
+        // Prioridad: Tema de página → Tema de template → Tema default
+        if ($this->theme_id) {
+            return $this->theme;
+        }
+
+        if ($this->template && $this->template->theme_id) {
+            return $this->template->theme;
+        }
+
+        return Theme::where('slug', 'tema-azul')->first(); // Tema por defecto
+    }
+
+    // Método para detectar si tiene tema personalizado
+    public function hasCustomTheme()
+    {
+        if (!$this->uses_template) {
+            return (bool) $this->theme_id;
+        }
+        
+        // Tema personalizado si es diferente al de la plantilla
+        if ($this->theme_id && $this->template && $this->template->theme_id) {
+            return $this->theme_id !== $this->template->theme_id;
+        }
+        
+        return (bool) $this->theme_id;
     }
 }

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\Template;
+use App\Models\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\Auth;
@@ -79,7 +81,7 @@ class PageController extends RoutingController
         $products = Product::with('stocks', 'combinations.combinationAttributeValue.attributeValue.attribute', 'categories', 'media')
             ->where('company_id', $companyId)
             ->get();
-            
+
 
         return Inertia::render('Pages/Show', compact('page', 'products'));
     }
@@ -93,9 +95,15 @@ class PageController extends RoutingController
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
-        $page->load('theme');
+        $page->load('theme', 'template.theme');
 
-        return Inertia::render('Pages/Edit', compact('page', 'role', 'permission'));
+        // Obtener templates disponibles para esta empresa
+        $availableTemplates = Template::where('is_global', true)
+            ->orWhere('company_id', $user->company_id)
+            ->with('theme')
+            ->get();
+
+        return Inertia::render('Pages/Edit', compact('page', 'role', 'permission', 'availableTemplates'));
     }
 
     /**
@@ -134,10 +142,23 @@ class PageController extends RoutingController
             ->where('company_id', $companyId)
             ->get();
 
-        // Asegúrate de que el usuario tenga permisos para editar esta página (ej. verificar company_id)
+        // Cargar plantillas disponibles
+        $availableTemplates = Template::where('is_global', true)
+            ->orWhere('company_id', $companyId)
+            ->with('theme')
+            ->get();
+
+        // Obtener todos los temas
+        $themes = Theme::all();
+
+        // Cargar relaciones necesarias
+        $page->load('template.theme', 'theme');
+
         return Inertia::render('Pages/Builder', [
             'page' => $page,
             'products' => $products,
+            'availableTemplates' => $availableTemplates,
+            'themes' => $themes,
         ]);
     }
 
@@ -173,5 +194,77 @@ class PageController extends RoutingController
         ]);
 
         return redirect()->back()->with('success', 'Layout actualizado correctamente.');
+    }
+
+    /**
+     * Aplicar una plantilla a una página.
+     */
+    public function applyTemplate(Request $request, Page $page)
+    {
+        // dd($request->all());
+        $request->validate([
+            'template_id' => 'required|exists:templates,id',
+            'keep_custom_theme' => 'boolean|nullable'
+        ]);
+
+        $template = Template::find($request->template_id);
+
+        // Verificar permisos (plantilla global o de la misma compañía)
+        if (!$template->is_global && $template->company_id != $page->company_id) {
+            abort(403, 'No tienes acceso a esta plantilla');
+        }
+
+        // Aplicar plantilla
+        $page->update([
+            'template_id' => $template->id,
+            'uses_template' => true,
+            // Solo actualizar tema si no se quiere mantener el personalizado
+            'theme_id' => $request->keep_custom_theme ? $page->theme_id : $template->theme_id,
+            'layout' => $template->layout_structure ?? $page->layout
+        ]);
+
+        return back()->with('success', 'Plantilla aplicada correctamente');
+    }
+
+    /**
+     * Remover plantilla de una página.
+     */
+    public function detachTemplate(Page $page)
+    {
+        $page->update([
+            'template_id' => null,
+            'uses_template' => false,
+            'template_overrides' => null
+            // theme_id se mantiene (puede ser personalizado)
+        ]);
+
+        return back()->with('success', 'Plantilla removida');
+    }
+
+    /**
+     * Actualizar tema de una página.
+     */
+    public function updateTheme(Request $request, Page $page)
+    {
+        $request->validate([
+            'theme_id' => 'nullable|exists:themes,id'
+        ]);
+
+        $page->update(['theme_id' => $request->theme_id]);
+
+        return back()->with('success', 'Tema actualizado');
+    }
+
+    /**
+     * Obtener plantillas disponibles para una página.
+     */
+    public function getAvailableTemplates(Page $page)
+    {
+        $templates = Template::where('is_global', true)
+            ->orWhere('company_id', $page->company_id)
+            ->with('theme')
+            ->get();
+
+        return response()->json($templates);
     }
 }

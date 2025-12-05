@@ -45,8 +45,10 @@ import BentoFeatureTextEditDialog from './partials/Bento/BentoFeatureTextEditDia
 import MarqueeEditDialog from './partials/Marquee/MarqueeEditDialog';
 import DividerEditDialog from './partials/Divider/DividerEditDialog';
 import PageContentEditDialog from './partials/PageContentEditDialog';
+import ApplyTemplate from '@/Components/ApplyTemplate';
+import ThemeSelector from '@/Components/ThemeSelector';
 
-export default function Builder({ page, products }) {
+export default function Builder({ page, products, availableTemplates, themes   }) {
     const [components, setComponents] = useState([]);
     const [editingComponent, setEditingComponent] = useState(null);
     const [editContent, setEditContent] = useState('');
@@ -60,7 +62,7 @@ export default function Builder({ page, products }) {
     const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [selectedType, setSelectedType] = useState('');
-    console.log(page)
+    // console.log(page)
     // Estados para el drag & drop visual
     const [activeId, setActiveId] = useState(null);
     const [overId, setOverId] = useState(null);
@@ -68,8 +70,59 @@ export default function Builder({ page, products }) {
 
     // Estado para el hover sincronizado
     const [hoveredComponentId, setHoveredComponentId] = useState(null);
-
+    const [templates] = useState(availableTemplates || []);
     const themeSettings = page.theme?.settings || {};
+
+    // En Builder.jsx - Agregar después de los estados iniciales
+
+// Función para obtener el tema aplicado
+const getAppliedTheme = () => {
+    // 1. Prioridad: Tema específico de la página
+    if (page.theme_id && page.theme) {
+        return page.theme;
+    }
+    
+    // 2. Tema de la plantilla (si la página usa una plantilla)
+    if (page.uses_template && page.template && page.template.theme) {
+        return page.template.theme;
+    }
+    
+    // 3. Tema global por defecto
+    // Primero buscar si la empresa tiene tema por defecto
+    if (page.company?.default_theme_id) {
+        const companyDefaultTheme = themes?.find(t => t.id === page.company.default_theme_id);
+        if (companyDefaultTheme) {
+            return companyDefaultTheme;
+        }
+    }
+    
+    // 4. Tema global del sistema (tema-azul)
+    const defaultTheme = themes?.find(t => t.slug === 'tema-azul') || themes?.[0];
+    return defaultTheme || {
+        name: 'Tema Por Defecto',
+        settings: {
+            primary: '209 100% 92%',
+            background: '0 0% 100%',
+            foreground: '0 0% 3.9%',
+            secondary: '0 0% 96.1%',
+            fontFamily: 'Arial, sans-serif',
+            borderRadius: '0.5rem'
+        }
+    };
+};
+
+// Obtener el tema aplicado
+const appliedTheme = getAppliedTheme();
+
+// Debug para verificar
+// useEffect(() => {
+//     console.log('Tema aplicado:', {
+//         name: appliedTheme?.name,
+//         settings: themeSettings,
+//         source: page.theme_id ? 'Página' : 
+//                 page.template?.theme_id ? 'Plantilla' : 'Global'
+//     });
+// }, [appliedTheme]);
 
     // Efectos
     useEffect(() => {
@@ -1343,6 +1396,7 @@ export default function Builder({ page, products }) {
                             onEditComponent={() => { }}
                             onDeleteComponent={() => { }}
                             themeSettings={themeSettings}
+                            appliedTheme={appliedTheme}
                             products={products}
                             setComponents={setComponents}
                             canvasWidth={canvasWidth}
@@ -1693,6 +1747,17 @@ export default function Builder({ page, products }) {
                             ) : (
                                 // MODO NORMAL - Mostrar árbol de componentes
                                 <>
+                                {!isPreviewMode && (
+        <>
+            <ThemeSelector page={page} themes={themes} />
+            <ApplyTemplate 
+                page={page} 
+                templates={availableTemplates} 
+                onTemplateApplied={() => router.reload()}
+            />
+        </>
+    )}
+                                
                                     <DndContext
                                         sensors={sensors}
                                         collisionDetection={closestCenter}
@@ -1745,6 +1810,7 @@ export default function Builder({ page, products }) {
                                 onEditComponent={handleEditComponent}
                                 onDeleteComponent={deleteComponent}
                                 themeSettings={themeSettings}
+                                appliedTheme={appliedTheme}
                                 products={products}
                                 setComponents={setComponents}
                                 canvasWidth={canvasWidth}
