@@ -174,137 +174,31 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             };
                         }
 
-                        if (component.type === 'container' && component.content) {
+                        // Buscar en contenedores
+                        if (component.type === 'container' && Array.isArray(component.content)) {
                             return {
                                 ...component,
                                 content: updateComponentInTree(component.content, targetId, newData)
                             };
                         }
 
-                        if (editingComponent.type === 'pageContent') {
-                            toast.error("El contenido de página no puede ser editado aquí");
-                            cancelEdit();
-                            return;
-                        }
+                        // Buscar en banners, products, carousels, etc.
+                        const typesWithChildren = [
+                            'banner', 'product', 'productCard', 'carousel',
+                            'carouselCard', 'bento', 'bentoFeature'
+                        ];
 
-                        // Buscar en divider (aunque no tiene hijos, por consistencia)
-                        if (component.type === 'divider') {
-                            // No necesita procesamiento especial ya que no tiene hijos
-                            return component;
-                        }
-
-                        // Actualizar para banners con hijos
-                        if (component.type === 'carousel' && component.content && component.content.children) {
-                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
+                        if (typesWithChildren.includes(component.type) &&
+                            component.content &&
+                            Array.isArray(component.content.children)) {
                             return {
                                 ...component,
                                 content: {
                                     ...component.content,
-                                    children: updatedChildren
+                                    children: updateComponentInTree(component.content.children, targetId, newData)
                                 }
                             };
                         }
-                        if (editingComponent?.type === 'pageContent') {
-                            toast.error("El contenido de página no puede ser editado aquí");
-                            cancelEdit();
-                            return;
-                        }
-
-                        // Actualizar para productCard con hijos
-                        if (component.type === 'carouselCard' && component.content && component.content.children) {
-                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
-                            return {
-                                ...component,
-                                content: {
-                                    ...component.content,
-                                    children: updatedChildren
-                                }
-                            };
-                        }
-
-                        // Actualizar para banners con hijos
-                        if (component.type === 'banner' && component.content && component.content.children) {
-                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
-                            return {
-                                ...component,
-                                content: {
-                                    ...component.content,
-                                    children: updatedChildren
-                                }
-                            };
-                        }
-
-                        // Actualizar para product con hijos
-                        if (component.type === 'product' && component.content && component.content.children) {
-                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
-                            return {
-                                ...component,
-                                content: {
-                                    ...component.content,
-                                    children: updatedChildren
-                                }
-                            };
-                        }
-
-                        // Actualizar para productCard con hijos
-                        if (component.type === 'productCard' && component.content && component.content.children) {
-                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
-                            return {
-                                ...component,
-                                content: {
-                                    ...component.content,
-                                    children: updatedChildren
-                                }
-                            };
-                        }
-
-                        // Buscar en bento con hijos
-                        if (component.type === 'bento' && component.content && component.content.children) {
-                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
-                            return {
-                                ...component,
-                                content: {
-                                    ...component.content,
-                                    children: updatedChildren
-                                }
-                            };
-                        }
-
-                        // Buscar en bentoFeature con hijos
-                        if (component.type === 'bentoFeature' && component.content && component.content.children) {
-                            const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
-                            return {
-                                ...component,
-                                content: {
-                                    ...component.content,
-                                    children: updatedChildren
-                                }
-                            };
-                        }
-
-                        // Buscar en bentoFeatureTitle con hijos
-                        // if (component.type === 'bentoFeatureTitle' && component.content && component.content.children) {
-                        //     const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
-                        //     return {
-                        //         ...component,
-                        //         content: {
-                        //             ...component.content,
-                        //             children: updatedChildren
-                        //         }
-                        //     };
-                        // }
-
-                        // // Buscar en bentoFeatureText con hijos
-                        // if (component.type === 'bentoFeatureText' && component.content && component.content.children) {
-                        //     const updatedChildren = updateComponentInTree(component.content.children, targetId, newData);
-                        //     return {
-                        //         ...component,
-                        //         content: {
-                        //             ...component.content,
-                        //             children: updatedChildren
-                        //         }
-                        //     };
-                        // }
 
                         return component;
                     });
@@ -324,7 +218,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             setEditingComponent(null);
             setEditContent('');
             setEditStyles({});
-
             toast.success("Cambios guardados correctamente");
         }
     };
@@ -398,38 +291,24 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 if (item.id === targetId) {
                     return false;
                 }
-                if (item.type === 'container' && item.content) {
+
+                // Contenedores normales
+                if (item.type === 'container' && Array.isArray(item.content)) {
                     item.content = removeFromTree(item.content, targetId);
                 }
 
-                // Eliminar de banners con hijos
-                if (item.type === 'banner' && item.content && item.content.children) {
+                // Componentes con estructura children
+                const typesWithChildren = [
+                    'banner', 'product', 'productCard', 'carousel',
+                    'carouselCard', 'bento', 'bentoFeature'
+                ];
+
+                if (typesWithChildren.includes(item.type) &&
+                    item.content &&
+                    Array.isArray(item.content.children)) {
                     item.content.children = removeFromTree(item.content.children, targetId);
                 }
-                // Eliminar de product con hijos
-                if (item.type === 'product' && item.content && item.content.children) {
-                    item.content.children = removeFromTree(item.content.children, targetId);
-                }
-                // Eliminar de productCard con hijos
-                if (item.type === 'productCard' && item.content && item.content.children) {
-                    item.content.children = removeFromTree(item.content.children, targetId);
-                }
-                // Eliminar de carousel con hijos
-                if (item.type === 'carousel' && item.content && item.content.children) {
-                    item.content.children = removeFromTree(item.content.children, targetId);
-                }
-                // Eliminar de carouselCard con hijos
-                if (item.type === 'carouselCard' && item.content && item.content.children) {
-                    item.content.children = removeFromTree(item.content.children, targetId);
-                }
-                // Eliminar de bento con hijos
-                if (item.type === 'bento' && item.content && item.content.children) {
-                    item.content.children = removeFromTree(item.content.children, targetId);
-                }
-                // Eliminar de bentoFeature con hijos
-                if (item.type === 'bentoFeature' && item.content && item.content.children) {
-                    item.content.children = removeFromTree(item.content.children, targetId);
-                }
+
                 return true;
             });
         };
@@ -485,41 +364,71 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
             if (selectedType === 'link') content = 'https://example.com';
             if (selectedType === 'image') content = 'https://picsum.photos/150';
-            if (selectedType === 'container') content = [];
+            if (selectedType === 'container') {
+                content = []; // Inicializar como array vacío
+                // Agregar estilos por defecto
+                const newItem = {
+                    id: Date.now(),
+                    type: selectedType,
+                    content: content,
+                    styles: {
+                        backgroundColor: '#ffffff',
+                        paddingTop: '20px',
+                        paddingRight: '20px',
+                        paddingBottom: '20px',
+                        paddingLeft: '20px',
+                        borderRadius: '8px',
+                        border: '1px solid #e5e7eb',
+                        direction: 'column',
+                        gap: '10px',
+                        alignment: 'left'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
             // En Builder.jsx, en handleAddComponent, buscar la parte donde se crea un botón:
-if (selectedType === 'button') {
-    content = 'Botón';
-    // Agregar estilos iniciales con tipo por defecto
-    const initialStyles = {
-        buttonType: 'primary',
-        layout: 'fit',
-        paddingTop: '10px',
-        paddingRight: '10px',
-        paddingBottom: '10px',
-        paddingLeft: '10px',
-        borderRadius: '4px',
-        backgroundColor: '#007bff',
-        color: '#ffffff'
-    };
-    
-    // Crear el nuevo item con estilos iniciales
-    const newItem = {
-        id: Date.now(),
-        type: selectedType,
-        content,
-        styles: initialStyles
-    };
-    
-    setComponents((prev) => {
-        const newComponents = [...prev, newItem];
-        addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-        setHasUnsavedChanges(true);
-        return newComponents;
-    });
-    setIsAddDialogOpen(false);
-    setSelectedType('');
-    return;
-}
+            if (selectedType === 'button') {
+                content = 'Botón';
+                // Agregar estilos iniciales con tipo por defecto
+                const initialStyles = {
+                    buttonType: 'primary',
+                    layout: 'fit',
+                    paddingTop: '10px',
+                    paddingRight: '10px',
+                    paddingBottom: '10px',
+                    paddingLeft: '10px',
+                    borderRadius: '4px',
+                    backgroundColor: '#007bff',
+                    color: '#ffffff'
+                };
+
+                // Crear el nuevo item con estilos iniciales
+                const newItem = {
+                    id: Date.now(),
+                    type: selectedType,
+                    content,
+                    styles: initialStyles
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
             if (selectedType === 'divider') {
                 content = ''; // El divider no necesita contenido de texto
             }
@@ -1057,6 +966,42 @@ if (selectedType === 'button') {
                 return;
             }
 
+            // DETECCIÓN DIRECTA: ¿Es un contenedor?
+            const findComponent = (items, targetId) => {
+                for (const item of items) {
+                    if (item.id === targetId) {
+                        return item;
+                    }
+                    if (item.type === 'container' && Array.isArray(item.content)) {
+                        const found = findComponent(item.content, targetId);
+                        if (found) return found;
+                    }
+                    if (item.content?.children) {
+                        const found = findComponent(item.content.children, targetId);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+
+            const targetComponent = findComponent(components, over.id);
+            const isContainer = targetComponent &&
+                ['container', 'banner', 'product', 'carousel', 'bento'].includes(targetComponent.type);
+
+            console.log('DEBUG:', {
+                overId: over.id,
+                componentType: targetComponent?.type,
+                isContainer
+            });
+
+            // ¡FORZAR SIEMPRE "inside" PARA CONTENEDORES!
+            if (isContainer) {
+                console.log('¡FORZANDO INSIDE PARA CONTENEDOR!');
+                setDropPosition({ id: over.id, position: 'inside' });
+                return;
+            }
+
+            // Lógica normal para no contenedores
             const overElement = document.getElementById(`component-${over.id}`);
             if (overElement) {
                 const rect = overElement.getBoundingClientRect();
@@ -1066,8 +1011,7 @@ if (selectedType === 'button') {
                 const overHeight = rect.height;
                 const relativeY = cursorY - overTop;
 
-                // Threshold más sensible para bordes
-                const threshold = Math.max(overHeight / 6, 10); // Más pequeño para mejor detección
+                const threshold = Math.max(overHeight / 4, 10);
 
                 let position;
                 if (relativeY < threshold) {
@@ -1078,12 +1022,7 @@ if (selectedType === 'button') {
                     position = 'inside';
                 }
 
-                setDropPosition(prev => {
-                    if (prev && prev.id === over.id && prev.position === position) {
-                        return prev;
-                    }
-                    return { id: over.id, position };
-                });
+                setDropPosition({ id: over.id, position });
             } else {
                 setDropPosition(null);
             }
@@ -1125,21 +1064,16 @@ if (selectedType === 'button') {
 
                         // Buscar recursivamente en todos los tipos de componentes anidados
                         let childArray = null;
+
+                        // Contenedores normales
                         if (items[i].type === 'container' && items[i].content) {
                             childArray = items[i].content;
-                        } else if (items[i].type === 'banner' && items[i].content?.children) {
-                            childArray = items[i].content.children;
-                        } else if (items[i].type === 'product' && items[i].content?.children) {
-                            childArray = items[i].content.children;
-                        } else if (items[i].type === 'productCard' && items[i].content?.children) {
-                            childArray = items[i].content.children;
-                        } else if (items[i].type === 'carousel' && items[i].content?.children) {
-                            childArray = items[i].content.children;
-                        } else if (items[i].type === 'carouselCard' && items[i].content?.children) {
-                            childArray = items[i].content.children;
-                        } else if (items[i].type === 'bento' && items[i].content?.children) {
-                            childArray = items[i].content.children;
-                        } else if (items[i].type === 'bentoFeature' && items[i].content?.children) {
+                        }
+                        // Componentes con estructura children
+                        else if (
+                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature'].includes(items[i].type) &&
+                            items[i].content?.children
+                        ) {
                             childArray = items[i].content.children;
                         }
 
@@ -1166,10 +1100,12 @@ if (selectedType === 'button') {
 
         // Función mejorada para buscar componentes
         const findComponentInfo = (items, targetId, parent = null, path = []) => {
+            const targetIdNum = typeof targetId === 'string' ? parseInt(targetId) : targetId;
+
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
 
-                if (item.id === targetId) {
+                if (item.id === targetIdNum) {
                     return {
                         component: item,
                         index: i,
@@ -1179,28 +1115,19 @@ if (selectedType === 'button') {
                     };
                 }
 
-                // Buscar recursivamente en todos los tipos de componentes anidados
-                let childArray = null;
-                if (item.type === 'container' && item.content) {
-                    childArray = item.content;
-                } else if (item.type === 'banner' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'product' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'productCard' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'carousel' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'carouselCard' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'bento' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'bentoFeature' && item.content?.children) {
-                    childArray = item.content.children;
+                // Buscar en contenedores normales
+                if (item.type === 'container' && Array.isArray(item.content)) {
+                    const found = findComponentInfo(item.content, targetIdNum, item, [...path, i]);
+                    if (found) return found;
                 }
 
-                if (childArray) {
-                    const found = findComponentInfo(childArray, targetId, item, [...path, i]);
+                // Buscar en componentes con estructura children
+                if (
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature'].includes(item.type) &&
+                    item.content &&
+                    Array.isArray(item.content.children)
+                ) {
+                    const found = findComponentInfo(item.content.children, targetIdNum, item, [...path, i]);
                     if (found) return found;
                 }
             }
@@ -1220,6 +1147,7 @@ if (selectedType === 'button') {
             over: overInfo.component.type,
             activeIndex: activeInfo.index,
             overIndex: overInfo.index,
+            dropPosition: dropPosition?.position,
             activeParentLength: activeInfo.parentArray.length,
             overParentLength: overInfo.parentArray.length
         });
@@ -1229,9 +1157,11 @@ if (selectedType === 'button') {
 
         // Re-encontrar la información en la nueva copia
         const findInNewComponents = (items, targetId) => {
+            const targetIdNum = typeof targetId === 'string' ? parseInt(targetId) : targetId;
+
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
-                if (item.id === targetId) {
+                if (item.id === targetIdNum) {
                     return {
                         component: item,
                         index: i,
@@ -1240,26 +1170,22 @@ if (selectedType === 'button') {
                 }
 
                 let childArray = null;
-                if (item.type === 'container' && item.content) {
+
+                // Contenedores normales
+                if (item.type === 'container' && Array.isArray(item.content)) {
                     childArray = item.content;
-                } else if (item.type === 'banner' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'product' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'productCard' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'carousel' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'carouselCard' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'bento' && item.content?.children) {
-                    childArray = item.content.children;
-                } else if (item.type === 'bentoFeature' && item.content?.children) {
+                }
+                // Componentes con estructura children
+                else if (
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature'].includes(item.type) &&
+                    item.content &&
+                    Array.isArray(item.content.children)
+                ) {
                     childArray = item.content.children;
                 }
 
                 if (childArray) {
-                    const found = findInNewComponents(childArray, targetId);
+                    const found = findInNewComponents(childArray, targetIdNum);
                     if (found) return found;
                 }
             }
@@ -1297,28 +1223,45 @@ if (selectedType === 'button') {
         // Obtener información del drop
         const dropInfo = dropPosition || { position: 'bottom' };
 
-        // Determinar si el destino es un contenedor
+        // Determinar si el destino es un contenedor o componente que puede tener hijos
         const overComponent = newOverInfo.component;
         const isContainerType = [
             'container', 'banner', 'product', 'productCard',
             'carousel', 'carouselCard', 'bento', 'bentoFeature'
         ].includes(overComponent.type);
 
+        console.log('Inserting info:', {
+            isContainerType,
+            dropPosition: dropInfo.position,
+            movedComponentType: movedComponent.type,
+            overComponentType: overComponent.type,
+            movedComponentId: movedComponent.id,
+            overComponentId: overComponent.id
+        });
+
         // Lógica de inserción
         if (isContainerType && dropInfo.position === 'inside') {
             let targetArray;
 
             if (overComponent.type === 'container') {
+                // Para contenedores normales - content es un array directo
                 overComponent.content = overComponent.content || [];
                 targetArray = overComponent.content;
             } else {
+                // Para otros componentes - content es un objeto con children array
                 overComponent.content = overComponent.content || {};
                 overComponent.content.children = overComponent.content.children || [];
                 targetArray = overComponent.content.children;
             }
 
+            // Evitar mover un componente dentro de sí mismo
             if (movedComponent.id !== overComponent.id) {
                 targetArray.push(movedComponent);
+                console.log('Componente insertado en contenedor:', {
+                    contenedor: overComponent.type,
+                    hijo: movedComponent.type,
+                    targetArrayLength: targetArray.length
+                });
             } else {
                 toast.error("No puedes mover un componente dentro de sí mismo");
                 return;
@@ -1339,11 +1282,13 @@ if (selectedType === 'button') {
             // Aplicar posición del drop
             if (dropInfo.position === 'bottom') {
                 targetIndex += 1;
+            } else if (dropInfo.position === 'top') {
+                // Si es top, insertamos en la posición actual
+                targetIndex = overIndex;
             }
 
             // CORRECCIÓN: Validación más estricta del índice
-            // El índice debe estar entre 0 y la longitud actual del array (no length)
-            const maxValidIndex = overParentArray.length; // Sí, length es válido para insertar al final
+            const maxValidIndex = overParentArray.length; // length es válido para insertar al final
             targetIndex = Math.max(0, Math.min(targetIndex, maxValidIndex));
 
             console.log('Insertando en posición:', targetIndex, 'de array con longitud:', overParentArray.length);
@@ -1359,6 +1304,9 @@ if (selectedType === 'button') {
 
         handleComponentsUpdate(newComponents);
         toast.success("Componente movido correctamente");
+
+        // Debug: mostrar estructura actualizada
+        console.log('Estructura actualizada:', JSON.stringify(newComponents, null, 2));
     };
 
     const handleDragCancel = () => {
@@ -1368,27 +1316,26 @@ if (selectedType === 'button') {
     };
 
     const findActiveComponent = (id) => {
+        const targetIdNum = typeof id === 'string' ? parseInt(id) : id;
+
         const findComponent = (items, targetId) => {
             for (const item of items) {
                 if (item.id === targetId) {
                     return item;
                 }
-                if (item.type === 'container' && item.content) {
+
+                // Buscar en contenedores normales
+                if (item.type === 'container' && Array.isArray(item.content)) {
                     const found = findComponent(item.content, targetId);
                     if (found) return found;
                 }
-                // Buscar en banners con hijos
-                if (item.type === 'banner' && item.content && item.content.children) {
-                    const found = findComponent(item.content.children, targetId);
-                    if (found) return found;
-                }
-                // Buscar en product con hijos
-                if (item.type === 'product' && item.content && item.content.children) {
-                    const found = findComponent(item.content.children, targetId);
-                    if (found) return found;
-                }
-                // Buscar en productCard con hijos
-                if (item.type === 'productCard' && item.content && item.content.children) {
+
+                // Buscar en componentes con estructura children
+                if (
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature'].includes(item.type) &&
+                    item.content &&
+                    Array.isArray(item.content.children)
+                ) {
                     const found = findComponent(item.content.children, targetId);
                     if (found) return found;
                 }
@@ -1396,7 +1343,7 @@ if (selectedType === 'button') {
             return null;
         };
 
-        return findComponent(components, id);
+        return findComponent(components, targetIdNum);
     };
 
     const sensors = useSensors(
@@ -1518,21 +1465,21 @@ if (selectedType === 'button') {
                                 </Button>
                             </div>
                             <div className="flex gap-2">
-<Tooltip>
-    <TooltipTrigger asChild>
-        <Button 
-            onClick={() => setIsThemeDialogOpen(true)} 
-            variant="ghost" 
-            size="icon"
-            className={hasCopiedTheme ? "text-purple-600 hover:text-purple-700 hover:bg-purple-50" : ""}
-        >
-            <Palette size={16} />
-        </Button>
-    </TooltipTrigger>
-    <TooltipContent>
-        {hasCopiedTheme ? "Editar tema personalizado" : "Personalizar tema"}
-    </TooltipContent>
-</Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            onClick={() => setIsThemeDialogOpen(true)}
+                                            variant="ghost"
+                                            size="icon"
+                                            className={hasCopiedTheme ? "text-purple-600 hover:text-purple-700 hover:bg-purple-50" : ""}
+                                        >
+                                            <Palette size={16} />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {hasCopiedTheme ? "Editar tema personalizado" : "Personalizar tema"}
+                                    </TooltipContent>
+                                </Tooltip>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button onClick={() => setCanvasWidth('100%')} variant={canvasWidth === '100%' ? 'outline' : 'ghost'} size="icon">
@@ -1970,16 +1917,16 @@ if (selectedType === 'button') {
                 </DialogContent>
             </Dialog>
 
-<ThemeCustomizerDialog
-    open={isThemeDialogOpen}
-    onOpenChange={setIsThemeDialogOpen}
-    page={page}
-    themeSettings={currentThemeSettings}
-    hasCopiedTheme={hasCopiedTheme}
-    onCopyTheme={copyThemeSettings}
-    onSave={updateThemeSettings}
-    onReset={resetThemeSettings}
-/>
+            <ThemeCustomizerDialog
+                open={isThemeDialogOpen}
+                onOpenChange={setIsThemeDialogOpen}
+                page={page}
+                themeSettings={currentThemeSettings}
+                hasCopiedTheme={hasCopiedTheme}
+                onCopyTheme={copyThemeSettings}
+                onSave={updateThemeSettings}
+                onReset={resetThemeSettings}
+            />
         </div>
     );
 }
