@@ -1,3 +1,4 @@
+// components/Builder/dialogs/MarqueeEditDialog.jsx
 import React from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
@@ -7,7 +8,8 @@ const MarqueeEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
-    setEditStyles
+    setEditStyles,
+    themeSettings
 }) => {
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({
@@ -28,6 +30,46 @@ const MarqueeEditDialog = ({
                     placeholder="Ingresa el texto para el marquee..."
                 />
             </div>
+
+            {/* Selección de fuente */}
+            <div>
+                <Label htmlFor="fontType">Tipo de Fuente</Label>
+                <Select
+                    value={editStyles.fontType || 'body_font'}
+                    onValueChange={(value) => updateStyle('fontType', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="body_font">
+                            Body Font ({themeSettings?.body_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="heading_font">
+                            Heading Font ({themeSettings?.heading_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="subheading_font">
+                            Subheading Font ({themeSettings?.subheading_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="accent_font">
+                            Accent Font ({themeSettings?.accent_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="custom">Personalizada</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {editStyles.fontType === 'custom' && (
+                <div>
+                    <Label htmlFor="customFont">Fuente Personalizada</Label>
+                    <Input
+                        id="customFont"
+                        value={editStyles.customFont || ''}
+                        onChange={(e) => updateStyle('customFont', e.target.value)}
+                        placeholder="'Roboto', sans-serif"
+                    />
+                </div>
+            )}
 
             {/* Velocidad */}
             <div>
@@ -60,6 +102,23 @@ const MarqueeEditDialog = ({
                     <SelectContent>
                         <SelectItem value="left">Izquierda →</SelectItem>
                         <SelectItem value="right">← Derecha</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Layout */}
+            <div>
+                <Label htmlFor="layout">Layout</Label>
+                <Select
+                    value={editStyles.layout || 'fill'}
+                    onValueChange={(value) => updateStyle('layout', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
+                        <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -145,12 +204,12 @@ const MarqueeEditDialog = ({
                 </div>
                 <div>
                     <Label htmlFor="marquee-paddingBottom">Padding Inferior</Label>
-                    <Input
-                        id="marquee-paddingBottom"
-                        value={editStyles.paddingBottom || '10px'}
-                        onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-                        placeholder="10px"
-                    />
+                        <Input
+                            id="marquee-paddingBottom"
+                            value={editStyles.paddingBottom || '10px'}
+                            onChange={(e) => updateStyle('paddingBottom', e.target.value)}
+                            placeholder="10px"
+                        />
                 </div>
                 <div>
                     <Label htmlFor="marquee-paddingLeft">Padding Izquierdo</Label>

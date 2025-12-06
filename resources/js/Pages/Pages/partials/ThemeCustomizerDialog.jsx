@@ -180,55 +180,123 @@ const ThemeCustomizerDialog = ({
                                     </div>
                                 </TabsContent>
 
-                                // En ThemeCustomizerDialog dentro de Builder.jsx, actualizar la pestaña typography:
                                 <TabsContent value="typography">
                                     <div className="space-y-6">
-                                        <div>
-                                            <Label>Fuente Principal</Label>
-                                            <Select
-                                                value={localSettings.fontFamily || "'Inter', sans-serif"}
-                                                onValueChange={(value) => handleChange('fontFamily', value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {fonts.map(font => (
-                                                        <SelectItem key={font.value} value={font.value}>
-                                                            <span style={{ fontFamily: font.value }}>{font.label}</span>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label>Radio de Bordes</Label>
-                                                <Input
-                                                    value={localSettings.borderRadius || '0.5rem'}
-                                                    onChange={(e) => handleChange('borderRadius', e.target.value)}
-                                                    placeholder="0.5rem"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label>Tamaño Base de Fuente</Label>
-                                                <Input
-                                                    value={localSettings.fontSizeBase || '16px'}
-                                                    onChange={(e) => handleChange('fontSizeBase', e.target.value)}
-                                                    placeholder="16px"
-                                                />
+                                        {/* Fuentes Base */}
+                                        <div className="space-y-4">
+                                            <h4 className="font-medium">Fuentes Base</h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <Label>Fuente Body (Texto normal)</Label>
+                                                    <Select
+                                                        value={localSettings.body_font || "'Inter', sans-serif"}
+                                                        onValueChange={(value) => handleChange('body_font', value)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {fonts.map(font => (
+                                                                <SelectItem key={font.value} value={font.value}>
+                                                                    <span style={{ fontFamily: font.value }}>{font.label}</span>
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <Label>Fuente Heading (Títulos)</Label>
+                                                    <Select
+                                                        value={localSettings.heading_font || "'Inter', sans-serif"}
+                                                        onValueChange={(value) => handleChange('heading_font', value)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {fonts.map(font => (
+                                                                <SelectItem key={font.value} value={font.value}>
+                                                                    <span style={{ fontFamily: font.value }}>{font.label}</span>
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <Label>Fuente Subheading (Subtítulos)</Label>
+                                                    <Select
+                                                        value={localSettings.subheading_font || "'Inter', sans-serif"}
+                                                        onValueChange={(value) => handleChange('subheading_font', value)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {fonts.map(font => (
+                                                                <SelectItem key={font.value} value={font.value}>
+                                                                    <span style={{ fontFamily: font.value }}>{font.label}</span>
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <Label>Fuente Accent (Acento/Decorativa)</Label>
+                                                    <Select
+                                                        value={localSettings.accent_font || "'Inter', sans-serif"}
+                                                        onValueChange={(value) => handleChange('accent_font', value)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {fonts.map(font => (
+                                                                <SelectItem key={font.value} value={font.value}>
+                                                                    <span style={{ fontFamily: font.value }}>{font.label}</span>
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
                                             </div>
                                         </div>
 
                                         {/* Configuración de párrafo */}
-                                        <div className="space-y-4">
+                                        <div className="space-y-4 border-t pt-4">
                                             <h4 className="font-medium">Párrafo (Texto normal)</h4>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
+                                                    <Label>Fuente del párrafo</Label>
+                                                    <Select
+                                                        value={localSettings.paragraph_font || 'body_font'}
+                                                        onValueChange={(value) => handleChange('paragraph_font', value)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="body_font">Usar Body Font</SelectItem>
+                                                            <SelectItem value="heading_font">Usar Heading Font</SelectItem>
+                                                            <SelectItem value="subheading_font">Usar Subheading Font</SelectItem>
+                                                            <SelectItem value="accent_font">Usar Accent Font</SelectItem>
+                                                            <SelectItem value="custom">Personalizada</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                {localSettings.paragraph_font === 'custom' && (
+                                                    <div>
+                                                        <Label>Fuente personalizada</Label>
+                                                        <Input
+                                                            value={localSettings.paragraph_custom_font || ''}
+                                                            onChange={(e) => handleChange('paragraph_custom_font', e.target.value)}
+                                                            placeholder="'Roboto', sans-serif"
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div>
                                                     <Label>Tamaño de fuente</Label>
                                                     <Input
-                                                        value={localSettings.paragraph_fontSize || localSettings.fontSizeBase || '16px'}
+                                                        value={localSettings.paragraph_fontSize || '16px'}
                                                         onChange={(e) => handleChange('paragraph_fontSize', e.target.value)}
                                                     />
                                                 </div>
@@ -253,11 +321,31 @@ const ThemeCustomizerDialog = ({
                                                 </div>
                                                 <div>
                                                     <Label>Altura de línea</Label>
-                                                    <Input
+                                                    <Select
                                                         value={localSettings.paragraph_lineHeight || '1.6'}
-                                                        onChange={(e) => handleChange('paragraph_lineHeight', e.target.value)}
-                                                    />
+                                                        onValueChange={(value) => handleChange('paragraph_lineHeight', value)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="tight">Tight (1.2)</SelectItem>
+                                                            <SelectItem value="normal">Normal (1.4)</SelectItem>
+                                                            <SelectItem value="loose">Loose (1.6)</SelectItem>
+                                                            <SelectItem value="custom">Personalizada</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
                                                 </div>
+                                                {localSettings.paragraph_lineHeight === 'custom' && (
+                                                    <div>
+                                                        <Label>Altura personalizada</Label>
+                                                        <Input
+                                                            value={localSettings.paragraph_lineHeight_custom || ''}
+                                                            onChange={(e) => handleChange('paragraph_lineHeight_custom', e.target.value)}
+                                                            placeholder="1.5"
+                                                        />
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <Label>Transformación de texto</Label>
                                                     <Select
@@ -280,15 +368,42 @@ const ThemeCustomizerDialog = ({
 
                                         {/* Configuración de headings */}
                                         {[1, 2, 3, 4, 5, 6].map(level => (
-                                            <div key={level} className="space-y-4">
+                                            <div key={level} className="space-y-4 border-t pt-4">
                                                 <h4 className="font-medium">Heading {level} (h{level})</h4>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
+                                                        <Label>Fuente del heading</Label>
+                                                        <Select
+                                                            value={localSettings[`heading${level}_font`] || 'heading_font'}
+                                                            onValueChange={(value) => handleChange(`heading${level}_font`, value)}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="body_font">Usar Body Font</SelectItem>
+                                                                <SelectItem value="heading_font">Usar Heading Font</SelectItem>
+                                                                <SelectItem value="subheading_font">Usar Subheading Font</SelectItem>
+                                                                <SelectItem value="accent_font">Usar Accent Font</SelectItem>
+                                                                <SelectItem value="custom">Personalizada</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    {localSettings[`heading${level}_font`] === 'custom' && (
+                                                        <div>
+                                                            <Label>Fuente personalizada</Label>
+                                                            <Input
+                                                                value={localSettings[`heading${level}_custom_font`] || ''}
+                                                                onChange={(e) => handleChange(`heading${level}_custom_font`, e.target.value)}
+                                                                placeholder="'Montserrat', sans-serif"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <div>
                                                         <Label>Tamaño de fuente</Label>
                                                         <Input
-                                                            value={localSettings[`heading${level}_fontSize`] || `h${level}_fontSize`}
+                                                            value={localSettings[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`}
                                                             onChange={(e) => handleChange(`heading${level}_fontSize`, e.target.value)}
-                                                            placeholder={`Ej: ${1.5 + (6 - level) * 0.25}rem`}
                                                         />
                                                     </div>
                                                     <div>
@@ -313,22 +428,42 @@ const ThemeCustomizerDialog = ({
                                                     </div>
                                                     <div>
                                                         <Label>Altura de línea</Label>
-                                                        <Input
-                                                            value={localSettings[`heading${level}_lineHeight`] || '1.2'}
-                                                            onChange={(e) => handleChange(`heading${level}_lineHeight`, e.target.value)}
-                                                        />
+                                                        <Select
+                                                            value={localSettings[`heading${level}_lineHeight`] || 'tight'}
+                                                            onValueChange={(value) => handleChange(`heading${level}_lineHeight`, value)}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="tight">Tight</SelectItem>
+                                                                <SelectItem value="normal">Normal</SelectItem>
+                                                                <SelectItem value="loose">Loose</SelectItem>
+                                                                <SelectItem value="custom">Personalizada</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
                                                     </div>
+                                                    {localSettings[`heading${level}_lineHeight`] === 'custom' && (
+                                                        <div>
+                                                            <Label>Altura personalizada</Label>
+                                                            <Input
+                                                                value={localSettings[`heading${level}_lineHeight_custom`] || ''}
+                                                                onChange={(e) => handleChange(`heading${level}_lineHeight_custom`, e.target.value)}
+                                                                placeholder="1.2"
+                                                            />
+                                                        </div>
+                                                    )}
                                                     <div>
                                                         <Label>Transformación de texto</Label>
                                                         <Select
-                                                            value={localSettings[`heading${level}_textTransform`] || 'none'}
+                                                            value={localSettings[`heading${level}_textTransform`] || 'default'}
                                                             onValueChange={(value) => handleChange(`heading${level}_textTransform`, value)}
                                                         >
                                                             <SelectTrigger>
                                                                 <SelectValue />
                                                             </SelectTrigger>
                                                             <SelectContent>
-                                                                <SelectItem value="none">Normal</SelectItem>
+                                                                <SelectItem value="default">Normal</SelectItem>
                                                                 <SelectItem value="uppercase">MAYÚSCULAS</SelectItem>
                                                                 <SelectItem value="lowercase">minúsculas</SelectItem>
                                                                 <SelectItem value="capitalize">Capitalizar</SelectItem>

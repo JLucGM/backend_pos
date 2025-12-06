@@ -1,26 +1,98 @@
 // components/BuilderPages/components/TextComponent.jsx
 import React from 'react';
 
-const TextComponent = ({ comp, getStyles, isPreview }) => {
+const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
     const getTextStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
 
+        // Determinar el estilo de texto seleccionado
+        const textStyle = customStyles.textStyle || 'paragraph';
+
+        // Función para obtener la fuente según el tipo seleccionado
+        const getFontFamily = () => {
+            const fontType = customStyles.fontType;
+            
+            // Si el usuario seleccionó "default" o no especificó nada
+            if (fontType === 'default' || !fontType) {
+                if (textStyle.startsWith('heading')) {
+                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                } else {
+                    return themeSettings?.body_font || "'Inter', sans-serif";
+                }
+            }
+            
+            if (fontType === 'custom' && customStyles.customFont) {
+                return customStyles.customFont;
+            }
+            
+            switch(fontType) {
+                case 'body_font':
+                    return themeSettings?.body_font || "'Inter', sans-serif";
+                case 'heading_font':
+                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                case 'subheading_font':
+                    return themeSettings?.subheading_font || "'Inter', sans-serif";
+                case 'accent_font':
+                    return themeSettings?.accent_font || "'Inter', sans-serif";
+                default:
+                    return themeSettings?.body_font || "'Inter', sans-serif";
+            }
+        };
+
+        // Obtener configuración según el estilo seleccionado
+        let fontSize, fontWeight, lineHeight, textTransform;
+        
+        switch(textStyle) {
+            case 'paragraph':
+                fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
+                fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
+                lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
+                textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
+                break;
+                
+            case 'heading1':
+            case 'heading2':
+            case 'heading3':
+            case 'heading4':
+            case 'heading5':
+            case 'heading6':
+                const level = textStyle.replace('heading', '');
+                fontSize = customStyles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
+                fontWeight = customStyles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || 'bold';
+                lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.2';
+                textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
+                break;
+                
+            case 'custom':
+            default:
+                fontSize = customStyles.fontSize || '16px';
+                fontWeight = customStyles.fontWeight || 'normal';
+                lineHeight = customStyles.lineHeight || '1.6';
+                textTransform = customStyles.textTransform || 'none';
+                break;
+        }
+
+        // Calcular line-height si es personalizado
+        let finalLineHeight = lineHeight;
+        if (lineHeight === 'tight') finalLineHeight = '1.2';
+        if (lineHeight === 'normal') finalLineHeight = '1.4';
+        if (lineHeight === 'loose') finalLineHeight = '1.6';
+        if (customStyles.customLineHeight && lineHeight === 'custom') {
+            finalLineHeight = customStyles.customLineHeight;
+        }
+
+        // Padding individual
         const paddingTop = customStyles.paddingTop || '0px';
         const paddingRight = customStyles.paddingRight || '0px';
         const paddingBottom = customStyles.paddingBottom || '0px';
         const paddingLeft = customStyles.paddingLeft || '0px';
 
+        // Layout
         const layout = customStyles.layout || 'fit';
         const width = layout === 'fill' ? '100%' : 'auto';
-
         const alignment = customStyles.alignment || 'left';
         const textAlign = layout === 'fill' ? alignment : 'left';
-
-        const backgroundColor = layout === 'fit' ? (customStyles.backgroundColor || 'transparent') : (customStyles.backgroundColor || 'transparent');
-        const borderRadius = layout === 'fit' ? (customStyles.borderRadius || '0px') : '0px';
-
-        const display = layout === 'fit' ? 'inline-block' : 'block';
 
         return {
             ...baseStyles,
@@ -30,19 +102,33 @@ const TextComponent = ({ comp, getStyles, isPreview }) => {
             paddingRight,
             paddingBottom,
             paddingLeft,
-            backgroundColor,
-            borderRadius,
-            display,
+            backgroundColor: customStyles.backgroundColor || 'transparent',
+            borderRadius: customStyles.borderRadius || '0px',
+            display: layout === 'fit' ? 'inline-block' : 'block',
+            fontFamily: getFontFamily(),
+            fontSize,
+            fontWeight,
+            lineHeight: finalLineHeight,
+            textTransform,
             color: customStyles.color || '#000000',
-            fontSize: customStyles.fontSize || '16px',
-            fontWeight: customStyles.fontWeight || 'normal',
         };
     };
 
+    // Determinar la etiqueta HTML según el estilo
+    const getTagName = () => {
+        const textStyle = comp.styles?.textStyle || 'paragraph';
+        if (textStyle.startsWith('heading')) {
+            return `h${textStyle.replace('heading', '')}`;
+        }
+        return 'p';
+    };
+
+    const Tag = getTagName();
+
     return (
-        <p style={getTextStyles()}>
+        <Tag style={getTextStyles()}>
             {comp.content}
-        </p>
+        </Tag>
     );
 };
 

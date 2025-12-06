@@ -1,11 +1,36 @@
 // components/Builder/components/HeadingComponent.jsx
 import React from 'react';
 
-const HeadingComponent = ({ comp, getStyles, onEdit, isPreview }) => {
-    // Función para calcular estilos específicos del heading
+const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) => {
     const getHeadingStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
+
+        // Determinar el nivel del heading (default: h1)
+        const level = comp.level || 1;
+
+        // Obtener configuración de fuente
+        const getFontFamily = () => {
+            if (customStyles.fontFamily) {
+                return customStyles.fontFamily;
+            }
+            
+            const fontType = customStyles.fontType || `heading${level}_font`;
+            switch(fontType) {
+                case 'body_font':
+                    return themeSettings?.body_font || "'Inter', sans-serif";
+                case 'heading_font':
+                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                case 'subheading_font':
+                    return themeSettings?.subheading_font || "'Inter', sans-serif";
+                case 'accent_font':
+                    return themeSettings?.accent_font || "'Inter', sans-serif";
+                case 'custom':
+                    return customStyles.customFont || themeSettings?.heading_font || "'Inter', sans-serif";
+                default:
+                    return themeSettings?.heading_font || "'Inter', sans-serif";
+            }
+        };
 
         // Padding individual
         const paddingTop = customStyles.paddingTop || '0px';
@@ -13,23 +38,35 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview }) => {
         const paddingBottom = customStyles.paddingBottom || '0px';
         const paddingLeft = customStyles.paddingLeft || '0px';
 
-        // Layout: fit (ancho natural) o fill (ancho 100%)
+        // Layout
         const layout = customStyles.layout || 'fit';
         const width = layout === 'fill' ? '100%' : 'auto';
-
-        // Alignment: solo aplica en fill
         const alignment = customStyles.alignment || 'left';
         const textAlign = layout === 'fill' ? alignment : 'left';
 
-        // Background
-        const backgroundColor = customStyles.backgroundColor || 'transparent';
+        // Estilos del tema según el nivel
+        const fontSize = customStyles.fontSize || 
+            themeSettings?.[`heading${level}_fontSize`] || 
+            `${3.5 - (level * 0.25)}rem`;
+        
+        const fontWeight = customStyles.fontWeight || 
+            themeSettings?.[`heading${level}_fontWeight`] || 
+            'bold';
 
-        // Border-Radius
-        const borderRadius = customStyles.borderRadius || '0px';
+        // Calcular line-height
+        let lineHeight = customStyles.lineHeight || 
+            themeSettings?.[`heading${level}_lineHeight`] || 
+            'tight';
+        if (lineHeight === 'tight') lineHeight = '1.2';
+        if (lineHeight === 'normal') lineHeight = '1.4';
+        if (lineHeight === 'loose') lineHeight = '1.6';
+        if (themeSettings?.[`heading${level}_lineHeight_custom`] && lineHeight === 'custom') {
+            lineHeight = themeSettings[`heading${level}_lineHeight_custom`];
+        }
 
-        // Estilos por defecto para heading: más grande y negrita
-        const fontSize = customStyles.fontSize || '24px';
-        const fontWeight = 'bold';
+        const textTransform = customStyles.textTransform || 
+            themeSettings?.[`heading${level}_textTransform`] || 
+            'default';
 
         return {
             ...baseStyles,
@@ -39,23 +76,30 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview }) => {
             paddingRight,
             paddingBottom,
             paddingLeft,
-            backgroundColor,
-            borderRadius,
+            backgroundColor: customStyles.backgroundColor || 'transparent',
+            borderRadius: customStyles.borderRadius || '0px',
+            display: layout === 'fit' ? 'inline-block' : 'block',
+            fontFamily: getFontFamily(),
             fontSize,
             fontWeight,
-            display: layout === 'fit' ? 'inline-block' : 'block',
+            lineHeight,
+            textTransform: textTransform === 'default' ? 'none' : textTransform,
+            color: customStyles.color || '#000000',
         };
     };
 
     const handleDoubleClick = (e) => {
-        e.stopPropagation(); // Detener la propagación del evento
-        onEdit(); // Llamar sin parámetros
+        e.stopPropagation();
+        onEdit && onEdit();
     };
 
+    // Renderizar el heading con el nivel correcto
+    const HeadingTag = `h${comp.level || 1}`;
+    
     return (
-        <h1 style={getHeadingStyles()} onDoubleClick={isPreview ? undefined : handleDoubleClick}>
+        <HeadingTag style={getHeadingStyles()} onDoubleClick={isPreview ? undefined : handleDoubleClick}>
             {comp.content}
-        </h1>
+        </HeadingTag>
     );
 };
 

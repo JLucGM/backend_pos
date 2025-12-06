@@ -1,10 +1,38 @@
 // components/Builder/components/ButtonComponent.jsx
 import React, { useState, useEffect } from 'react';
 
-const ButtonComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, appliedTheme }) => {
+const ButtonComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) => {
     const [localStyles, setLocalStyles] = useState({});
     const [isHovered, setIsHovered] = useState(false);
     const [buttonType, setButtonType] = useState('primary');
+
+    // Función para obtener la familia de fuentes
+    const getFontFamily = () => {
+        const customStyles = comp.styles || {};
+        const fontType = customStyles.fontType;
+        
+        // Si el usuario seleccionó "default" o no especificó nada
+        if (fontType === 'default' || !fontType) {
+            return themeSettings?.body_font || "'Inter', sans-serif";
+        }
+        
+        if (fontType === 'custom' && customStyles.customFont) {
+            return customStyles.customFont;
+        }
+        
+        switch(fontType) {
+            case 'body_font':
+                return themeSettings?.body_font || "'Inter', sans-serif";
+            case 'heading_font':
+                return themeSettings?.heading_font || "'Inter', sans-serif";
+            case 'subheading_font':
+                return themeSettings?.subheading_font || "'Inter', sans-serif";
+            case 'accent_font':
+                return themeSettings?.accent_font || "'Inter', sans-serif";
+            default:
+                return themeSettings?.body_font || "'Inter', sans-serif";
+        }
+    };
 
     // Inicializar el tipo de botón y estilos
     useEffect(() => {
@@ -32,8 +60,9 @@ const ButtonComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, ap
                 paddingLeft: customStyles.paddingLeft || '10px',
                 fontSize: customStyles.fontSize || '16px',
                 textTransform: customStyles.textTransform || 'none',
-                // Añadir estilos base del tema si están disponibles
-                fontFamily: themeSettings?.fontFamily || 'inherit',
+                fontFamily: getFontFamily(),
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
             });
         } else {
             // Usar estilos del tema (primary o secondary)
@@ -86,6 +115,11 @@ const ButtonComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, ap
             const layout = customStyles.layout || 'fit';
             themeStyles.width = layout === 'fill' ? '100%' : 'auto';
             
+            // Fuente según configuración
+            themeStyles.fontFamily = getFontFamily();
+            themeStyles.cursor = 'pointer';
+            themeStyles.transition = 'all 0.2s ease';
+            
             // Combinar con estilos base del tema
             setLocalStyles({
                 ...baseStyles,
@@ -96,15 +130,26 @@ const ButtonComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, ap
 
     // Función para obtener estilos según hover state
     const getButtonStyles = () => {
+        const baseStyles = localStyles;
+        
         if (buttonType === 'custom') {
-            return localStyles;
+            // Para botón custom, manejar hover si está configurado
+            if (isHovered && comp.styles?.hoverBackgroundColor) {
+                return {
+                    ...baseStyles,
+                    backgroundColor: comp.styles.hoverBackgroundColor,
+                    borderColor: comp.styles.hoverBorderColor || comp.styles.hoverBackgroundColor,
+                    color: comp.styles.hoverColor || baseStyles.color,
+                };
+            }
+            return baseStyles;
         }
         
-        // Para primary y secondary, cambiar estilos en hover
+        // Para primary y secondary, cambiar estilos en hover según tema
         if (isHovered) {
             if (buttonType === 'primary') {
                 return {
-                    ...localStyles,
+                    ...baseStyles,
                     backgroundColor: themeSettings?.primary_button_hover_background 
                         ? `hsl(${themeSettings.primary_button_hover_background})` 
                         : '#b3d7ff',
@@ -118,7 +163,7 @@ const ButtonComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, ap
                 };
             } else if (buttonType === 'secondary') {
                 return {
-                    ...localStyles,
+                    ...baseStyles,
                     backgroundColor: themeSettings?.secondary_button_hover_background 
                         ? `hsl(${themeSettings.secondary_button_hover_background})` 
                         : '#d6d6d6',
@@ -133,7 +178,7 @@ const ButtonComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, ap
             }
         }
         
-        return localStyles;
+        return baseStyles;
     };
 
     // Manejar doble clic para editar
@@ -143,30 +188,19 @@ const ButtonComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, ap
         }
     };
 
-    // Contenido del botón (puede sobrescribirse)
+    // Contenido del botón
     const buttonContent = comp.styles?.contentOverride || comp.content || 'Botón';
 
     return (
-        <div className="relative">
-            <button
-                style={getButtonStyles()}
-                onDoubleClick={handleDoubleClick}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                className="transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-            >
-                {buttonContent}
-            </button>
-            
-            {/* Indicador visual del tipo de botón (solo en modo edición) */}
-            {!isPreview && (
-                <div className="absolute -top-6 left-0 text-xs flex items-center gap-1">
-                    <span className={`px-1.5 py-0.5 rounded text-white ${buttonType === 'primary' ? 'bg-blue-500' : buttonType === 'secondary' ? 'bg-gray-500' : 'bg-purple-500'}`}>
-                        {buttonType === 'primary' ? 'Primario' : buttonType === 'secondary' ? 'Secundario' : 'Personalizado'}
-                    </span>
-                </div>
-            )}
-        </div>
+        <button
+            style={getButtonStyles()}
+            onDoubleClick={handleDoubleClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="focus:outline-none"
+        >
+            {buttonContent}
+        </button>
     );
 };
 

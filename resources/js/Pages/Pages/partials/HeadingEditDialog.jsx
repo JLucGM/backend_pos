@@ -1,130 +1,124 @@
-// components/Builder/dialogs/HeadingEditDialog.jsx
+// components/Builder/components/HeadingComponent.jsx
 import React from 'react';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
-const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => (
-    <div className="space-y-4">
-        <Label htmlFor="content">Contenido</Label>
-        <textarea
-            id="content"
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            className="w-full h-20 p-2 border rounded"
-        />
+const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) => {
+    const getHeadingStyles = () => {
+        const baseStyles = getStyles(comp);
+        const customStyles = comp.styles || {};
 
-        {/* Layout */}
-        <Label htmlFor="layout">Layout</Label>
-        <Select value={editStyles.layout || 'fit'} onValueChange={(value) => setEditStyles({ ...editStyles, layout: value })}>
-            <SelectTrigger>
-                <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
-                <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
-            </SelectContent>
-        </Select>
+        // Determinar el nivel del heading (default: h1)
+        const level = comp.level || 1;
 
-        {/* Alignment (solo si layout es fill) */}
-        {editStyles.layout === 'fill' && (
-            <>
-                <Label htmlFor="alignment">Alineación</Label>
-                <Select value={editStyles.alignment || 'left'} onValueChange={(value) => setEditStyles({ ...editStyles, alignment: value })}>
-                    <SelectTrigger>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="left">Izquierda</SelectItem>
-                        <SelectItem value="center">Centro</SelectItem>
-                        <SelectItem value="right">Derecha</SelectItem>
-                    </SelectContent>
-                </Select>
-            </>
-        )}
+        // Función para obtener la fuente según el tipo seleccionado
+        const getFontFamily = () => {
+            const fontType = customStyles.fontType;
+            
+            // Si el usuario seleccionó una fuente personalizada
+            if (fontType === 'custom' && customStyles.customFont) {
+                return customStyles.customFont;
+            }
+            
+            // Si el usuario seleccionó un tipo específico de fuente del tema
+            if (fontType) {
+                switch(fontType) {
+                    case 'body_font':
+                        return themeSettings?.body_font || "'Inter', sans-serif";
+                    case 'heading_font':
+                        return themeSettings?.heading_font || "'Inter', sans-serif";
+                    case 'subheading_font':
+                        return themeSettings?.subheading_font || "'Inter', sans-serif";
+                    case 'accent_font':
+                        return themeSettings?.accent_font || "'Inter', sans-serif";
+                    default:
+                        break;
+                }
+            }
+            
+            // Fuente predeterminada según el nivel
+            const headingFontType = themeSettings?.[`heading${level}_font`] || 'heading_font';
+            switch(headingFontType) {
+                case 'body_font':
+                    return themeSettings?.body_font || "'Inter', sans-serif";
+                case 'heading_font':
+                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                case 'subheading_font':
+                    return themeSettings?.subheading_font || "'Inter', sans-serif";
+                case 'accent_font':
+                    return themeSettings?.accent_font || "'Inter', sans-serif";
+                default:
+                    return themeSettings?.heading_font || "'Inter', sans-serif";
+            }
+        };
 
-        {/* Padding Individual */}
-        <Label>Padding (px)</Label>
-        <div className="grid grid-cols-2 gap-4">
-            <div>
-                <Label htmlFor="paddingTop">Arriba</Label>
-                <Input
-                    id="paddingTop"
-                    type="number"
-                    value={parseInt(editStyles.paddingTop) || 0}
-                    onChange={(e) => setEditStyles({ ...editStyles, paddingTop: `${e.target.value}px` })}
-                />
-            </div>
-            <div>
-                <Label htmlFor="paddingRight">Derecha</Label>
-                <Input
-                    id="paddingRight"
-                    type="number"
-                    value={parseInt(editStyles.paddingRight) || 0}
-                    onChange={(e) => setEditStyles({ ...editStyles, paddingRight: `${e.target.value}px` })}
-                />
-            </div>
-            <div>
-                <Label htmlFor="paddingBottom">Abajo</Label>
-                <Input
-                    id="paddingBottom"
-                    type="number"
-                    value={parseInt(editStyles.paddingBottom) || 0}
-                    onChange={(e) => setEditStyles({ ...editStyles, paddingBottom: `${e.target.value}px` })}
-                />
-            </div>
-            <div>
-                <Label htmlFor="paddingLeft">Izquierda</Label>
-                <Input
-                    id="paddingLeft"
-                    type="number"
-                    value={parseInt(editStyles.paddingLeft) || 0}
-                    onChange={(e) => setEditStyles({ ...editStyles, paddingLeft: `${e.target.value}px` })}
-                />
-            </div>
-        </div>
+        // Padding individual
+        const paddingTop = customStyles.paddingTop || '0px';
+        const paddingRight = customStyles.paddingRight || '0px';
+        const paddingBottom = customStyles.paddingBottom || '0px';
+        const paddingLeft = customStyles.paddingLeft || '0px';
 
-        {/* Background */}
-        <Label htmlFor="backgroundColor">Color de Fondo</Label>
-        <Input
-            id="backgroundColor"
-            type="color"
-            value={editStyles.backgroundColor || '#ffffff'}
-            onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-        />
+        // Layout
+        const layout = customStyles.layout || 'fit';
+        const width = layout === 'fill' ? '100%' : 'auto';
+        const alignment = customStyles.alignment || 'left';
+        const textAlign = layout === 'fill' ? alignment : 'left';
 
-        {/* Border-Radius */}
-        <Label htmlFor="borderRadius">Radio de Borde (px)</Label>
-        <Input
-            id="borderRadius"
-            type="number"
-            value={parseInt(editStyles.borderRadius) || 0}
-            onChange={(e) => setEditStyles({ ...editStyles, borderRadius: `${e.target.value}px` })}
-        />
+        // Estilos del tema según el nivel
+        const fontSize = customStyles.fontSize || 
+            themeSettings?.[`heading${level}_fontSize`] || 
+            `${3.5 - (level * 0.25)}rem`;
+        
+        const fontWeight = customStyles.fontWeight || 
+            themeSettings?.[`heading${level}_fontWeight`] || 
+            'bold';
 
-        {/* Color */}
-        <Label htmlFor="color">Color</Label>
-        <Input
-            id="color"
-            type="color"
-            value={editStyles.color || '#000000'}
-            onChange={(e) => setEditStyles({ ...editStyles, color: e.target.value })}
-        />
+        // Calcular line-height
+        let lineHeight = customStyles.lineHeight || 
+            themeSettings?.[`heading${level}_lineHeight`] || 
+            'tight';
+        if (lineHeight === 'tight') lineHeight = '1.2';
+        if (lineHeight === 'normal') lineHeight = '1.4';
+        if (lineHeight === 'loose') lineHeight = '1.6';
+        if (themeSettings?.[`heading${level}_lineHeight_custom`] && lineHeight === 'custom') {
+            lineHeight = themeSettings[`heading${level}_lineHeight_custom`];
+        }
 
-        {/* FontSize */}
-        <Label htmlFor="fontSize">Tamaño de fuente</Label>
-        <Select value={editStyles.fontSize || '24px'} onValueChange={(value) => setEditStyles({ ...editStyles, fontSize: value })}>
-            <SelectTrigger>
-                <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value="18px">18px</SelectItem>
-                <SelectItem value="24px">24px</SelectItem>
-                <SelectItem value="32px">32px</SelectItem>
-                <SelectItem value="48px">48px</SelectItem>
-            </SelectContent>
-        </Select>
-    </div>
-);
+        const textTransform = customStyles.textTransform || 
+            themeSettings?.[`heading${level}_textTransform`] || 
+            'default';
 
-export default HeadingEditDialog;
+        return {
+            ...baseStyles,
+            width,
+            textAlign,
+            paddingTop,
+            paddingRight,
+            paddingBottom,
+            paddingLeft,
+            backgroundColor: customStyles.backgroundColor || 'transparent',
+            borderRadius: customStyles.borderRadius || '0px',
+            display: layout === 'fit' ? 'inline-block' : 'block',
+            fontFamily: getFontFamily(),
+            fontSize,
+            fontWeight,
+            lineHeight,
+            textTransform: textTransform === 'default' ? 'none' : textTransform,
+            color: customStyles.color || '#000000',
+        };
+    };
+
+    const handleDoubleClick = (e) => {
+        e.stopPropagation();
+        onEdit && onEdit();
+    };
+
+    // Renderizar el heading con el nivel correcto
+    const HeadingTag = `h${comp.level || 1}`;
+    
+    return (
+        <HeadingTag style={getHeadingStyles()} onDoubleClick={isPreview ? undefined : handleDoubleClick}>
+            {comp.content}
+        </HeadingTag>
+    );
+};
+
+export default HeadingComponent;

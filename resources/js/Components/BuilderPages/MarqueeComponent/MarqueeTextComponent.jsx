@@ -1,10 +1,36 @@
+// components/Builder/components/MarqueeTextComponent.jsx
 import React, { useState, useRef, useEffect } from 'react';
 
-const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview }) => {
+const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) => {
     const [isPaused, setIsPaused] = useState(false);
     const marqueeRef = useRef(null);
     const contentRef = useRef(null);
     const containerRef = useRef(null);
+
+    // Función para obtener la familia de fuentes
+    const getFontFamily = () => {
+        const customStyles = comp.styles || {};
+        
+        if (customStyles.fontFamily) {
+            return customStyles.fontFamily;
+        }
+        
+        const fontType = customStyles.fontType || 'body_font';
+        switch(fontType) {
+            case 'body_font':
+                return themeSettings?.body_font || "'Inter', sans-serif";
+            case 'heading_font':
+                return themeSettings?.heading_font || "'Inter', sans-serif";
+            case 'subheading_font':
+                return themeSettings?.subheading_font || "'Inter', sans-serif";
+            case 'accent_font':
+                return themeSettings?.accent_font || "'Inter', sans-serif";
+            case 'custom':
+                return customStyles.customFont || "'Inter', sans-serif";
+            default:
+                return themeSettings?.body_font || "'Inter', sans-serif";
+        }
+    };
 
     const getMarqueeStyles = () => {
         const baseStyles = getStyles(comp);
@@ -40,6 +66,7 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview }) => {
             fontWeight,
             color,
             backgroundColor,
+            fontFamily: getFontFamily(),
             overflow: 'hidden',
             whiteSpace: 'nowrap',
             position: 'relative',

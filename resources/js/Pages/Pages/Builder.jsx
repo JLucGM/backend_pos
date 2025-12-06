@@ -1610,6 +1610,7 @@ if (selectedType === 'button') {
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'button' && (
@@ -1618,6 +1619,7 @@ if (selectedType === 'button') {
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'heading' && (
@@ -1626,6 +1628,7 @@ if (selectedType === 'button') {
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'image' && (
@@ -1686,6 +1689,7 @@ if (selectedType === 'button') {
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'divider' && (
