@@ -13,7 +13,7 @@ const DividerComponent = ({ comp, getStyles, onEdit, isPreview }) => {
         const lineWidth = customStyles.lineWidth || '1px';
         const lineLength = customStyles.lineLength || '100%';
         const lineColor = customStyles.lineColor || '#000000';
-        const opacity = customStyles.opacity || '1';
+        // const opacity = customStyles.opacity || '1';
 
         // Layout: fit (ancho natural) o fill (ancho 100%)
         const layout = customStyles.layout || 'fill';
@@ -46,7 +46,6 @@ const DividerComponent = ({ comp, getStyles, onEdit, isPreview }) => {
             opacity: opacity,
             border: 'none',
             borderTop: `${lineWidth} ${lineStyle} ${lineColor}`,
-            opacity: opacity,
         };
     };
 

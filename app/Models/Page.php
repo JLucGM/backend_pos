@@ -23,7 +23,8 @@ class Page extends Model
         'sort_order',
         'company_id',
         'template_id',
-        'template_overrides',
+        // 'template_overrides',
+        'theme_settings',
         'uses_template',
         'theme_id',
     ];
@@ -33,7 +34,8 @@ class Page extends Model
         'is_default' => 'boolean',
         'is_published' => 'boolean',
         'is_homepage' => 'boolean',
-        'template_overrides' => 'array',
+        // 'template_overrides' => 'array',
+        'theme_settings' => 'array',
         'uses_template' => 'boolean'
     ];
 
@@ -75,34 +77,34 @@ class Page extends Model
     }
 
     // Método para obtener layout combinado
-    public function getCombinedLayout()
-    {
-        if (!$this->uses_template || !$this->template) {
-            return $this->layout;
-        }
+    // public function getCombinedLayout()
+    // {
+    //     if (!$this->uses_template || !$this->template) {
+    //         return $this->layout;
+    //     }
 
-        $templateLayout = $this->template->layout_structure ?? [];
-        $pageLayout = $this->layout ?? [];
-        $overrides = $this->template_overrides ?? [];
+    //     $templateLayout = $this->template->layout_structure ?? [];
+    //     $pageLayout = $this->layout ?? [];
+    //     $overrides = $this->template_overrides ?? [];
 
-        // Combinar lógica (template base + personalizaciones página)
-        return $this->mergeLayouts($templateLayout, $pageLayout, $overrides);
-    }
+    //     // Combinar lógica (template base + personalizaciones página)
+    //     return $this->mergeLayouts($templateLayout, $pageLayout, $overrides);
+    // }
 
     // Método para aplicar tema
-    public function getAppliedTheme()
-    {
-        // Prioridad: Tema de página → Tema de template → Tema default
-        if ($this->theme_id) {
-            return $this->theme;
-        }
+    // public function getAppliedTheme()
+    // {
+    //     // Prioridad: Tema de página → Tema de template → Tema default
+    //     if ($this->theme_id) {
+    //         return $this->theme;
+    //     }
 
-        if ($this->template && $this->template->theme_id) {
-            return $this->template->theme;
-        }
+    //     if ($this->template && $this->template->theme_id) {
+    //         return $this->template->theme;
+    //     }
 
-        return Theme::where('slug', 'tema-azul')->first(); // Tema por defecto
-    }
+    //     return Theme::where('slug', 'tema-azul')->first(); // Tema por defecto
+    // }
 
     // Método para detectar si tiene tema personalizado
     public function hasCustomTheme()
@@ -110,12 +112,34 @@ class Page extends Model
         if (!$this->uses_template) {
             return (bool) $this->theme_id;
         }
-        
+
         // Tema personalizado si es diferente al de la plantilla
         if ($this->theme_id && $this->template && $this->template->theme_id) {
             return $this->theme_id !== $this->template->theme_id;
         }
-        
+
         return (bool) $this->theme_id;
+    }
+
+    // Método para obtener configuraciones del tema
+    public function getThemeSettingsAttribute($value)
+    {
+        $themeSettings = $value ? json_decode($value, true) : null;
+
+        // Si no hay configuraciones personalizadas, usar el tema original
+        if (!$themeSettings && $this->theme) {
+            return $this->theme->settings ?? [];
+        }
+
+        return $themeSettings ?? [];
+    }
+
+    // Método para copiar configuración del tema
+    public function copyThemeSettings()
+    {
+        if ($this->theme) {
+            $this->theme_settings = $this->theme->settings;
+            $this->save();
+        }
     }
 }

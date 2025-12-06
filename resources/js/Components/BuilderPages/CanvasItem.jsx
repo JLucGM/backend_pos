@@ -403,138 +403,22 @@ const CanvasItem = ({
                 }`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            // style={{
-            //     // Aplicar bordes redondeados del tema a los contenedores
-            //     borderRadius: themeSettings?.borderRadius || '0.375rem',
-            //     // Fondo sutil basado en el tema
-            //     backgroundColor: isHovered && !isPreview
-            //         ? themeSettings?.primary
-            //             ? `hsla(${themeSettings.primary}, 0.05)`
-            //             : '#eff6ff'
-            //         : 'transparent',
-            // }}
         >
             {/* Solo mostrar el tooltip en modo edición */}
             {!isPreview && (
                 <div
                     className={`rounded-t-lg text-white text-xs px-3 py-1.5 transition-all duration-300 absolute -top-7 left-0 z-50 flex items-center gap-2 shadow-md ${isHovered ? 'bg-blue-400 opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
                         }`}
-                    // style={{
-                    //     backgroundColor: "#60a5fa" ?
-                    //         `#60a5fa` : '#60a5fa',
-                    // }}
                 >
                     <span className="font-medium">{getComponentTypeName(comp.type)}</span>
-                    {/* {appliedTheme?.name && (
-                        <>
-                            <span className="opacity-75">•</span>
-                            <span className="text-xs opacity-90 bg-white/20 px-1.5 py-0.5 rounded">
-                                {appliedTheme.name}ddd
-                            </span>
-                        </>
-                    )} */}
                 </div>
             )}
-
-            {/* Indicador visual del tema aplicado (solo en hover) */}
-            {/* {!isPreview && isHovered && appliedTheme && (
-                <div className="absolute top-1 right-1 z-40">
-                    <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs shadow-sm border">
-                        <div className="flex items-center gap-1">
-                            <div
-                                className="w-2 h-2 rounded-full"
-                                style={{
-                                    backgroundColor: themeSettings?.primary
-                                        ? `hsl(${themeSettings.primary})`
-                                        : '#3b82f6',
-                                }}
-                            />
-                            <span className="text-gray-700 font-medium">{getThemeSource()}</span>
-                        </div>
-                    </div>
-                </div>
-            )} */}
 
             <div className="relative z-10">
                 {renderComponent()}
             </div>
-
-            {/* Controles de edición (solo en modo edición) */}
-            {/* {!isPreview && isHovered && (
-                <div className="absolute -bottom-8 left-0 right-0 flex justify-center gap-1 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button
-                        onClick={() => onEditComponent(comp)}
-                        className="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded shadow"
-                        style={{
-                            backgroundColor: themeSettings?.primary
-                                ? `hsl(${themeSettings.primary})`
-                                : '#3b82f6',
-                        }}
-                    >
-                        Editarsss
-                    </button>
-                    {comp.type !== 'pageContent' && (
-                        <button
-                            onClick={() => onDeleteComponent(comp.id)}
-                            className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded shadow"
-                        >
-                            Eliminar
-                        </button>
-                    )}
-                </div>
-            )} */}
         </div>
     );
 };
-
-// Componente de debug para ver información del tema
-// const ThemeDebugInfo = ({ themeSettings, appliedTheme }) => {
-//     if (!themeSettings || !appliedTheme) return null;
-
-//     return (
-//         <div className="fixed bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg border z-50 max-w-xs">
-//             <div className="text-xs font-medium text-gray-700 mb-2">DEBUG - Tema Aplicado</div>
-//             <div className="space-y-1">
-//                 <div className="flex items-center justify-between">
-//                     <span className="text-xs text-gray-500">Nombre:</span>
-//                     <span className="text-xs font-medium">{appliedTheme.name}</span>
-//                 </div>
-//                 <div className="flex items-center justify-between">
-//                     <span className="text-xs text-gray-500">Primario:</span>
-//                     <div
-//                         className="w-4 h-4 rounded border"
-//                         style={{
-//                             backgroundColor: themeSettings.primary
-//                                 ? `hsl(${themeSettings.primary})`
-//                                 : '#3b82f6'
-//                         }}
-//                     />
-//                 </div>
-//                 <div className="flex items-center justify-between">
-//                     <span className="text-xs text-gray-500">Fondo:</span>
-//                     <div
-//                         className="w-4 h-4 rounded border"
-//                         style={{
-//                             backgroundColor: themeSettings.background
-//                                 ? `hsl(${themeSettings.background})`
-//                                 : '#ffffff'
-//                         }}
-//                     />
-//                 </div>
-//                 <div className="flex items-center justify-between">
-//                     <span className="text-xs text-gray-500">Texto:</span>
-//                     <div
-//                         className="w-4 h-4 rounded border"
-//                         style={{
-//                             backgroundColor: themeSettings.foreground
-//                                 ? `hsl(${themeSettings.foreground})`
-//                                 : '#000000'
-//                         }}
-//                     />
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
 
 export default CanvasItem;

@@ -9,7 +9,7 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { toast } from 'sonner';
-import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical } from 'lucide-react';
+import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical, Palette } from 'lucide-react';
 import ComponentTree from '@/Components/BuilderPages/ComponentTree';
 import Canvas from '@/Components/BuilderPages/Canvas';
 import CanvasItem from '@/Components/BuilderPages/CanvasItem';
@@ -47,8 +47,9 @@ import DividerEditDialog from './partials/Divider/DividerEditDialog';
 import PageContentEditDialog from './partials/PageContentEditDialog';
 import ApplyTemplate from '@/Components/ApplyTemplate';
 import ThemeSelector from '@/Components/ThemeSelector';
+import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
 
-export default function Builder({ page, products, availableTemplates, themes   }) {
+export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings }) {
     const [components, setComponents] = useState([]);
     const [editingComponent, setEditingComponent] = useState(null);
     const [editContent, setEditContent] = useState('');
@@ -73,56 +74,60 @@ export default function Builder({ page, products, availableTemplates, themes   }
     const [templates] = useState(availableTemplates || []);
     const themeSettings = page.theme?.settings || {};
 
+    const [currentThemeSettings, setCurrentThemeSettings] = useState(pageThemeSettings);
+    const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
+    const [hasCopiedTheme, setHasCopiedTheme] = useState(!!page.theme_settings);
+
     // En Builder.jsx - Agregar después de los estados iniciales
 
-// Función para obtener el tema aplicado
-const getAppliedTheme = () => {
-    // 1. Prioridad: Tema específico de la página
-    if (page.theme_id && page.theme) {
-        return page.theme;
-    }
-    
-    // 2. Tema de la plantilla (si la página usa una plantilla)
-    if (page.uses_template && page.template && page.template.theme) {
-        return page.template.theme;
-    }
-    
-    // 3. Tema global por defecto
-    // Primero buscar si la empresa tiene tema por defecto
-    if (page.company?.default_theme_id) {
-        const companyDefaultTheme = themes?.find(t => t.id === page.company.default_theme_id);
-        if (companyDefaultTheme) {
-            return companyDefaultTheme;
+    // Función para obtener el tema aplicado
+    const getAppliedTheme = () => {
+        // 1. Prioridad: Tema específico de la página
+        if (page.theme_id && page.theme) {
+            return page.theme;
         }
-    }
-    
-    // 4. Tema global del sistema (tema-azul)
-    const defaultTheme = themes?.find(t => t.slug === 'tema-azul') || themes?.[0];
-    return defaultTheme || {
-        name: 'Tema Por Defecto',
-        settings: {
-            primary: '209 100% 92%',
-            background: '0 0% 100%',
-            foreground: '0 0% 3.9%',
-            secondary: '0 0% 96.1%',
-            fontFamily: 'Arial, sans-serif',
-            borderRadius: '0.5rem'
+
+        // 2. Tema de la plantilla (si la página usa una plantilla)
+        if (page.uses_template && page.template && page.template.theme) {
+            return page.template.theme;
         }
+
+        // 3. Tema global por defecto
+        // Primero buscar si la empresa tiene tema por defecto
+        if (page.company?.default_theme_id) {
+            const companyDefaultTheme = themes?.find(t => t.id === page.company.default_theme_id);
+            if (companyDefaultTheme) {
+                return companyDefaultTheme;
+            }
+        }
+
+        // 4. Tema global del sistema (tema-azul)
+        const defaultTheme = themes?.find(t => t.slug === 'tema-azul') || themes?.[0];
+        return defaultTheme || {
+            name: 'Tema Por Defecto',
+            settings: {
+                primary: '209 100% 92%',
+                background: '0 0% 100%',
+                foreground: '0 0% 3.9%',
+                secondary: '0 0% 96.1%',
+                fontFamily: 'Arial, sans-serif',
+                borderRadius: '0.5rem'
+            }
+        };
     };
-};
 
-// Obtener el tema aplicado
-const appliedTheme = getAppliedTheme();
+    // Obtener el tema aplicado
+    const appliedTheme = getAppliedTheme();
 
-// Debug para verificar
-// useEffect(() => {
-//     console.log('Tema aplicado:', {
-//         name: appliedTheme?.name,
-//         settings: themeSettings,
-//         source: page.theme_id ? 'Página' : 
-//                 page.template?.theme_id ? 'Plantilla' : 'Global'
-//     });
-// }, [appliedTheme]);
+    // Debug para verificar
+    // useEffect(() => {
+    //     console.log('Tema aplicado:', {
+    //         name: appliedTheme?.name,
+    //         settings: themeSettings,
+    //         source: page.theme_id ? 'Página' : 
+    //                 page.template?.theme_id ? 'Plantilla' : 'Global'
+    //     });
+    // }, [appliedTheme]);
 
     // Efectos
     useEffect(() => {
@@ -1374,6 +1379,60 @@ const appliedTheme = getAppliedTheme();
 
     const activeComponent = activeId ? findActiveComponent(activeId) : null;
 
+    // En Builder.jsx - agregar estas funciones
+    const copyThemeSettings = () => {
+        router.post(route('pages.copyThemeSettings', page), {}, {
+            onSuccess: () => {
+                toast.success("Configuración del tema copiada para personalización");
+                setHasCopiedTheme(true);
+                // Recargar para obtener las nuevas configuraciones
+                router.reload();
+            },
+            onError: (errors) => {
+                toast.error("Error al copiar configuración del tema");
+            }
+        });
+    };
+
+    const updateThemeSettings = (settings) => {
+        router.post(route('pages.updateThemeSettings', page), {
+            theme_settings: settings
+        }, {
+            onSuccess: () => {
+                toast.success("Configuraciones del tema actualizadas");
+                setIsThemeDialogOpen(false);
+                setCurrentThemeSettings(settings);
+                // Recargar para aplicar cambios visuales inmediatos
+                router.reload();
+            },
+            onError: (errors) => {
+                if (errors.needs_copy) {
+                    toast.error("Debes copiar la configuración del tema primero");
+                    setHasCopiedTheme(false);
+                } else {
+                    toast.error("Error al guardar configuraciones");
+                }
+            }
+        });
+    };
+
+    const resetThemeSettings = () => {
+        router.post(route('pages.resetThemeSettings', page.id), {}, {
+            onSuccess: () => {
+                toast.success("Configuraciones del tema restablecidas");
+                setIsThemeDialogOpen(false);
+                setHasCopiedTheme(false);
+                router.reload();
+            }
+        });
+    };
+
+    // Actualizar el useEffect para detectar si ya se copió el tema
+    useEffect(() => {
+        setHasCopiedTheme(!!page.theme_settings);
+        setCurrentThemeSettings(pageThemeSettings);
+    }, [page.theme_settings, pageThemeSettings]);
+
     return (
         <div className="min-h-screen bg-gray-50">
             <Head title={`${page.title}`} />
@@ -1409,7 +1468,7 @@ const appliedTheme = getAppliedTheme();
                 </div>
             ) : (
                 <>
-                {/* Layout de builder */}
+                    {/* Layout de builder */}
                     <TooltipProvider >
                         <div className="flex justify-between items-center px-4 py-2 border-b bg-white shadow-sm">
                             <Tooltip>
@@ -1426,6 +1485,21 @@ const appliedTheme = getAppliedTheme();
                                 </Button>
                             </div>
                             <div className="flex gap-2">
+<Tooltip>
+    <TooltipTrigger asChild>
+        <Button 
+            onClick={() => setIsThemeDialogOpen(true)} 
+            variant="ghost" 
+            size="icon"
+            className={hasCopiedTheme ? "text-purple-600 hover:text-purple-700 hover:bg-purple-50" : ""}
+        >
+            <Palette size={16} />
+        </Button>
+    </TooltipTrigger>
+    <TooltipContent>
+        {hasCopiedTheme ? "Editar tema personalizado" : "Personalizar tema"}
+    </TooltipContent>
+</Tooltip>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button onClick={() => setCanvasWidth('100%')} variant={canvasWidth === '100%' ? 'outline' : 'ghost'} size="icon">
@@ -1747,17 +1821,17 @@ const appliedTheme = getAppliedTheme();
                             ) : (
                                 // MODO NORMAL - Mostrar árbol de componentes
                                 <>
-                                {!isPreviewMode && (
-        <>
-            <ThemeSelector page={page} themes={themes} />
-            <ApplyTemplate 
-                page={page} 
-                templates={availableTemplates} 
-                onTemplateApplied={() => router.reload()}
-            />
-        </>
-    )}
-                                
+                                    {!isPreviewMode && (
+                                        <>
+                                            <ThemeSelector page={page} themes={themes} />
+                                            <ApplyTemplate
+                                                page={page}
+                                                templates={availableTemplates}
+                                                onTemplateApplied={() => router.reload()}
+                                            />
+                                        </>
+                                    )}
+
                                     <DndContext
                                         sensors={sensors}
                                         collisionDetection={closestCenter}
@@ -1809,7 +1883,7 @@ const appliedTheme = getAppliedTheme();
                                 components={components}
                                 onEditComponent={handleEditComponent}
                                 onDeleteComponent={deleteComponent}
-                                themeSettings={themeSettings}
+                                themeSettings={pageThemeSettings}
                                 appliedTheme={appliedTheme}
                                 products={products}
                                 setComponents={setComponents}
@@ -1858,6 +1932,17 @@ const appliedTheme = getAppliedTheme();
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+<ThemeCustomizerDialog
+    open={isThemeDialogOpen}
+    onOpenChange={setIsThemeDialogOpen}
+    page={page}
+    themeSettings={currentThemeSettings}
+    hasCopiedTheme={hasCopiedTheme}
+    onCopyTheme={copyThemeSettings}
+    onSave={updateThemeSettings}
+    onReset={resetThemeSettings}
+/>
         </div>
     );
 }

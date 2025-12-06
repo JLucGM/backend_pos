@@ -10,6 +10,7 @@ use App\Models\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class PageController extends RoutingController
@@ -142,24 +143,58 @@ class PageController extends RoutingController
             ->where('company_id', $companyId)
             ->get();
 
-        // Cargar plantillas disponibles
         $availableTemplates = Template::where('is_global', true)
             ->orWhere('company_id', $companyId)
             ->with('theme')
             ->get();
 
-        // Obtener todos los temas
         $themes = Theme::all();
 
-        // Cargar relaciones necesarias
         $page->load('template.theme', 'theme');
+
+        // Obtener configuración del tema (personalizada o del tema original)
+        $pageThemeSettings = $this->getPageThemeSettings($page);
 
         return Inertia::render('Pages/Builder', [
             'page' => $page,
             'products' => $products,
             'availableTemplates' => $availableTemplates,
             'themes' => $themes,
+            'pageThemeSettings' => $pageThemeSettings, // Pasar directamente las configuraciones
         ]);
+    }
+
+    private function getPageThemeSettings($page)
+    {
+        // Si la página tiene configuraciones personalizadas, usarlas
+        if ($page->theme_settings && is_array($page->theme_settings) && !empty($page->theme_settings)) {
+            return $page->theme_settings;
+        }
+
+        // Si no, obtener del tema aplicado
+        $appliedTheme = $this->getAppliedTheme($page, Theme::all());
+        return $appliedTheme->settings ?? [];
+    }
+
+    private function getAppliedTheme($page, $themes)
+    {
+        // Misma lógica que ya tienes
+        if ($page->theme_id && $page->theme) {
+            return $page->theme;
+        }
+
+        if ($page->uses_template && $page->template && $page->template->theme) {
+            return $page->template->theme;
+        }
+
+        if ($page->company?->default_theme_id) {
+            $companyDefaultTheme = $themes->find($page->company->default_theme_id);
+            if ($companyDefaultTheme) {
+                return $companyDefaultTheme;
+            }
+        }
+
+        return $themes->where('slug', 'tema-azul')->first() ?? $themes->first();
     }
 
     public function updateLayout(Request $request, Page $page)
@@ -266,5 +301,61 @@ class PageController extends RoutingController
             ->get();
 
         return response()->json($templates);
+    }
+
+    // En PageController.php
+    public function copyThemeSettings(Page $page)
+    {
+        if (!$page->theme) {
+            return back()->with('error', 'La página no tiene un tema asignado');
+        }
+
+        // Copiar configuración del tema a la página
+        $page->theme_settings = $page->theme->settings;
+        $page->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Configuración del tema copiada para personalización',
+            'theme_settings' => $page->theme_settings
+        ]);
+    }
+
+    public function updateThemeSettings(Request $request, Page $page)
+    {
+        $request->validate([
+            'theme_settings' => 'required|array'
+        ]);
+
+        // Verificar que primero se haya copiado la configuración
+        if (!$page->theme_settings && $page->theme) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Debes copiar la configuración del tema primero',
+                'needs_copy' => true
+            ], 400);
+        }
+
+        $page->theme_settings = $request->theme_settings;
+        $page->save();
+
+        // Limpiar caché si usas caché
+        Cache::forget("page_theme_settings_{$page->id}");
+
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Configuraciones del tema actualizadas'
+        // ]);
+    }
+
+    public function resetThemeSettings(Page $page)
+    {
+        $page->theme_settings = null;
+        $page->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Configuraciones del tema restablecidas al tema original'
+        ]);
     }
 }

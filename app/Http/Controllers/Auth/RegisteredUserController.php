@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -62,6 +63,11 @@ class RegisteredUserController extends Controller
             'phone' => $request->company_phone,
             'address' => $request->company_address,
             'email' => $request->email, // Add the email field for the company
+        ]);
+
+        Setting::create([
+            'company_id' => $company->id,
+            'default_currency' => 'USD',
         ]);
 
         // Asociar la empresa al usuario

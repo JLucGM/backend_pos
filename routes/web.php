@@ -172,11 +172,17 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
     Route::post('pages/{page}', [PageController::class, 'update'])->name('pages.update');
     Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
     Route::get('/pages/{page}/builder', [PageController::class, 'builder'])->name('pages.builder');
-Route::post('/pages/{page}/update-layout', [PageController::class, 'updateLayout'])->name('pages.updateLayout');
-Route::patch('/pages/{page}/theme', [PageController::class, 'updateTheme'])->name('pages.update-theme');
+    Route::post('/pages/{page}/update-layout', [PageController::class, 'updateLayout'])->name('pages.updateLayout');
+    Route::patch('/pages/{page}/theme', [PageController::class, 'updateTheme'])->name('pages.update-theme');
     Route::post('/pages/{page}/apply-template', [PageController::class, 'applyTemplate'])->name('pages.apply-template');
     Route::post('/pages/{page}/detach-template', [PageController::class, 'detachTemplate'])->name('pages.detach-template');
     Route::get('/pages/{page}/available-templates', [PageController::class, 'getAvailableTemplates'])->name('pages.available-templates');
+    Route::post('/pages/{page}/copy-theme-settings', [PageController::class, 'copyThemeSettings'])
+        ->name('pages.copyThemeSettings');
+    Route::post('/pages/{page}/update-theme-settings', [PageController::class, 'updateThemeSettings'])
+        ->name('pages.updateThemeSettings');
+    Route::post('/pages/{page}/reset-theme-settings', [PageController::class, 'resetThemeSettings'])
+        ->name('pages.resetThemeSettings');
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');

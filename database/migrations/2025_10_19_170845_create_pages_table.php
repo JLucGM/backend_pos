@@ -22,7 +22,8 @@ return new class extends Migration
             $table->boolean('is_homepage')->default(false)->comment('Página de inicio');
             $table->integer('sort_order')->default(0)->comment('Orden de clasificación');
             $table->boolean('uses_template')->default(false)->comment('Indica si usa plantilla');
-            $table->json('template_overrides')->nullable()->comment('Personalizaciones sobre la plantilla');
+            // $table->json('template_overrides')->nullable()->comment('Personalizaciones sobre la plantilla');
+             $table->json('theme_settings')->nullable()->comment('Copia de la configuración del tema para personalización');
             $table->foreignId('company_id')->constrained()->onDelete('cascade')->comment('ID de la empresa');
             $table->foreignId('template_id')->nullable()->constrained()->onDelete('set null');
             $table->foreignId('theme_id')->nullable()->constrained()->onDelete('set null');
