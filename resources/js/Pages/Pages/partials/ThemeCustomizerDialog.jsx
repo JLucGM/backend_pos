@@ -8,7 +8,7 @@ import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { toast } from 'sonner';
-import { Palette,  RefreshCw, Copy } from 'lucide-react';
+import { Palette, RefreshCw, Copy } from 'lucide-react';
 
 const ThemeCustomizerDialog = ({
     open,
@@ -68,7 +68,7 @@ const ThemeCustomizerDialog = ({
                         Personalizar Tema
                     </DialogTitle>
                     <DialogDescription>
-                        {hasCopiedTheme 
+                        {hasCopiedTheme
                             ? 'Estás editando una copia de la configuración del tema.'
                             : 'Debes copiar la configuración del tema para personalizarla.'}
                     </DialogDescription>
@@ -94,6 +94,7 @@ const ThemeCustomizerDialog = ({
                         <Tabs defaultValue="colors" className="mt-4">
                             <TabsList className="grid grid-cols-3">
                                 <TabsTrigger value="colors">Colores</TabsTrigger>
+                                <TabsTrigger value="buttons">Botones</TabsTrigger>
                                 <TabsTrigger value="typography">Tipografía</TabsTrigger>
                                 <TabsTrigger value="advanced">Avanzado</TabsTrigger>
                             </TabsList>
@@ -113,8 +114,8 @@ const ThemeCustomizerDialog = ({
                                                     <div
                                                         className="w-10 h-10 rounded border"
                                                         style={{
-                                                            backgroundColor: localSettings.primary 
-                                                                ? `hsl(${localSettings.primary})` 
+                                                            backgroundColor: localSettings.primary
+                                                                ? `hsl(${localSettings.primary})`
                                                                 : '#e1f0fe'
                                                         }}
                                                     />
@@ -131,8 +132,8 @@ const ThemeCustomizerDialog = ({
                                                     <div
                                                         className="w-10 h-10 rounded border"
                                                         style={{
-                                                            backgroundColor: localSettings.background 
-                                                                ? `hsl(${localSettings.background})` 
+                                                            backgroundColor: localSettings.background
+                                                                ? `hsl(${localSettings.background})`
                                                                 : '#ffffff'
                                                         }}
                                                     />
@@ -151,8 +152,8 @@ const ThemeCustomizerDialog = ({
                                                     <div
                                                         className="w-10 h-10 rounded border"
                                                         style={{
-                                                            backgroundColor: localSettings.foreground 
-                                                                ? `hsl(${localSettings.foreground})` 
+                                                            backgroundColor: localSettings.foreground
+                                                                ? `hsl(${localSettings.foreground})`
                                                                 : '#0a0a0a'
                                                         }}
                                                     />
@@ -168,8 +169,8 @@ const ThemeCustomizerDialog = ({
                                                     <div
                                                         className="w-10 h-10 rounded border"
                                                         style={{
-                                                            backgroundColor: localSettings.secondary 
-                                                                ? `hsl(${localSettings.secondary})` 
+                                                            backgroundColor: localSettings.secondary
+                                                                ? `hsl(${localSettings.secondary})`
                                                                 : '#f5f5f5'
                                                         }}
                                                     />
@@ -179,8 +180,9 @@ const ThemeCustomizerDialog = ({
                                     </div>
                                 </TabsContent>
 
+                                // En ThemeCustomizerDialog dentro de Builder.jsx, actualizar la pestaña typography:
                                 <TabsContent value="typography">
-                                    <div className="space-y-4">
+                                    <div className="space-y-6">
                                         <div>
                                             <Label>Fuente Principal</Label>
                                             <Select
@@ -216,6 +218,428 @@ const ThemeCustomizerDialog = ({
                                                     onChange={(e) => handleChange('fontSizeBase', e.target.value)}
                                                     placeholder="16px"
                                                 />
+                                            </div>
+                                        </div>
+
+                                        {/* Configuración de párrafo */}
+                                        <div className="space-y-4">
+                                            <h4 className="font-medium">Párrafo (Texto normal)</h4>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <Label>Tamaño de fuente</Label>
+                                                    <Input
+                                                        value={localSettings.paragraph_fontSize || localSettings.fontSizeBase || '16px'}
+                                                        onChange={(e) => handleChange('paragraph_fontSize', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Peso de fuente</Label>
+                                                    <Select
+                                                        value={localSettings.paragraph_fontWeight || 'normal'}
+                                                        onValueChange={(value) => handleChange('paragraph_fontWeight', value)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="normal">Normal</SelectItem>
+                                                            <SelectItem value="bold">Negrita</SelectItem>
+                                                            <SelectItem value="300">Ligero</SelectItem>
+                                                            <SelectItem value="500">Medio</SelectItem>
+                                                            <SelectItem value="600">Seminegrita</SelectItem>
+                                                            <SelectItem value="700">Negrita</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <Label>Altura de línea</Label>
+                                                    <Input
+                                                        value={localSettings.paragraph_lineHeight || '1.6'}
+                                                        onChange={(e) => handleChange('paragraph_lineHeight', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Transformación de texto</Label>
+                                                    <Select
+                                                        value={localSettings.paragraph_textTransform || 'none'}
+                                                        onValueChange={(value) => handleChange('paragraph_textTransform', value)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="none">Normal</SelectItem>
+                                                            <SelectItem value="uppercase">MAYÚSCULAS</SelectItem>
+                                                            <SelectItem value="lowercase">minúsculas</SelectItem>
+                                                            <SelectItem value="capitalize">Capitalizar</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Configuración de headings */}
+                                        {[1, 2, 3, 4, 5, 6].map(level => (
+                                            <div key={level} className="space-y-4">
+                                                <h4 className="font-medium">Heading {level} (h{level})</h4>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <Label>Tamaño de fuente</Label>
+                                                        <Input
+                                                            value={localSettings[`heading${level}_fontSize`] || `h${level}_fontSize`}
+                                                            onChange={(e) => handleChange(`heading${level}_fontSize`, e.target.value)}
+                                                            placeholder={`Ej: ${1.5 + (6 - level) * 0.25}rem`}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <Label>Peso de fuente</Label>
+                                                        <Select
+                                                            value={localSettings[`heading${level}_fontWeight`] || 'bold'}
+                                                            onValueChange={(value) => handleChange(`heading${level}_fontWeight`, value)}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="normal">Normal</SelectItem>
+                                                                <SelectItem value="bold">Negrita</SelectItem>
+                                                                <SelectItem value="300">Ligero</SelectItem>
+                                                                <SelectItem value="500">Medio</SelectItem>
+                                                                <SelectItem value="600">Seminegrita</SelectItem>
+                                                                <SelectItem value="700">Negrita</SelectItem>
+                                                                <SelectItem value="800">Extranegrita</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Altura de línea</Label>
+                                                        <Input
+                                                            value={localSettings[`heading${level}_lineHeight`] || '1.2'}
+                                                            onChange={(e) => handleChange(`heading${level}_lineHeight`, e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <Label>Transformación de texto</Label>
+                                                        <Select
+                                                            value={localSettings[`heading${level}_textTransform`] || 'none'}
+                                                            onValueChange={(value) => handleChange(`heading${level}_textTransform`, value)}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="none">Normal</SelectItem>
+                                                                <SelectItem value="uppercase">MAYÚSCULAS</SelectItem>
+                                                                <SelectItem value="lowercase">minúsculas</SelectItem>
+                                                                <SelectItem value="capitalize">Capitalizar</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="buttons">
+                                    <div className="space-y-6">
+                                        {/* Botón Primario */}
+                                        <div className="space-y-4">
+                                            <h4 className="font-medium">Botón Primario</h4>
+
+                                            {/* Estado Normal */}
+                                            <div className="pl-4 border-l-2 border-gray-200">
+                                                <h5 className="text-sm font-medium mb-2">Estado Normal</h5>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <Label>Color de Fondo</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.primary_button_background || ''}
+                                                                onChange={(e) => handleChange('primary_button_background', e.target.value)}
+                                                                placeholder="HSL: 209 100% 92%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.primary_button_background
+                                                                        ? `hsl(${localSettings.primary_button_background})`
+                                                                        : '#e1f0fe'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Color de Texto</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.primary_button_text || ''}
+                                                                onChange={(e) => handleChange('primary_button_text', e.target.value)}
+                                                                placeholder="HSL: 0 0% 3.9%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.primary_button_text
+                                                                        ? `hsl(${localSettings.primary_button_text})`
+                                                                        : '#0a0a0a'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Color de Borde</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.primary_button_border || ''}
+                                                                onChange={(e) => handleChange('primary_button_border', e.target.value)}
+                                                                placeholder="HSL: 209 100% 92%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.primary_button_border
+                                                                        ? `hsl(${localSettings.primary_button_border})`
+                                                                        : '#e1f0fe'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Grosor de Borde</Label>
+                                                        <Select
+                                                            value={localSettings.primary_button_border_thickness || '1px'}
+                                                            onValueChange={(value) => handleChange('primary_button_border_thickness', value)}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="0px">Sin borde</SelectItem>
+                                                                <SelectItem value="1px">1px</SelectItem>
+                                                                <SelectItem value="2px">2px</SelectItem>
+                                                                <SelectItem value="3px">3px</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Radio de Esquinas</Label>
+                                                        <Input
+                                                            value={localSettings.primary_button_corner_radius || '0.5rem'}
+                                                            onChange={(e) => handleChange('primary_button_corner_radius', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <Label>Transformación de Texto</Label>
+                                                        <Select
+                                                            value={localSettings.primary_button_text_case || 'default'}
+                                                            onValueChange={(value) => handleChange('primary_button_text_case', value)}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="default">Normal</SelectItem>
+                                                                <SelectItem value="uppercase">MAYÚSCULAS</SelectItem>
+                                                                <SelectItem value="lowercase">minúsculas</SelectItem>
+                                                                <SelectItem value="capitalize">Capitalizar</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Estado Hover */}
+                                            <div className="pl-4 border-l-2 border-gray-200">
+                                                <h5 className="text-sm font-medium mb-2">Estado Hover</h5>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <Label>Color de Fondo (Hover)</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.primary_button_hover_background || ''}
+                                                                onChange={(e) => handleChange('primary_button_hover_background', e.target.value)}
+                                                                placeholder="HSL: 209 100% 84%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.primary_button_hover_background
+                                                                        ? `hsl(${localSettings.primary_button_hover_background})`
+                                                                        : '#b3d7ff'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Color de Texto (Hover)</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.primary_button_hover_text || ''}
+                                                                onChange={(e) => handleChange('primary_button_hover_text', e.target.value)}
+                                                                placeholder="HSL: 0 0% 3.9%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.primary_button_hover_text
+                                                                        ? `hsl(${localSettings.primary_button_hover_text})`
+                                                                        : '#0a0a0a'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Botón Secundario */}
+                                        <div className="space-y-4">
+                                            <h4 className="font-medium">Botón Secundario</h4>
+
+                                            {/* Estado Normal */}
+                                            <div className="pl-4 border-l-2 border-gray-200">
+                                                <h5 className="text-sm font-medium mb-2">Estado Normal</h5>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <Label>Color de Fondo</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.secondary_button_background || ''}
+                                                                onChange={(e) => handleChange('secondary_button_background', e.target.value)}
+                                                                placeholder="HSL: 0 0% 96.1%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.secondary_button_background
+                                                                        ? `hsl(${localSettings.secondary_button_background})`
+                                                                        : '#f5f5f5'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Color de Texto</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.secondary_button_text || ''}
+                                                                onChange={(e) => handleChange('secondary_button_text', e.target.value)}
+                                                                placeholder="HSL: 0 0% 3.9%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.secondary_button_text
+                                                                        ? `hsl(${localSettings.secondary_button_text})`
+                                                                        : '#0a0a0a'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Color de Borde</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.secondary_button_border || ''}
+                                                                onChange={(e) => handleChange('secondary_button_border', e.target.value)}
+                                                                placeholder="HSL: 0 0% 96.1%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.secondary_button_border
+                                                                        ? `hsl(${localSettings.secondary_button_border})`
+                                                                        : '#f5f5f5'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Grosor de Borde</Label>
+                                                        <Select
+                                                            value={localSettings.secondary_button_border_thickness || '1px'}
+                                                            onValueChange={(value) => handleChange('secondary_button_border_thickness', value)}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="0px">Sin borde</SelectItem>
+                                                                <SelectItem value="1px">1px</SelectItem>
+                                                                <SelectItem value="2px">2px</SelectItem>
+                                                                <SelectItem value="3px">3px</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Radio de Esquinas</Label>
+                                                        <Input
+                                                            value={localSettings.secondary_button_corner_radius || '0.5rem'}
+                                                            onChange={(e) => handleChange('secondary_button_corner_radius', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <Label>Transformación de Texto</Label>
+                                                        <Select
+                                                            value={localSettings.secondary_button_text_case || 'default'}
+                                                            onValueChange={(value) => handleChange('secondary_button_text_case', value)}
+                                                        >
+                                                            <SelectTrigger>
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="default">Normal</SelectItem>
+                                                                <SelectItem value="uppercase">MAYÚSCULAS</SelectItem>
+                                                                <SelectItem value="lowercase">minúsculas</SelectItem>
+                                                                <SelectItem value="capitalize">Capitalizar</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Estado Hover */}
+                                            <div className="pl-4 border-l-2 border-gray-200">
+                                                <h5 className="text-sm font-medium mb-2">Estado Hover</h5>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <Label>Color de Fondo (Hover)</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.secondary_button_hover_background || ''}
+                                                                onChange={(e) => handleChange('secondary_button_hover_background', e.target.value)}
+                                                                placeholder="HSL: 0 0% 84.1%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.secondary_button_hover_background
+                                                                        ? `hsl(${localSettings.secondary_button_hover_background})`
+                                                                        : '#d6d6d6'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <Label>Color de Texto (Hover)</Label>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <Input
+                                                                value={localSettings.secondary_button_hover_text || ''}
+                                                                onChange={(e) => handleChange('secondary_button_hover_text', e.target.value)}
+                                                                placeholder="HSL: 0 0% 3.9%"
+                                                            />
+                                                            <div
+                                                                className="w-10 h-10 rounded border"
+                                                                style={{
+                                                                    backgroundColor: localSettings.secondary_button_hover_text
+                                                                        ? `hsl(${localSettings.secondary_button_hover_text})`
+                                                                        : '#0a0a0a'
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

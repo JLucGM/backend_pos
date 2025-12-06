@@ -63,7 +63,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [selectedType, setSelectedType] = useState('');
-    // console.log(page)
+    // console.log(themes)
     // Estados para el drag & drop visual
     const [activeId, setActiveId] = useState(null);
     const [overId, setOverId] = useState(null);
@@ -486,6 +486,40 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             if (selectedType === 'link') content = 'https://example.com';
             if (selectedType === 'image') content = 'https://picsum.photos/150';
             if (selectedType === 'container') content = [];
+            // En Builder.jsx, en handleAddComponent, buscar la parte donde se crea un botón:
+if (selectedType === 'button') {
+    content = 'Botón';
+    // Agregar estilos iniciales con tipo por defecto
+    const initialStyles = {
+        buttonType: 'primary',
+        layout: 'fit',
+        paddingTop: '10px',
+        paddingRight: '10px',
+        paddingBottom: '10px',
+        paddingLeft: '10px',
+        borderRadius: '4px',
+        backgroundColor: '#007bff',
+        color: '#ffffff'
+    };
+    
+    // Crear el nuevo item con estilos iniciales
+    const newItem = {
+        id: Date.now(),
+        type: selectedType,
+        content,
+        styles: initialStyles
+    };
+    
+    setComponents((prev) => {
+        const newComponents = [...prev, newItem];
+        addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+        setHasUnsavedChanges(true);
+        return newComponents;
+    });
+    setIsAddDialogOpen(false);
+    setSelectedType('');
+    return;
+}
             if (selectedType === 'divider') {
                 content = ''; // El divider no necesita contenido de texto
             }
@@ -585,7 +619,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 };
             }
 
-            // NUEVA ESTRUCTURA PARA PRODUCT
             // En la función handleAddComponent de Builder.jsx, en la parte de product
             if (selectedType === 'product') {
                 const productId = Date.now();

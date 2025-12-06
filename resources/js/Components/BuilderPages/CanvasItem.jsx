@@ -98,7 +98,7 @@ const CanvasItem = ({
             case 'heading':
                 return <HeadingComponent {...commonProps} />;
             case 'button':
-                return <ButtonComponent {...commonProps} />;
+                return <ButtonComponent {...commonProps} onEdit={onEditComponent} />;
             case 'image':
                 return <ImageComponent {...commonProps} />;
             case 'video':
