@@ -1,4 +1,3 @@
-// components/BuilderPages/components/BannerTitleComponent.jsx
 import React from 'react';
 
 const BannerTitleComponent = ({
@@ -6,24 +5,113 @@ const BannerTitleComponent = ({
     getStyles,
     isPreview,
     onEdit,
-    onDelete
+    onDelete,
+    themeSettings
 }) => {
-    const styles = comp.styles || {};
-    
-    const componentStyles = {
-        color: styles.color || '#000000',
-        fontSize: styles.fontSize || '32px',
-        fontWeight: styles.fontWeight || 'bold',
-        backgroundColor: styles.background !== 'transparent' ? 
-            `rgba(${hexToRgb(styles.background)}, ${styles.backgroundOpacity || '1'})` : 'transparent',
-        borderRadius: styles.borderRadius || '0px',
-        paddingTop: styles.paddingTop || '10px',
-        paddingRight: styles.paddingRight || '10px',
-        paddingBottom: styles.paddingBottom || '10px',
-        paddingLeft: styles.paddingLeft || '10px',
-        textAlign: styles.alignment || 'center',
-        margin: 0,
-        width: styles.layout === 'fill' ? '100%' : 'auto',
+    const getTextStyles = () => {
+        const baseStyles = getStyles(comp);
+        const customStyles = comp.styles || {};
+
+        // Determinar el estilo de texto seleccionado
+        const textStyle = customStyles.textStyle || 'heading1'; // Por defecto heading1 para títulos
+
+        // Función para obtener la fuente según el tipo seleccionado
+        const getFontFamily = () => {
+            const fontType = customStyles.fontType;
+            
+            // Si el usuario seleccionó "default" o no especificó nada
+            if (fontType === 'default' || !fontType) {
+                if (textStyle.startsWith('heading')) {
+                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                } else {
+                    return themeSettings?.body_font || "'Inter', sans-serif";
+                }
+            }
+            
+            if (fontType === 'custom' && customStyles.customFont) {
+                return customStyles.customFont;
+            }
+            
+            switch(fontType) {
+                case 'body_font':
+                    return themeSettings?.body_font || "'Inter', sans-serif";
+                case 'heading_font':
+                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                case 'subheading_font':
+                    return themeSettings?.subheading_font || "'Inter', sans-serif";
+                case 'accent_font':
+                    return themeSettings?.accent_font || "'Inter', sans-serif";
+                default:
+                    return themeSettings?.body_font || "'Inter', sans-serif";
+            }
+        };
+
+        // Obtener configuración según el estilo seleccionado
+        let fontSize, fontWeight, lineHeight, textTransform;
+        
+        if (textStyle.startsWith('heading')) {
+            const level = textStyle.replace('heading', '');
+            fontSize = customStyles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
+            fontWeight = customStyles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || 'bold';
+            lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.2';
+            textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
+        } else {
+            // Si no es heading, asumimos paragraph
+            fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
+            fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
+            lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
+            textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
+        }
+
+        // Calcular line-height si es personalizado
+        let finalLineHeight = lineHeight;
+        if (lineHeight === 'tight') finalLineHeight = '1.2';
+        if (lineHeight === 'normal') finalLineHeight = '1.4';
+        if (lineHeight === 'loose') finalLineHeight = '1.6';
+        if (customStyles.customLineHeight && lineHeight === 'custom') {
+            finalLineHeight = customStyles.customLineHeight;
+        }
+
+        // Padding individual
+        const paddingTop = customStyles.paddingTop || '10px';
+        const paddingRight = customStyles.paddingRight || '10px';
+        const paddingBottom = customStyles.paddingBottom || '10px';
+        const paddingLeft = customStyles.paddingLeft || '10px';
+
+        // Layout
+        const layout = customStyles.layout || 'fit';
+        const width = layout === 'fill' ? '100%' : 'auto';
+        const alignment = customStyles.alignment || 'center';
+        const textAlign = layout === 'fill' ? alignment : 'center';
+
+        // Background y opacity
+        const background = customStyles.background || 'transparent';
+        const backgroundOpacity = customStyles.backgroundOpacity || '1';
+        let backgroundColor = 'transparent';
+        if (background !== 'transparent') {
+            // Convertir hex a rgb y aplicar opacidad
+            const rgb = hexToRgb(background);
+            backgroundColor = `rgba(${rgb}, ${backgroundOpacity})`;
+        }
+
+        return {
+            ...baseStyles,
+            width,
+            textAlign,
+            paddingTop,
+            paddingRight,
+            paddingBottom,
+            paddingLeft,
+            backgroundColor,
+            borderRadius: customStyles.borderRadius || '0px',
+            display: layout === 'fit' ? 'inline-block' : 'block',
+            fontFamily: getFontFamily(),
+            fontSize,
+            fontWeight,
+            lineHeight: finalLineHeight,
+            textTransform,
+            color: customStyles.color || '#000000',
+        };
     };
 
     function hexToRgb(hex) {
@@ -37,7 +125,7 @@ const BannerTitleComponent = ({
     }
 
     return (
-        <div style={componentStyles}>
+        <div style={getTextStyles()}>
             {comp.content}
         </div>
     );

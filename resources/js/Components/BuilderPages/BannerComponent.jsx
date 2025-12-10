@@ -1,7 +1,12 @@
 import React from 'react';
 import BannerTitleComponent from './BannerTitleComponent';
 import BannerTextComponent from './BannerTextComponent';
+import ButtonComponent from './ButtonComponent';
+import TextComponent from './TextComponent';
+import HeadingComponent from './HeadingComponent';
+import ImageComponent from './ImageComponent';
 import ComponentWithHover from './ComponentWithHover';
+import ContainerComponent from './ContainerComponent';
 
 const BannerComponent = ({
     comp,
@@ -17,34 +22,8 @@ const BannerComponent = ({
     const customStyles = comp.styles || {};
     const bannerConfig = comp.content || {};
 
-    // Función para obtener el nombre del tipo de componente
-    const getComponentTypeName = (type) => {
-        const typeNames = {
-            'text': 'Texto',
-            'heading': 'Encabezado',
-            'button': 'Botón',
-            'image': 'Imagen',
-            'video': 'Video',
-            'link': 'Enlace',
-            'product': 'Producto',
-            'carousel': 'Carrusel',
-            'container': 'Contenedor',
-            'banner': 'Sección Banner',
-            'bannerTitle': 'Título del Banner',
-            'bannerText': 'Texto del Banner',
-            'productTitle': 'Título de Productos',
-            'productCard': 'Carta de Producto',
-            'productImage': 'Imagen de Producto',
-            'productName': 'Nombre de Producto',
-            'productPrice': 'Precio de Producto',
-            'carouselTitle': 'Título del Carrusel',
-            'carouselCard': 'Carta del Carrusel',
-            'carouselImage': 'Imagen del Carrusel',
-            'carouselName': 'Nombre del Carrusel',
-            'carouselPrice': 'Precio del Carrusel'
-        };
-        return typeNames[type] || type;
-    };
+    // Obtener los componentes hijos
+    const children = bannerConfig.children || [];
 
     // Configuración del contenedor principal
     const containerHeight = bannerConfig.containerHeight || '400px';
@@ -62,31 +41,23 @@ const BannerComponent = ({
     const backgroundVideo = bannerConfig.backgroundVideo || null;
     const backgroundSize = bannerConfig.backgroundSize || 'cover';
     const backgroundPosition = bannerConfig.backgroundPosition || 'center center';
-
-    // Posición del contenido en el contenedor
     const containerVerticalPosition = bannerConfig.containerVerticalPosition || 'center';
     const containerHorizontalPosition = bannerConfig.containerHorizontalPosition || 'center';
     const contentDirection = bannerConfig.contentDirection || 'vertical';
 
-    // Obtener los componentes hijos
-    const children = bannerConfig.children || [];
-
-    // Determinar la alineación vertical del contenedor
+    // Funciones de alineación
     const getVerticalAlignment = () => {
         switch (containerVerticalPosition) {
             case 'top': return 'flex-start';
             case 'bottom': return 'flex-end';
-            case 'center': 
             default: return 'center';
         }
     };
 
-    // Determinar la alineación horizontal del contenedor
     const getHorizontalAlignment = () => {
         switch (containerHorizontalPosition) {
             case 'left': return 'flex-start';
             case 'right': return 'flex-end';
-            case 'center': 
             default: return 'center';
         }
     };
@@ -106,8 +77,8 @@ const BannerComponent = ({
         paddingLeft,
         backgroundColor: backgroundImage || backgroundVideo ? 'transparent' : backgroundColor,
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
-        backgroundSize: backgroundSize,
-        backgroundPosition: backgroundPosition,
+        backgroundSize,
+        backgroundPosition,
         backgroundRepeat: 'no-repeat',
         position: 'relative',
         overflow: 'hidden',
@@ -126,6 +97,7 @@ const BannerComponent = ({
         maxWidth: '100%',
         zIndex: 2,
         position: 'relative',
+        width: '100%',
     };
 
     // Manejo de eventos de mouse
@@ -138,6 +110,77 @@ const BannerComponent = ({
     const handleMouseLeave = () => {
         if (setHoveredComponentId && !isPreview) {
             setHoveredComponentId(null);
+        }
+    };
+
+    // Función para eliminar un hijo
+    const handleDeleteChild = (childId) => {
+        setComponents((prev) => {
+            const updateBannerChildren = (components) => {
+                return components.map((c) => {
+                    if (c.id === comp.id && c.content && c.content.children) {
+                        return {
+                            ...c,
+                            content: {
+                                ...c.content,
+                                children: c.content.children.filter((sc) => sc.id !== childId)
+                            }
+                        };
+                    }
+                    return c;
+                });
+            };
+            const updated = updateBannerChildren(prev);
+            return updated;
+        });
+    };
+
+    // Función para renderizar cualquier tipo de componente
+    const renderChildComponent = (child) => {
+        const commonProps = {
+            comp: child,
+            getStyles,
+            isPreview,
+            themeSettings,
+            onEdit: () => onEdit(child),
+            onDelete: () => handleDeleteChild(child.id),
+            hoveredComponentId,
+            setHoveredComponentId
+        };
+
+        switch (child.type) {
+            case 'bannerTitle':
+                return <BannerTitleComponent {...commonProps} />;
+            case 'bannerText':
+                return <BannerTextComponent {...commonProps} />;
+            case 'button':
+                return <ButtonComponent {...commonProps} />;
+            case 'text':
+                return <TextComponent {...commonProps} />;
+            case 'heading':
+                return <HeadingComponent {...commonProps} />;
+            case 'image':
+                return <ImageComponent {...commonProps} />;
+            case 'container':
+                return (
+                    <ContainerComponent
+                        {...commonProps}
+                        products={[]}
+                        setComponents={setComponents}
+                    />
+                );
+            default:
+                return (
+                    <div
+                        style={{
+                            border: isPreview ? 'none' : '1px dashed #ccc',
+                            padding: '10px',
+                            background: '#f9f9f9'
+                        }}
+                    >
+                        Componente no reconocido: {child.type}
+                    </div>
+                );
         }
     };
 
@@ -171,54 +214,20 @@ const BannerComponent = ({
 
             {/* Capa de contenido interno con subcomponentes */}
             <div style={contentStyles}>
-                {children.map((child) => {
-                    switch (child.type) {
-                        case 'bannerTitle':
-                            return (
-                                <ComponentWithHover
-                                    key={child.id}
-                                    component={child}
-                                    isPreview={isPreview}
-                                    hoveredComponentId={hoveredComponentId}
-                                    setHoveredComponentId={setHoveredComponentId}
-                                    getComponentTypeName={getComponentTypeName}
-                                >
-                                    <BannerTitleComponent
-                                        comp={child}
-                                        getStyles={getStyles}
-                                        isPreview={isPreview}
-                                        onEdit={onEdit}
-                                        onDelete={onDelete}
-                                        hoveredComponentId={hoveredComponentId}
-                                        setHoveredComponentId={setHoveredComponentId}
-                                    />
-                                </ComponentWithHover>
-                            );
-                        case 'bannerText':
-                            return (
-                                <ComponentWithHover
-                                    key={child.id}
-                                    component={child}
-                                    isPreview={isPreview}
-                                    hoveredComponentId={hoveredComponentId}
-                                    setHoveredComponentId={setHoveredComponentId}
-                                    getComponentTypeName={getComponentTypeName}
-                                >
-                                    <BannerTextComponent
-                                        comp={child}
-                                        getStyles={getStyles}
-                                        isPreview={isPreview}
-                                        onEdit={onEdit}
-                                        onDelete={onDelete}
-                                        hoveredComponentId={hoveredComponentId}
-                                        setHoveredComponentId={setHoveredComponentId}
-                                    />
-                                </ComponentWithHover>
-                            );
-                        default:
-                            return null;
-                    }
-                })}
+                {children.length > 0 ? (
+                    children.map((child) => (
+                        <div key={child.id} style={{ width: '100%' }}>
+                            {renderChildComponent(child)}
+                        </div>
+                    ))
+                ) : (
+                    !isPreview && (
+                        <div className="text-center text-gray-400 py-8 border border-dashed border-gray-300 rounded cursor-pointer w-full">
+                            <p>Banner vacío</p>
+                            <p className="text-sm">Arrastra componentes aquí desde el árbol</p>
+                        </div>
+                    )
+                )}
             </div>
         </div>
     );

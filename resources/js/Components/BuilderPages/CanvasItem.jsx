@@ -203,6 +203,7 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
                     />
                 );
             case 'bannerText':
@@ -211,6 +212,7 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
                     />
                 );
             case 'productTitle':
@@ -380,26 +382,12 @@ const CanvasItem = ({
         return typeNames[type] || type;
     };
 
-    // Obtener información del origen del tema
-    const getThemeSource = () => {
-        if (!appliedTheme) return 'Sin tema';
-
-        // Determinar de dónde viene el tema
-        if (comp.appliedThemeSource === 'page') {
-            return 'Página';
-        } else if (comp.appliedThemeSource === 'template') {
-            return 'Plantilla';
-        } else {
-            return 'Global';
-        }
-    };
-
     return (
         <div
             id={`component-${comp.id}`}
-            className={`relative group rounded-lg transition-all duration-200 ${isHovered && !isPreview
-                    ? 'border-2 border-blue-400 bg-blue-50/30'
-                    : 'border border-transparent'
+            className={`relative group transition-all duration-200 ${isHovered && !isPreview
+                ? 'border border-blue-400 bg-blue-50/30'
+                : 'border border-transparent'
                 }`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}

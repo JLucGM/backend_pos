@@ -2,106 +2,344 @@ import React from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Button } from '@/Components/ui/button';
+import { RotateCcw } from 'lucide-react';
+import { Separator } from '@/Components/ui/separator';
 
-const BannerTextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
-    const updateContent = (value) => {
-        setEditContent(value);
+const BannerTextEditDialog = ({ 
+    editContent, 
+    setEditContent, 
+    editStyles, 
+    setEditStyles, 
+    themeSettings 
+}) => {
+    const updateStyle = (key, value) => {
+        setEditStyles(prev => ({ ...prev, [key]: value }));
     };
 
-    const updateStyle = (key, value) => {
+    const resetToDefaults = () => {
         setEditStyles(prev => ({
             ...prev,
-            [key]: value
+            fontSize: themeSettings?.paragraph_fontSize || '16px',
+            fontWeight: themeSettings?.paragraph_fontWeight || 'normal',
+            lineHeight: themeSettings?.paragraph_lineHeight || '1.6',
+            textTransform: themeSettings?.paragraph_textTransform || 'none',
+            fontType: 'default',
+            customFont: '',
         }));
     };
 
     return (
         <div className="space-y-4">
+            <div className="flex justify-end">
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={resetToDefaults}
+                    className="flex items-center gap-1"
+                >
+                    <RotateCcw className="h-3 w-3" />
+                    Restablecer tipografía
+                </Button>
+            </div>
+
             <div>
                 <Label htmlFor="textContent">Texto</Label>
-                <Input
+                <textarea
                     id="textContent"
                     value={editContent}
-                    onChange={(e) => updateContent(e.target.value)}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="w-full h-20 p-2 border rounded"
                 />
             </div>
 
             <div>
-                <Label htmlFor="textLayout">Layout</Label>
-                <Select 
-                    value={editStyles.layout || 'fit'} 
-                    onValueChange={(value) => updateStyle('layout', value)}
+                <Label htmlFor="textTransform">Transformación de texto</Label>
+                <div className="flex gap-2">
+                    <Select
+                        value={editStyles.textTransform || 'none'}
+                        onValueChange={(value) => updateStyle('textTransform', value)}
+                        className="flex-1"
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">Normal</SelectItem>
+                            <SelectItem value="uppercase">MAYÚSCULAS</SelectItem>
+                            <SelectItem value="lowercase">minúsculas</SelectItem>
+                            <SelectItem value="capitalize">Capitalizar</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            <div>
+                <Label htmlFor="textStyle">Estilo de Texto</Label>
+                <Select
+                    value={editStyles.textStyle || 'paragraph'}
+                    onValueChange={(value) => {
+                        updateStyle('textStyle', value);
+                        
+                        if (value === 'paragraph' && themeSettings) {
+                            updateStyle('fontSize', themeSettings.paragraph_fontSize || '16px');
+                            updateStyle('fontWeight', themeSettings.paragraph_fontWeight || 'normal');
+                            updateStyle('lineHeight', themeSettings.paragraph_lineHeight || '1.6');
+                            updateStyle('textTransform', themeSettings.paragraph_textTransform || 'none');
+                            updateStyle('fontType', 'default');
+                            updateStyle('customFont', '');
+                        }
+                    }}
                 >
                     <SelectTrigger>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
-                        <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
+                        <SelectItem value="paragraph">
+                            Párrafo - {themeSettings?.paragraph_fontSize || '16px'}
+                        </SelectItem>
+                        <SelectItem value="custom">
+                            Personalizado
+                        </SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
+            {editStyles.textStyle === 'custom' && (
+                <>
+                    <div>
+                        <Label htmlFor="fontSize">Tamaño de fuente</Label>
+                        <Input
+                            id="fontSize"
+                            value={editStyles.fontSize || '16px'}
+                            onChange={(e) => updateStyle('fontSize', e.target.value)}
+                            placeholder="16px"
+                            className="flex-1"
+                        />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="fontWeight">Peso de fuente</Label>
+                        <Select
+                            value={editStyles.fontWeight || 'normal'}
+                            onValueChange={(value) => updateStyle('fontWeight', value)}
+                            className="flex-1"
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="normal">Normal</SelectItem>
+                                <SelectItem value="bold">Negrita</SelectItem>
+                                <SelectItem value="600">Seminegrita</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div>
+                        <Label htmlFor="lineHeight">Altura de línea</Label>
+                        <Select
+                            value={editStyles.lineHeight || '1.6'}
+                            onValueChange={(value) => updateStyle('lineHeight', value)}
+                            className="flex-1"
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="tight">Tight (1.2)</SelectItem>
+                                <SelectItem value="normal">Normal (1.4)</SelectItem>
+                                <SelectItem value="loose">Loose (1.6)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </>
+            )}
+
             <div>
-                <Label htmlFor="textAlignment">Alineación</Label>
-                <Select 
-                    value={editStyles.alignment || 'center'} 
-                    onValueChange={(value) => updateStyle('alignment', value)}
+                <Label htmlFor="fontType">Tipo de Fuente</Label>
+                <Select
+                    value={editStyles.fontType || 'default'}
+                    onValueChange={(value) => updateStyle('fontType', value)}
                 >
                     <SelectTrigger>
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="left">Izquierda</SelectItem>
-                        <SelectItem value="center">Centro</SelectItem>
-                        <SelectItem value="right">Derecha</SelectItem>
+                        <SelectItem value="default">
+                            Por defecto (usar fuente del tema para este estilo)
+                        </SelectItem>
+                        <SelectItem value="body_font">
+                            Body Font ({themeSettings?.body_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="heading_font">
+                            Heading Font ({themeSettings?.heading_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="subheading_font">
+                            Subheading Font ({themeSettings?.subheading_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="accent_font">
+                            Accent Font ({themeSettings?.accent_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="custom">Personalizada</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
-            <div>
-                <Label htmlFor="textColor">Color del Texto</Label>
-                <Input
-                    id="textColor"
-                    type="color"
-                    value={editStyles.color || '#000000'}
-                    onChange={(e) => updateStyle('color', e.target.value)}
-                />
-            </div>
+            {editStyles.fontType === 'custom' && (
+                <div>
+                    <Label htmlFor="customFont">Fuente Personalizada</Label>
+                    <Input
+                        id="customFont"
+                        value={editStyles.customFont || ''}
+                        onChange={(e) => updateStyle('customFont', e.target.value)}
+                        placeholder="'Roboto', sans-serif"
+                    />
+                </div>
+            )}
 
-            <div>
-                <Label htmlFor="textFontSize">Tamaño de Fuente</Label>
-                <Select 
-                    value={editStyles.fontSize || '16px'} 
-                    onValueChange={(value) => updateStyle('fontSize', value)}
-                >
-                    <SelectTrigger>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="12px">12px</SelectItem>
-                        <SelectItem value="16px">16px</SelectItem>
-                        <SelectItem value="20px">20px</SelectItem>
-                        <SelectItem value="24px">24px</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+            <div className="pt-4 border-t">
+                <h4 className="font-medium mb-3">Estilo de contenedor</h4>
 
-            <div>
-                <Label htmlFor="textFontWeight">Grosor de Fuente</Label>
-                <Select 
-                    value={editStyles.fontWeight || 'normal'} 
-                    onValueChange={(value) => updateStyle('fontWeight', value)}
-                >
-                    <SelectTrigger>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="bold">Negrita</SelectItem>
-                        <SelectItem value="600">Seminegrita</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div>
+                    <Label htmlFor="layout">Layout</Label>
+                    <Select
+                        value={editStyles.layout || 'fit'}
+                        onValueChange={(value) => updateStyle('layout', value)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
+                            <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {editStyles.layout === 'fill' && (
+                    <div>
+                        <Label htmlFor="alignment">Alineación</Label>
+                        <Select
+                            value={editStyles.alignment || 'center'}
+                            onValueChange={(value) => updateStyle('alignment', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="left">Izquierda</SelectItem>
+                                <SelectItem value="center">Centro</SelectItem>
+                                <SelectItem value="right">Derecha</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
+
+                <div>
+                    <Label htmlFor="color">Color</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            id="color"
+                            value={editStyles.color || '#000000'}
+                            onChange={(e) => updateStyle('color', e.target.value)}
+                            placeholder="#000000"
+                            className="flex-1"
+                        />
+                        <Input
+                            type="color"
+                            value={editStyles.color || '#000000'}
+                            onChange={(e) => updateStyle('color', e.target.value)}
+                            className="w-12"
+                        />
+                    </div>
+                </div>
+
+                <Label>Padding (px)</Label>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="paddingTop">Arriba</Label>
+                        <Input
+                            id="paddingTop"
+                            type="number"
+                            value={parseInt(editStyles.paddingTop) || 10}
+                            onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingRight">Derecha</Label>
+                        <Input
+                            id="paddingRight"
+                            type="number"
+                            value={parseInt(editStyles.paddingRight) || 10}
+                            onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingBottom">Abajo</Label>
+                        <Input
+                            id="paddingBottom"
+                            type="number"
+                            value={parseInt(editStyles.paddingBottom) || 10}
+                            onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingLeft">Izquierda</Label>
+                        <Input
+                            id="paddingLeft"
+                            type="number"
+                            value={parseInt(editStyles.paddingLeft) || 10}
+                            onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <Label htmlFor="background">Color de Fondo</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            id="background"
+                            value={editStyles.background || 'transparent'}
+                            onChange={(e) => updateStyle('background', e.target.value)}
+                            placeholder="transparent"
+                            className="flex-1"
+                        />
+                        <Input
+                            type="color"
+                            value={editStyles.background === 'transparent' ? '#ffffff' : editStyles.background || '#ffffff'}
+                            onChange={(e) => updateStyle('background', e.target.value)}
+                            className="w-12"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <Label htmlFor="backgroundOpacity">Opacidad del Fondo (0-1)</Label>
+                    <Input
+                        id="backgroundOpacity"
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={editStyles.backgroundOpacity || 1}
+                        onChange={(e) => updateStyle('backgroundOpacity', e.target.value)}
+                    />
+                </div>
+
+                <div>
+                    <Label htmlFor="borderRadius">Radio de Borde (px)</Label>
+                    <Input
+                        id="borderRadius"
+                        type="number"
+                        value={parseInt(editStyles.borderRadius) || 0}
+                        onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+                        className="flex-1"
+                    />
+                </div>
             </div>
         </div>
     );

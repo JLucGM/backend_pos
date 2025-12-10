@@ -87,31 +87,6 @@ export default function ApplyTemplate({ page, templates, onTemplateApplied }) {
         });
     };
 
-    const handleDetach = () => {
-        if (confirm('¿Remover plantilla? Se mantendrá el contenido actual.')) {
-            // Para detach, usar router.post con datos explícitos
-            router.post(route('pages.detach-template', page), {}, {
-                preserveScroll: true,
-                preserveState: false,
-                onSuccess: () => {
-                    toast.success('Plantilla removida');
-                    setTimeout(() => {
-                        router.reload({
-                            only: ['page'],
-                            preserveScroll: true
-                        });
-                    }, 300);
-                    if (onTemplateApplied) {
-                        onTemplateApplied();
-                    }
-                },
-                onError: () => {
-                    toast.error('Error al remover plantilla');
-                }
-            });
-        }
-    };
-
     // Valor actual para el Select
     const currentValue = selectedTemplate || 
         (page.template ? templateOptions.find(opt => opt.value === page.template.id) : null);
@@ -119,26 +94,8 @@ export default function ApplyTemplate({ page, templates, onTemplateApplied }) {
     return (
         <div className="mb-6 p-4 bg-white rounded-lg shadow">
             <div className="flex justify-between items-center mb-4">
-                <div>
-                    <h3 className="font-bold text-lg">Plantilla</h3>
-                    <p className="text-sm text-gray-600">
-                        {page.template 
-                            ? `Usando: ${page.template.name}`
-                            : 'Sin plantilla aplicada'
-                        }
-                    </p>
-                </div>
-                
                 <div className="space-x-2">
-                    {page.template && (
-                        <Button
-                            onClick={handleDetach}
-                            variant="destructive"
-                            size="sm"
-                        >
-                            Remover Plantilla
-                        </Button>
-                    )}
+
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
                             <Button size="sm">
@@ -224,24 +181,6 @@ export default function ApplyTemplate({ page, templates, onTemplateApplied }) {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
-                </div>
-            </div>
-            
-            {/* Debug info */}
-            <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
-                <div className="grid grid-cols-2 gap-2">
-                    <div>
-                        <span className="font-medium">Page ID:</span> {page.id}
-                    </div>
-                    <div>
-                        <span className="font-medium">Template ID en DB:</span> {page.template_id || 'null'}
-                    </div>
-                    <div>
-                        <span className="font-medium">Uses Template:</span> {page.uses_template ? 'true' : 'false'}
-                    </div>
-                    <div>
-                        <span className="font-medium">Template seleccionado:</span> {data.template_id || 'ninguno'}
-                    </div>
                 </div>
             </div>
         </div>

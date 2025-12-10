@@ -41,9 +41,7 @@ export default function ThemeSelector({ page, themes }) {
     };
 
     return (
-        <div className="p-4 bg-white rounded-lg shadow mb-4">
-            <h3 className="font-bold text-lg mb-3">Tema de la Página</h3>
-            
+        <div className="p-4 bg-white rounded-lg shadow mb-4">            
             <div className="space-y-3">
                 <div>
                     <Label htmlFor="theme-selector">Seleccionar Tema</Label>
@@ -57,20 +55,6 @@ export default function ThemeSelector({ page, themes }) {
                         placeholder="Selecciona un tema..."
                         className="mt-1"
                     />
-                </div>
-                
-                <div className="text-sm text-gray-600">
-                    <p>Tema actual: <span className="font-medium">
-                        {page.theme?.name || page.template?.theme?.name || 'Tema por defecto'}
-                    </span></p>
-                    <p className="text-xs mt-1">
-                        {page.theme_id 
-                            ? '✅ Este tema prevalece sobre el de la plantilla'
-                            : page.template?.theme_id 
-                                ? '🔗 Usando tema de la plantilla'
-                                : '⚙️ Usando tema por defecto'
-                        }
-                    </p>
                 </div>
             </div>
         </div>

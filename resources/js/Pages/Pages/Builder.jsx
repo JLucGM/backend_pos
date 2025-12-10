@@ -9,7 +9,7 @@ import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { toast } from 'sonner';
-import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical, Palette } from 'lucide-react';
+import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical, Palette, Dot } from 'lucide-react';
 import ComponentTree from '@/Components/BuilderPages/ComponentTree';
 import Canvas from '@/Components/BuilderPages/Canvas';
 import CanvasItem from '@/Components/BuilderPages/CanvasItem';
@@ -48,6 +48,7 @@ import PageContentEditDialog from './partials/PageContentEditDialog';
 import ApplyTemplate from '@/Components/ApplyTemplate';
 import ThemeSelector from '@/Components/ThemeSelector';
 import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
+import { Badge } from '@/Components/ui/badge';
 
 export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings }) {
     const [components, setComponents] = useState([]);
@@ -985,8 +986,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             };
 
             const targetComponent = findComponent(components, over.id);
-            const isContainer = targetComponent &&
-                ['container', 'banner', 'product', 'carousel', 'bento'].includes(targetComponent.type);
+            const isContainer = [
+                'container', 'banner', 'product', 'carousel',
+                'bento', 'productCard', 'carouselCard', 'bentoFeature'
+            ].includes(targetComponent.type);
 
             console.log('DEBUG:', {
                 overId: over.id,
@@ -1459,6 +1462,15 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 </TooltipTrigger>
                                 <TooltipContent>Volver a páginas</TooltipContent>
                             </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    
+                            <Badge className="bg-green-500">
+                                {page.theme?.name || page.template?.theme?.name || 'Tema por defecto'}
+                            </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>Tema actual</TooltipContent>
+                            </Tooltip>
                             <div className="mx-auto">
                                 <Button variant="ghost" disabled size="icon">
                                     {page.title}
@@ -1689,6 +1701,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'bannerText' && (
@@ -1697,6 +1710,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'productTitle' && (
