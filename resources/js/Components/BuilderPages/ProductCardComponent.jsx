@@ -133,6 +133,7 @@ const ProductCardComponent = ({
                                     comp={enhancedChild}
                                     getStyles={getStyles}
                                     isPreview={isPreview}
+                                    themeSettings={themeSettings}
                                     onEdit={onEdit}
                                     onDelete={onDelete}
                                     hoveredComponentId={hoveredComponentId}
@@ -153,6 +154,7 @@ const ProductCardComponent = ({
                                 <ProductPriceComponent
                                     comp={enhancedChild}
                                     getStyles={getStyles}
+                                    themeSettings={themeSettings}
                                     isPreview={isPreview}
                                     onEdit={onEdit}
                                     onDelete={onDelete}

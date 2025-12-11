@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical, Palette, Dot } from 'lucide-react';
 import ComponentTree from '@/Components/BuilderPages/ComponentTree';
 import Canvas from '@/Components/BuilderPages/Canvas';
-import CanvasItem from '@/Components/BuilderPages/CanvasItem';
 import { addToHistory } from '@/utils/Builder/builderUtils';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import TextEditDialog from './partials/TextEditDialog';
@@ -1678,6 +1677,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                            themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'productCard' && (
@@ -1707,6 +1707,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                            themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'productPrice' && (
@@ -1715,6 +1716,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                            themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'bento' && (

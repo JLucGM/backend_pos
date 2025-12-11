@@ -96,7 +96,7 @@ const ThemeCustomizerDialog = ({
                                 <TabsTrigger value="colors">Colores</TabsTrigger>
                                 <TabsTrigger value="buttons">Botones</TabsTrigger>
                                 <TabsTrigger value="typography">Tipografía</TabsTrigger>
-                                <TabsTrigger value="advanced">Avanzado</TabsTrigger>
+                                {/* <TabsTrigger value="advanced">Avanzado</TabsTrigger> */}
                             </TabsList>
 
                             <div className="max-h-[50vh] overflow-y-auto p-4">
@@ -780,7 +780,7 @@ const ThemeCustomizerDialog = ({
                                     </div>
                                 </TabsContent>
 
-                                <TabsContent value="advanced">
+                                {/* <TabsContent value="advanced">
                                     <div className="space-y-4">
                                         <div>
                                             <Label>Espaciado Base</Label>
@@ -804,7 +804,7 @@ const ThemeCustomizerDialog = ({
                                             </span>
                                         </div>
                                     </div>
-                                </TabsContent>
+                                </TabsContent> */}
                             </div>
                         </Tabs>
 

@@ -115,6 +115,7 @@ const ProductComponent = ({
                         comp={titleComponent}
                         getStyles={getStyles}
                         isPreview={isPreview}
+                        themeSettings={themeSettings}
                         onEdit={onEdit}
                         onDelete={onDelete}
                         hoveredComponentId={hoveredComponentId}
