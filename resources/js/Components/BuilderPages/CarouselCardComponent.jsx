@@ -143,6 +143,7 @@ const CarouselCardComponent = ({
                         onDelete={onDelete}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
+                        themeSettings={themeSettings}
                     />
                 </ComponentWithHover>
             )}
@@ -169,6 +170,7 @@ const CarouselCardComponent = ({
                         onDelete={onDelete}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
+                        themeSettings={themeSettings}
                     />
                 </ComponentWithHover>
             )}

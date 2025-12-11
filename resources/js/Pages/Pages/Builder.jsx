@@ -1590,6 +1590,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                            themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'carouselCard' && (
@@ -1629,6 +1630,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                            themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'carouselPrice' && (
@@ -1637,7 +1639,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                            />
+                                           themeSettings={themeSettings}
+                                                />
                                         )}
                                         {editingComponent?.type === 'container' && (
                                             <ContainerEditDialog

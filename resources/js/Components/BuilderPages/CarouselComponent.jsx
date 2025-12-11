@@ -151,6 +151,7 @@ const CarouselComponent = ({
                         isPreview={isPreview}
                         onEdit={onEdit}
                         onDelete={onDelete}
+                        themeSettings={themeSettings}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                     />
