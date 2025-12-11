@@ -64,22 +64,15 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [selectedType, setSelectedType] = useState('');
-    // console.log(themes)
-    // Estados para el drag & drop visual
     const [activeId, setActiveId] = useState(null);
     const [overId, setOverId] = useState(null);
     const [dropPosition, setDropPosition] = useState(null);
-
-    // Estado para el hover sincronizado
     const [hoveredComponentId, setHoveredComponentId] = useState(null);
     const [templates] = useState(availableTemplates || []);
     const themeSettings = page.theme?.settings || {};
-
     const [currentThemeSettings, setCurrentThemeSettings] = useState(pageThemeSettings);
     const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
     const [hasCopiedTheme, setHasCopiedTheme] = useState(!!page.theme_settings);
-
-    // En Builder.jsx - Agregar después de los estados iniciales
 
     // Función para obtener el tema aplicado
     const getAppliedTheme = () => {
@@ -119,16 +112,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     // Obtener el tema aplicado
     const appliedTheme = getAppliedTheme();
-
-    // Debug para verificar
-    // useEffect(() => {
-    //     console.log('Tema aplicado:', {
-    //         name: appliedTheme?.name,
-    //         settings: themeSettings,
-    //         source: page.theme_id ? 'Página' : 
-    //                 page.template?.theme_id ? 'Plantilla' : 'Global'
-    //     });
-    // }, [appliedTheme]);
 
     // Efectos
     useEffect(() => {
@@ -937,18 +920,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         setDropPosition(null);
     };
 
-    const debugStructure = () => {
-        console.log('=== ESTRUCTURA ACTUAL DE COMPONENTES ===');
-        const debug = (items, level = 0) => {
-            items.forEach((item, index) => {
-                const indent = '  '.repeat(level);
-                console.log(`${indent}[${index}] ${item.type} (id: ${item.id}) - Array length: ${items.length}`);
-            });
-        };
-        debug(components);
-        console.log('=== FIN ESTRUCTURA ===');
-    };
-
     const handleDragOver = (event) => {
         const { active, over } = event;
 
@@ -990,19 +961,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 'container', 'banner', 'product', 'carousel',
                 'bento', 'productCard', 'carouselCard', 'bentoFeature'
             ].includes(targetComponent.type);
-
-            console.log('DEBUG:', {
-                overId: over.id,
-                componentType: targetComponent?.type,
-                isContainer
-            });
-
-            // ¡FORZAR SIEMPRE "inside" PARA CONTENEDORES!
-            if (isContainer) {
-                console.log('¡FORZANDO INSIDE PARA CONTENEDOR!');
-                setDropPosition({ id: over.id, position: 'inside' });
-                return;
-            }
 
             // Lógica normal para no contenedores
             const overElement = document.getElementById(`component-${over.id}`);
@@ -1608,6 +1566,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                                    themeSettings={themeSettings}  // ¡Agrega esta línea!
                                             />
                                         )}
                                         {editingComponent?.type === 'product' && (
@@ -1772,6 +1731,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                            themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'bentoFeature' && (
@@ -1788,6 +1748,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                            themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'bentoFeatureText' && (
@@ -1796,6 +1757,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
+                                            themeSettings={themeSettings}
                                             />
                                         )}
                                     </ScrollArea>

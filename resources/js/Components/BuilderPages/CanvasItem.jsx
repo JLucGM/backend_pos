@@ -84,11 +84,12 @@ const CanvasItem = ({
 
     const renderComponent = () => {
         // Propiedades comunes para todos los componentes
+        
         const commonProps = {
             comp,
             getStyles,
             isPreview,
-            themeSettings,
+            themeSettings: themeSettings,
             appliedTheme,
         };
 
@@ -104,7 +105,13 @@ const CanvasItem = ({
             case 'video':
                 return <VideoComponent {...commonProps} />;
             case 'link':
-                return <LinkComponent {...commonProps} />;
+    return (
+        <LinkComponent
+            {...commonProps}
+            themeSettings={themeSettings}
+            onEdit={onEditComponent}
+        />
+    );
             case 'product':
                 return (
                     <ProductComponent
@@ -203,7 +210,7 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
-                        themeSettings={themeSettings}
+                        // themeSettings={themeSettings}
                     />
                 );
             case 'bannerText':
@@ -212,7 +219,7 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
-                        themeSettings={themeSettings}
+                        // themeSettings={themeSettings}
                     />
                 );
             case 'productTitle':
@@ -274,6 +281,7 @@ const CanvasItem = ({
                 return (
                     <BentoTitleComponent
                         {...commonProps}
+                        themeSettings={themeSettings} 
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -292,6 +300,7 @@ const CanvasItem = ({
                 return (
                     <BentoFeatureTitleComponent
                         {...commonProps}
+                        themeSettings={themeSettings} 
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -300,6 +309,7 @@ const CanvasItem = ({
                 return (
                     <BentoFeatureTextComponent
                         {...commonProps}
+                        themeSettings={themeSettings} 
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />

@@ -1,122 +1,355 @@
 import React from 'react';
-import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
-import { Textarea } from '@/Components/ui/textarea';
+import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Textarea } from '@/Components/ui/textarea';
+import { Button } from '@/Components/ui/button';
+import { RotateCcw } from 'lucide-react';
+import { Separator } from '@/Components/ui/separator';
 
-const BentoTitleEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
-    const handleContentChange = (value) => {
-        setEditContent(value);
+const BentoTitleEditDialog = ({ 
+    editContent, 
+    setEditContent, 
+    editStyles, 
+    setEditStyles, 
+    themeSettings 
+}) => {
+    const updateStyle = (key, value) => {
+        setEditStyles(prev => ({ ...prev, [key]: value }));
     };
 
-    const handleStyleChange = (key, value) => {
-        setEditStyles(prev => ({
-            ...prev,
-            [key]: value
-        }));
+    const resetToDefaults = () => {
+        const textStyle = editStyles.textStyle || 'heading1';
+        
+        if (textStyle.startsWith('heading')) {
+            const level = textStyle.replace('heading', '');
+            setEditStyles(prev => ({
+                ...prev,
+                fontSize: themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`,
+                fontWeight: themeSettings?.[`heading${level}_fontWeight`] || 'bold',
+                lineHeight: themeSettings?.[`heading${level}_lineHeight`] || '1.2',
+                textTransform: themeSettings?.[`heading${level}_textTransform`] || 'none',
+                fontType: 'default',
+                customFont: '',
+            }));
+        }
     };
+
+    const isCustomStyle = editStyles.textStyle === 'custom';
+    const isHeadingStyle = editStyles.textStyle?.startsWith('heading');
 
     return (
         <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Configuración del Título</h3>
-            
-            {/* Contenido del título */}
-            <div className="space-y-2">
+            <div className="flex justify-end">
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={resetToDefaults}
+                    className="flex items-center gap-1"
+                >
+                    <RotateCcw className="h-3 w-3" />
+                    Restablecer tipografía
+                </Button>
+            </div>
+
+            <div>
                 <Label htmlFor="title">Texto del título</Label>
                 <Textarea
                     id="title"
                     value={editContent}
-                    onChange={(e) => handleContentChange(e.target.value)}
+                    onChange={(e) => setEditContent(e.target.value)}
                     placeholder="Ingresa el texto del título"
                     rows={3}
                 />
             </div>
 
-            {/* Color del texto */}
-            <div className="space-y-2">
-                <Label htmlFor="color">Color del texto</Label>
-                <div className="flex items-center gap-2">
-                    <Input
-                        id="color"
-                        type="color"
-                        value={editStyles.color || '#000000'}
-                        onChange={(e) => handleStyleChange('color', e.target.value)}
-                        className="w-12 h-10"
-                    />
-                    <Input
-                        type="text"
-                        value={editStyles.color || '#000000'}
-                        onChange={(e) => handleStyleChange('color', e.target.value)}
-                        placeholder="#000000"
-                    />
+            <div>
+                <Label htmlFor="textTransform">Transformación de texto</Label>
+                <div className="flex gap-2">
+                    <Select
+                        value={editStyles.textTransform || 'none'}
+                        onValueChange={(value) => updateStyle('textTransform', value)}
+                        className="flex-1"
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">Normal</SelectItem>
+                            <SelectItem value="uppercase">MAYÚSCULAS</SelectItem>
+                            <SelectItem value="lowercase">minúsculas</SelectItem>
+                            <SelectItem value="capitalize">Capitalizar</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
-            {/* Tamaño de fuente */}
-            <div className="space-y-2">
-                <Label htmlFor="fontSize">Tamaño de fuente</Label>
-                <Input
-                    id="fontSize"
-                    type="text"
-                    value={editStyles.fontSize || '32px'}
-                    onChange={(e) => handleStyleChange('fontSize', e.target.value)}
-                    placeholder="Ej: 32px"
-                />
-            </div>
+            <Separator className="my-4" />
 
-            {/* Grosor de fuente */}
-            <div className="space-y-2">
-                <Label htmlFor="fontWeight">Grosor de fuente</Label>
+            <div>
+                <Label htmlFor="textStyle">Estilo de Texto</Label>
                 <Select
-                    value={editStyles.fontWeight || 'bold'}
-                    onValueChange={(value) => handleStyleChange('fontWeight', value)}
+                    value={editStyles.textStyle || 'heading1'}
+                    onValueChange={(value) => {
+                        updateStyle('textStyle', value);
+                        
+                        if (value.startsWith('heading') && themeSettings) {
+                            const level = value.replace('heading', '');
+                            updateStyle('fontSize', themeSettings[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`);
+                            updateStyle('fontWeight', themeSettings[`heading${level}_fontWeight`] || 'bold');
+                            updateStyle('lineHeight', themeSettings[`heading${level}_lineHeight`] || '1.2');
+                            updateStyle('textTransform', themeSettings[`heading${level}_textTransform`] || 'none');
+                            updateStyle('fontType', 'default');
+                            updateStyle('customFont', '');
+                        }
+                    }}
                 >
                     <SelectTrigger>
-                        <SelectValue placeholder="Selecciona grosor" />
+                        <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="500">Medium</SelectItem>
-                        <SelectItem value="600">Semibold</SelectItem>
-                        <SelectItem value="bold">Bold</SelectItem>
-                        <SelectItem value="800">Extrabold</SelectItem>
+                        <SelectItem value="heading1">
+                            Heading 1 - {themeSettings?.heading1_fontSize || '56px'}
+                        </SelectItem>
+                        <SelectItem value="heading2">
+                            Heading 2 - {themeSettings?.heading2_fontSize || '48px'}
+                        </SelectItem>
+                        <SelectItem value="heading3">
+                            Heading 3 - {themeSettings?.heading3_fontSize || '40px'}
+                        </SelectItem>
+                        <SelectItem value="heading4">
+                            Heading 4 - {themeSettings?.heading4_fontSize || '32px'}
+                        </SelectItem>
+                        <SelectItem value="custom">
+                            Personalizado
+                        </SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
-            {/* Layout */}
-            <div className="space-y-2">
-                <Label htmlFor="layout">Layout</Label>
-                <Select
-                    value={editStyles.layout || 'fit'}
-                    onValueChange={(value) => handleStyleChange('layout', value)}
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="Selecciona layout" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="fit">Ajustar (fit)</SelectItem>
-                        <SelectItem value="fill">Llenar (fill)</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+            {isCustomStyle && (
+                <>
+                    <div>
+                        <Label htmlFor="fontSize">Tamaño de fuente</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                id="fontSize"
+                                value={editStyles.fontSize || '32px'}
+                                onChange={(e) => updateStyle('fontSize', e.target.value)}
+                                placeholder="32px"
+                                className="flex-1"
+                            />
+                        </div>
+                    </div>
 
-            {/* Alineación */}
-            <div className="space-y-2">
-                <Label htmlFor="alignment">Alineación del texto</Label>
-                <Select
-                    value={editStyles.alignment || 'center'}
-                    onValueChange={(value) => handleStyleChange('alignment', value)}
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="Selecciona alineación" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="left">Izquierda</SelectItem>
-                        <SelectItem value="center">Centro</SelectItem>
-                        <SelectItem value="right">Derecha</SelectItem>
-                    </SelectContent>
-                </Select>
+                    <div>
+                        <Label htmlFor="fontWeight">Peso de fuente</Label>
+                        <Select
+                            value={editStyles.fontWeight || 'bold'}
+                            onValueChange={(value) => updateStyle('fontWeight', value)}
+                            className="flex-1"
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="normal">Normal</SelectItem>
+                                <SelectItem value="bold">Negrita</SelectItem>
+                                <SelectItem value="600">Seminegrita</SelectItem>
+                                <SelectItem value="800">Extranegrita</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div>
+                        <Label htmlFor="lineHeight">Altura de línea</Label>
+                        <Select
+                            value={editStyles.lineHeight || '1.2'}
+                            onValueChange={(value) => updateStyle('lineHeight', value)}
+                            className="flex-1"
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="tight">Tight (1.2)</SelectItem>
+                                <SelectItem value="normal">Normal (1.4)</SelectItem>
+                                <SelectItem value="loose">Loose (1.6)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </>
+            )}
+
+            <div>
+                            <Label htmlFor="fontType">Tipo de Fuente</Label>
+                            <Select
+                                value={editStyles.fontType || 'default'}
+                                onValueChange={(value) => updateStyle('fontType', value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="default">
+                                        Por defecto (usar fuente del tema para este estilo)
+                                    </SelectItem>
+                                    <SelectItem value="body_font">
+                                        Body Font ({themeSettings?.body_font || 'Inter'})
+                                    </SelectItem>
+                                    <SelectItem value="heading_font">
+                                        Heading Font ({themeSettings?.heading_font || 'Inter'})
+                                    </SelectItem>
+                                    <SelectItem value="subheading_font">
+                                        Subheading Font ({themeSettings?.subheading_font || 'Inter'})
+                                    </SelectItem>
+                                    <SelectItem value="accent_font">
+                                        Accent Font ({themeSettings?.accent_font || 'Inter'})
+                                    </SelectItem>
+                                    <SelectItem value="custom">Personalizada</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+            {editStyles.fontType === 'custom' && (
+                <div>
+                    <Label htmlFor="customFont">Fuente Personalizada</Label>
+                    <Input
+                        id="customFont"
+                        value={editStyles.customFont || ''}
+                        onChange={(e) => updateStyle('customFont', e.target.value)}
+                        placeholder="'Roboto', sans-serif"
+                    />
+                </div>
+            )}
+
+            <div className="pt-4 border-t">
+                <h4 className="font-medium mb-3">Estilo de contenedor</h4>
+
+                <div>
+                    <Label htmlFor="layout">Layout</Label>
+                    <Select
+                        value={editStyles.layout || 'fit'}
+                        onValueChange={(value) => updateStyle('layout', value)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
+                            <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {editStyles.layout === 'fill' && (
+                    <div>
+                        <Label htmlFor="alignment">Alineación</Label>
+                        <Select
+                            value={editStyles.alignment || 'center'}
+                            onValueChange={(value) => updateStyle('alignment', value)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="left">Izquierda</SelectItem>
+                                <SelectItem value="center">Centro</SelectItem>
+                                <SelectItem value="right">Derecha</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
+
+                <div>
+                    <Label htmlFor="color">Color</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            id="color"
+                            value={editStyles.color || '#000000'}
+                            onChange={(e) => updateStyle('color', e.target.value)}
+                            placeholder="#000000"
+                            className="flex-1"
+                        />
+                        <Input
+                            type="color"
+                            value={editStyles.color || '#000000'}
+                            onChange={(e) => updateStyle('color', e.target.value)}
+                            className="w-12"
+                        />
+                    </div>
+                </div>
+
+                <Label>Padding (px)</Label>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="paddingTop">Arriba</Label>
+                        <Input
+                            id="paddingTop"
+                            type="number"
+                            value={parseInt(editStyles.paddingTop) || 0}
+                            onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingRight">Derecha</Label>
+                        <Input
+                            id="paddingRight"
+                            type="number"
+                            value={parseInt(editStyles.paddingRight) || 0}
+                            onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingBottom">Abajo</Label>
+                        <Input
+                            id="paddingBottom"
+                            type="number"
+                            value={parseInt(editStyles.paddingBottom) || 0}
+                            onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingLeft">Izquierda</Label>
+                        <Input
+                            id="paddingLeft"
+                            type="number"
+                            value={parseInt(editStyles.paddingLeft) || 0}
+                            onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <Label htmlFor="backgroundColor">Color de Fondo</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            id="backgroundColor"
+                            value={editStyles.backgroundColor || 'transparent'}
+                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                            placeholder="transparent"
+                            className="flex-1"
+                        />
+                        <Input
+                            type="color"
+                            value={editStyles.backgroundColor === 'transparent' ? '#ffffff' : editStyles.backgroundColor || '#ffffff'}
+                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                            className="w-12"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <Label htmlFor="borderRadius">Radio de Borde (px)</Label>
+                    <Input
+                        id="borderRadius"
+                        type="number"
+                        value={parseInt(editStyles.borderRadius) || 0}
+                        onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+                        className="flex-1"
+                    />
+                </div>
             </div>
         </div>
     );
