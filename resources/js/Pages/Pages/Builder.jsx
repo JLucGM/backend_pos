@@ -321,6 +321,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     };
 
     const saveLayout = (isAuto = false) => {
+        console.log('Saving layout...', components);
         router.post(route('pages.updateLayout', page), {
             layout: JSON.stringify(components),
         }, {

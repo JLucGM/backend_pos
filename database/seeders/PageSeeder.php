@@ -19,6 +19,7 @@ class PageSeeder extends Seeder
                 'title' => 'Inicio',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
+                'is_homepage' => true,
                 'theme_id' => 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -32,6 +33,25 @@ class PageSeeder extends Seeder
                 'uses_template' => true,
                 'template_id' => 3,
                 'company_id' => 1, // Asumiendo que tienes un owner con ID 1
+            ],
+            [
+                'title' => 'Inicio',
+                'content' => '<p>Explora nuestros productos destacados.</p>',
+                'is_default' => true,
+                'is_homepage' => true,
+                'theme_id' => 1,
+                'uses_template' => true,
+                'template_id' => 3,
+                'company_id' => 2, // Asumiendo que tienes un owner con ID 1
+            ],
+            [
+                'title' => 'Tienda',
+                'content' => '<p>Explora nuestros productos destacados.</p>',
+                'is_default' => true,
+                'theme_id' => 1,
+                'uses_template' => true,
+                'template_id' => 3,
+                'company_id' => 2, // Asumiendo que tienes un owner con ID 1
             ],
             [
                 'title' => 'Detalles del producto',
@@ -63,7 +83,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Politicas de privacidad',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                
+
                 'is_default' => true,
                 'theme_id' => 1,
                 'company_id' => 1, // Asumiendo que tienes un owner con ID 1
@@ -92,10 +112,17 @@ class PageSeeder extends Seeder
         ];
 
         foreach ($pages as $page) {
-            Page::updateOrCreate(
-                // ['slug' => $page['slug']],
-                $page
-            );
+            // 1. Clave de búsqueda (Busca por título y compañía para evitar duplicados accidentales)
+            $searchKey = [
+                'title' => $page['title'],
+                'company_id' => $page['company_id'],
+            ];
+
+            // 2. Datos a establecer (Todos los demás datos)
+            $data = $page;
+
+            // Usar la clave de búsqueda, que debe ser única
+            Page::updateOrCreate($searchKey, $data);
         }
     }
 }

@@ -36,7 +36,8 @@ class Page extends Model
         'is_homepage' => 'boolean',
         // 'template_overrides' => 'array',
         'theme_settings' => 'array',
-        'uses_template' => 'boolean'
+        'uses_template' => 'boolean',
+        // 'layout' => 'array',
     ];
 
     public function getRouteKeyName()
@@ -48,7 +49,12 @@ class Page extends Model
     {
         return SlugOptions::create()
             ->generateSlugsFrom('title')
-            ->saveSlugsTo('slug');
+            ->saveSlugsTo('slug')
+            // LA CLAVE: Spatie solo verifica duplicidad en las páginas 
+            // que pertenecen a la misma compañía.
+            ->extraScope(fn ($query) => $query->where('company_id', $this->company_id))
+            ->allowDuplicateSlugs(); // <--- IMPORTANTE: Desactiva la verificación global
+
     }
 
     // Scope global para filtrar por company_id
@@ -74,6 +80,11 @@ class Page extends Model
     public function template()
     {
         return $this->belongsTo(Template::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
     // Método para obtener layout combinado

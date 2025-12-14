@@ -19,6 +19,14 @@ class CompaniesSeeder extends Seeder
                 'email' => 'mystore@example.com',
                 'phone' => '123456789',
                 'address' => 'Direccion 1',
+                'subdomain' => 'mystore',
+            ],
+            [
+                'name' => 'Pepsi',
+                'email' => 'pepsi@example.com',
+                'phone' => '123456789',
+                'address' => 'Direccion 1',
+                'subdomain' => 'pepsi',
             ],
         ];
 

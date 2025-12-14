@@ -27,24 +27,29 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        // 'canLogin' => Route::has('login'),
-        // 'canRegister' => Route::has('register'),
-        // 'laravelVersion' => Application::VERSION,
-        // 'phpVersion' => PHP_VERSION,
-    ]);
+Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function () {
+    // Cambiamos {slug?} por {page_path?} para claridad
+    // Y lo pasamos vacío al controlador.
+    Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('subdomain.page');
 });
 
-// Frontend Page Routes
-// Route::get('/page/{slug}', [FrontendController::class, 'show'])->name('pages.show');
+Route::group([
+    'domain' => '{domain}',
+    'middleware' => ['company'],
+    
+    // AÑADIR LA RESTRICCIÓN 'where' AL ARRAY DE GRUPO
+    // Esto evita el conflicto de array_merge
+    'where' => ['domain' => '^(?!pos\.test$).+'], 
 
-// Route::get('/dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
+], function () {
+    // Si accedes a pepsi.test/tienda, {domain} será 'pepsi.test' y {page_path} será 'tienda'
+    Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('custom.page');
+});
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
-Route::middleware('auth')->prefix('dashboard')->group(function () {
+
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'backend.company'])->name('dashboard');
+Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -192,6 +197,15 @@ Route::middleware('auth')->prefix('dashboard')->group(function () {
 
     Route::post('/refunds', [RefundController::class, 'store'])->name('refunds.store');
     Route::post('/orders/{order}/status', [OrderController::class, 'changeStatus'])->name('orders.changeStatus');
+});
+
+Route::get('/', function () {
+    return Inertia::render('Welcome', [
+        // 'canLogin' => Route::has('login'),
+        // 'canRegister' => Route::has('register'),
+        // 'laravelVersion' => Application::VERSION,
+        // 'phpVersion' => PHP_VERSION,
+    ]);
 });
 
 require __DIR__ . '/auth.php';

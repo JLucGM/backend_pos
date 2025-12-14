@@ -41,4 +41,9 @@ class Company extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function pages()
+    {
+        return $this->hasMany(Page::class);
+    }
 }
