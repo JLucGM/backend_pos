@@ -132,6 +132,10 @@ export function AppSidebar({
             url: "setting.index",
           },
           {
+            title: "Menus",
+            url: "menus.index",
+          },
+          {
             title: "Políticas",
             url: "pages.index",
           },

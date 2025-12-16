@@ -44,7 +44,7 @@ class PageController extends RoutingController
         $user = Auth::user();
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
-
+// dd('create pages');
         return Inertia::render('Pages/Create', compact('role', 'permission'));
     }
 

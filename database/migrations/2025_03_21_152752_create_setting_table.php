@@ -13,12 +13,11 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            // $table->string('app_name');
-            // $table->string('slug');
             $table->string('default_currency');
-            // $table->string('admin_email');
-            // $table->string('admin_phone');
-            // $table->decimal('shipping_base_price', 5, 2)->nullable();
+            $table->json('header_layout')->nullable();
+            $table->json('footer_layout')->nullable();
+            // Estilos de Tema Global (Movido de la tabla 'pages' para centralizar)
+            $table->json('theme_settings')->nullable();
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });

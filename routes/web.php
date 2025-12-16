@@ -9,6 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\GiftCardController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PaymentMethodController;
@@ -36,10 +37,10 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
 Route::group([
     'domain' => '{domain}',
     'middleware' => ['company'],
-    
+
     // AÑADIR LA RESTRICCIÓN 'where' AL ARRAY DE GRUPO
     // Esto evita el conflicto de array_merge
-    'where' => ['domain' => '^(?!pos\.test$).+'], 
+    'where' => ['domain' => '^(?!pos\.test$).+'],
 
 ], function () {
     // Si accedes a pepsi.test/tienda, {domain} será 'pepsi.test' y {page_path} será 'tienda'
@@ -153,6 +154,13 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::get('discounts/{discount}/edit', [DiscountController::class, 'edit'])->name('discounts.edit');
     Route::post('discounts/{discount}', [DiscountController::class, 'update'])->name('discounts.update');
     Route::delete('discounts/{discount}', [DiscountController::class, 'destroy'])->name('discounts.destroy');
+    
+    Route::get('menus', [MenuController::class, 'index'])->name('menus.index');
+    Route::get('menus/create', [MenuController::class, 'create'])->name('menus.create');
+    Route::post('menus', [MenuController::class, 'store'])->name('menus.store');
+    Route::get('menus/{menu}/edit', [MenuController::class, 'edit'])->name('menus.edit');
+    Route::post('menus/{menu}', [MenuController::class, 'update'])->name('menus.update');
+    Route::delete('menus/{menu}', [MenuController::class, 'destroy'])->name('menus.destroy');
 
     Route::get('gift-cards', [GiftCardController::class, 'index'])->name('giftCards.index');
     Route::get('gift-cards/create', [GiftCardController::class, 'create'])->name('giftCards.create');
@@ -170,8 +178,8 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::delete('shipping-rates/{shippingRate}', [ShippingRateController::class, 'destroy'])->name('shippingrate.destroy');
 
     Route::get('pages', [PageController::class, 'index'])->name('pages.index');
-    Route::get('pages/{page}', [PageController::class, 'show'])->name('pages.show');
     Route::get('pages/create', [PageController::class, 'create'])->name('pages.create');
+    Route::get('pages/{page}', [PageController::class, 'show'])->name('pages.show');
     Route::post('pages', [PageController::class, 'store'])->name('pages.store');
     Route::get('pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
     Route::post('pages/{page}', [PageController::class, 'update'])->name('pages.update');
@@ -182,12 +190,9 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::post('/pages/{page}/apply-template', [PageController::class, 'applyTemplate'])->name('pages.apply-template');
     Route::post('/pages/{page}/detach-template', [PageController::class, 'detachTemplate'])->name('pages.detach-template');
     Route::get('/pages/{page}/available-templates', [PageController::class, 'getAvailableTemplates'])->name('pages.available-templates');
-    Route::post('/pages/{page}/copy-theme-settings', [PageController::class, 'copyThemeSettings'])
-        ->name('pages.copyThemeSettings');
-    Route::post('/pages/{page}/update-theme-settings', [PageController::class, 'updateThemeSettings'])
-        ->name('pages.updateThemeSettings');
-    Route::post('/pages/{page}/reset-theme-settings', [PageController::class, 'resetThemeSettings'])
-        ->name('pages.resetThemeSettings');
+    Route::post('/pages/{page}/copy-theme-settings', [PageController::class, 'copyThemeSettings'])->name('pages.copyThemeSettings');
+    Route::post('/pages/{page}/update-theme-settings', [PageController::class, 'updateThemeSettings'])->name('pages.updateThemeSettings');
+    Route::post('/pages/{page}/reset-theme-settings', [PageController::class, 'resetThemeSettings'])->name('pages.resetThemeSettings');
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
