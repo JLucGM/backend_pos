@@ -2075,7 +2075,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                             },
                                         }}
                                     >
-                                        <ComponentTree
+                                        {/* <ComponentTree
                                             components={components}
                                             onEditComponent={handleEditComponent}
                                             onDeleteComponent={deleteComponent}
@@ -2084,7 +2084,15 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                             dropPosition={dropPosition}
                                             hoveredComponentId={hoveredComponentId}
                                             setHoveredComponentId={setHoveredComponentId}
-                                        />
+                                        /> */}
+                                        <ComponentTree
+    components={components}
+    onEditComponent={handleEditComponent}
+    onDeleteComponent={deleteComponent}
+    hoveredComponentId={hoveredComponentId}
+    setHoveredComponentId={setHoveredComponentId}
+    onTreeChange={handleComponentsUpdate}
+/>
                                         <DragOverlay dropAnimation={null}>
                                             {activeComponent ? (
                                                 <div className="flex items-center gap-1 p-2 border-2 border-blue-500 rounded bg-blue-50 shadow-lg opacity-90">

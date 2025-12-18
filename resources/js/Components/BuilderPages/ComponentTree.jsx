@@ -1,276 +1,22 @@
-import React from 'react';
+// components/BuilderPages/ComponentTree.jsx
+import React, { useState, useMemo } from 'react';
 import {
-    useSortable,
+    DndContext,
+    closestCorners,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragOverlay,
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    arrayMove,
+    verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { useDroppable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
-import { ChevronRight, ChevronDown, GripVertical, Edit, Trash2 } from 'lucide-react';
-import { Button } from '../ui/button';
+import SortableComponentTreeItem from './SortableComponentTreeItem';
 
-// Componente para el área de drop raíz
-const RootDroppable = ({ children, isOver }) => {
-    const { setNodeRef } = useDroppable({
-        id: 'root-area',
-    });
-
-    return (
-        <div
-            ref={setNodeRef}
-            className={`min-h-20 transition-colors duration-200 ${isOver ? 'bg-blue-100 border-2 border-blue-400 border-dashed rounded-lg p-4' : ''
-                }`}
-        >
-            {isOver && (
-                <div className="text-center text-blue-600 text-sm mb-2">
-                    Soltar aquí para mover al nivel raíz
-                </div>
-            )}
-            {children}
-        </div>
-    );
-};
-
-const SortableItem = ({
-    component,
-    onDelete,
-    onEdit,
-    level = 0,
-    activeId,
-    overId,
-    dropPosition,
-    hoveredComponentId,
-    setHoveredComponentId
-}) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-        isOver,
-    } = useSortable({
-        id: component.id,
-        // Configuración optimizada para mejor rendimiento
-        animateLayoutChanges: () => false,
-    });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition: isDragging ? 'none' : transition, // Remover transición durante el drag
-        opacity: isDragging ? 0.8 : 1,
-    };
-
-    const [isExpanded, setIsExpanded] = React.useState(true);
-
-    // Determinar si tiene hijos
-    const hasChildren =
-        (component.type === 'container' && component.content && component.content.length > 0) ||
-        (component.type === 'banner' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'product' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'productCard' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'carousel' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'carouselCard' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'bento' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'bentoFeature' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'header' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'footer' && component.content?.children && component.content.children.length > 0); // Agregar esta línea
-
-    // Función para obtener los hijos según el tipo de componente
-    const getChildren = () => {
-        if (component.type === 'container') {
-            return component.content || [];
-        } else if (component.type === 'banner') {
-            return component.content?.children || [];
-        } else if (component.type === 'product') {
-            return component.content?.children || [];
-        } else if (component.type === 'productCard') {
-            return component.content?.children || [];
-        } else if (component.type === 'carousel') {
-            return component.content?.children || [];
-        } else if (component.type === 'carouselCard') {
-            return component.content?.children || [];
-        } else if (component.type === 'bento') {
-            return component.content?.children || [];
-        } else if (component.type === 'bentoFeature') {
-            return component.content?.children || [];
-        } else if (component.type === 'header') {
-            return component.content?.children || [];
-        } else if (component.type === 'footer') { // Agregar este caso
-            return component.content?.children || [];
-        }
-        return [];
-    };
-
-    // Efectos visuales para el drag & drop
-    const isActive = activeId === component.id;
-    const isOverCurrent = overId === component.id;
-    const isContainer = component.type === 'container';
-    const isBanner = component.type === 'banner';
-    const isProduct = component.type === 'product';
-    const isProductCard = component.type === 'productCard';
-    const isCarousel = component.type === 'carousel';
-    const isCarouselCard = component.type === 'carouselCard';
-    const isHeader = component.type === 'header'; // Agregar esta línea
-    const isFooter = component.type === 'footer'; // Agregar esta línea
-
-    // Verificar si hay un indicador de posición para este componente
-    const hasDropIndicator = dropPosition && dropPosition.id === component.id;
-    const dropPositionType = hasDropIndicator ? dropPosition.position : null;
-
-    // Funciones para manejar hover sincronizado
-    const handleMouseEnter = () => {
-        if (setHoveredComponentId) {
-            setHoveredComponentId(component.id);
-        }
-    };
-
-    const handleMouseLeave = () => {
-        if (setHoveredComponentId) {
-            setHoveredComponentId(null);
-        }
-    };
-
-    // Estilos dinámicos basados en el estado
-    const getItemStyles = () => {
-        let styles = "flex items-center gap-1 p-2 border rounded mb-1 group transition-colors duration-150 cursor-pointer ";
-
-        if (isActive) {
-            styles += "bg-blue-100 border-blue-400 ";
-        } else if (isOverCurrent && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard || isHeader || isFooter)) {
-            styles += "bg-green-100 border-green-400 ";
-        } else if (isOverCurrent) {
-            styles += "bg-yellow-100 border-yellow-400 ";
-        } else if (isDragging) {
-            styles += "bg-blue-50 border-blue-300 ";
-        } else {
-            styles += "bg-white border-gray-200 hover:bg-gray-50 ";
-        }
-
-        // Efecto de hover sincronizado
-        if (hoveredComponentId === component.id) {
-            styles += "border-blue-400 bg-blue-50 ";
-        }
-
-        return styles;
-    };
-
-    return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className={`pl-${level * 4} transition-colors duration-150 relative ${isDragging ? 'z-50' : ''}`}
-            id={`component-${component.id}`}
-        >
-            {/* Indicador de posición - ARRIBA */}
-            {hasDropIndicator && dropPositionType === 'top' && (
-                <div className="absolute -top-1 left-0 right-0 h-0.5 bg-blue-500 z-40 pointer-events-none">
-                    <div className="absolute -top-1 left-2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                </div>
-            )}
-
-            {/* Área principal del componente */}
-            <div
-                className={getItemStyles()}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-            >
-                <div
-                    {...attributes}
-                    {...listeners}
-                    className="cursor-grab p-1 hover:bg-gray-200 rounded transition-colors active:cursor-grabbing touch-none" // Agregado touch-none para mobile
-                >
-                    <GripVertical size={14} className={isActive ? "text-blue-500" : "text-gray-500"} />
-                </div>
-
-                {hasChildren && (
-                    <Button
-                        onClick={() => setIsExpanded(!isExpanded)}
-                        variant="ghost"
-                        size="icon"
-                        className="touch-none" // Prevenir interferencia con drag en mobile
-                    >
-                        {isExpanded ?
-                            <ChevronDown size={14} className={isActive ? "text-blue-500" : "text-gray-500"} /> :
-                            <ChevronRight size={14} className={isActive ? "text-blue-500" : "text-gray-500"} />}
-                    </Button>
-                )}
-
-                {!hasChildren && <div className="w-6" />}
-
-                <span
-                    className={`flex-1 text-sm font-medium transition-colors ${isActive || hoveredComponentId === component.id ? "text-blue-700" : ""}`}
-                >
-                    {getComponentTypeName(component.type)}
-                </span>
-
-                <div
-                    className={`transition-opacity ${isActive || hoveredComponentId === component.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"} flex gap-1`}
-                >
-                    <Button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit(component);
-                        }}
-                        title="Editar"
-                        size="icon"
-                        className="touch-none"
-                    >
-                        <Edit size={14} />
-                    </Button>
-
-                    {/* Solo mostrar botón de eliminar si NO es pageContent */}
-                    {component.type !== 'pageContent' && (
-                        <Button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete(component.id);
-                            }}
-                            title="Eliminar"
-                            size="icon"
-                            variant="destructive"
-                            className="touch-none"
-                        >
-                            <Trash2 size={14} />
-                        </Button>
-                    )}
-                </div>
-            </div>
-
-            {/* Indicador de posición - ABAJO */}
-            {hasDropIndicator && dropPositionType === 'bottom' && (
-                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-500 z-40 pointer-events-none">
-                    <div className="absolute -top-1 left-2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                </div>
-            )}
-
-            {hasChildren && isExpanded && (
-                <div
-                    className="border-l-2 border-gray-200 ml-3 mt-1 transition-colors duration-150 relative"
-                >
-                    {/* Indicador de área de drop para contenedores */}
-                    {(isOverCurrent && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard || isHeader || isFooter) && dropPositionType === 'inside') && (
-                        <div className="absolute inset-x-0 -top-1 h-2 bg-green-400 rounded opacity-50 z-30 pointer-events-none"></div>
-                    )}
-
-                    {getChildren().map((child) => (
-                        <SortableItem
-                            key={child.id}
-                            component={child}
-                            onDelete={onDelete}
-                            onEdit={onEdit}
-                            level={level + 1}
-                            activeId={activeId}
-                            overId={overId}
-                            dropPosition={dropPosition}
-                            hoveredComponentId={hoveredComponentId}
-                            setHoveredComponentId={setHoveredComponentId}
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
+const INDENTATION_WIDTH = 40;
 
 // Función auxiliar para obtener nombres de componentes
 const getComponentTypeName = (type) => {
@@ -311,63 +57,284 @@ const getComponentTypeName = (type) => {
         'headerMenu': 'Menú',
         'footerText': 'Texto Footer',
         'footerMenu': 'Menú Footer',
-        'headerCart': 'Carrito',
-        'headerSearch': 'Buscador',
-        'headerProfile': 'Perfil',
     };
     return typeNames[type] || type;
 };
 
-const ComponentTree = ({
+// Función para aplanar el árbol de componentes
+const flattenComponentTree = (components, parentId = null, depth = 0, result = []) => {
+    components.forEach((component, index) => {
+        const flatItem = {
+            id: component.id,
+            type: component.type,
+            parentId,
+            depth,
+            order: index,
+            data: component // Guardamos el componente completo como data
+        };
+        
+        result.push(flatItem);
+        
+        // Obtener hijos según el tipo de componente
+        let children = [];
+        if (component.type === 'container' && Array.isArray(component.content)) {
+            children = component.content;
+        } else if (
+            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 
+             'bento', 'bentoFeature', 'header', 'footer'].includes(component.type) &&
+            component.content &&
+            component.content.children &&
+            Array.isArray(component.content.children)
+        ) {
+            children = component.content.children;
+        }
+        
+        // Recursivamente aplanar hijos
+        if (children.length > 0) {
+            flattenComponentTree(children, component.id, depth + 1, result);
+        }
+    });
+    
+    return result;
+};
+
+// Reconstruir árbol desde estructura plana
+const buildComponentTree = (flatItems) => {
+    const itemsMap = {};
+    const rootItems = [];
+    
+    // Primero, crear map y guardar todos los items
+    flatItems.forEach(item => {
+        itemsMap[item.id] = {
+            ...item.data,
+            _children: []
+        };
+    });
+    
+    // Luego, construir jerarquía
+    flatItems.forEach(item => {
+        const node = itemsMap[item.id];
+        
+        if (item.parentId === null) {
+            rootItems.push(node);
+        } else if (itemsMap[item.parentId]) {
+            if (!itemsMap[item.parentId]._children) {
+                itemsMap[item.parentId]._children = [];
+            }
+            itemsMap[item.parentId]._children.push(node);
+        }
+    });
+    
+    // Función para convertir _children a estructura correcta
+    const convertChildren = (nodes) => {
+        return nodes.map(node => {
+            // Convertir _children a estructura correcta según el tipo
+            if (node._children && node._children.length > 0) {
+                if (node.type === 'container') {
+                    node.content = convertChildren(node._children);
+                } else if (['banner', 'product', 'productCard', 'carousel', 
+                           'carouselCard', 'bento', 'bentoFeature', 'header', 'footer'].includes(node.type)) {
+                    node.content = node.content || {};
+                    node.content.children = convertChildren(node._children);
+                }
+                delete node._children;
+            }
+            
+            return node;
+        });
+    };
+    
+    return convertChildren(rootItems);
+};
+
+export default function ComponentTree({
     components,
     onEditComponent,
     onDeleteComponent,
-    activeId,
-    overId,
-    dropPosition,
     hoveredComponentId,
-    setHoveredComponentId
-}) => {
-    const isRootOver = overId === 'root-area';
+    setHoveredComponentId,
+    onTreeChange
+}) {
+    const [activeId, setActiveId] = useState(null);
+    const [offsetLeft, setOffsetLeft] = useState(0);
+    const [expandedItems, setExpandedItems] = useState(new Set());
+
+    // Aplanar el árbol para DnD
+    const flattenedItems = useMemo(() => 
+        flattenComponentTree(components), 
+        [components]
+    );
+    
+    // IDs para SortableContext
+    const sortedIds = useMemo(() => flattenedItems.map(({ id }) => id), [flattenedItems]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: { distance: 2 },
+        }),
+        useSensor(KeyboardSensor)
+    );
+
+    const activeItem = activeId ? flattenedItems.find(({ id }) => id === activeId) : null;
+
+    // Función de proyección para calcular depth y parentId
+    const getProjection = (items, activeId, overId, dragOffset, indentationWidth) => {
+        const overItemIndex = items.findIndex(({ id }) => id === overId);
+        const activeItemIndex = items.findIndex(({ id }) => id === activeId);
+        
+        if (activeItemIndex === -1 || overItemIndex === -1) return null;
+        
+        const activeItem = items[activeItemIndex];
+        const newItems = arrayMove(items, activeItemIndex, overItemIndex);
+        const previousItem = newItems[overItemIndex - 1];
+        const nextItem = newItems[overItemIndex + 1];
+        const dragDepth = Math.round(dragOffset / indentationWidth);
+        const projectedDepth = activeItem.depth + dragDepth;
+        
+        // Calcular límites de profundidad
+        const maxDepth = previousItem ? previousItem.depth + 1 : 0;
+        const minDepth = nextItem ? nextItem.depth : 0;
+        let depth = projectedDepth;
+
+        if (depth >= maxDepth) {
+            depth = maxDepth;
+        } else if (depth < minDepth) {
+            depth = minDepth;
+        }
+
+        let parentId = null;
+        if (depth === 0) {
+            parentId = null;
+        } else {
+            const previousItemAtDepth = newItems
+                .slice(0, overItemIndex)
+                .reverse()
+                .find((item) => item.depth === depth - 1);
+            parentId = previousItemAtDepth ? previousItemAtDepth.id : null;
+        }
+        
+        return { depth, maxDepth, minDepth, parentId };
+    };
+
+    const handleDragStart = ({ active }) => {
+        setActiveId(active.id);
+        setOffsetLeft(0);
+    };
+
+    const handleDragMove = ({ delta }) => {
+        setOffsetLeft(delta.x);
+    };
+
+    const handleDragEnd = ({ active, over }) => {
+        setOffsetLeft(0);
+        setActiveId(null);
+
+        if (!over) return;
+        
+        const overId = over.id;
+        const activeId = active.id;
+
+        if (activeId === overId) return;
+
+        const projection = getProjection(
+            flattenedItems,
+            activeId,
+            overId,
+            offsetLeft,
+            INDENTATION_WIDTH
+        );
+
+        if (projection) {
+            // Actualizar parentId y depth del item arrastrado
+            let newFlattened = flattenedItems.map(item => {
+                if (item.id === activeId) {
+                    return { 
+                        ...item, 
+                        parentId: projection.parentId, 
+                        depth: projection.depth 
+                    };
+                }
+                return item;
+            });
+            
+            // Reordenar el array plano
+            const oldIndex = newFlattened.findIndex(i => i.id === activeId);
+            const newIndex = newFlattened.findIndex(i => i.id === overId);
+            newFlattened = arrayMove(newFlattened, oldIndex, newIndex);
+            
+            // Actualizar órdenes
+            newFlattened = newFlattened.map((item, index) => ({
+                ...item,
+                order: index
+            }));
+            
+            // Reconstruir el árbol y actualizar
+            const newTree = buildComponentTree(newFlattened);
+            onTreeChange(newTree);
+        }
+    };
+
+    const handleDragCancel = () => {
+        setActiveId(null);
+        setOffsetLeft(0);
+    };
+
+    // Expandir todo al inicio
+    React.useEffect(() => {
+        const allIds = flattenedItems.map(item => item.id);
+        setExpandedItems(new Set(allIds));
+    }, [components]);
 
     return (
-        <RootDroppable isOver={isRootOver}>
-            <div
-                className="space-y-1 max-h-[600px] overflow-y-auto relative"
-                onMouseLeave={() => setHoveredComponentId && setHoveredComponentId(null)}
+        <div className="space-y-1 max-h-[600px] overflow-y-auto">
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCorners}
+                onDragStart={handleDragStart}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
             >
-                {components.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                        <p>No hay componentes</p>
-                        <p className="text-sm">Agrega componentes para comenzar</p>
-                    </div>
-                ) : (
-                    components.map((component) => (
-                        <SortableItem
-                            key={component.id}
-                            component={component}
-                            onDelete={onDeleteComponent}
-                            onEdit={onEditComponent}
-                            level={0}
-                            activeId={activeId}
-                            overId={overId}
-                            dropPosition={dropPosition}
-                            hoveredComponentId={hoveredComponentId}
-                            setHoveredComponentId={setHoveredComponentId}
+                <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+                    {flattenedItems.length === 0 ? (
+                        <div className="text-center text-gray-500 py-8">
+                            <p>No hay componentes</p>
+                            <p className="text-sm">Agrega componentes para comenzar</p>
+                        </div>
+                    ) : (
+                        flattenedItems.map((item) => (
+                            <SortableComponentTreeItem
+                                key={item.id}
+                                id={item.id}
+                                item={item}
+                                depth={item.depth}
+                                indentationWidth={INDENTATION_WIDTH}
+                                onDelete={onDeleteComponent}
+                                onEdit={onEditComponent}
+                                getComponentTypeName={getComponentTypeName}
+                                isOverlay={false}
+                                hoveredComponentId={hoveredComponentId}
+                                setHoveredComponentId={setHoveredComponentId}
+                            />
+                        ))
+                    )}
+                </SortableContext>
+
+                <DragOverlay>
+                    {activeId && activeItem ? (
+                        <SortableComponentTreeItem
+                            id={activeId}
+                            item={activeItem}
+                            depth={activeItem.depth + Math.round(offsetLeft / INDENTATION_WIDTH)}
+                            indentationWidth={INDENTATION_WIDTH}
+                            isOverlay={true}
+                            onDelete={() => {}}
+                            onEdit={() => {}}
+                            getComponentTypeName={getComponentTypeName}
                         />
-                    ))
-                )}
-
-                {/* Área de drop vacía */}
-                {activeId && (
-                    <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors duration-150 ${isRootOver ? 'border-blue-400 bg-blue-100 text-blue-700' : 'border-gray-300 text-gray-500'
-                        }`}>
-                        Suelta aquí para mover al nivel raíz
-                    </div>
-                )}
-            </div>
-        </RootDroppable>
+                    ) : null}
+                </DragOverlay>
+            </DndContext>
+        </div>
     );
-};
-
-export default ComponentTree;
+}
