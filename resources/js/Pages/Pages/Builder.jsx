@@ -48,8 +48,13 @@ import ApplyTemplate from '@/Components/ApplyTemplate';
 import ThemeSelector from '@/Components/ThemeSelector';
 import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
 import { Badge } from '@/Components/ui/badge';
+import HeaderEditDialog from './partials/HeaderEditDialog';
+import HeaderLogoEditDialog from './partials/HeaderLogoEditDialog';
+import HeaderMenuEditDialog from './partials/HeaderMenuEditDialog';
+import FooterMenuEditDialog from './partials/FooterMenuEditDialog';
+import FooterEditDialog from './partials/FooterEditDialog';
 
-export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings }) {
+export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus }) {
     const [components, setComponents] = useState([]);
     const [editingComponent, setEditingComponent] = useState(null);
     const [editContent, setEditContent] = useState('');
@@ -168,7 +173,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         // Buscar en banners, products, carousels, etc.
                         const typesWithChildren = [
                             'banner', 'product', 'productCard', 'carousel',
-                            'carouselCard', 'bento', 'bentoFeature'
+                            'carouselCard', 'bento', 'bentoFeature', 'header', 'footer'
                         ];
 
                         if (typesWithChildren.includes(component.type) &&
@@ -283,7 +288,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 // Componentes con estructura children
                 const typesWithChildren = [
                     'banner', 'product', 'productCard', 'carousel',
-                    'carouselCard', 'bento', 'bentoFeature'
+                    'carouselCard', 'bento', 'bentoFeature', 'header', 'footer'
                 ];
 
                 if (typesWithChildren.includes(item.type) &&
@@ -321,7 +326,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     };
 
     const saveLayout = (isAuto = false) => {
-        console.log('Saving layout...', components);
+        // console.log('Saving layout...', components);
         router.post(route('pages.updateLayout', page), {
             layout: JSON.stringify(components),
         }, {
@@ -348,6 +353,216 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
             if (selectedType === 'link') content = 'https://example.com';
             if (selectedType === 'image') content = 'https://picsum.photos/150';
+            // Busca la parte donde se crea el header en handleAddComponent
+            // y reemplaza el menú estático:
+
+            if (selectedType === 'header') {
+                const headerId = Date.now();
+                const logoId = headerId + 1;
+                const menuId = headerId + 2;
+
+                // Usar el primer menú disponible si existe
+                const defaultMenu = availableMenus && availableMenus.length > 0 ? availableMenus[0] : null;
+
+                content = {
+                    // Configuración del header
+                    logoPosition: 'left',
+                    sticky: false,
+                    fullWidth: true,
+                    height: '70px',
+                    // Configuración de botones con iconos Lucide
+                    buttons: {
+                        showSearch: true,
+                        buttonsGap: '10px',
+                        cart: {
+                            count: '0',
+                            styles: {
+                                iconColor: '#ffffff',
+                                backgroundColor: '#000000',
+                                borderWidth: '0px',
+                                borderStyle: 'solid',
+                                borderColor: '#000000',
+                                borderOpacity: '1',
+                                borderRadius: '50%',
+                                backgroundOpacity: '1',
+                                width: '36px',
+                                height: '36px',
+                                padding: '8px',
+                                fontSize: '16px'
+                            }
+                        },
+                        search: {
+                            styles: {
+                                iconColor: '#000000',
+                                backgroundColor: 'transparent',
+                                borderWidth: '0px',
+                                borderStyle: 'solid',
+                                borderColor: '#000000',
+                                borderOpacity: '1',
+                                borderRadius: '50%',
+                                backgroundOpacity: '1',
+                                width: '36px',
+                                height: '36px',
+                                padding: '8px',
+                                fontSize: '16px'
+                            }
+                        },
+                        profile: {
+                            styles: {
+                                iconColor: '#000000',
+                                backgroundColor: '#f0f0f0',
+                                borderWidth: '0px',
+                                borderStyle: 'solid',
+                                borderColor: '#000000',
+                                borderOpacity: '1',
+                                borderRadius: '50%',
+                                backgroundOpacity: '1',
+                                width: '36px',
+                                height: '36px',
+                                padding: '8px',
+                                fontSize: '16px'
+                            }
+                        }
+                    },
+                    // Los hijos como componentes independientes
+                    children: [
+                        {
+                            id: logoId,
+                            type: 'headerLogo',
+                            content: 'Logo',
+                            styles: {
+                                layout: 'fit',
+                                fontSize: '24px',
+                                fontWeight: 'bold',
+                                backgroundColor: 'none',
+                                paddingTop: '0px',
+                                paddingRight: '0px',
+                                paddingBottom: '0px',
+                                paddingLeft: '0px'
+                            }
+                        },
+                        {
+                            id: menuId,
+                            type: 'headerMenu',
+                            content: {
+                                // NUEVA ESTRUCTURA: Objeto con menuId y items
+                                menuId: availableMenus && availableMenus.length > 0 ? availableMenus[0].id : null,
+                                // items: availableMenus && availableMenus.length > 0 ? availableMenus[0].items : []
+                            },
+                            styles: {
+                                layout: 'fit',
+                                display: 'flex',
+                                gap: '20px',
+                                fontSize: '16px',
+                                fontWeight: 'normal',
+                                textTransform: 'none',
+                                lineHeight: 'normal',
+                                fontType: 'default',
+                                color: '#000000',
+                                buttonBackgroundColor: 'transparent',
+                                borderWidth: '0px',
+                                borderColor: '#000000',
+                                borderRadius: '0px',
+                                paddingTop: '5px',
+                                paddingRight: '10px',
+                                paddingBottom: '5px',
+                                paddingLeft: '10px'
+                            }
+                        }
+                    ]
+                };
+
+                const newItem = {
+                    id: headerId,
+                    type: selectedType,
+                    content,
+                    styles: {
+                        paddingTop: '20px',
+                        paddingRight: '20px',
+                        paddingBottom: '20px',
+                        paddingLeft: '20px',
+                        backgroundColor: '#ffffff',
+                        borderBottom: '1px solid #e5e7eb'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+            // En la función handleAddComponent de Builder.jsx, busca la parte de 'footer' y actualízala:
+            if (selectedType === 'footer') {
+                const footerId = Date.now();
+                const column1Id = footerId + 1;
+                const column2Id = footerId + 2;
+                const column3Id = footerId + 3;
+                const footerMenuId = footerId + 4;
+
+                content = {
+                    // Configuración del footer
+                    showCopyright: true,
+                    copyrightText: '© 2023 Mi Empresa. Todos los derechos reservados.',
+                    columns: 3,
+                    layout: 'grid', // 'grid' o 'flex'
+                    showLogo: false,
+                    logoPosition: 'left',
+                    socialMedia: {
+                        show: false,
+                        facebook: '',
+                        twitter: '',
+                        instagram: '',
+                        linkedin: ''
+                    },
+
+                    // Los hijos como componentes independientes
+                    children: [
+                        {
+                            id: column1Id,
+                            type: 'footerText',
+                            content: 'Información de la empresa o texto descriptivo.',
+                            styles: {
+                                layout: 'fit',
+                                color: '#666666',
+                                fontSize: '14px',
+                                lineHeight: '1.6'
+                            }
+                        },
+                        {
+                            id: column2Id,
+                            type: 'footerMenu',
+                            content: {  // ← NUEVA ESTRUCTURA: objeto con menuId
+                                menuId: availableMenus && availableMenus.length > 0 ? availableMenus[0].id : null,
+                            },
+                            styles: {
+                                layout: 'fit',
+                                display: 'column',
+                                gap: '8px',
+                                color: '#666666',
+                                fontSize: '14px',
+                                textTransform: 'none'
+                            }
+                        },
+                        {
+                            id: column3Id,
+                            type: 'footerText',
+                            content: 'Dirección: Calle Principal 123\nTeléfono: (123) 456-7890\nEmail: info@empresa.com',
+                            styles: {
+                                layout: 'fit',
+                                color: '#666666',
+                                fontSize: '14px',
+                                lineHeight: '1.6'
+                            }
+                        }
+                    ]
+                };
+                // ... resto del código
+            }
             if (selectedType === 'container') {
                 content = []; // Inicializar como array vacío
                 // Agregar estilos por defecto
@@ -1404,6 +1619,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             setHoveredComponentId={() => { }}
                             isPreview={true}
                             pageContent={page.content}
+                            availableMenus={availableMenus || []} // Asegurar valor por defecto
                         />
                     </div>
                 </div>
@@ -1422,10 +1638,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             </Tooltip>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    
-                            <Badge className="bg-green-500">
-                                {page.theme?.name || page.template?.theme?.name || 'Tema por defecto'}
-                            </Badge>
+                                    <span>
+                                        <Badge className="bg-green-500">
+                                            {page.theme?.name || page.template?.theme?.name || 'Tema por defecto'}
+                                        </Badge>
+                                    </span>
                                 </TooltipTrigger>
                                 <TooltipContent>Tema actual</TooltipContent>
                             </Tooltip>
@@ -1566,7 +1783,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                                    themeSettings={themeSettings}  // ¡Agrega esta línea!
+                                                themeSettings={themeSettings}  // ¡Agrega esta línea!
                                             />
                                         )}
                                         {editingComponent?.type === 'product' && (
@@ -1577,6 +1794,51 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditStyles={setEditStyles}
                                             />
                                         )}
+                                        {editingComponent?.type === 'header' && (
+                                            <HeaderEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'headerMenu' && (
+                                            <HeaderMenuEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
+                                                availableMenus={availableMenus}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'footer' && (
+                                            <FooterEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'footerMenu' && (
+                                            <FooterMenuEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
+                                                availableMenus={availableMenus}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'headerLogo' && (
+                                            <HeaderLogoEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+
                                         {editingComponent?.type === 'carousel' && (
                                             <CarouselEditDialog
                                                 editContent={editContent}
@@ -1591,7 +1853,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                            themeSettings={themeSettings}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'carouselCard' && (
@@ -1631,7 +1893,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                            themeSettings={themeSettings}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'carouselPrice' && (
@@ -1640,8 +1902,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                           themeSettings={themeSettings}
-                                                />
+                                                themeSettings={themeSettings}
+                                            />
                                         )}
                                         {editingComponent?.type === 'container' && (
                                             <ContainerEditDialog
@@ -1681,7 +1943,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                            themeSettings={themeSettings}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'productCard' && (
@@ -1711,7 +1973,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                            themeSettings={themeSettings}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'productPrice' && (
@@ -1720,7 +1982,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                            themeSettings={themeSettings}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'bento' && (
@@ -1737,7 +1999,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                            themeSettings={themeSettings}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'bentoFeature' && (
@@ -1754,7 +2016,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                            themeSettings={themeSettings}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                         {editingComponent?.type === 'bentoFeatureText' && (
@@ -1763,7 +2025,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditContent={setEditContent}
                                                 editStyles={editStyles}
                                                 setEditStyles={setEditStyles}
-                                            themeSettings={themeSettings}
+                                                themeSettings={themeSettings}
                                             />
                                         )}
                                     </ScrollArea>
@@ -1857,6 +2119,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
                                 pageContent={page.content}
+                                availableMenus={availableMenus || []} // Asegurar valor por defecto
                             />
                         </div>
                     </div>
@@ -1875,6 +2138,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <SelectValue placeholder="Selecciona un tipo" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="header">Header</SelectItem>
+                                <SelectItem value="footer">Footer</SelectItem>
                                 <SelectItem value="bento">Bento</SelectItem>
                                 <SelectItem value="marquee">Texto en Movimiento</SelectItem>
                                 <SelectItem value="banner">Banner</SelectItem>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Menu;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\Template;
@@ -44,7 +45,7 @@ class PageController extends RoutingController
         $user = Auth::user();
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
-// dd('create pages');
+        // dd('create pages');
         return Inertia::render('Pages/Create', compact('role', 'permission'));
     }
 
@@ -155,12 +156,19 @@ class PageController extends RoutingController
         // Obtener configuración del tema (personalizada o del tema original)
         $pageThemeSettings = $this->getPageThemeSettings($page);
 
+        $availableMenus = Menu::where('company_id', $companyId)
+            ->with(['items.children' => function ($query) {
+                $query->orderBy('order', 'asc');
+            }])
+            ->get()->toArray();
+
         return Inertia::render('Pages/Builder', [
             'page' => $page,
             'products' => $products,
             'availableTemplates' => $availableTemplates,
             'themes' => $themes,
-            'pageThemeSettings' => $pageThemeSettings, // Pasar directamente las configuraciones
+            'pageThemeSettings' => $pageThemeSettings,
+            'availableMenus' => $availableMenus,
         ]);
     }
 

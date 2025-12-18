@@ -48,7 +48,7 @@ const SortableItem = ({
         transition,
         isDragging,
         isOver,
-    } = useSortable({ 
+    } = useSortable({
         id: component.id,
         // Configuración optimizada para mejor rendimiento
         animateLayoutChanges: () => false,
@@ -71,7 +71,9 @@ const SortableItem = ({
         (component.type === 'carousel' && component.content?.children && component.content.children.length > 0) ||
         (component.type === 'carouselCard' && component.content?.children && component.content.children.length > 0) ||
         (component.type === 'bento' && component.content?.children && component.content.children.length > 0) ||
-        (component.type === 'bentoFeature' && component.content?.children && component.content.children.length > 0);
+        (component.type === 'bentoFeature' && component.content?.children && component.content.children.length > 0) ||
+        (component.type === 'header' && component.content?.children && component.content.children.length > 0) ||
+        (component.type === 'footer' && component.content?.children && component.content.children.length > 0); // Agregar esta línea
 
     // Función para obtener los hijos según el tipo de componente
     const getChildren = () => {
@@ -91,6 +93,10 @@ const SortableItem = ({
             return component.content?.children || [];
         } else if (component.type === 'bentoFeature') {
             return component.content?.children || [];
+        } else if (component.type === 'header') {
+            return component.content?.children || [];
+        } else if (component.type === 'footer') { // Agregar este caso
+            return component.content?.children || [];
         }
         return [];
     };
@@ -104,11 +110,13 @@ const SortableItem = ({
     const isProductCard = component.type === 'productCard';
     const isCarousel = component.type === 'carousel';
     const isCarouselCard = component.type === 'carouselCard';
-    
+    const isHeader = component.type === 'header'; // Agregar esta línea
+    const isFooter = component.type === 'footer'; // Agregar esta línea
+
     // Verificar si hay un indicador de posición para este componente
     const hasDropIndicator = dropPosition && dropPosition.id === component.id;
     const dropPositionType = hasDropIndicator ? dropPosition.position : null;
-    
+
     // Funciones para manejar hover sincronizado
     const handleMouseEnter = () => {
         if (setHoveredComponentId) {
@@ -125,10 +133,10 @@ const SortableItem = ({
     // Estilos dinámicos basados en el estado
     const getItemStyles = () => {
         let styles = "flex items-center gap-1 p-2 border rounded mb-1 group transition-colors duration-150 cursor-pointer ";
-        
+
         if (isActive) {
             styles += "bg-blue-100 border-blue-400 ";
-        } else if (isOverCurrent && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard)) {
+        } else if (isOverCurrent && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard || isHeader || isFooter)) {
             styles += "bg-green-100 border-green-400 ";
         } else if (isOverCurrent) {
             styles += "bg-yellow-100 border-yellow-400 ";
@@ -142,14 +150,14 @@ const SortableItem = ({
         if (hoveredComponentId === component.id) {
             styles += "border-blue-400 bg-blue-50 ";
         }
-        
+
         return styles;
     };
 
     return (
-        <div 
-            ref={setNodeRef} 
-            style={style} 
+        <div
+            ref={setNodeRef}
+            style={style}
             className={`pl-${level * 4} transition-colors duration-150 relative ${isDragging ? 'z-50' : ''}`}
             id={`component-${component.id}`}
         >
@@ -159,21 +167,21 @@ const SortableItem = ({
                     <div className="absolute -top-1 left-2 w-2 h-2 bg-blue-500 rounded-full"></div>
                 </div>
             )}
-            
+
             {/* Área principal del componente */}
-            <div 
+            <div
                 className={getItemStyles()}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
-                <div 
-                    {...attributes} 
-                    {...listeners} 
+                <div
+                    {...attributes}
+                    {...listeners}
                     className="cursor-grab p-1 hover:bg-gray-200 rounded transition-colors active:cursor-grabbing touch-none" // Agregado touch-none para mobile
                 >
                     <GripVertical size={14} className={isActive ? "text-blue-500" : "text-gray-500"} />
                 </div>
-                
+
                 {hasChildren && (
                     <Button
                         onClick={() => setIsExpanded(!isExpanded)}
@@ -181,51 +189,51 @@ const SortableItem = ({
                         size="icon"
                         className="touch-none" // Prevenir interferencia con drag en mobile
                     >
-                        {isExpanded ? 
-                            <ChevronDown size={14} className={isActive ? "text-blue-500" : "text-gray-500"} /> : 
+                        {isExpanded ?
+                            <ChevronDown size={14} className={isActive ? "text-blue-500" : "text-gray-500"} /> :
                             <ChevronRight size={14} className={isActive ? "text-blue-500" : "text-gray-500"} />}
                     </Button>
                 )}
-                
+
                 {!hasChildren && <div className="w-6" />}
-                
-                <span 
+
+                <span
                     className={`flex-1 text-sm font-medium transition-colors ${isActive || hoveredComponentId === component.id ? "text-blue-700" : ""}`}
                 >
                     {getComponentTypeName(component.type)}
                 </span>
-                
-<div 
-    className={`transition-opacity ${isActive || hoveredComponentId === component.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"} flex gap-1`}
->
-    <Button
-        onClick={(e) => {
-            e.stopPropagation();
-            onEdit(component);
-        }}
-        title="Editar"
-        size="icon"
-        className="touch-none"
-    >
-        <Edit size={14} />
-    </Button>
-    
-    {/* Solo mostrar botón de eliminar si NO es pageContent */}
-    {component.type !== 'pageContent' && (
-        <Button
-            onClick={(e) => {
-                e.stopPropagation();
-                onDelete(component.id);
-            }}
-            title="Eliminar"
-            size="icon"
-            variant="destructive"
-            className="touch-none"
-        >
-            <Trash2 size={14} />
-        </Button>
-    )}
-</div>
+
+                <div
+                    className={`transition-opacity ${isActive || hoveredComponentId === component.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"} flex gap-1`}
+                >
+                    <Button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(component);
+                        }}
+                        title="Editar"
+                        size="icon"
+                        className="touch-none"
+                    >
+                        <Edit size={14} />
+                    </Button>
+
+                    {/* Solo mostrar botón de eliminar si NO es pageContent */}
+                    {component.type !== 'pageContent' && (
+                        <Button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(component.id);
+                            }}
+                            title="Eliminar"
+                            size="icon"
+                            variant="destructive"
+                            className="touch-none"
+                        >
+                            <Trash2 size={14} />
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {/* Indicador de posición - ABAJO */}
@@ -236,14 +244,14 @@ const SortableItem = ({
             )}
 
             {hasChildren && isExpanded && (
-                <div 
+                <div
                     className="border-l-2 border-gray-200 ml-3 mt-1 transition-colors duration-150 relative"
                 >
                     {/* Indicador de área de drop para contenedores */}
-                    {(isOverCurrent && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard) && dropPositionType === 'inside') && (
+                    {(isOverCurrent && (isContainer || isBanner || isProduct || isProductCard || isCarousel || isCarouselCard || isHeader || isFooter) && dropPositionType === 'inside') && (
                         <div className="absolute inset-x-0 -top-1 h-2 bg-green-400 rounded opacity-50 z-30 pointer-events-none"></div>
                     )}
-                    
+
                     {getChildren().map((child) => (
                         <SortableItem
                             key={child.id}
@@ -297,25 +305,34 @@ const getComponentTypeName = (type) => {
         'marquee': 'Texto en Movimiento',
         'divider': 'Divider (Línea)',
         'pageContent': 'Contenido de Página',
+        'header': 'Header',
+        'footer': 'Footer',
+        'headerLogo': 'Logo',
+        'headerMenu': 'Menú',
+        'footerText': 'Texto Footer',
+        'footerMenu': 'Menú Footer',
+        'headerCart': 'Carrito',
+        'headerSearch': 'Buscador',
+        'headerProfile': 'Perfil',
     };
     return typeNames[type] || type;
 };
 
-const ComponentTree = ({ 
-    components, 
-    onEditComponent, 
-    onDeleteComponent, 
-    activeId, 
+const ComponentTree = ({
+    components,
+    onEditComponent,
+    onDeleteComponent,
+    activeId,
     overId,
     dropPosition,
     hoveredComponentId,
-    setHoveredComponentId 
+    setHoveredComponentId
 }) => {
     const isRootOver = overId === 'root-area';
 
     return (
         <RootDroppable isOver={isRootOver}>
-            <div 
+            <div
                 className="space-y-1 max-h-[600px] overflow-y-auto relative"
                 onMouseLeave={() => setHoveredComponentId && setHoveredComponentId(null)}
             >
@@ -340,12 +357,11 @@ const ComponentTree = ({
                         />
                     ))
                 )}
-                
+
                 {/* Área de drop vacía */}
                 {activeId && (
-                    <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors duration-150 ${
-                        isRootOver ? 'border-blue-400 bg-blue-100 text-blue-700' : 'border-gray-300 text-gray-500'
-                    }`}>
+                    <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors duration-150 ${isRootOver ? 'border-blue-400 bg-blue-100 text-blue-700' : 'border-gray-300 text-gray-500'
+                        }`}>
                         Suelta aquí para mover al nivel raíz
                     </div>
                 )}

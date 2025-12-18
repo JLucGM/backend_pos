@@ -30,6 +30,12 @@ import BentoComponent from './BentoComponent/BentoComponent';
 import DividerComponent from './DividerComponent/DividerComponent';
 import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
 import CarouselPriceComponent from './CarouselPriceComponent';
+import HeaderMenuComponent from './HeaderMenuComponent';
+import HeaderComponent from './HeaderComponent';
+import FooterComponent from './FooterComponent';
+import HeaderLogoComponent from './HeaderLogoComponent';
+import FooterTextComponent from './FooterTextComponent';
+import FooterMenuComponent from './FooterMenuComponent';
 
 const CanvasItem = ({
     comp,
@@ -42,8 +48,10 @@ const CanvasItem = ({
     setComponents,
     hoveredComponentId,
     setHoveredComponentId,
-    pageContent
+    pageContent,
+    availableMenus
 }) => {
+    // console.log(availableMenus)
     const getStyles = (comp) => {
         const styles = comp.styles || {};
 
@@ -84,7 +92,7 @@ const CanvasItem = ({
 
     const renderComponent = () => {
         // Propiedades comunes para todos los componentes
-        
+
         const commonProps = {
             comp,
             getStyles,
@@ -104,14 +112,68 @@ const CanvasItem = ({
                 return <ImageComponent {...commonProps} />;
             case 'video':
                 return <VideoComponent {...commonProps} />;
+            case 'header':
+                return (
+                    <HeaderComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                        availableMenus={availableMenus}
+                    />
+                );
+                
+            case 'footer':
+                return (
+                    <FooterComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'headerLogo':
+                return (
+                    <HeaderLogoComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                    />
+                );
+            case 'headerMenu':
+                return (
+                    <HeaderMenuComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        availableMenus={availableMenus || []}
+                    />
+                );
+            case 'footerText':
+                return (
+                    <FooterTextComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                    />
+                );
+            case 'footerMenu':
+                return (
+                    <FooterMenuComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        availableMenus={availableMenus || []}
+                    />
+                );
             case 'link':
-    return (
-        <LinkComponent
-            {...commonProps}
-            themeSettings={themeSettings}
-            onEdit={onEditComponent}
-        />
-    );
+                return (
+                    <LinkComponent
+                        {...commonProps}
+                        themeSettings={themeSettings}
+                        onEdit={onEditComponent}
+                    />
+                );
             case 'product':
                 return (
                     <ProductComponent
@@ -210,7 +272,7 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
-                        // themeSettings={themeSettings}
+                    // themeSettings={themeSettings}
                     />
                 );
             case 'bannerText':
@@ -219,7 +281,7 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
-                        // themeSettings={themeSettings}
+                    // themeSettings={themeSettings}
                     />
                 );
             case 'productTitle':
@@ -281,7 +343,7 @@ const CanvasItem = ({
                 return (
                     <BentoTitleComponent
                         {...commonProps}
-                        themeSettings={themeSettings} 
+                        themeSettings={themeSettings}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -300,7 +362,7 @@ const CanvasItem = ({
                 return (
                     <BentoFeatureTitleComponent
                         {...commonProps}
-                        themeSettings={themeSettings} 
+                        themeSettings={themeSettings}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -309,7 +371,7 @@ const CanvasItem = ({
                 return (
                     <BentoFeatureTextComponent
                         {...commonProps}
-                        themeSettings={themeSettings} 
+                        themeSettings={themeSettings}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                     />
@@ -387,7 +449,10 @@ const CanvasItem = ({
             'carouselCard': 'Carta del Carrusel',
             'carouselImage': 'Imagen del Carrusel',
             'carouselName': 'Nombre del Carrusel',
-            'carouselPrice': 'Precio del Carrusel'
+            'carouselPrice': 'Precio del Carrusel',
+            'header': 'Header',
+'headerLogo': 'Logo',
+'headerMenu': 'Menú',
         };
         return typeNames[type] || type;
     };

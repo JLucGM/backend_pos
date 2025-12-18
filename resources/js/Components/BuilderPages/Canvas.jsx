@@ -14,7 +14,8 @@ const Canvas = memo(({
     hoveredComponentId,
     setHoveredComponentId,
     isPreview = false,
-    pageContent
+    pageContent,
+    availableMenus
 }) => {
 
     return (
@@ -49,6 +50,7 @@ const Canvas = memo(({
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                         pageContent={pageContent}
+                        availableMenus={availableMenus}
                     />
                 ))
             )}
