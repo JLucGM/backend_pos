@@ -22,6 +22,10 @@ export default function SortableComponentTreeItem({
     isOverlay,
     hoveredComponentId,
     setHoveredComponentId,
+    isExpanded,
+    onToggleExpand,
+    collapsibleTypes,
+    canHaveChildren,
 }) {
     const {
         attributes,
@@ -37,6 +41,9 @@ export default function SortableComponentTreeItem({
         transition,
         marginLeft: !isOverlay ? `${depth * indentationWidth}px` : undefined,
     };
+    
+    // Determinar si el componente es colapsable
+    const isCollapsible = collapsibleTypes.includes(item.type) && item.hasChildren;
     
     // Funciones para manejar hover sincronizado
     const handleMouseEnter = () => {
@@ -54,7 +61,7 @@ export default function SortableComponentTreeItem({
     // Estilos dinámicos basados en el estado
     const getItemStyles = () => {
         let styles = "flex items-center gap-1 p-2 border rounded mb-1 group transition-colors duration-150 cursor-pointer ";
-
+        
         if (isDragging) {
             styles += "bg-blue-100 border-blue-400 ";
         } else if (hoveredComponentId === item.id && !isOverlay) {
@@ -74,7 +81,7 @@ export default function SortableComponentTreeItem({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
-            {/* Líneas Conectoras */}
+            {/* Líneas Conectoras - Solo mostrar si el item está visible */}
             {!isOverlay && depth > 0 && (
                 <>
                     <div 
@@ -106,9 +113,40 @@ export default function SortableComponentTreeItem({
                     <Bars3Icon className="size-4 text-gray-500" />
                 </div>
 
+                {/* Botón de expandir/colapsar para componentes padre */}
+                {isCollapsible && !isOverlay && (
+                    <Button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleExpand(item.id);
+                        }}
+                        title={isExpanded ? "Colapsar" : "Expandir"}
+                        size="icon"
+                        className="h-4 w-4"
+                        variant="ghost"
+                    >
+                        {isExpanded ? (
+                            <ChevronDownIcon className="size-3" />
+                        ) : (
+                            <ChevronRightIcon className="size-3" />
+                        )}
+                    </Button>
+                )}
+
+                {/* Espacio para alinear si no es colapsable o no tiene hijos */}
+                {(!isCollapsible || !item.hasChildren) && !isOverlay && (
+                    <div className="w-4" /> // Espacio para mantener alineación
+                )}
+
                 {/* Nombre del componente */}
                 <span className="flex-1 text-sm font-medium ml-2">
                     {getComponentTypeName(item.type)}
+                    {item.hasChildren && !isOverlay && (
+                        <span className="ml-2 text-xs text-gray-400">
+                            ({item.data.content?.children?.length || item.data.content?.length || 0})
+                            {!isExpanded && isCollapsible && " ⏷"}
+                        </span>
+                    )}
                 </span>
 
                 {/* Acciones */}

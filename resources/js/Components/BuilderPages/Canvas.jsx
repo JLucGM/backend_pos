@@ -20,7 +20,7 @@ const Canvas = memo(({
 
     return (
         <div
-            className={`min-h-[400px] w-full mx-auto transition-all duration-300 ease-in-out rounded-lg ${isPreview ? 'border-transparent' : 'border-dashed border-gray-300'} relative`}
+            className={`min-h-[400px] w-full mx-auto transition-all duration-300 ease-in-out rounded-lg ${isPreview ? 'border-transparent' : 'border-dasheds border-gray-300'} relative`}
             style={{
                 width: canvasWidth,
                 backgroundImage: isPreview ? 'none' : 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)',

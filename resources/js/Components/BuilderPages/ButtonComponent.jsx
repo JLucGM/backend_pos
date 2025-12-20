@@ -188,8 +188,31 @@ const ButtonComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) 
         }
     };
 
-    // Contenido del botón
-    const buttonContent = comp.styles?.contentOverride || comp.content || 'Botón';
+    // EXTRAER EL TEXTO DEL CONTENIDO
+    const getButtonText = () => {
+        // Si hay una sobrescritura en estilos, usarla
+        if (comp.styles?.contentOverride) {
+            return comp.styles.contentOverride;
+        }
+        
+        // Si no, usar el contenido
+        if (!comp.content) return 'Botón';
+        
+        // Si content es una cadena, devolverla directamente
+        if (typeof comp.content === 'string') {
+            return comp.content;
+        }
+        
+        // Si content es un objeto, extraer la propiedad 'text'
+        if (typeof comp.content === 'object' && comp.content !== null) {
+            return comp.content.text || comp.content.label || 'Botón';
+        }
+        
+        // Si es otra cosa, convertir a cadena
+        return String(comp.content);
+    };
+
+    const buttonContent = getButtonText();
 
     return (
         <button

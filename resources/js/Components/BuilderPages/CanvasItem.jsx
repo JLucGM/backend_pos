@@ -28,7 +28,6 @@ import PageContentComponent from './PageContentComponent';
 import TextComponent from './TextComponent';
 import BentoComponent from './BentoComponent/BentoComponent';
 import DividerComponent from './DividerComponent/DividerComponent';
-import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
 import CarouselPriceComponent from './CarouselPriceComponent';
 import HeaderMenuComponent from './HeaderMenuComponent';
 import HeaderComponent from './HeaderComponent';
@@ -36,6 +35,7 @@ import FooterComponent from './FooterComponent';
 import HeaderLogoComponent from './HeaderLogoComponent';
 import FooterTextComponent from './FooterTextComponent';
 import FooterMenuComponent from './FooterMenuComponent';
+import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
 
 const CanvasItem = ({
     comp,

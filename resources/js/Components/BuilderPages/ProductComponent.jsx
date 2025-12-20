@@ -1,6 +1,12 @@
 import React from 'react';
 import ProductTitleComponent from './ProductTitleComponent';
 import ProductCardComponent from './ProductCardComponent';
+import TextComponent from './TextComponent';
+import HeadingComponent from './HeadingComponent';
+import ButtonComponent from './ButtonComponent';
+import ImageComponent from './ImageComponent';
+import LinkComponent from './LinkComponent';
+import VideoComponent from './VideoComponent';
 import ComponentWithHover from './ComponentWithHover';
 
 const ProductComponent = ({
@@ -91,9 +97,48 @@ const ProductComponent = ({
     // Encontrar los componentes hijos
     const titleComponent = children.find(child => child.type === 'productTitle');
     const cardComponent = children.find(child => child.type === 'productCard');
+    
+    // Filtrar otros componentes (text, heading, button, etc.)
+    const otherComponents = children.filter(child => 
+        child.type !== 'productTitle' && 
+        child.type !== 'productCard' &&
+        // Solo incluir componentes que sabemos cómo renderizar
+        ['text', 'heading', 'button', 'image', 'link', 'video'].includes(child.type)
+    );
 
     // Obtener productos para mostrar
     const productsToShow = products ? products.slice(0, limit) : [];
+
+    // Función para renderizar componentes básicos
+    const renderBasicComponent = (child) => {
+        const commonProps = {
+            comp: child,
+            getStyles,
+            isPreview,
+            themeSettings,
+            onEdit,
+            onDelete,
+            hoveredComponentId,
+            setHoveredComponentId
+        };
+
+        switch (child.type) {
+            case 'text':
+                return <TextComponent {...commonProps} />;
+            case 'heading':
+                return <HeadingComponent {...commonProps} />;
+            case 'button':
+                return <ButtonComponent {...commonProps} onEdit={onEdit} />;
+            case 'image':
+                return <ImageComponent {...commonProps} />;
+            case 'link':
+                return <LinkComponent {...commonProps} themeSettings={themeSettings} onEdit={onEdit} />;
+            case 'video':
+                return <VideoComponent {...commonProps} />;
+            default:
+                return null;
+        }
+    };
 
     return (
         <div
@@ -123,6 +168,20 @@ const ProductComponent = ({
                     />
                 </ComponentWithHover>
             )}
+
+            {/* Renderizar otros componentes (text, heading, button, etc.) */}
+            {otherComponents.map((child) => (
+                <ComponentWithHover
+                    key={child.id}
+                    component={child}
+                    isPreview={isPreview}
+                    hoveredComponentId={hoveredComponentId}
+                    setHoveredComponentId={setHoveredComponentId}
+                    getComponentTypeName={getComponentTypeName}
+                >
+                    {renderBasicComponent(child)}
+                </ComponentWithHover>
+            ))}
 
             {/* Grid de productos */}
             {cardComponent && (

@@ -62,6 +62,20 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
         return 'body_font';
     };
 
+    const getTextValue = () => {
+        if (!editContent) return '';
+        
+        if (typeof editContent === 'string') {
+            return editContent;
+        }
+        
+        if (typeof editContent === 'object' && editContent !== null) {
+            return editContent.text || editContent.title || '';
+        }
+        
+        return String(editContent);
+    };
+
     // Obtener el valor actual de fontType o usar el predeterminado
     const currentFontType = editStyles.fontType || 'default';
 
@@ -84,7 +98,7 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
             <Label htmlFor="content">Contenido</Label>
             <textarea
                 id="content"
-                value={editContent}
+                value={getTextValue()}
                 onChange={(e) => setEditContent(e.target.value)}
                 className="w-full h-20 p-2 border rounded"
             />

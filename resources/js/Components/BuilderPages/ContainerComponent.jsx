@@ -2,14 +2,14 @@
 import React from 'react';
 import CanvasItem from './CanvasItem';
 
-const ContainerComponent = ({ 
-    comp, 
-    getStyles, 
-    onEdit, 
-    onDelete, 
-    themeSettings, 
-    isPreview, 
-    products, 
+const ContainerComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    onDelete,
+    themeSettings,
+    isPreview,
+    products,
     setComponents,
     hoveredComponentId,
     setHoveredComponentId
@@ -131,34 +131,36 @@ const ContainerComponent = ({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
-            {/* Los hijos */}
-            {comp.content && comp.content.map((subComp) => (
-                <CanvasItem
-                    key={subComp.id}
-                    comp={subComp}
-                    onEditComponent={onEdit}
-                    onDeleteComponent={handleDeleteChild}
-                    themeSettings={themeSettings}
-                    isPreview={isPreview}
-                    products={products}
-                    setComponents={setComponents}
-                    hoveredComponentId={hoveredComponentId}
-                    setHoveredComponentId={setHoveredComponentId}
-                />
-            ))}
-
-            {(!comp.content || comp.content.length === 0) && !isPreview && (
-                <div 
-                    className="w-full text-center text-gray-400 py-8 border border-dashed border-gray-300 rounded cursor-pointer"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit();
-                    }}
-                >
-                    <p>Contenedor vacío</p>
-                    <p className="text-sm">Arrastra componentes aquí desde el árbol</p>
-                    <p className="text-xs mt-2">Haz clic para editar el contenedor</p>
-                </div>
+            {/* Los hijos - ahora siempre debería haber al menos uno */}
+            {comp.content && comp.content.length > 0 ? (
+                comp.content.map((subComp) => (
+                    <CanvasItem
+                        key={subComp.id}
+                        comp={subComp}
+                        onEditComponent={onEdit}
+                        onDeleteComponent={handleDeleteChild}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                ))
+            ) : (
+                // Esto solo debería verse si alguien elimina todos los hijos
+                !isPreview && (
+                    <div
+                        className="w-full text-center text-gray-400 py-8 border border-dasheds border-gray-300 rounded cursor-pointer"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit();
+                        }}
+                    >
+                        <p>Contenedor vacío</p>
+                        <p className="text-sm">Agrega componentes aquí</p>
+                    </div>
+                )
             )}
         </div>
     );

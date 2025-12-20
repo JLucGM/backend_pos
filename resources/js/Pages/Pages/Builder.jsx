@@ -564,23 +564,52 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 // ... resto del código
             }
             if (selectedType === 'container') {
-                content = []; // Inicializar como array vacío
-                // Agregar estilos por defecto
+                const containerId = Date.now();
+                const textId = Date.now() + 1;
+
+                // El contenido DEBE ser un array de componentes
+                const content = [
+                    {
+                        id: textId,
+                        type: 'text',
+                        content: { text: 'Nuevo texto' },
+                        styles: {}
+                    }
+                ];
+
+                const newItem = {
+                    id: containerId,
+                    type: 'container',
+                    content, // ¡ESTO DEBE SER UN ARRAY!
+                    styles: {}
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return; // IMPORTANTE: Hacer return para no ejecutar el código de abajo
+            }
+            // En la parte de heading en handleAddComponent
+            if (selectedType === 'heading') {
                 const newItem = {
                     id: Date.now(),
-                    type: selectedType,
-                    content: content,
+                    type: 'heading',
+                    content: 'Nuevo encabezado', // Ahora es un string
                     styles: {
-                        backgroundColor: '#ffffff',
-                        paddingTop: '20px',
-                        paddingRight: '20px',
-                        paddingBottom: '20px',
-                        paddingLeft: '20px',
-                        borderRadius: '8px',
-                        border: '1px solid #e5e7eb',
-                        direction: 'column',
-                        gap: '10px',
-                        alignment: 'left'
+                        textStyle: 'heading2', // Usar textStyle en lugar de level
+                        layout: 'fit',
+                        paddingTop: '10px',
+                        paddingRight: '10px',
+                        paddingBottom: '10px',
+                        paddingLeft: '10px',
+                        backgroundColor: 'transparent',
+                        borderRadius: '0px',
+                        color: '#000000'
                     }
                 };
 
@@ -755,7 +784,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 alignment: 'center',
                                 color: '#000000',
                                 fontSize: '24px',
-                                fontWeight: 'bold'
+                                fontWeight: 'bold',
+                                background:'none',
                             }
                         },
                         {
@@ -848,21 +878,18 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     children: [
                         {
                             id: titleId,
-                            type: 'bannerTitle',
+                            type: 'heading',
                             content: 'Título del Banner',
                             styles: {
+                                textStyle: 'heading2', // Usar textStyle en lugar de level
                                 layout: 'fit',
-                                alignment: 'center',
-                                background: 'transparent',
-                                backgroundOpacity: '1',
-                                borderRadius: '0px',
                                 paddingTop: '10px',
                                 paddingRight: '10px',
                                 paddingBottom: '10px',
                                 paddingLeft: '10px',
-                                color: '#000000',
-                                fontSize: '32px',
-                                fontWeight: 'bold'
+                                backgroundColor: 'transparent',
+                                borderRadius: '0px',
+                                color: '#000000'
                             }
                         },
                         {
@@ -2075,24 +2102,14 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                             },
                                         }}
                                     >
-                                        {/* <ComponentTree
+                                        <ComponentTree
                                             components={components}
                                             onEditComponent={handleEditComponent}
                                             onDeleteComponent={deleteComponent}
-                                            activeId={activeId}
-                                            overId={overId}
-                                            dropPosition={dropPosition}
                                             hoveredComponentId={hoveredComponentId}
                                             setHoveredComponentId={setHoveredComponentId}
-                                        /> */}
-                                        <ComponentTree
-    components={components}
-    onEditComponent={handleEditComponent}
-    onDeleteComponent={deleteComponent}
-    hoveredComponentId={hoveredComponentId}
-    setHoveredComponentId={setHoveredComponentId}
-    onTreeChange={handleComponentsUpdate}
-/>
+                                            onTreeChange={handleComponentsUpdate}
+                                        />
                                         <DragOverlay dropAnimation={null}>
                                             {activeComponent ? (
                                                 <div className="flex items-center gap-1 p-2 border-2 border-blue-500 rounded bg-blue-50 shadow-lg opacity-90">
@@ -2148,18 +2165,18 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             <SelectContent>
                                 <SelectItem value="header">Header</SelectItem>
                                 <SelectItem value="footer">Footer</SelectItem>
-                                <SelectItem value="bento">Bento</SelectItem>
-                                <SelectItem value="marquee">Texto en Movimiento</SelectItem>
                                 <SelectItem value="banner">Banner</SelectItem>
+                                <SelectItem value="bento">Bento</SelectItem>
                                 <SelectItem value="product">Productos</SelectItem>
-                                <SelectItem value="heading">Encabezado</SelectItem>
-                                <SelectItem value="text">Texto</SelectItem>
-                                <SelectItem value="image">Imagen</SelectItem>
-                                <SelectItem value="pageContent">Contenido de Página</SelectItem>
-                                <SelectItem value="button">Botón</SelectItem>
-                                <SelectItem value="video">Video</SelectItem>
-                                <SelectItem value="link">Enlace</SelectItem>
                                 <SelectItem value="carousel">Carrusel de Productos</SelectItem>
+                                {/* <SelectItem value="heading">Encabezado</SelectItem> */}
+                                {/* <SelectItem value="text">Texto</SelectItem> */}
+                                {/* <SelectItem value="image">Imagen</SelectItem> */}
+                                <SelectItem value="marquee">Texto en Movimiento</SelectItem>
+                                <SelectItem value="pageContent">Contenido de Página</SelectItem>
+                                {/* <SelectItem value="button">Botón</SelectItem> */}
+                                {/* <SelectItem value="video">Video</SelectItem> */}
+                                {/* <SelectItem value="link">Enlace</SelectItem> */}
                                 <SelectItem value="container">Contenedor</SelectItem>
                                 <SelectItem value="divider">Divider (Línea)</SelectItem>
                             </SelectContent>

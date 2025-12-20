@@ -121,6 +121,26 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
         };
     }, []);
 
+    // EXTRAER EL TEXTO DEL CONTENIDO - ¡ESTO ES LO QUE FALTA!
+    const getTextContent = () => {
+        if (!comp.content) return 'Texto en movimiento';
+        
+        // Si content es una cadena, devolverla directamente
+        if (typeof comp.content === 'string') {
+            return comp.content;
+        }
+        
+        // Si content es un objeto, extraer la propiedad 'text'
+        if (typeof comp.content === 'object' && comp.content !== null) {
+            return comp.content.text || 'Texto en movimiento';
+        }
+        
+        // Si es otra cosa, convertir a cadena
+        return String(comp.content);
+    };
+
+    const textContent = getTextContent();
+
     return (
         <div
             ref={containerRef}
@@ -134,7 +154,7 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
                 ref={marqueeRef}
                 style={getAnimationStyle()}
             >
-                {comp.content}
+                {textContent} {/* ¡Usar textContent, no comp.content directamente! */}
             </div>
         </div>
     );

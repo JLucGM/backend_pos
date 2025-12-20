@@ -72,7 +72,7 @@ const LinkComponent = ({
         }
 
         // Estilos del enlace
-        return {
+        const linkStyle = {
             ...baseStyles,
             fontFamily: getFontFamily(),
             fontSize,
@@ -84,23 +84,48 @@ const LinkComponent = ({
             cursor: 'pointer',
             display: 'inline-block',
             transition: 'color 0.2s, text-decoration 0.2s',
-            '&:hover': {
-                color: customStyles.hoverColor || (themeSettings?.hover_links ? `hsl(${themeSettings.hover_links})` : '#0000FF'),
-                textDecoration: customStyles.hoverTextDecoration || 'underline',
-            }
         };
+
+        // Manejar hover (esto no funcionará en React inline styles, necesita CSS)
+        // Moveremos el hover a className
+        return linkStyle;
     };
+
+    // EXTRAER EL CONTENIDO DEL ENLACE
+    const getLinkContent = () => {
+        if (!comp.content) return { url: '#', text: 'Enlace' };
+        
+        // Si content es una cadena, asumimos que es la URL
+        if (typeof comp.content === 'string') {
+            return { url: comp.content, text: comp.content };
+        }
+        
+        // Si content es un objeto, extraer url y text
+        if (typeof comp.content === 'object' && comp.content !== null) {
+            return {
+                url: comp.content.url || comp.content.href || '#',
+                text: comp.content.text || comp.content.label || 'Enlace'
+            };
+        }
+        
+        return { url: '#', text: 'Enlace' };
+    };
+
+    const linkContent = getLinkContent();
+
+    // Clases para hover
+    const hoverClasses = isPreview ? '' : 'hover:opacity-80';
 
     return (
         <a
-            href={comp.content}
+            href={linkContent.url}
             target="_blank"
             rel="noopener noreferrer"
             style={getLinkStyles()}
             onDoubleClick={isPreview ? undefined : () => onEdit(comp)}
-            className={isPreview ? '' : 'hover:opacity-80'}
+            className={`${hoverClasses} hover:text-blue-700 hover:underline`}
         >
-            {comp.content || 'Enlace'}
+            {linkContent.text}
         </a>
     );
 };

@@ -13,6 +13,11 @@ import ImageComponent from '@/Components/BuilderPages/ImageComponent';
 import VideoComponent from '@/Components/BuilderPages/VideoComponent';
 import LinkComponent from '@/Components/BuilderPages/LinkComponent';
 import DividerComponent from '@/Components/BuilderPages/DividerComponent/DividerComponent';
+import HeaderComponent from '@/Components/BuilderPages/HeaderComponent';
+import FooterComponent from '@/Components/BuilderPages/FooterComponent';
+import MarqueeTextComponent from '@/Components/BuilderPages/MarqueeComponent/MarqueeTextComponent';
+import ProductComponent from '@/Components/BuilderPages/ProductComponent';
+import CarouselComponent from '@/Components/BuilderPages/CarouselComponent';
 
 
 // ==============================================================
@@ -33,6 +38,11 @@ const componentMap = {
     'video': VideoComponent,       // Inferred from VideoEditDialog
     'link':LinkComponent,
     'divider': DividerComponent,
+    'header': HeaderComponent,
+    'footer': FooterComponent,
+    'marquee': MarqueeTextComponent,
+    'product': ProductComponent,
+    'carousel': CarouselComponent,
     // 'list': ListComponent,         // Inferred from ListComponentEditDialog
     // Nota: 'link', 'button', 'icon' son casi siempre hijos.
 

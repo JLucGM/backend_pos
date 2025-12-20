@@ -1,4 +1,4 @@
-// components/Builder/dialogs/ButtonEditDialog.jsx
+// components/BuilderPages/partials/ButtonEditDialog.jsx
 import React from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -10,15 +10,36 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         setEditStyles(prev => ({ ...prev, [key]: value }));
     };
 
+    // Extraer el texto del contenido (puede ser string u objeto)
+    const getTextValue = () => {
+        if (!editContent) return '';
+        
+        if (typeof editContent === 'string') {
+            return editContent;
+        }
+        
+        if (typeof editContent === 'object' && editContent !== null) {
+            return editContent.text || editContent.title || '';
+        }
+        
+        return String(editContent);
+    };
+
+    // Manejar cambio de texto
+    const handleTextChange = (value) => {
+        // Asegurarnos de que editContent siempre sea un string para botón
+        setEditContent(value);
+    };
+
     return (
         <div className="space-y-4">
-                <Label htmlFor="content">Contenido</Label>
-                <textarea
-                    id="content"
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    className="w-full h-20 p-2 border rounded"
-                />
+            <Label htmlFor="content">Contenido</Label>
+            <textarea
+                id="content"
+                value={getTextValue()} // Usar getTextValue en lugar de editContent directamente
+                onChange={(e) => handleTextChange(e.target.value)}
+                className="w-full h-20 p-2 border rounded"
+            />
 
             {/* Selector de tipo de botón */}
             <Label htmlFor="buttonType">Tipo de Botón</Label>
@@ -36,7 +57,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                 </SelectContent>
             </Select>
 
-{/* Solo mostrar opciones de personalización completas si el tipo es "custom" */}
+            {/* Solo mostrar opciones de personalización completas si el tipo es "custom" */}
             {editStyles.buttonType === 'custom' && (
                 <>
                     {/* Layout */}
@@ -248,7 +269,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             />
                         </div>
                     </div>
-                <Separator className="my-4" />
+                    <Separator className="my-4" />
                 </>
             )}
 
@@ -294,9 +315,6 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     />
                 </div>
             )}
-
-
-            
 
             {/* Si es primary o secondary, mostrar solo las opciones que pueden sobrescribir */}
             {(editStyles.buttonType === 'primary' || editStyles.buttonType === 'secondary') && (

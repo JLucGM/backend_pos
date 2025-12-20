@@ -1,6 +1,12 @@
 import React, { useState, useRef } from 'react';
 import CarouselTitleComponent from './CarouselTitleComponent';
 import CarouselCardComponent from './CarouselCardComponent';
+import TextComponent from './TextComponent';
+import HeadingComponent from './HeadingComponent';
+import ButtonComponent from './ButtonComponent';
+import ImageComponent from './ImageComponent';
+import LinkComponent from './LinkComponent';
+import VideoComponent from './VideoComponent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import ComponentWithHover from './ComponentWithHover';
@@ -75,6 +81,14 @@ const CarouselComponent = ({
     // Encontrar los componentes hijos
     const titleComponent = children.find(child => child.type === 'carouselTitle');
     const cardComponent = children.find(child => child.type === 'carouselCard');
+    
+    // Filtrar otros componentes (text, heading, button, etc.)
+    const otherComponents = children.filter(child => 
+        child.type !== 'carouselTitle' && 
+        child.type !== 'carouselCard' &&
+        // Solo incluir componentes que sabemos cómo renderizar
+        ['text', 'heading', 'button', 'image', 'link', 'video'].includes(child.type)
+    );
 
     // Si no hay cardComponent, mostrar mensaje de error
     if (!cardComponent) {
@@ -108,6 +122,37 @@ const CarouselComponent = ({
     const handleMouseLeave = () => {
         if (setHoveredComponentId && !isPreview) {
             setHoveredComponentId(null);
+        }
+    };
+
+    // Función para renderizar componentes básicos
+    const renderBasicComponent = (child) => {
+        const commonProps = {
+            comp: child,
+            getStyles,
+            isPreview,
+            themeSettings,
+            onEdit,
+            onDelete,
+            hoveredComponentId,
+            setHoveredComponentId
+        };
+
+        switch (child.type) {
+            case 'text':
+                return <TextComponent {...commonProps} />;
+            case 'heading':
+                return <HeadingComponent {...commonProps} />;
+            case 'button':
+                return <ButtonComponent {...commonProps} onEdit={onEdit} />;
+            case 'image':
+                return <ImageComponent {...commonProps} />;
+            case 'link':
+                return <LinkComponent {...commonProps} themeSettings={themeSettings} onEdit={onEdit} />;
+            case 'video':
+                return <VideoComponent {...commonProps} />;
+            default:
+                return null;
         }
     };
 
@@ -157,6 +202,20 @@ const CarouselComponent = ({
                     />
                 </ComponentWithHover>
             )}
+
+            {/* Renderizar otros componentes (text, heading, button, etc.) */}
+            {otherComponents.map((child) => (
+                <ComponentWithHover
+                    key={child.id}
+                    component={child}
+                    isPreview={isPreview}
+                    hoveredComponentId={hoveredComponentId}
+                    setHoveredComponentId={setHoveredComponentId}
+                    getComponentTypeName={getComponentTypeName}
+                >
+                    {renderBasicComponent(child)}
+                </ComponentWithHover>
+            ))}
 
             {/* Contenedor del carrusel */}
             <div className="relative">

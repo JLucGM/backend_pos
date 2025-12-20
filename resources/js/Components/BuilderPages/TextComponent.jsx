@@ -123,11 +123,31 @@ const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
         return 'p';
     };
 
+    // Extraer el texto del contenido
+    // comp.content puede ser un objeto {text: '...'} o una cadena directa
+    const getTextContent = () => {
+        if (!comp.content) return '';
+        
+        // Si content es una cadena, devolverla directamente
+        if (typeof comp.content === 'string') {
+            return comp.content;
+        }
+        
+        // Si content es un objeto, extraer la propiedad 'text'
+        if (typeof comp.content === 'object' && comp.content !== null) {
+            return comp.content.text || '';
+        }
+        
+        // Si es otra cosa, convertir a cadena
+        return String(comp.content);
+    };
+
     const Tag = getTagName();
+    const textContent = getTextContent();
 
     return (
         <Tag style={getTextStyles()}>
-            {comp.content}
+            {textContent}
         </Tag>
     );
 };

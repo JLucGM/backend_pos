@@ -7,6 +7,9 @@ import HeadingComponent from './HeadingComponent';
 import ImageComponent from './ImageComponent';
 import ComponentWithHover from './ComponentWithHover';
 import ContainerComponent from './ContainerComponent';
+import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
+import LinkComponent from './LinkComponent';
+import DividerComponent from './DividerComponent/DividerComponent';
 
 const BannerComponent = ({
     comp,
@@ -161,6 +164,12 @@ const BannerComponent = ({
                 return <HeadingComponent {...commonProps} />;
             case 'image':
                 return <ImageComponent {...commonProps} />;
+                case 'marquee': // ¡AGREGA ESTE CASO!
+                return <MarqueeTextComponent {...commonProps} />
+                case 'link': // ¡AGREGA ESTE CASO!
+                return <LinkComponent {...commonProps} />
+                case 'divider': // ¡AGREGA ESTE CASO!
+                return <DividerComponent {...commonProps} />
             case 'container':
                 return (
                     <ContainerComponent

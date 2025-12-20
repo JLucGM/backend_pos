@@ -128,7 +128,7 @@ const HeaderMenuComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings
                 >
                     {/* CAMBIO AQUÍ: Usar item.title en lugar de item.label */}
                     {item.title || item.label || item.name || `Item ${item.id}`}
-                    {hasChildren && ' ▼'}
+                    {hasChildren && ' '}
                 </a>
 
                 {/* Submenú */}
