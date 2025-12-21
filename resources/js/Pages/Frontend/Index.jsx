@@ -18,6 +18,7 @@ import FooterComponent from '@/Components/BuilderPages/FooterComponent';
 import MarqueeTextComponent from '@/Components/BuilderPages/MarqueeComponent/MarqueeTextComponent';
 import ProductComponent from '@/Components/BuilderPages/ProductComponent';
 import CarouselComponent from '@/Components/BuilderPages/CarouselComponent';
+import HeaderMenuComponent from '@/Components/BuilderPages/HeaderMenuComponent';
 
 
 // ==============================================================
@@ -39,10 +40,12 @@ const componentMap = {
     'link':LinkComponent,
     'divider': DividerComponent,
     'header': HeaderComponent,
+    'headerMenu': HeaderMenuComponent,
     'footer': FooterComponent,
     'marquee': MarqueeTextComponent,
     'product': ProductComponent,
     'carousel': CarouselComponent,
+
     // 'list': ListComponent,         // Inferred from ListComponentEditDialog
     // Nota: 'link', 'button', 'icon' son casi siempre hijos.
 
@@ -52,7 +55,7 @@ const componentMap = {
 // ==============================================================
 // 3. FUNCIÓN DE RENDERIZADO PÚBLICO
 // ==============================================================
-function renderBlock(block, themeSettings) {
+function renderBlock(block, themeSettings, availableMenus) {
     const Component = componentMap[block.type];
 
     if (!Component) {
@@ -68,7 +71,7 @@ function renderBlock(block, themeSettings) {
     const publicProps = {
         comp: block,
         themeSettings: themeSettings, 
-        isPreview: false,
+        isPreview: true,
         getStyles: (c) => c.styles || {},
         onEdit: () => {},
         onDelete: () => {},
@@ -77,13 +80,18 @@ function renderBlock(block, themeSettings) {
         setHoveredComponentId: () => {},
     };
 
+     // Para HeaderMenuComponent, pasar availableMenus
+    if (block.type === 'headerMenu') {
+        publicProps.availableMenus = availableMenus;
+    }
+
     return <Component key={block.id} {...publicProps} />;
 }
 
 // ==============================================================
 // 4. LÓGICA DE CARGA DE FUENTES Y VISTA PRINCIPAL
 // ==============================================================
-export default function Index({ page, themeSettings }) {
+export default function Index({ page, themeSettings, availableMenus = [] }) {
     
     // console.log("--- DEBUG DE TIPOGRAFÍA ---");
     // console.log("themeSettings (raw):", themeSettings);
@@ -171,10 +179,10 @@ export default function Index({ page, themeSettings }) {
             </Head>
             
             {/* Título para SEO/Accesibilidad */}
-            <h1 className="sr-only">{page.title}</h1>
+            <h1 className="sr-onlys">{page.title}</h1>
             
             {/* Recorrer y renderizar cada bloque del layout */}
-            {layoutBlocks.map(block => renderBlock(block, themeSettings))}
+                        {layoutBlocks.map(block => renderBlock(block, themeSettings, availableMenus))}
         </>
     );
 }

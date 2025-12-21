@@ -12,11 +12,9 @@ use Inertia\Inertia;
 class FrontendController extends Controller
 {
 
-    public function show(Request $request)
+    // App/Http/Controllers/FrontendController.php
+public function show(Request $request)
 {
-    // ... (Código de obtención de $company y $slug usando $request->route()
-    // Si usaste la última versión que te di, ya no necesitas el $slug en los parámetros del método.
-
     $company = $request->attributes->get('company');
     $slug = $request->route('page_path');
 
@@ -24,14 +22,27 @@ class FrontendController extends Controller
                      ->withoutGlobalScope(CompanyScope::class);
     
     if (is_null($slug)) {
-        // Caso: RUTA RAÍZ (ej: pepsi.test/)
         $page = $query->where('is_homepage', true)->firstOrFail();
     } else {
-        // Caso: HAY SLUG (ej: pepsi.test/tienda)
         $page = $query->where('slug', $slug)->firstOrFail();
     }
-// dd($page);
+
     $themeSettings = $page->theme_settings ?? $company->theme_settings ?? [];
-    return Inertia::render('Frontend/Index', compact('page', 'themeSettings'));
+    
+    // Cargar los menús con sus ítems y sub-ítems de forma recursiva
+    $availableMenus = $company->menus()->with(['items' => function ($query) {
+        // Cargar los ítems de primer nivel y sus hijos anidados
+        $query->whereNull('parent_id')->orderBy('order')->with(['children' => function ($q) {
+            $q->orderBy('order')->with(['children' => function ($subQ) {
+                $subQ->orderBy('order');
+            }]);
+        }]);
+    }])->get()->toArray();
+
+    return Inertia::render('Frontend/Index', [
+        'page' => $page,
+        'themeSettings' => $themeSettings,
+        'availableMenus' => $availableMenus
+    ]);
 }
 }

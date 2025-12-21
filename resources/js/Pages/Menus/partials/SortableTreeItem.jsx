@@ -8,7 +8,7 @@ import InputError from '@/Components/InputError';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 // Prefijo que usamos para identificar las URLs (será el único formato permitido)
-const PAGE_PREFIX = '/page/'; 
+const PAGE_PREFIX = '/'; 
 
 export default function SortableTreeItem({
     id,

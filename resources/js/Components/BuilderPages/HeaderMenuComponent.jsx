@@ -1,38 +1,51 @@
+// components/BuilderPages/HeaderMenuComponent.jsx (para frontend)
 import React, { useState } from 'react';
+import { Link } from '@inertiajs/react';
 
-const HeaderMenuComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, availableMenus = [] }) => {
+const HeaderMenuComponent = ({ 
+    comp, 
+    getStyles, 
+    onEdit, 
+    isPreview, 
+    themeSettings, 
+    availableMenus = [] 
+}) => {
     const styles = getStyles(comp);
     const [activeSubmenu, setActiveSubmenu] = useState(null);
     const [activeSubSubmenu, setActiveSubSubmenu] = useState(null);
 
-    // OBTENER LOS ITEMS DEL MENÚ - SOLUCIÓN DIRECTA
+    // OBTENER LOS ITEMS DEL MENÚ - SOLUCIÓN MEJORADA
     let menuItems = [];
     
-    // PRIMERA OPCIÓN: Usar los items directos de comp.content (SIEMPRE)
     if (comp.content?.items && Array.isArray(comp.content.items)) {
         menuItems = comp.content.items;
-        // console.log('✅ Usando items directos de comp.content:', menuItems.length, 'items');
-    }
-    // SEGUNDA OPCIÓN: Buscar por menuId SOLO SI availableMenus tiene datos
-    else if (comp.content?.menuId && availableMenus.length > 0) {
+    } else if (comp.content?.menuId && availableMenus.length > 0) {
         const menuId = parseInt(comp.content.menuId);
-        // console.log('Buscando menú con ID:', menuId);
-        
         const menu = availableMenus.find(m => parseInt(m.id) === menuId);
-        
         if (menu?.items) {
             menuItems = menu.items;
-            // console.log('✅ Usando items de availableMenus:', menuItems.length, 'items');
-        } else {
-            console.log('❌ Menú no encontrado en availableMenus');
         }
-    }
-    // TERCERA OPCIÓN: Formato antiguo (array directo)
-    else if (Array.isArray(comp.content)) {
+    } else if (Array.isArray(comp.content)) {
         menuItems = comp.content;
-        // console.log('✅ Usando comp.content como array:', menuItems.length, 'items');
     }
 
+    // Función para procesar URLs
+    const processUrl = (url) => {
+        if (!url) return '#';
+        
+        // Si la URL ya es absoluta (http/https), dejarla como está
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        
+        // Si es una ruta interna, asegurarse de que empiece con '/'
+        if (url.startsWith('/')) {
+            return url;
+        }
+        
+        // Si no empieza con '/', agregarlo
+        return `/${url}`;
+    };
 
     // Si no hay items en modo edición, mostrar mensaje
     if (!isPreview && menuItems.length === 0) {
@@ -47,7 +60,7 @@ const HeaderMenuComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings
                     textAlign: 'center',
                     cursor: 'pointer'
                 }}
-                onDoubleClick={() => onEdit(comp)}
+                onDoubleClick={() => onEdit && onEdit(comp)}
             >
                 <strong>Menú vacío</strong><br/>
                 <small>Doble clic para configurar</small>
@@ -88,8 +101,8 @@ const HeaderMenuComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings
     const renderMenuItem = (item, depth = 0) => {
         const hasChildren = item.children && item.children.length > 0;
         const isActive = depth === 0 ? activeSubmenu === item.id : activeSubSubmenu === item.id;
-
         const itemStyles = getItemStyles(depth);
+        const processedUrl = processUrl(item.url);
 
         return (
             <div 
@@ -104,32 +117,55 @@ const HeaderMenuComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings
                     else setActiveSubSubmenu(null);
                 }}
             >
-                <a
-                    href={isPreview ? (item.url || '#') : '#'}
-                    style={itemStyles}
-                    onMouseEnter={(e) => {
-                        if (comp.styles?.hoverColor) {
-                            e.target.style.color = comp.styles.hoverColor;
-                        }
-                        if (comp.styles?.hoverBackgroundColor) {
-                            e.target.style.backgroundColor = comp.styles.hoverBackgroundColor;
-                        }
-                    }}
-                    onMouseLeave={(e) => {
-                        e.target.style.color = itemStyles.color;
-                        e.target.style.backgroundColor = itemStyles.backgroundColor;
-                    }}
-                    onClick={(e) => {
-                        if (!isPreview) {
+                {isPreview ? (
+                    // En modo preview (frontend), usar Inertia Link para navegación SPA
+                    <Link
+                        href={processedUrl}
+                        style={itemStyles}
+                        onMouseEnter={(e) => {
+                            if (comp.styles?.hoverColor) {
+                                e.target.style.color = comp.styles.hoverColor;
+                            }
+                            if (comp.styles?.hoverBackgroundColor) {
+                                e.target.style.backgroundColor = comp.styles.hoverBackgroundColor;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.color = itemStyles.color;
+                            e.target.style.backgroundColor = itemStyles.backgroundColor;
+                        }}
+                    >
+                        {item.title || item.label || item.name || `Item ${item.id}`}
+                        {hasChildren && ' '}
+                    </Link>
+                ) : (
+                    // En modo builder, mantener comportamiento de edición
+                    <a
+                        href="#"
+                        style={itemStyles}
+                        onMouseEnter={(e) => {
+                            if (comp.styles?.hoverColor) {
+                                e.target.style.color = comp.styles.hoverColor;
+                            }
+                            if (comp.styles?.hoverBackgroundColor) {
+                                e.target.style.backgroundColor = comp.styles.hoverBackgroundColor;
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.color = itemStyles.color;
+                            e.target.style.backgroundColor = itemStyles.backgroundColor;
+                        }}
+                        onClick={(e) => {
                             e.preventDefault();
-                            onEdit(comp);
-                        }
-                    }}
-                >
-                    {/* CAMBIO AQUÍ: Usar item.title en lugar de item.label */}
-                    {item.title || item.label || item.name || `Item ${item.id}`}
-                    {hasChildren && ' '}
-                </a>
+                            if (onEdit) {
+                                onEdit(comp);
+                            }
+                        }}
+                    >
+                        {item.title || item.label || item.name || `Item ${item.id}`}
+                        {hasChildren && ' '}
+                    </a>
+                )}
 
                 {/* Submenú */}
                 {hasChildren && isActive && (
@@ -162,7 +198,7 @@ const HeaderMenuComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings
     return (
         <nav
             style={containerStyles}
-            onDoubleClick={!isPreview ? () => onEdit(comp) : undefined}
+            onDoubleClick={!isPreview && onEdit ? () => onEdit(comp) : undefined}
         >
             {menuItems.map(item => renderMenuItem(item))}
         </nav>

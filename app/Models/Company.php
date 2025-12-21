@@ -46,4 +46,9 @@ class Company extends Model
     {
         return $this->hasMany(Page::class);
     }
+
+    public function menus()
+    {
+        return $this->belongsTo(Menu::class);
+    }
 }
