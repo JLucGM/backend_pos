@@ -122,24 +122,7 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
                             <SelectItem value="capitalize">Capitalizar</SelectItem>
                         </SelectContent>
                     </Select>
-                    {/* <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                            if (editStyles.textStyle === 'paragraph') {
-                                updateStyle('textTransform', themeSettings?.paragraph_textTransform || 'none');
-                            } else if (editStyles.textStyle?.startsWith('heading')) {
-                                const level = editStyles.textStyle.replace('heading', '');
-                                updateStyle('textTransform', themeSettings?.[`heading${level}_textTransform`] || 'none');
-                            } else {
-                                updateStyle('textTransform', 'none');
-                            }
-                        }}
-                        className="whitespace-nowrap"
-                    >
-                        Por defecto
-                    </Button> */}
+
                 </div>
             </div>
             <Separator className="my-4" />
@@ -375,40 +358,7 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
                     </div>
                     <Separator className="my-4" />
                 </>
-            )}
-
-
-
-            {/* Mostrar valores actuales vs valores por defecto */}
-            {/* {(isParagraphStyle || isHeadingStyle) && currentFontType === 'default' && (
-                <div className="p-3 bg-green-50 rounded-md border border-green-200">
-                    <div className="text-sm font-medium text-green-800 mb-2">
-                        ✓ Usando valores por defecto del tema
-                    </div>
-                    <div className="text-xs text-green-600 space-y-1">
-                        {isParagraphStyle ? (
-                            <>
-                                <div>Tamaño: {themeSettings?.paragraph_fontSize || '16px'}</div>
-                                <div>Peso: {themeSettings?.paragraph_fontWeight || 'normal'}</div>
-                                <div>Altura de línea: {themeSettings?.paragraph_lineHeight || '1.6'}</div>
-                            </>
-                        ) : (
-                            (() => {
-                                const level = editStyles.textStyle?.replace('heading', '');
-                                return (
-                                    <>
-                                        <div>Tamaño: {themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`}</div>
-                                        <div>Peso: {themeSettings?.[`heading${level}_fontWeight`] || 'bold'}</div>
-                                        <div>Altura de línea: {themeSettings?.[`heading${level}_lineHeight`] || '1.2'}</div>
-                                    </>
-                                );
-                            })()
-                        )}
-                    </div>
-                </div>
-            )} */}
-
-            
+            )}           
 
             {/* Resto de opciones de estilo (layout, padding, color, etc.) */}
             <div className="pt-4 border-t">

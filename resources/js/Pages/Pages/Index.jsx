@@ -9,7 +9,7 @@ import Loader from '@/Components/ui/loader';
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
 export default function Index({ pages, permission }) {
-
+console.log(pages);
     return (
         <AuthenticatedLayout
             header={

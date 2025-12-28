@@ -45,6 +45,7 @@ Route::group([
 ], function () {
     // Si accedes a pepsi.test/tienda, {domain} será 'pepsi.test' y {page_path} será 'tienda'
     Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('custom.page');
+    Route::get('/detalles-del-producto', [FrontendController::class, 'productDetail'])->name('product.detail');
 });
 
 

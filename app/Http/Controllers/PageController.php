@@ -123,7 +123,7 @@ class PageController extends RoutingController
         );
 
         $page->update($data);
-
+        // dd($page);
         return to_route('pages.edit', $page);
     }
 
@@ -137,6 +137,7 @@ class PageController extends RoutingController
 
     public function builder(Page $page)
     {
+        // dd('builder', $page);
         $user = Auth::user();
         $companyId = $user->company_id;
 
@@ -207,6 +208,7 @@ class PageController extends RoutingController
 
     public function updateLayout(Request $request, Page $page)
     {
+        // dd($request->all(), $page);
         $request->validate([
             'layout' => 'required|json', // Valida que sea JSON
         ]);

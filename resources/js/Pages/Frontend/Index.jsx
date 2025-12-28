@@ -16,9 +16,13 @@ import DividerComponent from '@/Components/BuilderPages/DividerComponent/Divider
 import HeaderComponent from '@/Components/BuilderPages/HeaderComponent';
 import FooterComponent from '@/Components/BuilderPages/FooterComponent';
 import MarqueeTextComponent from '@/Components/BuilderPages/MarqueeComponent/MarqueeTextComponent';
-import ProductComponent from '@/Components/BuilderPages/ProductComponent';
-import CarouselComponent from '@/Components/BuilderPages/CarouselComponent';
 import HeaderMenuComponent from '@/Components/BuilderPages/HeaderMenuComponent';
+import FrontendProductComponent from '@/Components/Frontend/ProductComponent';
+// import FrontendProductDetailComponent from '@/Components/Frontend/ProductDetailComponent';
+import QuantitySelectorComponent from '@/Components/BuilderPages/QuantitySelectorComponent';
+import ProductDetailStockComponent from '@/Components/BuilderPages/ProductDetailStockComponent';
+import ProductDetailAttributesComponent from '@/Components/BuilderPages/ProductDetailAttributesComponent';
+import FrontendProductDetailComponent from '@/Components/Frontend/FrontendProductDetailComponent';
 
 
 // ==============================================================
@@ -28,23 +32,28 @@ const componentMap = {
     // Componentes de Bloque/Sección (Inferred from EditDialogs)
     'banner': BannerComponent,     // Inferred from BannerComponentEditDialog
     'bento': BentoComponent,       // Inferred from BentoComponentEditDialog
-    
+
     // Componentes Genéricos de Bloque/Contenedor (Inferred from EditDialogs)
     'container': ContainerComponent, // Inferred from ContainerEditDialog
-    
+
     // Componentes Elementales (Si se permite insertarlos directamente en el layout)
     'heading': HeadingComponent,   // Inferred from HeadingEditDialog
     'text': TextComponent,         // Inferred from TextEditDialog
     'image': ImageComponent,       // Inferred from ImageEditDialog
     'video': VideoComponent,       // Inferred from VideoEditDialog
-    'link':LinkComponent,
+    'link': LinkComponent,
     'divider': DividerComponent,
     'header': HeaderComponent,
     'headerMenu': HeaderMenuComponent,
     'footer': FooterComponent,
     'marquee': MarqueeTextComponent,
-    'product': ProductComponent,
-    'carousel': CarouselComponent,
+    'product': FrontendProductComponent,
+    'productDetail': FrontendProductDetailComponent,
+    'productDetailAttributes': ProductDetailAttributesComponent,
+    'productDetailStock': ProductDetailStockComponent,
+    'quantitySelector': QuantitySelectorComponent,
+    
+    // 'carousel': FrontendCarouselComponent,
 
     // 'list': ListComponent,         // Inferred from ListComponentEditDialog
     // Nota: 'link', 'button', 'icon' son casi siempre hijos.
@@ -55,7 +64,7 @@ const componentMap = {
 // ==============================================================
 // 3. FUNCIÓN DE RENDERIZADO PÚBLICO
 // ==============================================================
-function renderBlock(block, themeSettings, availableMenus) {
+function renderBlock(block, themeSettings, availableMenus, products,  currentProduct = null) {
     const Component = componentMap[block.type];
 
     if (!Component) {
@@ -66,24 +75,44 @@ function renderBlock(block, themeSettings, availableMenus) {
             </div>
         );
     }
-    
+
     // Se pasan todas las props, incluyendo themeSettings
     const publicProps = {
         comp: block,
-        themeSettings: themeSettings, 
+        themeSettings: themeSettings,
         isPreview: true,
         getStyles: (c) => c.styles || {},
-        onEdit: () => {},
-        onDelete: () => {},
-        setComponents: () => {},
+        onEdit: () => { },
+        onDelete: () => { },
+        setComponents: () => { },
         hoveredComponentId: null,
-        setHoveredComponentId: () => {},
+        setHoveredComponentId: () => { },
     };
 
-     // Para HeaderMenuComponent, pasar availableMenus
-    if (block.type === 'headerMenu') {
-        publicProps.availableMenus = availableMenus;
-    }
+    // Para HeaderMenuComponent, pasar availableMenus
+    // if (block.type === 'headerMenu') {
+    //     publicProps.availableMenus = availableMenus;
+    // }
+    // if (block.type === 'product' || block.type === 'carousel') {
+    //     publicProps.products = products;
+    // }
+
+    // if (block.type === 'productDetail') {
+    //     publicProps.product = product;
+    // }
+
+    switch (block.type) {
+            case 'product':
+                publicProps.products = products;
+                break;
+            case 'productDetail':
+                publicProps.product = currentProduct;
+                break;
+            case 'headerMenu':
+                publicProps.availableMenus = availableMenus;
+                break;
+            // ... otros casos
+        }
 
     return <Component key={block.id} {...publicProps} />;
 }
@@ -91,8 +120,8 @@ function renderBlock(block, themeSettings, availableMenus) {
 // ==============================================================
 // 4. LÓGICA DE CARGA DE FUENTES Y VISTA PRINCIPAL
 // ==============================================================
-export default function Index({ page, themeSettings, availableMenus = [] }) {
-    
+export default function Index({ page, themeSettings, availableMenus = [], products = [], currentProduct = null, isProductDetailPage = false  }) {
+console.log(page)
     // console.log("--- DEBUG DE TIPOGRAFÍA ---");
     // console.log("themeSettings (raw):", themeSettings);
     // console.log("Fuente de encabezado (heading_font):", themeSettings?.heading_font);
@@ -110,37 +139,37 @@ export default function Index({ page, themeSettings, availableMenus = [] }) {
     } else if (Array.isArray(page.layout)) {
         layoutBlocks = page.layout;
     }
-    layoutBlocks = Array.isArray(layoutBlocks) ? layoutBlocks : []; 
+    layoutBlocks = Array.isArray(layoutBlocks) ? layoutBlocks : [];
     // --------------------------------------------------------
 
     // --- LÓGICA CLAVE: CARGA DINÁMICA DE FUENTES ---
-    
+
     const getGoogleFontUrl = (settings) => {
-        const themeSettings = settings || {}; 
+        const themeSettings = settings || {};
 
         // 1. Recolectar las fuentes utilizando las claves de theme_settings
         const rawFonts = [
-            themeSettings.heading_font, 
+            themeSettings.heading_font,
             themeSettings.body_font,
             themeSettings.subheading_font,
             themeSettings.accent_font,
         ]
-        // Filtrar solo las cadenas válidas
-        .filter(font => font && typeof font === 'string' && font.trim() !== ''); 
+            // Filtrar solo las cadenas válidas
+            .filter(font => font && typeof font === 'string' && font.trim() !== '');
 
         // 2. Extraer solo el nombre de la fuente principal y eliminar duplicados.
         const uniqueFontNames = new Set();
-        
+
         rawFonts.forEach(fullFontString => {
             // Limpia: elimina comillas y toma solo el primer nombre (ej: 'Playfair Display')
-            const cleaned = fullFontString.replace(/['"]/g, ''); 
-            const name = cleaned.split(',')[0].trim(); 
-            
+            const cleaned = fullFontString.replace(/['"]/g, '');
+            const name = cleaned.split(',')[0].trim();
+
             if (name) {
                 // EXCLUSIÓN: Ignorar fuentes estándar que no necesitan carga de Google
                 const systemFonts = ['Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'sans-serif', 'serif', 'monospace'];
                 if (!systemFonts.includes(name)) {
-                     uniqueFontNames.add(name);
+                    uniqueFontNames.add(name);
                 }
             }
         });
@@ -151,13 +180,13 @@ export default function Index({ page, themeSettings, availableMenus = [] }) {
             // Si solo se usan fuentes del sistema o no hay fuentes definidas, no se necesita URL
             return null;
         }
-        
+
         // 3. Construir el URL de Google Fonts
-        const families = fontsToLoad.map(fontName => 
+        const families = fontsToLoad.map(fontName =>
             // Se añaden los pesos 300, 400, 600, 700 por defecto
             `family=${encodeURIComponent(fontName)}:wght@300;400;600;700`
         ).join('&');
-        
+
         return `https://fonts.googleapis.com/css2?${families}&display=swap`;
     };
 
@@ -171,18 +200,35 @@ export default function Index({ page, themeSettings, availableMenus = [] }) {
             <Head>
                 <title>{page.title}</title>
                 {fontUrl && (
-                    <link 
+                    <link
                         rel="stylesheet"
-                        href={fontUrl} 
+                        href={fontUrl}
                     />
                 )}
             </Head>
-            
+
             {/* Título para SEO/Accesibilidad */}
-            <h1 className="sr-onlys">{page.title}</h1>
-            
+            {/* <h1 className="sr-onlys">{page.title}</h1>
+            <h1 className="sr-onlys">{page.content}</h1> */}
+
             {/* Recorrer y renderizar cada bloque del layout */}
-                        {layoutBlocks.map(block => renderBlock(block, themeSettings, availableMenus))}
+            {layoutBlocks.map(block => renderBlock(block, themeSettings, availableMenus, products, currentProduct))}
+            {isProductDetailPage && !currentProduct && (
+                <div className="text-center py-12 bg-gray-50">
+                    <h2 className="text-2xl font-bold text-gray-700 mb-4">
+                        Producto no encontrado
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                        El producto que buscas no está disponible o no existe.
+                    </p>
+                    <a 
+                        href="/" 
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Volver al inicio
+                    </a>
+                </div>
+            )}
         </>
     );
 }

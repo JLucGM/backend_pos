@@ -5,6 +5,10 @@ import { Link } from "@inertiajs/react";
 
 export const pagesColumns = [
     {
+        header: "id",
+        accessorKey: "id",
+    },
+    {
         header: "Nombre",
         accessorKey: "title",
     },

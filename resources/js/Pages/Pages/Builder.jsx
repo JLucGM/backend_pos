@@ -53,6 +53,14 @@ import HeaderLogoEditDialog from './partials/HeaderLogoEditDialog';
 import HeaderMenuEditDialog from './partials/HeaderMenuEditDialog';
 import FooterMenuEditDialog from './partials/FooterMenuEditDialog';
 import FooterEditDialog from './partials/FooterEditDialog';
+import ProductDetailImageEditDialog from './partials/ProductDetail/ProductDetailImageEditDialog';
+import ProductDetailNameEditDialog from './partials/ProductDetail/ProductDetailNameEditDialog';
+import ProductDetailPriceEditDialog from './partials/ProductDetail/ProductDetailPriceEditDialog';
+import ProductDetailDescriptionEditDialog from './partials/ProductDetail/ProductDetailDescriptionEditDialog';
+import ProductDetailEditDialog from './partials/ProductDetail/ProductDetailEditDialog';
+import ProductDetailAttributesEditDialog from './partials/ProductDetail/ProductDetailAttributesEditDialog';
+import ProductDetailStockEditDialog from './partials/ProductDetail/ProductDetailStockEditDialog';
+import QuantitySelectorEditDialog from './partials/ProductDetail/QuantitySelectorEditDialog';
 
 export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus }) {
     const [components, setComponents] = useState([]);
@@ -77,7 +85,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     const [currentThemeSettings, setCurrentThemeSettings] = useState(pageThemeSettings);
     const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
     const [hasCopiedTheme, setHasCopiedTheme] = useState(!!page.theme_settings);
-
+    console.log(themeSettings)
     // Función para obtener el tema aplicado
     const getAppliedTheme = () => {
         // 1. Prioridad: Tema específico de la página
@@ -173,7 +181,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         // Buscar en banners, products, carousels, etc.
                         const typesWithChildren = [
                             'banner', 'product', 'productCard', 'carousel',
-                            'carouselCard', 'bento', 'bentoFeature', 'header', 'footer'
+                            'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
+                            'productDetail'
                         ];
 
                         if (typesWithChildren.includes(component.type) &&
@@ -262,6 +271,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     const found = findComponentType(item.content.children, targetId);
                     if (found) return found;
                 }
+                if (item.type === 'productDetail' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
             }
             return null;
         };
@@ -288,7 +301,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 // Componentes con estructura children
                 const typesWithChildren = [
                     'banner', 'product', 'productCard', 'carousel',
-                    'carouselCard', 'bento', 'bentoFeature', 'header', 'footer'
+                    'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
+                    'productDetail'
                 ];
 
                 if (typesWithChildren.includes(item.type) &&
@@ -785,7 +799,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 color: '#000000',
                                 fontSize: '24px',
                                 fontWeight: 'bold',
-                                background:'none',
+                                background: 'none',
                             }
                         },
                         {
@@ -1124,6 +1138,152 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         }
                     ]
                 };
+            }
+
+            if (selectedType === 'productDetail') {
+                const productDetailId = Date.now();
+                const imageId = productDetailId + 1;
+                const nameId = productDetailId + 2;
+                const priceId = productDetailId + 3;
+                const descriptionId = productDetailId + 4;
+                const buttonId = productDetailId + 5;
+                const attributesId = productDetailId + 6;
+                const stockId = productDetailId + 7;
+                const quantityId = productDetailId + 8;
+
+                content = {
+                    // Los hijos como componentes independientes
+                    children: [
+                        {
+                            id: imageId,
+                            type: 'productDetailImage',
+                            content: '',
+                            styles: {
+                                aspectRatio: 'square',
+                                imageBorder: 'none',
+                                imageBorderThickness: '1px',
+                                imageBorderOpacity: '1',
+                                imageBorderRadius: '0px'
+                            }
+                        },
+                        {
+                            id: nameId,
+                            type: 'productDetailName',
+                            content: '',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'left',
+                                color: '#000000',
+                                fontSize: '32px',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        {
+                            id: priceId,
+                            type: 'productDetailPrice',
+                            content: '',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'left',
+                                color: '#666666',
+                                fontSize: '24px',
+                                fontWeight: 'normal'
+                            }
+                        },
+                        {
+                            id: descriptionId,
+                            type: 'productDetailDescription',
+                            content: '',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'left',
+                                color: '#000000',
+                                fontSize: '16px',
+                                fontWeight: 'normal'
+                            }
+                        },
+                        {
+                            id: buttonId,
+                            type: 'button',
+                            content: 'Agregar al carrito',
+                            styles: {
+                                buttonType: 'primary',
+                                layout: 'fit',
+                                paddingTop: '10px',
+                                paddingRight: '10px',
+                                paddingBottom: '10px',
+                                paddingLeft: '10px',
+                                borderRadius: '4px',
+                                backgroundColor: '#007bff',
+                                color: '#ffffff'
+                            }
+                        },
+                        {
+                            id: attributesId,
+                            type: 'productDetailAttributes',
+                            content: {
+                                title: 'Opciones del Producto',
+                            },
+                            styles: {
+                                titleColor: '#000000',
+                                titleSize: '18px',
+                                labelColor: '#666666',
+                                labelSize: '14px',
+                            }
+                        },
+                        {
+                            id: stockId,
+                            type: 'productDetailStock',
+                            content: {
+                                inStockText: 'En stock',
+                                lowStockText: 'Pocas unidades',
+                                outOfStockText: 'Agotado',
+                                showSku: true,
+                            },
+                            styles: {
+                                padding: '12px 16px',
+                                borderRadius: '8px',
+                                borderWidth: '1px',
+                                inStockBgColor: '#dcfce7',
+                                inStockColor: '#166534',
+                                outOfStockBgColor: '#fee2e2',
+                                outOfStockColor: '#991b1b',
+                            }
+                        },
+                        {
+                            id: quantityId,
+                            type: 'quantitySelector',
+                            content: {
+                                label: 'Cantidad:',
+                                showMax: true,
+                            },
+                            styles: {
+                                labelColor: '#666666',
+                                borderColor: '#d1d5db',
+                                borderRadius: '6px',
+                                buttonColor: '#374151',
+                                inputColor: '#000000',
+                            }
+                        }
+                    ]
+                };
+
+                const newItem = {
+                    id: productDetailId,
+                    type: selectedType,
+                    content,
+                    styles: {}
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
             }
 
             if (selectedType === 'pageContent') {
@@ -2055,6 +2215,74 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 themeSettings={themeSettings}
                                             />
                                         )}
+                                        {editingComponent?.type === 'productDetail' && (
+                                            <ProductDetailEditDialog
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productDetailImage' && (
+                                            <ProductDetailImageEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productDetailName' && (
+                                            <ProductDetailNameEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productDetailPrice' && (
+                                            <ProductDetailPriceEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productDetailDescription' && (
+                                            <ProductDetailDescriptionEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'productDetailAttributes' && (
+                                            <ProductDetailAttributesEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+
+                                        {editingComponent?.type === 'productDetailStock' && (
+                                            <ProductDetailStockEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+
+                                        {editingComponent?.type === 'quantitySelector' && (
+                                            <QuantitySelectorEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
                                     </ScrollArea>
 
                                     <div className="flex gap-2 pt-4 border-t mt-4">
@@ -2169,6 +2397,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <SelectItem value="bento">Bento</SelectItem>
                                 <SelectItem value="product">Productos</SelectItem>
                                 <SelectItem value="carousel">Carrusel de Productos</SelectItem>
+                                <SelectItem value="productDetail">Detalle de Producto</SelectItem>
                                 {/* <SelectItem value="heading">Encabezado</SelectItem> */}
                                 {/* <SelectItem value="text">Texto</SelectItem> */}
                                 {/* <SelectItem value="image">Imagen</SelectItem> */}

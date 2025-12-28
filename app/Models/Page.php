@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -62,6 +63,21 @@ class Page extends Model
     {
         static::addGlobalScope(new CompanyScope);
     }
+
+    public function resolveRouteBinding($value, $field = null)
+{
+    $field = $field ?: $this->getRouteKeyName();
+    
+    // Si hay usuario autenticado, filtrar por su company_id
+    if (Auth::check()) {
+        return $this->where($field, $value)
+            ->where('company_id', Auth::user()->company_id)
+            ->firstOrFail();
+    }
+    
+    // Fallback al comportamiento original
+    return parent::resolveRouteBinding($value, $field);
+}
 
     // Evitar borrar páginas por defecto
     public function delete()

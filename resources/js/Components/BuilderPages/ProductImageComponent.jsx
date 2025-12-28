@@ -1,45 +1,37 @@
-// components/BuilderPages/components/ProductImageComponent.jsx
 import React from 'react';
 
-const ProductImageComponent = ({
+const ProductDetailImageComponent = ({
     comp,
     getStyles,
     isPreview,
     onEdit,
-    onDelete
+    themeSettings, // Recibir themeSettings como prop
+    appliedTheme // Recibir appliedTheme como prop
 }) => {
     const styles = comp.styles || {};
+    const theme = themeSettings || {};
     
-    // Función para obtener las dimensiones según el aspect ratio
-    const getAspectRatioStyles = () => {
-        switch (styles.aspectRatio) {
-            case 'landscape':
-                return {
-                    width: '100%',
-                    height: '0',
-                    paddingBottom: '56.25%', // 16:9 aspect ratio (9/16 = 0.5625)
-                    position: 'relative'
-                };
-            case 'portrait':
-                return {
-                    width: '100%',
-                    height: '0',
-                    paddingBottom: '125%', // 4:5 aspect ratio (5/4 = 1.25)
-                    position: 'relative'
-                };
-            case 'square':
-            default:
-                return {
-                    width: '100%',
-                    height: '0',
-                    paddingBottom: '100%', // 1:1 aspect ratio
-                    position: 'relative'
-                };
-        }
+    // Función para obtener estilos del tema o valores por defecto
+    const getThemeStyle = (key, defaultValue) => {
+        return theme[key] || defaultValue;
     };
 
-    const containerStyles = getAspectRatioStyles();
+    // Obtener valores del tema para bordes y radios
+    const defaultBorderColor = getThemeStyle('borders', '0 0% 86.1%');
+    const defaultBorderRadius = getThemeStyle('image_border_radius', getThemeStyle('border_radius', '8px'));
+    const defaultBorderThickness = getThemeStyle('image_border_thickness', '1px');
+    const defaultBorderOpacity = getThemeStyle('image_border_opacity', '1');
     
+    const containerStyles = {
+        width: '100%',
+        maxWidth: '500px',
+        height: '0',
+        paddingBottom: '100%',
+        position: 'relative',
+        margin: '0 auto'
+    };
+    
+    // Aplicar estilos del tema cuando no haya estilos específicos del componente
     const imageStyles = {
         position: 'absolute',
         top: 0,
@@ -47,13 +39,18 @@ const ProductImageComponent = ({
         width: '100%',
         height: '100%',
         border: styles.imageBorder === 'solid' 
-            ? `${styles.imageBorderThickness} solid rgba(0, 0, 0, ${styles.imageBorderOpacity})` 
-            : 'none',
-        borderRadius: styles.imageBorderRadius || '0px',
+            ? `${styles.imageBorderThickness || defaultBorderThickness} solid hsla(${defaultBorderColor}, ${styles.imageBorderOpacity || defaultBorderOpacity})` 
+            : (styles.imageBorder === 'none' ? 'none' : 
+               // Si no está definido, usar el tema
+               theme.image_default_border === 'enabled' 
+                ? `${defaultBorderThickness} solid hsla(${defaultBorderColor}, ${defaultBorderOpacity})`
+                : 'none'),
+        borderRadius: styles.imageBorderRadius || defaultBorderRadius,
         objectFit: 'cover',
+        // Puedes agregar más estilos del tema aquí
+        boxShadow: theme.image_shadow ? `0 2px 4px hsla(${theme.shadows}, 0.1)` : 'none',
     };
 
-    // Manejo de eventos de mouse para edición (solo estilos)
     const handleClick = () => {
         if (!isPreview && onEdit) {
             onEdit(comp);
@@ -78,4 +75,4 @@ const ProductImageComponent = ({
     );
 };
 
-export default ProductImageComponent;
+export default ProductDetailImageComponent;
