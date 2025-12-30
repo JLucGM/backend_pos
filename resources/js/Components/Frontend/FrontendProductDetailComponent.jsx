@@ -1,6 +1,8 @@
+import cartHelper from '@/Helper/cartHelper';
 import React, { useState, useEffect } from 'react';
+// import { Alert } from '../ui/alert';
 
-const FrontendProductDetailComponent = ({ comp, product, themeSettings }) => {
+const FrontendProductDetailComponent = ({ comp, product, themeSettings, companyId }) => {
     // console.log("🔵 Componente montado con producto:", product?.product_name);
 
     const children = comp.content?.children || [];
@@ -1004,15 +1006,64 @@ const renderStock = (child) => {
     };
 
     // Función para agregar al carrito
-    const handleAddToCart = () => {
-        console.log('🛒 Agregar al carrito:', {
-            productId: product.id,
-            combinationId: selectedCombination?.id,
-            quantity,
-            price: currentPrice
-        });
-        alert(`Agregado al carrito: ${product.product_name} (Cantidad: ${quantity})`);
+const handleAddToCart = () => {
+    if (!product || !companyId) return;
+        
+        // Usar el helper con el companyId
+        cartHelper.addToCart(
+            companyId, 
+            product, 
+            selectedCombination || null, 
+            quantity
+        );
+    
+    // Usar la combinación seleccionada si existe
+    const combination = selectedCombination || null;
+    
+    // Crear el item del carrito
+    const cartItem = {
+        productId: product.id,
+        productName: product.product_name,
+        combinationId: combination?.id,
+        combinationName: combination 
+            ? combination.attribute_values.map(attr => attr.value_name).join(' / ')
+            : null,
+        price: currentPrice,
+        quantity: quantity,
+        image: currentImage || product.media?.[0]?.original_url || '',
+        stock: combination 
+            ? (product.stocks?.find(s => s.combination_id === combination.id)?.quantity || 0)
+            : (product.stocks?.reduce((sum, stock) => sum + stock.quantity, 0) || 0)
     };
+    
+    // Obtener carrito actual
+    const currentCart = JSON.parse(localStorage.getItem('shoppingCart')) || [];
+    
+    // Verificar si ya existe
+    const existingIndex = currentCart.findIndex(item => 
+        item.productId === cartItem.productId && 
+        item.combinationId === cartItem.combinationId
+    );
+    
+    if (existingIndex >= 0) {
+        // Actualizar cantidad
+        currentCart[existingIndex].quantity += cartItem.quantity;
+    } else {
+        // Agregar nuevo
+        currentCart.push(cartItem);
+    }
+    
+    // Guardar en localStorage
+    localStorage.setItem('shoppingCart', JSON.stringify(currentCart));
+    
+    // Mostrar notificación
+    // Alert(`${product.product_name} agregado al carrito`);
+    
+    // Opcional: Redirigir al carrito después de añadir
+    if (window.confirm('¿Deseas ir al carrito?')) {
+        window.location.href = '/carrito-de-compras';
+    }
+};
 
     // Componente para mostrar galería de imágenes
     const renderImageGallery = (child) => {

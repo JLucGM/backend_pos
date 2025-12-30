@@ -1,9 +1,12 @@
-import React from 'react';
-import { Head } from '@inertiajs/react'; // Componente clave para inyectar CSS de fuentes
+// frontend/index.jsx - VERSIÓN CORREGIDA
 
-// ==============================================================
-// 1. IMPORTAR LOS COMPONENTES DE BLOQUE DE PÁGINA (TOP-LEVEL)
-// ==============================================================
+import React, { useState, useEffect } from 'react';
+import { Head, router } from '@inertiajs/react';
+
+// IMPORTANTE: Importar CartComponent en lugar de FrontendCartComponent
+import CartComponent from '@/Components/BuilderPages/Cart/CartComponent'; // ← CAMBIADO
+
+// Importar otros componentes
 import BannerComponent from '@/Components/BuilderPages/BannerComponent';
 import BentoComponent from '@/Components/BuilderPages/BentoComponent/BentoComponent';
 import ContainerComponent from '@/Components/BuilderPages/ContainerComponent';
@@ -18,29 +21,22 @@ import FooterComponent from '@/Components/BuilderPages/FooterComponent';
 import MarqueeTextComponent from '@/Components/BuilderPages/MarqueeComponent/MarqueeTextComponent';
 import HeaderMenuComponent from '@/Components/BuilderPages/HeaderMenuComponent';
 import FrontendProductComponent from '@/Components/Frontend/ProductComponent';
-// import FrontendProductDetailComponent from '@/Components/Frontend/ProductDetailComponent';
 import QuantitySelectorComponent from '@/Components/BuilderPages/QuantitySelectorComponent';
 import ProductDetailStockComponent from '@/Components/BuilderPages/ProductDetailStockComponent';
 import ProductDetailAttributesComponent from '@/Components/BuilderPages/ProductDetailAttributesComponent';
 import FrontendProductDetailComponent from '@/Components/Frontend/FrontendProductDetailComponent';
 
-
 // ==============================================================
 // 2. MAPEO DE TIPOS A COMPONENTES
 // ==============================================================
 const componentMap = {
-    // Componentes de Bloque/Sección (Inferred from EditDialogs)
-    'banner': BannerComponent,     // Inferred from BannerComponentEditDialog
-    'bento': BentoComponent,       // Inferred from BentoComponentEditDialog
-
-    // Componentes Genéricos de Bloque/Contenedor (Inferred from EditDialogs)
-    'container': ContainerComponent, // Inferred from ContainerEditDialog
-
-    // Componentes Elementales (Si se permite insertarlos directamente en el layout)
-    'heading': HeadingComponent,   // Inferred from HeadingEditDialog
-    'text': TextComponent,         // Inferred from TextEditDialog
-    'image': ImageComponent,       // Inferred from ImageEditDialog
-    'video': VideoComponent,       // Inferred from VideoEditDialog
+    'banner': BannerComponent,
+    'bento': BentoComponent,
+    'container': ContainerComponent,
+    'heading': HeadingComponent,
+    'text': TextComponent,
+    'image': ImageComponent,
+    'video': VideoComponent,
     'link': LinkComponent,
     'divider': DividerComponent,
     'header': HeaderComponent,
@@ -52,19 +48,14 @@ const componentMap = {
     'productDetailAttributes': ProductDetailAttributesComponent,
     'productDetailStock': ProductDetailStockComponent,
     'quantitySelector': QuantitySelectorComponent,
-    
-    // 'carousel': FrontendCarouselComponent,
-
-    // 'list': ListComponent,         // Inferred from ListComponentEditDialog
-    // Nota: 'link', 'button', 'icon' son casi siempre hijos.
-
-    // Añade aquí cualquier otro componente que se inserte directamente en el array 'layout'
+    'cart': CartComponent, // ← AHORA USA CartComponent en lugar de FrontendCartComponent
 };
 
 // ==============================================================
 // 3. FUNCIÓN DE RENDERIZADO PÚBLICO
 // ==============================================================
-function renderBlock(block, themeSettings, availableMenus, products,  currentProduct = null) {
+function renderBlock(block, themeSettings, availableMenus, products, currentProduct = null, companyId) {
+    console.log(products)
     const Component = componentMap[block.type];
 
     if (!Component) {
@@ -76,11 +67,11 @@ function renderBlock(block, themeSettings, availableMenus, products,  currentPro
         );
     }
 
-    // Se pasan todas las props, incluyendo themeSettings
-    const publicProps = {
+    // Props base para todos los componentes
+    const baseProps = {
         comp: block,
         themeSettings: themeSettings,
-        isPreview: true,
+        isPreview: true, // En frontend siempre es preview (no modo edición)
         getStyles: (c) => c.styles || {},
         onEdit: () => { },
         onDelete: () => { },
@@ -89,46 +80,48 @@ function renderBlock(block, themeSettings, availableMenus, products,  currentPro
         setHoveredComponentId: () => { },
     };
 
-    // Para HeaderMenuComponent, pasar availableMenus
-    // if (block.type === 'headerMenu') {
-    //     publicProps.availableMenus = availableMenus;
-    // }
-    // if (block.type === 'product' || block.type === 'carousel') {
-    //     publicProps.products = products;
-    // }
-
-    // if (block.type === 'productDetail') {
-    //     publicProps.product = product;
-    // }
-
+    // Props específicas por tipo de componente
     switch (block.type) {
-            case 'product':
-                publicProps.products = products;
-                break;
-            case 'productDetail':
-                publicProps.product = currentProduct;
-                break;
-            case 'headerMenu':
-                publicProps.availableMenus = availableMenus;
-                break;
-            // ... otros casos
-        }
-
-    return <Component key={block.id} {...publicProps} />;
+        case 'product':
+            return <Component key={block.id} {...baseProps} products={products} companyId={companyId} />;
+        
+        case 'productDetail':
+            return <Component key={block.id} {...baseProps} product={currentProduct} companyId={companyId} />;
+        
+        case 'headerMenu':
+            return <Component key={block.id} {...baseProps} availableMenus={availableMenus} />;
+        
+        case 'cart':
+            // PARA EL CARRITO: Usar CartComponent en modo frontend
+            return (
+                <Component 
+                    key={block.id}
+                    {...baseProps}
+                    mode="frontend" // ← MODO FRONTEND
+                    companyId={companyId} // ← ID de la compañía para obtener el carrito
+                    products={products} // ← Productos si son necesarios
+                />
+            );
+        
+        default:
+            return <Component key={block.id} {...baseProps} />;
+    }
 }
 
 // ==============================================================
 // 4. LÓGICA DE CARGA DE FUENTES Y VISTA PRINCIPAL
 // ==============================================================
-export default function Index({ page, themeSettings, availableMenus = [], products = [], currentProduct = null, isProductDetailPage = false  }) {
-console.log(page)
-    // console.log("--- DEBUG DE TIPOGRAFÍA ---");
-    // console.log("themeSettings (raw):", themeSettings);
-    // console.log("Fuente de encabezado (heading_font):", themeSettings?.heading_font);
-    // console.log("Fuente de cuerpo (body_font):", themeSettings?.body_font);
-    // console.log("---------------------------");
-
-    // --- Lógica de Decodificación del Layout (Se mantiene la estabilidad) ---
+export default function Index({ 
+    page, 
+    themeSettings, 
+    availableMenus = [], 
+    products = [], 
+    currentProduct = null, 
+    isProductDetailPage = false, 
+    companyId 
+}) {
+    
+    // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
     if (typeof page.layout === 'string' && page.layout.trim() !== '') {
         try {
@@ -140,63 +133,50 @@ console.log(page)
         layoutBlocks = page.layout;
     }
     layoutBlocks = Array.isArray(layoutBlocks) ? layoutBlocks : [];
-    // --------------------------------------------------------
-
+    
     // --- LÓGICA CLAVE: CARGA DINÁMICA DE FUENTES ---
-
     const getGoogleFontUrl = (settings) => {
         const themeSettings = settings || {};
-
-        // 1. Recolectar las fuentes utilizando las claves de theme_settings
+        
         const rawFonts = [
             themeSettings.heading_font,
             themeSettings.body_font,
             themeSettings.subheading_font,
             themeSettings.accent_font,
         ]
-            // Filtrar solo las cadenas válidas
-            .filter(font => font && typeof font === 'string' && font.trim() !== '');
-
-        // 2. Extraer solo el nombre de la fuente principal y eliminar duplicados.
+        .filter(font => font && typeof font === 'string' && font.trim() !== '');
+        
         const uniqueFontNames = new Set();
-
+        
         rawFonts.forEach(fullFontString => {
-            // Limpia: elimina comillas y toma solo el primer nombre (ej: 'Playfair Display')
             const cleaned = fullFontString.replace(/['"]/g, '');
             const name = cleaned.split(',')[0].trim();
-
+            
             if (name) {
-                // EXCLUSIÓN: Ignorar fuentes estándar que no necesitan carga de Google
                 const systemFonts = ['Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'sans-serif', 'serif', 'monospace'];
                 if (!systemFonts.includes(name)) {
                     uniqueFontNames.add(name);
                 }
             }
         });
-
+        
         const fontsToLoad = [...uniqueFontNames];
-
+        
         if (fontsToLoad.length === 0) {
-            // Si solo se usan fuentes del sistema o no hay fuentes definidas, no se necesita URL
             return null;
         }
-
-        // 3. Construir el URL de Google Fonts
+        
         const families = fontsToLoad.map(fontName =>
-            // Se añaden los pesos 300, 400, 600, 700 por defecto
             `family=${encodeURIComponent(fontName)}:wght@300;400;600;700`
         ).join('&');
-
+        
         return `https://fonts.googleapis.com/css2?${families}&display=swap`;
     };
-
+    
     const fontUrl = getGoogleFontUrl(themeSettings);
-    // --------------------------------------------------------
-
+    
     return (
         <>
-            {/* 5. USO DEL COMPONENTE <Head> PARA CARGAR EL CSS DE LAS FUENTES */}
-            {/* Si fontUrl es null, Inertia no renderizará el <link> */}
             <Head>
                 <title>{page.title}</title>
                 {fontUrl && (
@@ -206,13 +186,19 @@ console.log(page)
                     />
                 )}
             </Head>
-
-            {/* Título para SEO/Accesibilidad */}
-            {/* <h1 className="sr-onlys">{page.title}</h1>
-            <h1 className="sr-onlys">{page.content}</h1> */}
-
-            {/* Recorrer y renderizar cada bloque del layout */}
-            {layoutBlocks.map(block => renderBlock(block, themeSettings, availableMenus, products, currentProduct))}
+            
+            {/* Renderizar cada bloque del layout */}
+            {layoutBlocks.map(block => 
+                renderBlock(
+                    block, 
+                    themeSettings, 
+                    availableMenus, 
+                    products, 
+                    currentProduct, 
+                    companyId
+                )
+            )}
+            
             {isProductDetailPage && !currentProduct && (
                 <div className="text-center py-12 bg-gray-50">
                     <h2 className="text-2xl font-bold text-gray-700 mb-4">
@@ -221,8 +207,8 @@ console.log(page)
                     <p className="text-gray-600 mb-6">
                         El producto que buscas no está disponible o no existe.
                     </p>
-                    <a 
-                        href="/" 
+                    <a
+                        href="/"
                         className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         Volver al inicio

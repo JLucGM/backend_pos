@@ -39,7 +39,7 @@ class FrontendController extends Controller
 
         // OBTENER PRODUCTOS DE LA COMPAÑÍA
         $products = $company->products()
-            ->with(['media', 'combinations.combinationAttributeValue.attributeValue.attribute', 'stocks'])
+            ->with(['media', 'taxes', 'combinations.combinationAttributeValue.attributeValue.attribute', 'stocks'])
             ->where('is_active', true)
             ->get()
             ->map(function ($product) {
@@ -101,7 +101,7 @@ class FrontendController extends Controller
             if ($productSlug) {
                 $currentProduct = $company->products()
                     ->where('slug', $productSlug)
-                    ->with(['media', 'combinations.combinationAttributeValue.attributeValue.attribute', 'stocks'])
+                    ->with(['media', 'taxes', 'combinations.combinationAttributeValue.attributeValue.attribute', 'stocks'])
                     ->first();
 
                 if ($currentProduct) {
@@ -145,7 +145,7 @@ class FrontendController extends Controller
                 }
             }
         }
-        // dd($page);
+        // dd($company->id);
         return Inertia::render('Frontend/Index', [
             'page' => $page,
             'themeSettings' => $themeSettings,
@@ -153,6 +153,7 @@ class FrontendController extends Controller
             'products' => $products,
             'currentProduct' => $currentProduct,
             'isProductDetailPage' => $isProductDetailPage,
+            'companyId' => $company->id,
         ]);
     }
 }

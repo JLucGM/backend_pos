@@ -40,6 +40,9 @@ import ProductDetailComponent from './ProductDetailComponent';
 import ProductDetailAttributesComponent from './ProductDetailAttributesComponent';
 import ProductDetailStockComponent from './ProductDetailStockComponent';
 import QuantitySelectorComponent from './QuantitySelectorComponent';
+import CartComponent from './Cart/CartComponent';
+import CartItemsComponent from './Cart/CartItemsComponent';
+import CartSummaryComponent from './Cart/CartSummaryComponent';
 
 const CanvasItem = ({
     comp,
@@ -128,7 +131,7 @@ const CanvasItem = ({
                         availableMenus={availableMenus}
                     />
                 );
-                
+
             case 'footer':
                 return (
                     <FooterComponent
@@ -396,73 +399,112 @@ const CanvasItem = ({
                         onDelete={onDeleteComponent}
                     />
                 );
-                case 'productDetail':
-    return (
-        <ProductDetailComponent
-            key={comp.id}
-            comp={comp}
-            getStyles={getStyles}
-            onEdit={onEditComponent}
-            onDelete={onDeleteComponent}
-            themeSettings={themeSettings}
-            isPreview={isPreview}
-            products={products}
-            setComponents={setComponents}
-            hoveredComponentId={hoveredComponentId}
-            setHoveredComponentId={setHoveredComponentId}
-        />
-    );
-    case 'productDetailAttributes':
-    return (
-        <ProductDetailAttributesComponent
-            key={comp.id}
-            comp={comp}
-            getStyles={getStyles}
-            onEdit={onEditComponent}
-            onDelete={onDeleteComponent}
-            themeSettings={themeSettings}
-            isPreview={isPreview}
-            products={products}
-            setComponents={setComponents}
-            hoveredComponentId={hoveredComponentId}
-            setHoveredComponentId={setHoveredComponentId}
-            product={null} // En builder, no hay producto específico
-        />
-    );
-case 'productDetailStock':
-    return (
-        <ProductDetailStockComponent
-            key={comp.id}
-            comp={comp}
-            getStyles={getStyles}
-            onEdit={onEditComponent}
-            onDelete={onDeleteComponent}
-            themeSettings={themeSettings}
-            isPreview={isPreview}
-            products={products}
-            setComponents={setComponents}
-            hoveredComponentId={hoveredComponentId}
-            setHoveredComponentId={setHoveredComponentId}
-            product={null}
-            currentCombination={null}
-        />
-    );
-case 'quantitySelector':
-    return (
-        <QuantitySelectorComponent
-            key={comp.id}
-            comp={comp}
-            getStyles={getStyles}
-            onEdit={onEditComponent}
-            onDelete={onDeleteComponent}
-            themeSettings={themeSettings}
-            isPreview={isPreview}
-            products={products}
-            setComponents={setComponents}
-            hoveredComponentId={hoveredComponentId}
-            setHoveredComponentId={setHoveredComponentId}
-        />
-    );
+            case 'productDetail':
+                return (
+                    <ProductDetailComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'productDetailAttributes':
+                return (
+                    <ProductDetailAttributesComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                        product={null} // En builder, no hay producto específico
+                    />
+                );
+            case 'productDetailStock':
+                return (
+                    <ProductDetailStockComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                        product={null}
+                        currentCombination={null}
+                    />
+                );
+            case 'quantitySelector':
+                return (
+                    <QuantitySelectorComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'cart':
+                return (
+                    <CartComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        products={products}
+                    />
+                );
+            case 'cartItems':
+                return (
+                    <CartItemsComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        // En producción, estos vendrían del estado global del carrito
+                        cartItems={[]}
+                        onUpdateQuantity={() => { }}
+                        onRemoveItem={() => { }}
+                    />
+                );
+            case 'cartSummary':
+                return (
+                    <CartSummaryComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        isPreview={isPreview}
+                        cartItems={[]}
+                        cartTotal={0}
+                    />
+                );
             case 'pageContent':
                 return (
                     <PageContentComponent
@@ -522,8 +564,11 @@ case 'quantitySelector':
             'carouselName': 'Nombre del Carrusel',
             'carouselPrice': 'Precio del Carrusel',
             'header': 'Header',
-'headerLogo': 'Logo',
-'headerMenu': 'Menú',
+            'headerLogo': 'Logo',
+            'headerMenu': 'Menú',
+            'cart': 'Carrito de Compras',
+            'cartItems': 'Lista de Productos',
+            'cartSummary': 'Resumen del Pedido',
         };
         return typeNames[type] || type;
     };

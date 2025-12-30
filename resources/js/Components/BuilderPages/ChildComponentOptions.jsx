@@ -83,6 +83,8 @@ const ALLOWED_CHILD_TYPES = {
     
     // Bento: solo permite bentoFeature
     bento: ['bentoFeature','text'],
+
+    cart: ['cartItems', 'cartSummary', ],
     
     // Header y Footer: no permiten agregar hijos desde este menú
     header: [],

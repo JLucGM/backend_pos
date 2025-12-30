@@ -143,6 +143,7 @@ class PageController extends RoutingController
 
         $products = Product::with('stocks', 'combinations.combinationAttributeValue.attributeValue.attribute', 'categories', 'media')
             ->where('company_id', $companyId)
+            ->where('is_active', true)
             ->get();
 
         $availableTemplates = Template::where('is_global', true)

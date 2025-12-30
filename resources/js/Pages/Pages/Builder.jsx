@@ -61,6 +61,9 @@ import ProductDetailEditDialog from './partials/ProductDetail/ProductDetailEditD
 import ProductDetailAttributesEditDialog from './partials/ProductDetail/ProductDetailAttributesEditDialog';
 import ProductDetailStockEditDialog from './partials/ProductDetail/ProductDetailStockEditDialog';
 import QuantitySelectorEditDialog from './partials/ProductDetail/QuantitySelectorEditDialog';
+import CartEditDialog from './partials/Cart/CartEditDialog';
+import CartItemsEditDialog from './partials/Cart/CartItemsEditDialog';
+import CartSummaryEditDialog from './partials/Cart/CartSummaryEditDialog';
 
 export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus }) {
     const [components, setComponents] = useState([]);
@@ -85,7 +88,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     const [currentThemeSettings, setCurrentThemeSettings] = useState(pageThemeSettings);
     const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
     const [hasCopiedTheme, setHasCopiedTheme] = useState(!!page.theme_settings);
-    console.log(themeSettings)
+    // console.log(themeSettings)
     // Función para obtener el tema aplicado
     const getAppliedTheme = () => {
         // 1. Prioridad: Tema específico de la página
@@ -152,6 +155,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     // Funciones principales
     const handleEditComponent = (comp) => {
+        // console.log('Editing component:', comp.type, comp);
         setEditingComponent(comp);
         setEditContent(comp.content);
         setEditStyles(comp.styles || {});
@@ -159,6 +163,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     const saveEdit = () => {
         if (editingComponent) {
+            if (editingComponent) {
+                // console.log('Saving component:', editingComponent.type, editContent, editStyles);
+            }
             setComponents((prev) => {
                 const updateComponentInTree = (components, targetId, newData) => {
                     return components.map(component => {
@@ -182,7 +189,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         const typesWithChildren = [
                             'banner', 'product', 'productCard', 'carousel',
                             'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                            'productDetail'
+                            'productDetail', 'cart'
                         ];
 
                         if (typesWithChildren.includes(component.type) &&
@@ -1286,6 +1293,91 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 return;
             }
 
+            // En handleAddComponent, después del caso 'productDetail'
+            if (selectedType === 'cart') {
+                const cartId = Date.now();
+                const itemsId = cartId + 1;
+                const summaryId = cartId + 2;
+                const couponId = cartId + 3;
+
+                content = {
+                    // Los hijos como componentes independientes
+                    children: [
+                        {
+                            id: itemsId,
+                            type: 'cartItems',
+                            content: {
+                                title: 'Tu carrito',
+                                emptyMessage: 'Tu carrito está vacío',
+                                showImage: true,
+                                showCombination: true,
+                                showStock: true,
+                            },
+                            styles: {
+                                backgroundColor: '#ffffff',
+                                padding: '20px',
+                                borderRadius: '12px',
+                                titleSize: '24px',
+                                titleColor: '#000000',
+                                imageSize: '80px',
+                                rowPadding: '16px',
+                                rowBorder: '1px solid #e5e7eb',
+                                buttonColor: '#dc2626',
+                            }
+                        },
+
+                        {
+                            id: summaryId,
+                            type: 'cartSummary',
+                            content: {
+                                title: 'Resumen del pedido',
+                                showSubtotal: true,
+                                showShipping: true,
+                                showTax: true,
+                                showDiscount: true,
+                                shippingText: 'Envío',
+                                taxText: 'Impuestos',
+                                checkoutButtonText: 'Proceder al pago',
+                            },
+                            styles: {
+                                backgroundColor: '#f9fafb',
+                                padding: '24px',
+                                borderRadius: '12px',
+                                borderColor: '#e5e7eb',
+                                titleSize: '20px',
+                                totalFontSize: '24px',
+                            }
+                        },
+                    ]
+                };
+
+                const newItem = {
+                    id: cartId,
+                    type: selectedType,
+                    content,
+                    styles: {
+                        layoutType: 'grid',
+                        maxWidth: '1200px',
+                        paddingTop: '40px',
+                        paddingRight: '20px',
+                        paddingBottom: '40px',
+                        paddingLeft: '20px',
+                        backgroundColor: '#ffffff',
+                        gap: '40px',
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+
             if (selectedType === 'pageContent') {
                 content = null; // No almacenamos el contenido, se tomará directamente de la página
             }
@@ -2283,6 +2375,31 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 setEditStyles={setEditStyles}
                                             />
                                         )}
+
+                                        {editingComponent?.type === 'cart' && (
+                                            <CartEditDialog
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'cartItems' && (
+                                            <CartItemsEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
+                                            />
+                                        )}
+                                        {editingComponent?.type === 'cartSummary' && (
+                                            <CartSummaryEditDialog
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                            />
+                                        )}
+
                                     </ScrollArea>
 
                                     <div className="flex gap-2 pt-4 border-t mt-4">
@@ -2398,6 +2515,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <SelectItem value="product">Productos</SelectItem>
                                 <SelectItem value="carousel">Carrusel de Productos</SelectItem>
                                 <SelectItem value="productDetail">Detalle de Producto</SelectItem>
+                                <SelectItem value="cart">Carrito de Compras</SelectItem>
                                 {/* <SelectItem value="heading">Encabezado</SelectItem> */}
                                 {/* <SelectItem value="text">Texto</SelectItem> */}
                                 {/* <SelectItem value="image">Imagen</SelectItem> */}
