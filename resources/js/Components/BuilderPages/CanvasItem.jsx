@@ -43,6 +43,13 @@ import QuantitySelectorComponent from './QuantitySelectorComponent';
 import CartComponent from './Cart/CartComponent';
 import CartItemsComponent from './Cart/CartItemsComponent';
 import CartSummaryComponent from './Cart/CartSummaryComponent';
+import CheckoutComponent from './Checkout/CheckoutComponent';
+import LoginComponent from './Auth/LoginComponent';
+import RegisterComponent from './Auth/RegisterComponent';
+import CheckoutPaymentComponent from './Checkout/CheckoutPaymentComponent';
+import CheckoutSummaryComponent from './Checkout/CheckoutSummaryComponent';
+import CustomerInfoComponent from './Checkout/CustomerInfoComponent';
+import CheckoutDiscountGiftCardComponent from './Checkout/CheckoutDiscountGiftCardComponent';
 
 const CanvasItem = ({
     comp,
@@ -503,6 +510,174 @@ const CanvasItem = ({
                         isPreview={isPreview}
                         cartItems={[]}
                         cartTotal={0}
+                    />
+                );
+            case 'checkout':
+                return (
+                    <CheckoutComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
+                        isPreview={isPreview}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                    />
+                );
+
+            case 'customerInfo':
+                return (
+                    <CustomerInfoComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
+                        isPreview={isPreview}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                        // Estos son los datos de ejemplo que se mostrarán en builder
+                        currentUser={isPreview ? null : {
+                            id: 1,
+                            name: 'Juan Pérez (Ejemplo)',
+                            email: 'cliente@ejemplo.com',
+                            phone: '+52 55 1234 5678'
+                        }}
+                        userDeliveryLocations={isPreview ? [] : [
+                            {
+                                id: 1,
+                                address_line_1: 'Calle Ejemplo 123',
+                                address_line_2: 'Colonia Centro',
+                                city: 'Ciudad de México',
+                                state: 'CDMX',
+                                country: 'México',
+                                postal_code: '12345',
+                                phone_number: '+52 55 1234 5678',
+                                is_default: true
+                            }
+                        ]}
+                        selectedAddressId={1}
+                        selectedShippingRate={null}
+                        deliveryType={'delivery'}
+                        onAddressSelect={() => { }}
+                        onDeliveryTypeChange={() => { }}
+                        onShippingRateChange={() => { }}
+                        shippingRates={isPreview ? [] : [
+                            {
+                                id: 1,
+                                name: 'Envío Estándar',
+                                price: 50.00,
+                                description: 'Entrega en 3-5 días hábiles',
+                                estimated_days: '3-5'
+                            }
+                        ]}
+                        paymentMethods={isPreview ? [] : [
+                            {
+                                id: 'card',
+                                name: 'Tarjeta de Crédito/Débito',
+                                description: 'Paga con tu tarjeta'
+                            }
+                        ]}
+                        showAuthModal={() => { }}
+                    />
+                );
+            case 'checkoutSummary':
+                return (
+                    <CheckoutSummaryComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
+                        isPreview={isPreview}
+                        cartItems={[]}
+                        cartTotal={0}
+                        shipping={0}
+                        tax={0}
+                        discounts={0}
+                        giftCardAmount={0}
+                        orderTotal={0}
+                        selectedShippingRate={null}
+                        appliedDiscount={null}
+                        appliedGiftCard={null}
+                        deliveryType={'delivery'}
+                        selectedAddress={null}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                    />
+                );
+            case 'checkoutDiscountGiftCard':
+    return (
+        <CheckoutDiscountGiftCardComponent
+            {...commonProps}
+            discountCode={''}
+            setDiscountCode={() => {}}
+            giftCardCode={''}
+            setGiftCardCode={() => {}}
+            onApplyDiscount={() => {}}
+            onApplyGiftCard={() => {}}
+            appliedDiscount={isPreview ? null : {
+                id: 1,
+                name: 'DESCUENTO10',
+                code: 'DESCUENTO10',
+                discount_type: 'percentage',
+                value: 10
+            }}
+            appliedGiftCard={isPreview ? null : {
+                id: 1,
+                code: 'GIFT-123456',
+                current_balance: 50.00,
+                amount_used: 25.00
+            }}
+            userGiftCards={[]}
+            mode={isPreview ? 'frontend' : 'builder'}
+        />
+    );
+            case 'checkoutPayment':
+                return (
+                    <CheckoutPaymentComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
+                        isPreview={isPreview}
+                        selectedPaymentMethod={''}
+                        setSelectedPaymentMethod={() => { }}
+                        acceptTerms={false}
+                        setAcceptTerms={() => { }}
+                        onSubmitOrder={() => { }}
+                        paymentMethods={[]}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                    />
+                );
+            case 'login':
+                return (
+                    <LoginComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                    />
+                );
+
+            case 'register':
+                return (
+                    <RegisterComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        mode={isPreview ? 'frontend' : 'builder'}
                     />
                 );
             case 'pageContent':

@@ -38,6 +38,18 @@ class HandleInertiaRequests extends Middleware
             'settings' => function () {
                 return Setting::first(); // O tu consulta personalizada
             },
+        //      'flash' => [
+        //     'message' => fn () => $request->session()->get('message'),
+        // ],
+        'env' => [
+            'SESSION_DOMAIN' => env('SESSION_DOMAIN', '.pos.test'),
+            'APP_URL' => env('APP_URL'),
+        ],
+        // 'ziggy' => function () use ($request) {
+        //     return array_merge((new Ziggy)->toArray(), [
+        //         'location' => $request->url(),
+        //     ]);
+        // },
         ];
     }
 }

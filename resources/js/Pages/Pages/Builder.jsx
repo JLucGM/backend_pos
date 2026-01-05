@@ -14,6 +14,12 @@ import ComponentTree from '@/Components/BuilderPages/ComponentTree';
 import Canvas from '@/Components/BuilderPages/Canvas';
 import { addToHistory } from '@/utils/Builder/builderUtils';
 import { ScrollArea } from '@/Components/ui/scroll-area';
+import ApplyTemplate from '@/Components/ApplyTemplate';
+import ThemeSelector from '@/Components/ThemeSelector';
+import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
+import { Badge } from '@/Components/ui/badge';
+
+// Importar todos los diálogos
 import TextEditDialog from './partials/TextEditDialog';
 import ButtonEditDialog from './partials/ButtonEditDialog';
 import HeadingEditDialog from './partials/HeadingEditDialog';
@@ -44,10 +50,6 @@ import BentoFeatureTextEditDialog from './partials/Bento/BentoFeatureTextEditDia
 import MarqueeEditDialog from './partials/Marquee/MarqueeEditDialog';
 import DividerEditDialog from './partials/Divider/DividerEditDialog';
 import PageContentEditDialog from './partials/PageContentEditDialog';
-import ApplyTemplate from '@/Components/ApplyTemplate';
-import ThemeSelector from '@/Components/ThemeSelector';
-import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
-import { Badge } from '@/Components/ui/badge';
 import HeaderEditDialog from './partials/HeaderEditDialog';
 import HeaderLogoEditDialog from './partials/HeaderLogoEditDialog';
 import HeaderMenuEditDialog from './partials/HeaderMenuEditDialog';
@@ -64,6 +66,107 @@ import QuantitySelectorEditDialog from './partials/ProductDetail/QuantitySelecto
 import CartEditDialog from './partials/Cart/CartEditDialog';
 import CartItemsEditDialog from './partials/Cart/CartItemsEditDialog';
 import CartSummaryEditDialog from './partials/Cart/CartSummaryEditDialog';
+import CheckoutEditDialog from './partials/Checkout/CheckoutEditDialog';
+import CheckoutSummaryEditDialog from './partials/Checkout/CheckoutSummaryEditDialog';
+import CheckoutPaymentEditDialog from './partials/Checkout/CheckoutPaymentEditDialog';
+import LoginEditDialog from './partials/Auth/LoginEditDialog';
+import RegisterEditDialog from './partials/Auth/RegisterEditDialog';
+import CheckoutDiscountGiftCardEditDialog from './partials/Checkout/CheckoutDiscountGiftCardEditDialog';
+
+// Mapeo de tipos de componente a sus diálogos correspondientes
+const componentDialogMap = {
+    text: TextEditDialog,
+    button: ButtonEditDialog,
+    heading: HeadingEditDialog,
+    image: ImageEditDialog,
+    video: VideoEditDialog,
+    link: LinkEditDialog,
+    product: ProductEditDialog,
+    header: HeaderEditDialog,
+    headerMenu: HeaderMenuEditDialog,
+    footer: FooterEditDialog,
+    footerMenu: FooterMenuEditDialog,
+    headerLogo: HeaderLogoEditDialog,
+    carousel: CarouselEditDialog,
+    carouselTitle: CarouselTitleEditDialog,
+    carouselCard: CarouselCardEditDialog,
+    marquee: MarqueeEditDialog,
+    divider: DividerEditDialog,
+    carouselImage: CarouselImageEditDialog,
+    carouselName: CarouselNameEditDialog,
+    carouselPrice: CarouselPriceEditDialog,
+    container: ContainerEditDialog,
+    banner: BannerEditDialog,
+    bannerTitle: BannerTitleEditDialog,
+    bannerText: BannerTextEditDialog,
+    productTitle: ProductTitleEditDialog,
+    productCard: ProductCardEditDialog,
+    productImage: ProductImageEditDialog,
+    pageContent: PageContentEditDialog,
+    productName: ProductNameEditDialog,
+    productPrice: ProductPriceEditDialog,
+    bento: BentoEditDialog,
+    bentoTitle: BentoTitleEditDialog,
+    bentoFeature: BentoFeatureEditDialog,
+    bentoFeatureTitle: BentoFeatureTitleEditDialog,
+    bentoFeatureText: BentoFeatureTextEditDialog,
+    productDetail: ProductDetailEditDialog,
+    productDetailImage: ProductDetailImageEditDialog,
+    productDetailName: ProductDetailNameEditDialog,
+    productDetailPrice: ProductDetailPriceEditDialog,
+    productDetailDescription: ProductDetailDescriptionEditDialog,
+    productDetailAttributes: ProductDetailAttributesEditDialog,
+    productDetailStock: ProductDetailStockEditDialog,
+    quantitySelector: QuantitySelectorEditDialog,
+    cart: CartEditDialog,
+    cartItems: CartItemsEditDialog,
+    cartSummary: CartSummaryEditDialog,
+    checkout: CheckoutEditDialog,
+    checkoutSummary: CheckoutSummaryEditDialog,
+    checkoutPayment: CheckoutPaymentEditDialog,
+    checkoutDiscountGiftCard: CheckoutDiscountGiftCardEditDialog,
+    login: LoginEditDialog,
+    register: RegisterEditDialog,
+};
+
+// Componente para renderizar el diálogo apropiado
+const EditDialogRenderer = ({
+    editingComponent,
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    availableMenus
+}) => {
+    if (!editingComponent?.type) return null;
+
+    const DialogComponent = componentDialogMap[editingComponent.type];
+
+    if (!DialogComponent) {
+        console.warn(`No se encontró diálogo para el tipo: ${editingComponent.type}`);
+        return null;
+    }
+
+    // Props base para todos los diálogos
+    const baseProps = {
+        editContent,
+        setEditContent,
+        editStyles,
+        setEditStyles,
+        themeSettings,
+    };
+
+    // Props específicas para ciertos diálogos
+    const additionalProps = {};
+
+    if (editingComponent.type === 'headerMenu' ||
+        editingComponent.type === 'footerMenu') {
+        additionalProps.availableMenus = availableMenus;
+    }
+
+    return <DialogComponent {...baseProps} {...additionalProps} />;
+};
 
 export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus }) {
     const [components, setComponents] = useState([]);
@@ -88,7 +191,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     const [currentThemeSettings, setCurrentThemeSettings] = useState(pageThemeSettings);
     const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
     const [hasCopiedTheme, setHasCopiedTheme] = useState(!!page.theme_settings);
-    // console.log(themeSettings)
+
     // Función para obtener el tema aplicado
     const getAppliedTheme = () => {
         // 1. Prioridad: Tema específico de la página
@@ -102,7 +205,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         }
 
         // 3. Tema global por defecto
-        // Primero buscar si la empresa tiene tema por defecto
         if (page.company?.default_theme_id) {
             const companyDefaultTheme = themes?.find(t => t.id === page.company.default_theme_id);
             if (companyDefaultTheme) {
@@ -155,7 +257,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     // Funciones principales
     const handleEditComponent = (comp) => {
-        // console.log('Editing component:', comp.type, comp);
         setEditingComponent(comp);
         setEditContent(comp.content);
         setEditStyles(comp.styles || {});
@@ -163,9 +264,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     const saveEdit = () => {
         if (editingComponent) {
-            if (editingComponent) {
-                // console.log('Saving component:', editingComponent.type, editContent, editStyles);
-            }
             setComponents((prev) => {
                 const updateComponentInTree = (components, targetId, newData) => {
                     return components.map(component => {
@@ -189,7 +287,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         const typesWithChildren = [
                             'banner', 'product', 'productCard', 'carousel',
                             'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                            'productDetail', 'cart'
+                            'productDetail', 'cart', 'checkout'
                         ];
 
                         if (typesWithChildren.includes(component.type) &&
@@ -233,7 +331,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     };
 
     const deleteComponent = (id) => {
-        // Primero buscar el componente para verificar su tipo
         const findComponentType = (items, targetId) => {
             for (const item of items) {
                 if (item.id === targetId) {
@@ -282,6 +379,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     const found = findComponentType(item.content.children, targetId);
                     if (found) return found;
                 }
+                if (item.type === 'checkout' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
             }
             return null;
         };
@@ -309,7 +410,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const typesWithChildren = [
                     'banner', 'product', 'productCard', 'carousel',
                     'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                    'productDetail'
+                    'productDetail', 'checkout', 'cart'
                 ];
 
                 if (typesWithChildren.includes(item.type) &&
@@ -347,7 +448,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     };
 
     const saveLayout = (isAuto = false) => {
-        // console.log('Saving layout...', components);
         router.post(route('pages.updateLayout', page), {
             layout: JSON.stringify(components),
         }, {
@@ -374,24 +474,19 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
             if (selectedType === 'link') content = 'https://example.com';
             if (selectedType === 'image') content = 'https://picsum.photos/150';
-            // Busca la parte donde se crea el header en handleAddComponent
-            // y reemplaza el menú estático:
 
             if (selectedType === 'header') {
                 const headerId = Date.now();
                 const logoId = headerId + 1;
                 const menuId = headerId + 2;
 
-                // Usar el primer menú disponible si existe
                 const defaultMenu = availableMenus && availableMenus.length > 0 ? availableMenus[0] : null;
 
                 content = {
-                    // Configuración del header
                     logoPosition: 'left',
                     sticky: false,
                     fullWidth: true,
                     height: '70px',
-                    // Configuración de botones con iconos Lucide
                     buttons: {
                         showSearch: true,
                         buttonsGap: '10px',
@@ -445,7 +540,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             }
                         }
                     },
-                    // Los hijos como componentes independientes
                     children: [
                         {
                             id: logoId,
@@ -466,9 +560,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             id: menuId,
                             type: 'headerMenu',
                             content: {
-                                // NUEVA ESTRUCTURA: Objeto con menuId y items
                                 menuId: availableMenus && availableMenus.length > 0 ? availableMenus[0].id : null,
-                                // items: availableMenus && availableMenus.length > 0 ? availableMenus[0].items : []
                             },
                             styles: {
                                 layout: 'fit',
@@ -517,7 +609,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 setSelectedType('');
                 return;
             }
-            // En la función handleAddComponent de Builder.jsx, busca la parte de 'footer' y actualízala:
+
             if (selectedType === 'footer') {
                 const footerId = Date.now();
                 const column1Id = footerId + 1;
@@ -526,11 +618,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const footerMenuId = footerId + 4;
 
                 content = {
-                    // Configuración del footer
                     showCopyright: true,
                     copyrightText: '© 2023 Mi Empresa. Todos los derechos reservados.',
                     columns: 3,
-                    layout: 'grid', // 'grid' o 'flex'
+                    layout: 'grid',
                     showLogo: false,
                     logoPosition: 'left',
                     socialMedia: {
@@ -540,8 +631,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         instagram: '',
                         linkedin: ''
                     },
-
-                    // Los hijos como componentes independientes
                     children: [
                         {
                             id: column1Id,
@@ -557,7 +646,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         {
                             id: column2Id,
                             type: 'footerMenu',
-                            content: {  // ← NUEVA ESTRUCTURA: objeto con menuId
+                            content: {
                                 menuId: availableMenus && availableMenus.length > 0 ? availableMenus[0].id : null,
                             },
                             styles: {
@@ -582,26 +671,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         }
                     ]
                 };
-                // ... resto del código
-            }
-            if (selectedType === 'container') {
-                const containerId = Date.now();
-                const textId = Date.now() + 1;
-
-                // El contenido DEBE ser un array de componentes
-                const content = [
-                    {
-                        id: textId,
-                        type: 'text',
-                        content: { text: 'Nuevo texto' },
-                        styles: {}
-                    }
-                ];
 
                 const newItem = {
-                    id: containerId,
-                    type: 'container',
-                    content, // ¡ESTO DEBE SER UN ARRAY!
+                    id: footerId,
+                    type: selectedType,
+                    content,
                     styles: {}
                 };
 
@@ -613,16 +687,47 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 });
                 setIsAddDialogOpen(false);
                 setSelectedType('');
-                return; // IMPORTANTE: Hacer return para no ejecutar el código de abajo
+                return;
             }
-            // En la parte de heading en handleAddComponent
+
+            if (selectedType === 'container') {
+                const containerId = Date.now();
+                const textId = Date.now() + 1;
+
+                content = [
+                    {
+                        id: textId,
+                        type: 'text',
+                        content: { text: 'Nuevo texto' },
+                        styles: {}
+                    }
+                ];
+
+                const newItem = {
+                    id: containerId,
+                    type: 'container',
+                    content,
+                    styles: {}
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+
             if (selectedType === 'heading') {
                 const newItem = {
                     id: Date.now(),
                     type: 'heading',
-                    content: 'Nuevo encabezado', // Ahora es un string
+                    content: 'Nuevo encabezado',
                     styles: {
-                        textStyle: 'heading2', // Usar textStyle en lugar de level
+                        textStyle: 'heading2',
                         layout: 'fit',
                         paddingTop: '10px',
                         paddingRight: '10px',
@@ -644,10 +749,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 setSelectedType('');
                 return;
             }
-            // En Builder.jsx, en handleAddComponent, buscar la parte donde se crea un botón:
+
             if (selectedType === 'button') {
                 content = 'Botón';
-                // Agregar estilos iniciales con tipo por defecto
                 const initialStyles = {
                     buttonType: 'primary',
                     layout: 'fit',
@@ -660,7 +764,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     color: '#ffffff'
                 };
 
-                // Crear el nuevo item con estilos iniciales
                 const newItem = {
                     id: Date.now(),
                     type: selectedType,
@@ -678,12 +781,15 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 setSelectedType('');
                 return;
             }
+
             if (selectedType === 'divider') {
-                content = ''; // El divider no necesita contenido de texto
+                content = '';
             }
+
             if (selectedType === 'marquee') {
                 content = '¡Texto en movimiento! Personaliza este texto.';
             }
+
             if (selectedType === 'carousel') {
                 const carouselId = Date.now();
                 const titleId = carouselId + 1;
@@ -693,14 +799,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const priceId = carouselId + 5;
 
                 content = {
-                    // Configuración del carrusel
                     limit: 5,
                     slidesToShow: 3,
                     gapX: '10px',
                     gapY: '10px',
                     backgroundColor: '#ffffff',
-
-                    // Los hijos como componentes independientes - AQUÍ ESTÁ LA CLAVE
                     children: [
                         {
                             id: titleId,
@@ -717,8 +820,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         {
                             id: cardId,
                             type: 'carouselCard',
-                            content: { // Asegúrate de que content es un objeto
-                                // Configuración de la carta
+                            content: {
                                 cardBorder: 'none',
                                 cardBorderThickness: '1px',
                                 cardBorderOpacity: '1',
@@ -731,7 +833,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 imageBorderThickness: '1px',
                                 imageBorderOpacity: '1',
                                 imageBorderRadius: '0px',
-                                // Los hijos de la carta
                                 children: [
                                     {
                                         id: imageId,
@@ -777,7 +878,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 };
             }
 
-            // En la función handleAddComponent de Builder.jsx, en la parte de product
             if (selectedType === 'product') {
                 const productId = Date.now();
                 const titleId = productId + 1;
@@ -787,14 +887,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const priceId = productId + 5;
 
                 content = {
-                    // Configuración del grid
                     columns: 3,
                     gapX: '10px',
                     gapY: '10px',
                     backgroundColor: '#ffffff',
                     limit: 8,
-
-                    // Los hijos como componentes independientes
                     children: [
                         {
                             id: titleId,
@@ -813,7 +910,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             id: cardId,
                             type: 'productCard',
                             content: {
-                                // Configuración de la carta
                                 cardBorder: 'none',
                                 cardBorderThickness: '1px',
                                 cardBorderOpacity: '1',
@@ -822,14 +918,13 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 cardPaddingRight: '0px',
                                 cardPaddingBottom: '0px',
                                 cardPaddingLeft: '0px',
-                                // Los hijos de la carta
                                 children: [
                                     {
                                         id: imageId,
                                         type: 'productImage',
                                         content: '',
                                         styles: {
-                                            aspectRatio: 'square', // Agregar aspect ratio por defecto
+                                            aspectRatio: 'square',
                                             imageBorder: 'none',
                                             imageBorderThickness: '1px',
                                             imageBorderOpacity: '1',
@@ -868,14 +963,12 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 };
             }
 
-            // NUEVA ESTRUCTURA PARA BANNER
             if (selectedType === 'banner') {
                 const bannerId = Date.now();
                 const titleId = bannerId + 1;
                 const textId = bannerId + 2;
 
                 content = {
-                    // Configuración del contenedor principal
                     containerHeight: '400px',
                     containerWidth: '100%',
                     marginTop: '0px',
@@ -894,15 +987,13 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     containerVerticalPosition: 'center',
                     containerHorizontalPosition: 'center',
                     contentDirection: 'vertical',
-
-                    // Los hijos se almacenan como componentes independientes
                     children: [
                         {
                             id: titleId,
                             type: 'heading',
                             content: 'Título del Banner',
                             styles: {
-                                textStyle: 'heading2', // Usar textStyle en lugar de level
+                                textStyle: 'heading2',
                                 layout: 'fit',
                                 paddingTop: '10px',
                                 paddingRight: '10px',
@@ -936,7 +1027,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 };
             }
 
-            // NUEVA ESTRUCTURA PARA BENTO
             if (selectedType === 'bento') {
                 const bentoId = Date.now();
                 const titleId = bentoId + 1;
@@ -954,7 +1044,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const feature4TextId = bentoId + 13;
 
                 content = {
-                    // Configuración del contenedor principal
                     gridColumns: 2,
                     gridGap: '20px',
                     backgroundColor: '#ffffff',
@@ -962,8 +1051,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     containerBorder: 'none',
                     containerBorderThickness: '1px',
                     containerBorderColor: '#e5e7eb',
-
-                    // Los hijos como componentes independientes
                     children: [
                         {
                             id: titleId,
@@ -981,7 +1068,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             id: feature1Id,
                             type: 'bentoFeature',
                             content: {
-                                // Configuración de la carta de característica
                                 backgroundColor: '#f8fafc',
                                 backgroundImage: null,
                                 border: 'none',
@@ -990,7 +1076,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 borderRadius: '12px',
                                 padding: '24px',
                                 opacity: 1,
-                                // Los hijos de la característica
                                 children: [
                                     {
                                         id: feature1TitleId,
@@ -1159,7 +1244,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const quantityId = productDetailId + 8;
 
                 content = {
-                    // Los hijos como componentes independientes
                     children: [
                         {
                             id: imageId,
@@ -1293,7 +1377,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 return;
             }
 
-            // En handleAddComponent, después del caso 'productDetail'
             if (selectedType === 'cart') {
                 const cartId = Date.now();
                 const itemsId = cartId + 1;
@@ -1301,7 +1384,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const couponId = cartId + 3;
 
                 content = {
-                    // Los hijos como componentes independientes
                     children: [
                         {
                             id: itemsId,
@@ -1377,9 +1459,225 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 setSelectedType('');
                 return;
             }
+            if (selectedType === 'checkout') {
+                const checkoutId = Date.now();
+                const discountGiftCardId = checkoutId + 1;
+                const customerInfoId = checkoutId + 2;
+                const summaryId = checkoutId + 3;
+                const paymentId = checkoutId + 4;
+
+                content = {
+                    showAuthSection: true,
+                    showDiscountSection: true,
+                    children: [
+                        {
+                            id: discountGiftCardId,
+                            type: 'checkoutDiscountGiftCard',
+                            content: {
+                                title: 'Descuentos y Gift Cards',
+                            },
+                            styles: {
+                                backgroundColor: '#f8f9fa',
+                                padding: '16px',
+                                borderRadius: '8px'
+                            }
+                        },
+                        {
+                            id: customerInfoId,
+                            type: 'customerInfo',
+                            content: {
+                                title: 'Información del Cliente',
+                                showAddressSelector: true,
+                                showShippingMethods: true,
+                                showPaymentMethodsPreview: true
+                            },
+                            styles: {
+                                backgroundColor: '#ffffff',
+                                padding: '24px',
+                                borderRadius: '12px',
+                                titleSize: '20px',
+                                titleColor: '#000000',
+                            }
+                        },
+                        {
+                            id: summaryId,
+                            type: 'checkoutSummary',
+                            content: {
+                                title: 'Resumen del Pedido',
+                                showSubtotal: true,
+                                showShipping: true,
+                                showTax: true,
+                                showDiscount: true,
+                                showOrderTotal: true,
+                                shippingText: 'Envío',
+                                taxText: 'Impuestos',
+                                totalText: 'Total'
+                            },
+                            styles: {
+                                backgroundColor: '#f9fafb',
+                                padding: '24px',
+                                borderRadius: '12px',
+                                borderColor: '#e5e7eb',
+                                titleSize: '20px',
+                                totalFontSize: '24px',
+                            }
+                        },
+                        {
+                            id: paymentId,
+                            type: 'checkoutPayment',
+                            content: {
+                                title: 'Método de Pago',
+                                paymentMethods: [
+                                    { id: 'cash', name: 'Efectivo', description: 'Paga al recibir' },
+                                    { id: 'card', name: 'Tarjeta de Crédito/Débito', description: 'Pago seguro en línea' },
+                                    { id: 'transfer', name: 'Transferencia Bancaria', description: 'Depósito bancario' }
+                                ],
+                                showTerms: true,
+                                termsText: 'Acepto los términos y condiciones',
+                                buttonText: 'Realizar Pedido'
+                            },
+                            styles: {
+                                backgroundColor: '#ffffff',
+                                padding: '24px',
+                                borderRadius: '12px',
+                                titleSize: '20px',
+                                buttonBackgroundColor: '#3b82f6',
+                                buttonColor: '#ffffff',
+                                buttonBorderRadius: '8px'
+                            }
+                        }
+                    ]
+                };
+
+                const newItem = {
+                    id: checkoutId,
+                    type: selectedType,
+                    content,
+                    styles: {
+                        layoutType: 'compact', // Layout optimizado por defecto
+                        maxWidth: '1200px',
+                        paddingTop: '40px',
+                        paddingRight: '20px',
+                        paddingBottom: '40px',
+                        paddingLeft: '20px',
+                        backgroundColor: '#ffffff',
+                        gap: '40px',
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+            if (selectedType === 'login') {
+                const loginId = Date.now();
+
+                content = {
+                    title: 'Iniciar Sesión',
+                    subtitle: 'Ingresa a tu cuenta',
+                    showEmail: true,
+                    showPassword: true,
+                    showRemember: false,
+                    rememberText: 'Recordarme',
+                    buttonText: 'Iniciar Sesión',
+                    showForgotPassword: true,
+                    forgotPasswordText: '¿Olvidaste tu contraseña?',
+                    showRegisterLink: true,
+                    registerText: '¿No tienes una cuenta?',
+                    registerUrl: '/registrarse'
+                };
+
+                const newItem = {
+                    id: loginId,
+                    type: selectedType,
+                    content,
+                    styles: {
+                        layout: 'vertical',
+                        backgroundColor: '#ffffff',
+                        padding: '32px',
+                        borderRadius: '12px',
+                        titleColor: '#000000',
+                        titleSize: '28px',
+                        subtitleColor: '#666666',
+                        subtitleSize: '16px',
+                        buttonBackgroundColor: '#3b82f6',
+                        buttonColor: '#ffffff',
+                        buttonBorderRadius: '8px',
+                        maxWidth: '400px',
+                        margin: '0 auto'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+
+            if (selectedType === 'register') {
+                const registerId = Date.now();
+
+                content = {
+                    title: 'Crear Cuenta',
+                    subtitle: 'Regístrate para empezar a comprar',
+                    showName: true,
+                    showEmail: true,
+                    showPhone: false,
+                    showPassword: true,
+                    showConfirmPassword: true,
+                    showTerms: true,
+                    termsText: 'Acepto los términos y condiciones',
+                    buttonText: 'Crear Cuenta',
+                    showLoginLink: true,
+                    loginText: '¿Ya tienes una cuenta?',
+                    loginUrl: '/iniciar-sesion'
+                };
+
+                const newItem = {
+                    id: registerId,
+                    type: selectedType,
+                    content,
+                    styles: {
+                        layout: 'vertical',
+                        backgroundColor: '#ffffff',
+                        padding: '32px',
+                        borderRadius: '12px',
+                        titleColor: '#000000',
+                        titleSize: '28px',
+                        subtitleColor: '#666666',
+                        subtitleSize: '16px',
+                        buttonBackgroundColor: '#10b981',
+                        buttonColor: '#ffffff',
+                        buttonBorderRadius: '8px',
+                        maxWidth: '400px',
+                        margin: '0 auto'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
 
             if (selectedType === 'pageContent') {
-                content = null; // No almacenamos el contenido, se tomará directamente de la página
+                content = null;
             }
 
             const newItem = {
@@ -1453,8 +1751,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             const targetComponent = findComponent(components, over.id);
             const isContainer = [
                 'container', 'banner', 'product', 'carousel',
-                'bento', 'productCard', 'carouselCard', 'bentoFeature'
-            ].includes(targetComponent.type);
+                'bento', 'productCard', 'carouselCard', 'bentoFeature', 'checkout'
+            ].includes(targetComponent?.type);
 
             // Lógica normal para no contenedores
             const overElement = document.getElementById(`component-${over.id}`);
@@ -1526,7 +1824,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         }
                         // Componentes con estructura children
                         else if (
-                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature'].includes(items[i].type) &&
+                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'].includes(items[i].type) &&
                             items[i].content?.children
                         ) {
                             childArray = items[i].content.children;
@@ -1578,7 +1876,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Buscar en componentes con estructura children
                 if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
@@ -1596,16 +1894,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             console.error('No se encontró información del componente activo o destino');
             return;
         }
-
-        console.log('Drag info:', {
-            active: activeInfo.component.type,
-            over: overInfo.component.type,
-            activeIndex: activeInfo.index,
-            overIndex: overInfo.index,
-            dropPosition: dropPosition?.position,
-            activeParentLength: activeInfo.parentArray.length,
-            overParentLength: overInfo.parentArray.length
-        });
 
         // Crear nueva copia de los componentes
         const newComponents = JSON.parse(JSON.stringify(components));
@@ -1632,7 +1920,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 }
                 // Componentes con estructura children
                 else if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
@@ -1682,17 +1970,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         const overComponent = newOverInfo.component;
         const isContainerType = [
             'container', 'banner', 'product', 'productCard',
-            'carousel', 'carouselCard', 'bento', 'bentoFeature'
-        ].includes(overComponent.type);
-
-        console.log('Inserting info:', {
-            isContainerType,
-            dropPosition: dropInfo.position,
-            movedComponentType: movedComponent.type,
-            overComponentType: overComponent.type,
-            movedComponentId: movedComponent.id,
-            overComponentId: overComponent.id
-        });
+            'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'
+        ].includes(overComponent?.type);
 
         // Lógica de inserción
         if (isContainerType && dropInfo.position === 'inside') {
@@ -1712,11 +1991,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             // Evitar mover un componente dentro de sí mismo
             if (movedComponent.id !== overComponent.id) {
                 targetArray.push(movedComponent);
-                console.log('Componente insertado en contenedor:', {
-                    contenedor: overComponent.type,
-                    hijo: movedComponent.type,
-                    targetArrayLength: targetArray.length
-                });
             } else {
                 toast.error("No puedes mover un componente dentro de sí mismo");
                 return;
@@ -1738,15 +2012,12 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             if (dropInfo.position === 'bottom') {
                 targetIndex += 1;
             } else if (dropInfo.position === 'top') {
-                // Si es top, insertamos en la posición actual
                 targetIndex = overIndex;
             }
 
             // CORRECCIÓN: Validación más estricta del índice
-            const maxValidIndex = overParentArray.length; // length es válido para insertar al final
+            const maxValidIndex = overParentArray.length;
             targetIndex = Math.max(0, Math.min(targetIndex, maxValidIndex));
-
-            console.log('Insertando en posición:', targetIndex, 'de array con longitud:', overParentArray.length);
 
             // Insertar en la posición calculada
             if (targetIndex >= 0 && targetIndex <= overParentArray.length) {
@@ -1759,9 +2030,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
         handleComponentsUpdate(newComponents);
         toast.success("Componente movido correctamente");
-
-        // Debug: mostrar estructura actualizada
-        console.log('Estructura actualizada:', JSON.stringify(newComponents, null, 2));
     };
 
     const handleDragCancel = () => {
@@ -1787,7 +2055,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Buscar en componentes con estructura children
                 if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
@@ -1804,7 +2072,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 2, // Más sensible
+                distance: 2,
             },
         }),
         useSensor(KeyboardSensor, {
@@ -1820,7 +2088,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             onSuccess: () => {
                 toast.success("Configuración del tema copiada para personalización");
                 setHasCopiedTheme(true);
-                // Recargar para obtener las nuevas configuraciones
                 router.reload();
             },
             onError: (errors) => {
@@ -1837,7 +2104,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 toast.success("Configuraciones del tema actualizadas");
                 setIsThemeDialogOpen(false);
                 setCurrentThemeSettings(settings);
-                // Recargar para aplicar cambios visuales inmediatos
                 router.reload();
             },
             onError: (errors) => {
@@ -1898,7 +2164,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             setHoveredComponentId={() => { }}
                             isPreview={true}
                             pageContent={page.content}
-                            availableMenus={availableMenus || []} // Asegurar valor por defecto
+                            availableMenus={availableMenus || []}
                         />
                     </div>
                 </div>
@@ -2017,389 +2283,15 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                     </div>
 
                                     <ScrollArea className="flex-1">
-                                        {editingComponent?.type === 'text' && (
-                                            <TextEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'button' && (
-                                            <ButtonEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'heading' && (
-                                            <HeadingEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'image' && (
-                                            <ImageEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'video' && (
-                                            <VideoEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'link' && (
-                                            <LinkEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}  // ¡Agrega esta línea!
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'product' && (
-                                            <ProductEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'header' && (
-                                            <HeaderEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'headerMenu' && (
-                                            <HeaderMenuEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                                availableMenus={availableMenus}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'footer' && (
-                                            <FooterEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'footerMenu' && (
-                                            <FooterMenuEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                                availableMenus={availableMenus}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'headerLogo' && (
-                                            <HeaderLogoEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-
-                                        {editingComponent?.type === 'carousel' && (
-                                            <CarouselEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'carouselTitle' && (
-                                            <CarouselTitleEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'carouselCard' && (
-                                            <CarouselCardEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'marquee' && (
-                                            <MarqueeEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'divider' && (
-                                            <DividerEditDialog
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'carouselImage' && (
-                                            <CarouselImageEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'carouselName' && (
-                                            <CarouselNameEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'carouselPrice' && (
-                                            <CarouselPriceEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'container' && (
-                                            <ContainerEditDialog
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'banner' && (
-                                            <BannerEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'bannerTitle' && (
-                                            <BannerTitleEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'bannerText' && (
-                                            <BannerTextEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productTitle' && (
-                                            <ProductTitleEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productCard' && (
-                                            <ProductCardEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productImage' && (
-                                            <ProductImageEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'pageContent' && (
-                                            <PageContentEditDialog
-                                                editContent={editContent}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productName' && (
-                                            <ProductNameEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productPrice' && (
-                                            <ProductPriceEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'bento' && (
-                                            <BentoEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'bentoTitle' && (
-                                            <BentoTitleEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'bentoFeature' && (
-                                            <BentoFeatureEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'bentoFeatureTitle' && (
-                                            <BentoFeatureTitleEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'bentoFeatureText' && (
-                                            <BentoFeatureTextEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productDetail' && (
-                                            <ProductDetailEditDialog
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productDetailImage' && (
-                                            <ProductDetailImageEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productDetailName' && (
-                                            <ProductDetailNameEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productDetailPrice' && (
-                                            <ProductDetailPriceEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productDetailDescription' && (
-                                            <ProductDetailDescriptionEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'productDetailAttributes' && (
-                                            <ProductDetailAttributesEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-
-                                        {editingComponent?.type === 'productDetailStock' && (
-                                            <ProductDetailStockEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-
-                                        {editingComponent?.type === 'quantitySelector' && (
-                                            <QuantitySelectorEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-
-                                        {editingComponent?.type === 'cart' && (
-                                            <CartEditDialog
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'cartItems' && (
-                                            <CartItemsEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                                themeSettings={themeSettings}
-                                            />
-                                        )}
-                                        {editingComponent?.type === 'cartSummary' && (
-                                            <CartSummaryEditDialog
-                                                editContent={editContent}
-                                                setEditContent={setEditContent}
-                                                editStyles={editStyles}
-                                                setEditStyles={setEditStyles}
-                                            />
-                                        )}
-
+                                        <EditDialogRenderer
+                                            editingComponent={editingComponent}
+                                            editContent={editContent}
+                                            setEditContent={setEditContent}
+                                            editStyles={editStyles}
+                                            setEditStyles={setEditStyles}
+                                            themeSettings={themeSettings}
+                                            availableMenus={availableMenus}
+                                        />
                                     </ScrollArea>
 
                                     <div className="flex gap-2 pt-4 border-t mt-4">
@@ -2489,7 +2381,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
                                 pageContent={page.content}
-                                availableMenus={availableMenus || []} // Asegurar valor por defecto
+                                availableMenus={availableMenus || []}
                             />
                         </div>
                     </div>
@@ -2516,14 +2408,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <SelectItem value="carousel">Carrusel de Productos</SelectItem>
                                 <SelectItem value="productDetail">Detalle de Producto</SelectItem>
                                 <SelectItem value="cart">Carrito de Compras</SelectItem>
-                                {/* <SelectItem value="heading">Encabezado</SelectItem> */}
-                                {/* <SelectItem value="text">Texto</SelectItem> */}
-                                {/* <SelectItem value="image">Imagen</SelectItem> */}
+                                <SelectItem value="checkout">Checkout / Finalizar Compra</SelectItem>
+                                <SelectItem value="login">Formulario de Login</SelectItem>
+                                <SelectItem value="register">Formulario de Registro</SelectItem>
                                 <SelectItem value="marquee">Texto en Movimiento</SelectItem>
                                 <SelectItem value="pageContent">Contenido de Página</SelectItem>
-                                {/* <SelectItem value="button">Botón</SelectItem> */}
-                                {/* <SelectItem value="video">Video</SelectItem> */}
-                                {/* <SelectItem value="link">Enlace</SelectItem> */}
                                 <SelectItem value="container">Contenedor</SelectItem>
                                 <SelectItem value="divider">Divider (Línea)</SelectItem>
                             </SelectContent>

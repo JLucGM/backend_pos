@@ -15,10 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+                // \App\Http\Middleware\DebugRouteSelection::class,
         ]);
         $middleware->alias([
             'company' => \App\Http\Middleware\IdentifyCompany::class,
             'backend.company' => \App\Http\Middleware\SetBackendCompany::class,
+            'client' => \App\Http\Middleware\EnsureUserIsClient::class,
+            'frontend.guest' => \App\Http\Middleware\RedirectIfFrontendAuthenticated::class,
         ]);
         //
     })

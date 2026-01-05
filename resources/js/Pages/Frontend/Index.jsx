@@ -1,10 +1,8 @@
-// frontend/index.jsx - VERSIÓN CORREGIDA
-
 import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 
 // IMPORTANTE: Importar CartComponent en lugar de FrontendCartComponent
-import CartComponent from '@/Components/BuilderPages/Cart/CartComponent'; // ← CAMBIADO
+import CartComponent from '@/Components/BuilderPages/Cart/CartComponent';
 
 // Importar otros componentes
 import BannerComponent from '@/Components/BuilderPages/BannerComponent';
@@ -25,6 +23,15 @@ import QuantitySelectorComponent from '@/Components/BuilderPages/QuantitySelecto
 import ProductDetailStockComponent from '@/Components/BuilderPages/ProductDetailStockComponent';
 import ProductDetailAttributesComponent from '@/Components/BuilderPages/ProductDetailAttributesComponent';
 import FrontendProductDetailComponent from '@/Components/Frontend/FrontendProductDetailComponent';
+
+// Importar los nuevos componentes de autenticación y checkout
+import LoginComponent from '@/Components/BuilderPages/Auth/LoginComponent';
+import RegisterComponent from '@/Components/BuilderPages/Auth/RegisterComponent';
+import CheckoutComponent from '@/Components/BuilderPages/Checkout/CheckoutComponent';
+// import CheckoutFormComponent from '@/Components/BuilderPages/Checkout/CheckoutFormComponent';
+import CheckoutSummaryComponent from '@/Components/BuilderPages/Checkout/CheckoutSummaryComponent';
+import CheckoutPaymentComponent from '@/Components/BuilderPages/Checkout/CheckoutPaymentComponent';
+import CustomerInfoComponent from '@/Components/BuilderPages/Checkout/CustomerInfoComponent';
 
 // ==============================================================
 // 2. MAPEO DE TIPOS A COMPONENTES
@@ -48,15 +55,22 @@ const componentMap = {
     'productDetailAttributes': ProductDetailAttributesComponent,
     'productDetailStock': ProductDetailStockComponent,
     'quantitySelector': QuantitySelectorComponent,
-    'cart': CartComponent, // ← AHORA USA CartComponent en lugar de FrontendCartComponent
+    'cart': CartComponent,
+    'login': LoginComponent,
+    'register': RegisterComponent,
+    'checkout': CheckoutComponent,
+    // 'checkoutForm': CheckoutFormComponent,
+    'checkoutSummary': CheckoutSummaryComponent,
+    'checkoutPayment': CheckoutPaymentComponent,
+    'customerInfo': CustomerInfoComponent,
 };
 
 // ==============================================================
 // 3. FUNCIÓN DE RENDERIZADO PÚBLICO
 // ==============================================================
-function renderBlock(block, themeSettings, availableMenus, products, currentProduct = null, companyId) {
-    console.log(products)
+function renderBlock(block, themeSettings, availableMenus, products, currentProduct = null, companyId, paymentMethods = [], shippingRates = [], userDeliveryLocations = [], userGiftCards = [], currentUser = null) {
     const Component = componentMap[block.type];
+    console.log(products)
 
     if (!Component) {
         console.warn(`Componente de layout no reconocido: ${block.type}`);
@@ -84,25 +98,55 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
     switch (block.type) {
         case 'product':
             return <Component key={block.id} {...baseProps} products={products} companyId={companyId} />;
-        
+
         case 'productDetail':
             return <Component key={block.id} {...baseProps} product={currentProduct} companyId={companyId} />;
-        
+
         case 'headerMenu':
             return <Component key={block.id} {...baseProps} availableMenus={availableMenus} />;
-        
+
         case 'cart':
-            // PARA EL CARRITO: Usar CartComponent en modo frontend
             return (
-                <Component 
+                <Component
                     key={block.id}
                     {...baseProps}
-                    mode="frontend" // ← MODO FRONTEND
-                    companyId={companyId} // ← ID de la compañía para obtener el carrito
-                    products={products} // ← Productos si son necesarios
+                    mode="frontend"
+                    companyId={companyId}
+                    products={products}
                 />
             );
-        
+
+        case 'login':
+        case 'register':
+            return (
+                <Component
+                    key={block.id}
+                    {...baseProps}
+                    mode="frontend"
+                />
+            );
+
+        case 'checkout':
+            return (
+                <Component
+                    key={block.id}
+                    {...baseProps}
+                    mode="frontend"
+                    companyId={companyId}
+                    products={products}
+                    paymentMethods={paymentMethods}
+                    shippingRates={shippingRates}
+                    userDeliveryLocations={userDeliveryLocations} // Asegúrate de que esto viene de las props
+                    userGiftCards={userGiftCards}
+                />
+            );
+
+        // case 'checkoutForm':
+        // case 'checkoutSummary':
+        // case 'checkoutPayment':
+            // Estos componentes se renderizan dentro de CheckoutComponent, pero por si acaso
+            // return <Component key={block.id} {...baseProps} mode="frontend" />;
+
         default:
             return <Component key={block.id} {...baseProps} />;
     }
@@ -111,16 +155,20 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
 // ==============================================================
 // 4. LÓGICA DE CARGA DE FUENTES Y VISTA PRINCIPAL
 // ==============================================================
-export default function Index({ 
-    page, 
-    themeSettings, 
-    availableMenus = [], 
-    products = [], 
-    currentProduct = null, 
-    isProductDetailPage = false, 
-    companyId 
+export default function Index({
+    page,
+    themeSettings,
+    availableMenus = [],
+    products = [],
+    currentProduct = null,
+    isProductDetailPage = false,
+    companyId,
+    paymentMethods = [],
+    shippingRates = [],
+    userDeliveryLocations = [],
+    userGiftCards = [],
 }) {
-    
+
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
     if (typeof page.layout === 'string' && page.layout.trim() !== '') {
@@ -133,25 +181,25 @@ export default function Index({
         layoutBlocks = page.layout;
     }
     layoutBlocks = Array.isArray(layoutBlocks) ? layoutBlocks : [];
-    
+
     // --- LÓGICA CLAVE: CARGA DINÁMICA DE FUENTES ---
     const getGoogleFontUrl = (settings) => {
         const themeSettings = settings || {};
-        
+
         const rawFonts = [
             themeSettings.heading_font,
             themeSettings.body_font,
             themeSettings.subheading_font,
             themeSettings.accent_font,
         ]
-        .filter(font => font && typeof font === 'string' && font.trim() !== '');
-        
+            .filter(font => font && typeof font === 'string' && font.trim() !== '');
+
         const uniqueFontNames = new Set();
-        
+
         rawFonts.forEach(fullFontString => {
             const cleaned = fullFontString.replace(/['"]/g, '');
             const name = cleaned.split(',')[0].trim();
-            
+
             if (name) {
                 const systemFonts = ['Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'sans-serif', 'serif', 'monospace'];
                 if (!systemFonts.includes(name)) {
@@ -159,22 +207,22 @@ export default function Index({
                 }
             }
         });
-        
+
         const fontsToLoad = [...uniqueFontNames];
-        
+
         if (fontsToLoad.length === 0) {
             return null;
         }
-        
+
         const families = fontsToLoad.map(fontName =>
             `family=${encodeURIComponent(fontName)}:wght@300;400;600;700`
         ).join('&');
-        
+
         return `https://fonts.googleapis.com/css2?${families}&display=swap`;
     };
-    
+
     const fontUrl = getGoogleFontUrl(themeSettings);
-    
+
     return (
         <>
             <Head>
@@ -186,19 +234,23 @@ export default function Index({
                     />
                 )}
             </Head>
-            
+
             {/* Renderizar cada bloque del layout */}
-            {layoutBlocks.map(block => 
+            {layoutBlocks.map(block =>
                 renderBlock(
-                    block, 
-                    themeSettings, 
-                    availableMenus, 
-                    products, 
-                    currentProduct, 
-                    companyId
+                    block,
+                    themeSettings,
+                    availableMenus,
+                    products,
+                    currentProduct,
+                    companyId,
+                    paymentMethods,
+                    shippingRates,
+                    userDeliveryLocations,
+                    userGiftCards,
                 )
             )}
-            
+
             {isProductDetailPage && !currentProduct && (
                 <div className="text-center py-12 bg-gray-50">
                     <h2 className="text-2xl font-bold text-gray-700 mb-4">

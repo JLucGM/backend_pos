@@ -8,7 +8,7 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
 export default function Create({ paymentMethods, products, users, discounts, shippingRates }) { // Asegúrate de recibir 'users' aquí
-console.log(discounts)
+console.log(paymentMethods, products, users, discounts, shippingRates)
     const initialValues = {
         status: 'pending', // Estado inicial por defecto
         payment_status: 'pending',

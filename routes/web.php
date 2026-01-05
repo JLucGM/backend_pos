@@ -7,6 +7,9 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\Frontend\Auth\LoginController;
+use App\Http\Controllers\Frontend\Auth\RegisterController;
+use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\GiftCardController;
 use App\Http\Controllers\MenuController;
@@ -29,23 +32,137 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function () {
-    // Cambiamos {slug?} por {page_path?} para claridad
-    // Y lo pasamos vacío al controlador.
+
+    // ========== RUTAS PÚBLICAS DEL FRONTEND ==========
+    // Página principal y páginas dinámicas
     Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('subdomain.page');
+
+    // Detalles de producto
+    Route::get('/detalles-del-producto', [FrontendController::class, 'productDetail'])->name('subdomain.product.detail');
+
+    // ========== AUTENTICACIÓN DE CLIENTES ==========
+    // Solo para invitados (no autenticados)
+    Route::middleware('frontend.guest')->group(function () {
+        // Login de clientes
+        // Route::get('/iniciar-sesion', [LoginController::class, 'create'])
+        //     ->name('frontend.login');
+        Route::post('/iniciar-sesion', [LoginController::class, 'store'], function () {
+            dd(request()->all());
+        })
+            ->name('frontend.login.store');
+
+        // Registro de clientes
+        Route::get('/registrarse', [RegisterController::class, 'create'])
+            ->name('frontend.register');
+        Route::post('/registrarse', [RegisterController::class, 'store'])
+            ->name('frontend.register.store');
+
+        // Recuperación de contraseña (opcional)
+        // Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])
+        //     ->name('frontend.password.request');
+        // Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+        //     ->name('frontend.password.email');
+    });
+
+    // ========== RUTAS PROTEGIDAS (SOLO CLIENTES AUTENTICADOS) ==========
+    Route::middleware(['auth', 'client'])->group(function () {
+        // Logout
+        Route::post('/logout', [LoginController::class, 'destroy'])
+            ->name('frontend.logout');
+
+        // ========== CHECKOUT ==========
+        Route::prefix('checkout')->group(function () {
+            // Validar descuento
+            Route::post('/validate-discount', [CheckoutController::class, 'validateDiscount'])
+                ->name('frontend.checkout.validateDiscount');
+
+            // Validar gift card
+            Route::post('/validate-gift-card', [CheckoutController::class, 'validateGiftCard'])
+                ->name('frontend.checkout.validateGiftCard');
+
+            // Procesar orden
+            Route::post('/process', [CheckoutController::class, 'processOrder'])
+                ->name('frontend.checkout.process');
+
+            // Confirmación de orden
+            Route::get('/confirmation/{order}', [CheckoutController::class, 'confirmation'])
+                ->name('frontend.checkout.confirmation');
+        });
+
+        // // Perfil del cliente
+        // Route::get('/profile', [FrontendProfileController::class, 'edit'])
+        //     ->name('frontend.profile');
+        // Route::patch('/profile', [FrontendProfileController::class, 'update'])
+        //     ->name('frontend.profile.update');
+
+        // // Historial de pedidos
+        // Route::get('/orders', [FrontendOrderController::class, 'index'])
+        //     ->name('frontend.orders');
+        // Route::get('/orders/{order}', [FrontendOrderController::class, 'show'])
+        //     ->name('frontend.orders.show');
+    });
 });
 
+// ==============================================================
+// 2. RUTAS PARA DOMINIO PERSONALIZADO (pepsi.test, mitienda.com)
+// ==============================================================
 Route::group([
     'domain' => '{domain}',
     'middleware' => ['company'],
-
-    // AÑADIR LA RESTRICCIÓN 'where' AL ARRAY DE GRUPO
-    // Esto evita el conflicto de array_merge
     'where' => ['domain' => '^(?!pos\.test$).+'],
-
 ], function () {
-    // Si accedes a pepsi.test/tienda, {domain} será 'pepsi.test' y {page_path} será 'tienda'
+
+    // ========== RUTAS PÚBLICAS DEL FRONTEND ==========
+    // Página principal y páginas dinámicas
     Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('custom.page');
-    Route::get('/detalles-del-producto', [FrontendController::class, 'productDetail'])->name('product.detail');
+
+    // Detalles de producto
+    Route::get('/detalles-del-producto', [FrontendController::class, 'productDetail'])->name('custom.product.detail');
+
+    // ========== AUTENTICACIÓN DE CLIENTES ==========
+    // Solo para invitados (no autenticados)
+    Route::middleware('frontend.guest')->group(function () {
+        // Login de clientes
+        Route::get('/iniciar-sesion', [LoginController::class, 'create'])
+            ->name('frontend.login.custom');
+        Route::post('/iniciar-sesion', [LoginController::class, 'store'])
+            ->name('frontend.login.store.custom');
+
+        // Registro de clientes
+        Route::get('/registrarse', [RegisterController::class, 'create'])
+            ->name('frontend.register.custom');
+        Route::post('/registrarse', [RegisterController::class, 'store'])
+            ->name('frontend.register.store.custom');
+    });
+
+    // ========== RUTAS PROTEGIDAS (SOLO CLIENTES AUTENTICADOS) ==========
+    Route::middleware(['auth', 'client'])->group(function () {
+        // Logout
+        Route::post('/logout', [LoginController::class, 'destroy'])
+            ->name('frontend.logout.custom');
+
+        // Checkout
+        // Route::get('/checkout', [FrontendCheckoutController::class, 'create'])
+        //     ->name('frontend.checkout.custom');
+        // Route::post('/checkout', [FrontendCheckoutController::class, 'store'])
+        //     ->name('frontend.checkout.store.custom');
+
+        // // Confirmación de pedido
+        // Route::get('/checkout/confirmation/{order}', [FrontendCheckoutController::class, 'confirmation'])
+        //     ->name('frontend.checkout.confirmation.custom');
+
+        // // Perfil del cliente
+        // Route::get('/profile', [FrontendProfileController::class, 'edit'])
+        //     ->name('frontend.profile.custom');
+        // Route::patch('/profile', [FrontendProfileController::class, 'update'])
+        //     ->name('frontend.profile.update.custom');
+
+        // // Historial de pedidos
+        // Route::get('/orders', [FrontendOrderController::class, 'index'])
+        //     ->name('frontend.orders.custom');
+        // Route::get('/orders/{order}', [FrontendOrderController::class, 'show'])
+        //     ->name('frontend.orders.show.custom');
+    });
 });
 
 
@@ -155,7 +272,7 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::get('discounts/{discount}/edit', [DiscountController::class, 'edit'])->name('discounts.edit');
     Route::post('discounts/{discount}', [DiscountController::class, 'update'])->name('discounts.update');
     Route::delete('discounts/{discount}', [DiscountController::class, 'destroy'])->name('discounts.destroy');
-    
+
     Route::get('menus', [MenuController::class, 'index'])->name('menus.index');
     Route::get('menus/create', [MenuController::class, 'create'])->name('menus.create');
     Route::post('menus', [MenuController::class, 'store'])->name('menus.store');

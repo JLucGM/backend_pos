@@ -22,7 +22,7 @@ const INDENTATION_WIDTH = 40;
 // Lista de componentes que pueden tener hijos y ser colapsados
 const COLLAPSIBLE_TYPES = [
     'container', 'product', 'carousel', 'banner', 'footer', 'header',
-    'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail','cart'
+    'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail','cart', 'checkout','checkoutDiscountGiftCard'
 ];
 
 const NO_ADD_BUTTON_TYPES = ['header', 'footer', 'bentoFeature', 'productCard', 'carouselCard','productDetail'];
@@ -71,6 +71,7 @@ const getComponentTypeName = (type) => {
         'headerMenu': 'Menú',
         'footerText': 'Texto Footer',
         'footerMenu': 'Menú Footer',
+        'checkoutDiscountGiftCard': 'Descuentos y Gift Cards',
     };
     return typeNames[type] || type;
 };

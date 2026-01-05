@@ -1,6 +1,7 @@
-import React from 'react';
-import { ShoppingCart, Search, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShoppingCart, Search, User, LogOut } from 'lucide-react';
 import CanvasItem from './CanvasItem';
+import { Link, usePage, router } from '@inertiajs/react';
 
 const HeaderComponent = ({ 
     comp, 
@@ -12,11 +13,20 @@ const HeaderComponent = ({
     appliedTheme,
     setComponents,
     hoveredComponentId,
-    setHoveredComponentId
+    setHoveredComponentId,
+    mode = 'frontend' // 'builder' o 'frontend'
 }) => {
+    const { props } = usePage();
+    const user = props.auth?.user;
+    const cart = props.cart || { items_count: 0 }; // Agregar cart a las props
     const headerStyles = getStyles(comp);
     const customStyles = comp.styles || {};
     const content = comp.content || {};
+    
+    const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+    
+    // Determinar si estamos en modo de edición
+    const isEditable = mode === 'builder' && !isPreview;
     
     // Estilos del contenedor principal del header
     const containerStyles = {
@@ -33,7 +43,7 @@ const HeaderComponent = ({
         paddingRight: customStyles.paddingRight || '20px',
         paddingBottom: customStyles.paddingBottom || '20px',
         paddingLeft: customStyles.paddingLeft || '20px',
-        borderBottom: customStyles.borderBottom || '1px solid #e5e7eb'
+        borderBottom: customStyles.borderBottom || '1px solid #e5e5e5'
     };
 
     // Clasificar los componentes hijos por tipo
@@ -172,20 +182,147 @@ const HeaderComponent = ({
         };
     };
 
-    // Renderizar botones
+    // Función para obtener la ruta de login/logout correcta
+    const getAuthRoute = () => {
+        if (mode !== 'frontend') return '#';
+        
+        try {
+            const hostname = window.location.hostname;
+            const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
+            
+            // Si estamos en un subdominio
+            if (hostname.endsWith(sessionDomain)) {
+                const subdomain = hostname.split('.')[0];
+                if (user) {
+                    // Ruta de logout para subdominio
+                    return route('frontend.logout', { subdomain });
+                } else {
+                    // Ruta de login para subdominio
+                    return route('frontend.login', { subdomain });
+                }
+            }
+            
+            // Si estamos en un dominio personalizado
+            const domain = hostname;
+            if (user) {
+                return route('frontend.logout.custom', { domain });
+            } else {
+                return route('frontend.login.custom', { domain });
+            }
+        } catch (error) {
+            console.error('Error generating auth route:', error);
+            return '#';
+        }
+    };
+
+    // Función para obtener la ruta del carrito
+    const getCartRoute = () => {
+        if (mode !== 'frontend') return '#';
+        
+        try {
+            const hostname = window.location.hostname;
+            const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
+            
+            // Si estamos en un subdominio
+            if (hostname.endsWith(sessionDomain)) {
+                const subdomain = hostname.split('.')[0];
+                return route('frontend.cart', { subdomain });
+            }
+            
+            // Si estamos en un dominio personalizado
+            const domain = hostname;
+            return route('frontend.cart.custom', { domain });
+        } catch (error) {
+            console.error('Error generating cart route:', error);
+            return '#';
+        }
+    };
+
+    // Función para obtener la ruta del perfil
+    const getProfileRoute = () => {
+        if (mode !== 'frontend') return '#';
+        
+        try {
+            const hostname = window.location.hostname;
+            const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
+            
+            // Si estamos en un subdominio
+            if (hostname.endsWith(sessionDomain)) {
+                const subdomain = hostname.split('.')[0];
+                return route('frontend.profile', { subdomain });
+            }
+            
+            // Si estamos en un dominio personalizado
+            const domain = hostname;
+            return route('frontend.profile.custom', { domain });
+        } catch (error) {
+            console.error('Error generating profile route:', error);
+            return '#';
+        }
+    };
+
+    // Función para obtener la ruta de pedidos
+    const getOrdersRoute = () => {
+        if (mode !== 'frontend') return '#';
+        
+        try {
+            const hostname = window.location.hostname;
+            const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
+            
+            // Si estamos en un subdominio
+            if (hostname.endsWith(sessionDomain)) {
+                const subdomain = hostname.split('.')[0];
+                return route('frontend.orders', { subdomain });
+            }
+            
+            // Si estamos en un dominio personalizado
+            const domain = hostname;
+            return route('frontend.orders.custom', { domain });
+        } catch (error) {
+            console.error('Error generating orders route:', error);
+            return '#';
+        }
+    };
+
+    // Función para manejar logout
+    const handleLogout = () => {
+        if (mode === 'frontend') {
+            router.post(getAuthRoute(), {}, {
+                onSuccess: () => {
+                    setShowProfileDropdown(false);
+                    router.reload();
+                }
+            });
+        } else if (isPreview) {
+            alert('Simulación: Cerrar sesión');
+        }
+    };
+
+    // Obtener el conteo real del carrito o usar el configurado
+    const getCartCount = () => {
+        if (mode === 'frontend' && cart && cart.items_count !== undefined) {
+            return cart.items_count;
+        }
+        return cartConfig?.count || '0';
+    };
+
+    // Renderizar botones condicionalmente
     const renderButtons = () => {
+        const isAuthenticated = user && mode === 'frontend';
+        const cartCount = getCartCount();
+        
         return (
             <div style={{ 
                 display: 'flex', 
                 alignItems: 'center',
                 gap: buttonsGap
             }}>
-                {/* Carrito */}
-                <button
+                {/* Carrito - Redirige al carrito real */}
+                <Link
                     style={getButtonStyles(cartConfig)}
                     title="Carrito"
                     className="hover:opacity-80 relative"
-                    onClick={() => isPreview && alert('Ir al carrito')}
+                    href='/carrito-de-compras'
                 >
                     <ShoppingCart 
                         size={16} 
@@ -194,7 +331,7 @@ const HeaderComponent = ({
                             transition: 'color 0.2s'
                         }} 
                     />
-                    {cartConfig?.count && cartConfig.count !== '0' && cartConfig.count !== '0' && (
+                    {cartCount && cartCount !== '0' && parseInt(cartCount) > 0 && (
                         <span style={{
                             position: 'absolute',
                             top: '-5px',
@@ -205,14 +342,15 @@ const HeaderComponent = ({
                             width: '18px',
                             height: '18px',
                             fontSize: '10px',
-                            display: 'flex',
+                            // display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            fontWeight: 'bold'
                         }}>
-                            {cartConfig.count}
+                            {cartCount}
                         </span>
                     )}
-                </button>
+                </Link>
                 
                 {/* Buscador - solo si showSearch es true */}
                 {showSearch && (
@@ -220,7 +358,15 @@ const HeaderComponent = ({
                         style={getButtonStyles(searchConfig)}
                         title="Buscar"
                         className="hover:opacity-80"
-                        onClick={() => isPreview && alert('Abrir buscador')}
+                        onClick={() => {
+                            if (mode === 'frontend') {
+                                // Implementar lógica de búsqueda real aquí
+                                // Por ejemplo: abrir un modal o redirigir a página de búsqueda
+                                router.visit('/search');
+                            } else if (isPreview) {
+                                alert('Abrir buscador (simulación)');
+                            }
+                        }}
                     >
                         <Search 
                             size={16} 
@@ -232,24 +378,179 @@ const HeaderComponent = ({
                     </button>
                 )}
                 
-                {/* Perfil */}
-                <button
-                    style={getButtonStyles(profileConfig)}
-                    title="Perfil"
-                    className="hover:opacity-80"
-                    onClick={() => isPreview && alert('Ir al perfil')}
-                >
-                    <User 
-                        size={16} 
-                        style={{ 
-                            color: profileConfig.styles?.iconColor || '#000000',
-                            transition: 'color 0.2s'
-                        }} 
-                    />
-                </button>
+                {/* Botón de Perfil/Login condicional */}
+                <div style={{ position: 'relative' }}>
+                    {isAuthenticated ? (
+                        // Usuario autenticado: Mostrar botón de perfil con dropdown
+                        <>
+                            <button
+                                style={getButtonStyles(profileConfig)}
+                                title="Mi perfil"
+                                className="hover:opacity-80"
+                                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                            >
+                                <User 
+                                    size={16} 
+                                    style={{ 
+                                        color: profileConfig.styles?.iconColor || '#000000',
+                                        transition: 'color 0.2s'
+                                    }} 
+                                />
+                            </button>
+                            
+                            {showProfileDropdown && (
+                                <div 
+                                    style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        right: 0,
+                                        backgroundColor: 'white',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                        borderRadius: '8px',
+                                        minWidth: '200px',
+                                        zIndex: 1001,
+                                        marginTop: '10px',
+                                        border: '1px solid #e5e5e5',
+                                        overflow: 'hidden'
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {/* Información del usuario */}
+                                    <div style={{
+                                        padding: '16px',
+                                        borderBottom: '1px solid #f0f0f0',
+                                        backgroundColor: '#f9f9f9'
+                                    }}>
+                                        <div style={{
+                                            fontSize: '14px',
+                                            fontWeight: '600',
+                                            color: '#333'
+                                        }}>
+                                            {user.name}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '12px',
+                                            color: '#666',
+                                            marginTop: '4px'
+                                        }}>
+                                            {user.email}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Opciones del menú */}
+                                    <Link
+                                        // href={getProfileRoute()}
+                                        href='/perfil-de-usuario'
+                                        style={{
+                                            display: 'block',
+                                            padding: '12px 16px',
+                                            textDecoration: 'none',
+                                            color: '#333',
+                                            fontSize: '14px',
+                                            transition: 'background-color 0.2s'
+                                        }}
+                                        className="hover:bg-gray-50"
+                                    >
+                                        Mi perfil
+                                    </Link>
+                                    
+                                    <Link
+                                        // href={getOrdersRoute()}
+                                        href='/pedidos'
+                                        style={{
+                                            display: 'block',
+                                            padding: '12px 16px',
+                                            textDecoration: 'none',
+                                            color: '#333',
+                                            fontSize: '14px',
+                                            transition: 'background-color 0.2s'
+                                        }}
+                                        className="hover:bg-gray-50"
+                                    >
+                                        Mis pedidos
+                                    </Link>
+                                    
+                                    <button
+                                        onClick={handleLogout}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            width: '100%',
+                                            padding: '12px 16px',
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#d32f2f',
+                                            fontSize: '14px',
+                                            cursor: 'pointer',
+                                            transition: 'background-color 0.2s',
+                                            borderTop: '1px solid #f0f0f0'
+                                        }}
+                                        className="hover:bg-red-50"
+                                    >
+                                        <LogOut size={14} style={{ marginRight: '8px' }} />
+                                        Cerrar sesión
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        // Usuario no autenticado: Mostrar botón de login
+                        // <button
+                        //     style={getButtonStyles(profileConfig)}
+                        //     title="Iniciar sesión"
+                        //     className="hover:opacity-80"
+                        //     onClick={() => {
+                        //         if (mode === 'frontend') {
+                        //             // Redirigir a login en modo frontend
+                        //             router.visit(getAuthRoute());
+                        //         } else if (isPreview) {
+                        //             alert('Iniciar sesión (simulación)');
+                        //         }
+                        //     }}
+                        // >
+                        //     <User 
+                        //         size={16} 
+                        //         style={{ 
+                        //             color: profileConfig.styles?.iconColor || '#000000',
+                        //             transition: 'color 0.2s'
+                        //         }} 
+                        //     />
+                        // </button>
+
+                        <Link
+                            href={'/iniciar-sesion'}
+                            style={getButtonStyles(profileConfig)}
+                            title="Iniciar sesión"
+                            className="hover:opacity-80 flex items-center justify-center"
+                        >
+                            <User 
+                                size={16} 
+                                style={{ 
+                                    color: profileConfig.styles?.iconColor || '#000000',
+                                    transition: 'color 0.2s'
+                                }} 
+                            />
+                        </Link>
+                    )}
+                </div>
             </div>
         );
     };
+
+    // Cerrar dropdown al hacer clic fuera
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setShowProfileDropdown(false);
+        };
+
+        if (showProfileDropdown) {
+            document.addEventListener('click', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [showProfileDropdown]);
 
     // Función para renderizar según la posición
     const renderByPosition = () => {
@@ -270,6 +571,7 @@ const HeaderComponent = ({
                                 setComponents={setComponents}
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
+                                mode={mode}
                             />
                         )}
                     </div>
@@ -287,6 +589,7 @@ const HeaderComponent = ({
                                 setComponents={setComponents}
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
+                                mode={mode}
                             />
                         )}
                     </div>
@@ -316,6 +619,7 @@ const HeaderComponent = ({
                                 setComponents={setComponents}
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
+                                mode={mode}
                             />
                         )}
                     </div>
@@ -333,6 +637,7 @@ const HeaderComponent = ({
                                 setComponents={setComponents}
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
+                                mode={mode}
                             />
                         )}
                     </div>
@@ -362,6 +667,7 @@ const HeaderComponent = ({
                                 setComponents={setComponents}
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
+                                mode={mode}
                             />
                         )}
                     </div>
@@ -385,6 +691,7 @@ const HeaderComponent = ({
                                 setComponents={setComponents}
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
+                                mode={mode}
                             />
                         )}
                         {renderButtons()}
@@ -408,6 +715,7 @@ const HeaderComponent = ({
                             setComponents={setComponents}
                             hoveredComponentId={hoveredComponentId}
                             setHoveredComponentId={setHoveredComponentId}
+                            mode={mode}
                         />
                     )}
                 </div>
@@ -424,6 +732,7 @@ const HeaderComponent = ({
                             setComponents={setComponents}
                             hoveredComponentId={hoveredComponentId}
                             setHoveredComponentId={setHoveredComponentId}
+                            mode={mode}
                         />
                     )}
                 </div>
@@ -438,8 +747,12 @@ const HeaderComponent = ({
     return (
         <header
             style={containerStyles}
-            onDoubleClick={isPreview ? undefined : () => onEdit(comp)}
-            className={isPreview ? '' : 'hover:opacity-80 cursor-pointer'}
+            onDoubleClick={isEditable ? () => onEdit(comp) : undefined}
+            className={isEditable ? 'hover:opacity-80 cursor-pointer' : ''}
+            onClick={(e) => {
+                // Prevenir que clicks en el header cierren el dropdown
+                e.stopPropagation();
+            }}
         >
             {renderByPosition()}
         </header>

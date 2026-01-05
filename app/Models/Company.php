@@ -51,4 +51,24 @@ class Company extends Model
     {
         return $this->belongsTo(Menu::class);
     }
+
+    public function PaymentMethods()
+    {
+        return $this->hasMany(PaymentMethod::class);
+    }
+
+    public function shippingRates()
+    {
+        return $this->hasMany(ShippingRate::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function discounts()
+    {
+        return $this->hasMany(Discount::class);
+    }
 }
