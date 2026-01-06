@@ -186,32 +186,37 @@ const CheckoutComponent = ({
 
     // Calcular totales
     const totals = useMemo(() => {
-        const shipping = deliveryType === 'delivery' ? (selectedShippingRate?.price || 0) : 0;
+        // Asegurarse de que displayCartTotal sea un número
+        const subtotalNum = parseFloat(displayCartTotal) || 0;
+
+        const shipping = deliveryType === 'delivery' ? (parseFloat(selectedShippingRate?.price) || 0) : 0;
         const taxRate = 0.16;
-        const tax = displayCartTotal * taxRate;
+        const tax = subtotalNum * taxRate;
 
         let discountAmount = 0;
         if (appliedDiscount) {
             if (appliedDiscount.discount_type === 'percentage') {
-                discountAmount = displayCartTotal * (appliedDiscount.value / 100);
+                discountAmount = subtotalNum * (parseFloat(appliedDiscount.value) / 100);
             } else {
-                discountAmount = appliedDiscount.value;
+                discountAmount = parseFloat(appliedDiscount.value) || 0;
             }
-            discountAmount = Math.min(discountAmount, displayCartTotal);
+            discountAmount = Math.min(discountAmount, subtotalNum);
         }
 
-        const giftCardAmount = appliedGiftCard?.amount_used || 0;
-        const subtotalAfterDiscount = Math.max(0, displayCartTotal - discountAmount);
-        const orderTotal = Math.max(0, subtotalAfterDiscount + shipping + tax - giftCardAmount);
+        const giftCardAmount = parseFloat(appliedGiftCard?.current_balance) || 0;
+        const giftCardUsed = Math.min(giftCardAmount, subtotalNum - discountAmount + shipping + tax);
+
+        const subtotalAfterDiscount = Math.max(0, subtotalNum - discountAmount);
+        const orderTotal = Math.max(0, subtotalAfterDiscount + shipping + tax - giftCardUsed);
 
         return {
             shipping,
             tax,
             discountAmount,
-            giftCardAmount,
+            giftCardAmount: giftCardUsed,
             subtotalAfterDiscount,
             orderTotal,
-            subtotal: displayCartTotal,
+            subtotal: subtotalNum,
         };
     }, [displayCartTotal, selectedShippingRate, appliedDiscount, appliedGiftCard, deliveryType]);
 
@@ -364,8 +369,8 @@ const CheckoutComponent = ({
                             setDiscountCode={setDiscountCode}
                             giftCardCode={giftCardCode}
                             setGiftCardCode={setGiftCardCode}
-                            onApplyDiscount={() => {}}
-                            onApplyGiftCard={() => {}}
+                            onApplyDiscount={() => { }}
+                            onApplyGiftCard={() => { }}
                             appliedDiscount={appliedDiscount}
                             appliedGiftCard={appliedGiftCard}
                             userGiftCards={userGiftCards}
@@ -450,7 +455,7 @@ const CheckoutComponent = ({
                             setSelectedPaymentMethod={setSelectedPaymentMethod}
                             acceptTerms={acceptTerms}
                             setAcceptTerms={setAcceptTerms}
-                            onSubmitOrder={() => {}}
+                            onSubmitOrder={() => { }}
                             paymentMethods={displayPaymentMethods}
                         />
                     </ComponentWithHover>
@@ -466,7 +471,7 @@ const CheckoutComponent = ({
     const customerInfoChildren = displayChildren.filter(child => child.type === 'customerInfo');
     const summaryChildren = displayChildren.filter(child => child.type === 'checkoutSummary');
     const paymentChildren = displayChildren.filter(child => child.type === 'checkoutPayment');
-    const otherChildren = displayChildren.filter(child => 
+    const otherChildren = displayChildren.filter(child =>
         !['checkoutDiscountGiftCard', 'customerInfo', 'checkoutSummary', 'checkoutPayment'].includes(child.type)
     );
 
@@ -491,7 +496,7 @@ const CheckoutComponent = ({
                     {customerInfoChildren.map(renderChild)}
                     {paymentChildren.map(renderChild)}
                 </div>
-                
+
                 {/* Columna 2: Sidebar con descuento y resumen */}
                 <div className="space-y-6">
                     {discountGiftCardChildren.map(renderChild)}
@@ -512,7 +517,7 @@ const CheckoutComponent = ({
                 <div className="md:col-span-1">
                     {customerInfoChildren.map(renderChild)}
                 </div>
-                
+
                 {/* Fila 2: Summary y Payment */}
                 <div className="md:col-span-1">
                     {summaryChildren.map(renderChild)}
@@ -533,7 +538,7 @@ const CheckoutComponent = ({
             ...paymentChildren,
             ...otherChildren
         ];
-        
+
         return (
             <div className="space-y-6">
                 {allChildren.map(renderChild)}
@@ -549,7 +554,7 @@ const CheckoutComponent = ({
                     {customerInfoChildren.map(renderChild)}
                     {paymentChildren.map(renderChild)}
                 </div>
-                
+
                 {/* Columna derecha: DiscountGiftCard y Summary */}
                 <div className="space-y-6">
                     {discountGiftCardChildren.map(renderChild)}

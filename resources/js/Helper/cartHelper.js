@@ -1,4 +1,4 @@
-// Helper/cartHelper.js - VERSIÓN COMPLETA Y CORREGIDA
+// Helper/cartHelper.js - VERSIÓN COMPLETA CON AMBOS TIPOS DE DESCUENTOS
 const cartHelper = {
     getCartKey: (companyId) => `shoppingCart_${companyId}`,
     
@@ -8,7 +8,7 @@ const cartHelper = {
         return cart ? JSON.parse(cart) : [];
     },
     
-    addToCart: (companyId, product, combination = null, quantity = 1) => {
+    addToCart: (companyId, product, combination = null, quantity = 1, automaticDiscounts = []) => {
         const cartKey = cartHelper.getCartKey(companyId);
         const cart = cartHelper.getCart(companyId);
         
@@ -18,34 +18,61 @@ const cartHelper = {
         // 2. Determinar tasa de impuesto
         const taxRate = product.tax ? parseFloat(product.tax.tax_rate) : 0;
         
-        // 3. Calcular precio con descuento de producto (si aplica)
+        // 3. Buscar descuentos automáticos aplicables
         let discountedPrice = basePrice;
-        let productDiscount = null;
+        let appliedAutomaticDiscount = null;
         
-        // Buscar descuentos aplicables al producto
-        if (product.discounts && product.discounts.length > 0) {
-            // Filtrar descuentos que aplican a este producto específico
-            const applicableDiscounts = product.discounts.filter(discount => {
-                // Si el descuento es para combinación específica, verificar
-                if (discount.pivot?.combination_id) {
-                    return combination && discount.pivot.combination_id === combination.id;
+        // Filtrar descuentos automáticos que aplican a este producto
+        if (automaticDiscounts && automaticDiscounts.length > 0) {
+            const applicableAutoDiscounts = automaticDiscounts.filter(discount => {
+                // Solo descuentos automáticos
+                if (!discount.automatic) return false;
+                
+                // Verificar a qué aplica el descuento
+                switch (discount.applies_to) {
+                    case 'product':
+                        // Verificar si el descuento aplica a este producto específico
+                        if (discount.products && discount.products.length > 0) {
+                            const productMatch = discount.products.some(p => 
+                                p.id === product.id && 
+                                (p.pivot?.combination_id === null || p.pivot?.combination_id === (combination ? combination.id : null))
+                            );
+                            return productMatch;
+                        }
+                        return false;
+                        
+                    case 'category':
+                        // Verificar si el descuento aplica a alguna categoría del producto
+                        if (discount.categories && discount.categories.length > 0) {
+                            const productCategoryIds = product.categories.map(c => c.id);
+                            const categoryMatch = discount.categories.some(catId => 
+                                productCategoryIds.includes(catId)
+                            );
+                            return categoryMatch;
+                        }
+                        return false;
+                        
+                    case 'order_total':
+                        // Estos se aplican después en getCartSummary
+                        return false;
+                        
+                    default:
+                        return false;
                 }
-                // Descuento para producto simple
-                return !combination;
             });
             
-            // Aplicar el primer descuento válido
-            if (applicableDiscounts.length > 0) {
-                productDiscount = applicableDiscounts[0];
-                if (productDiscount.discount_type === 'percentage') {
-                    discountedPrice = basePrice * (1 - (productDiscount.value / 100));
+            // Aplicar el primer descuento automático válido (solo uno)
+            if (applicableAutoDiscounts.length > 0) {
+                appliedAutomaticDiscount = applicableAutoDiscounts[0];
+                if (appliedAutomaticDiscount.discount_type === 'percentage') {
+                    discountedPrice = basePrice * (1 - (appliedAutomaticDiscount.value / 100));
                 } else {
-                    discountedPrice = Math.max(0, basePrice - productDiscount.value);
+                    discountedPrice = Math.max(0, basePrice - appliedAutomaticDiscount.value);
                 }
             }
         }
         
-        // 4. Calcular impuesto sobre el precio con descuento
+        // 4. Calcular impuesto sobre el precio final (con descuento automático si aplica)
         const itemTaxAmount = (discountedPrice * taxRate) / 100;
         
         // 5. Buscar stock
@@ -67,6 +94,10 @@ const cartHelper = {
                 cart[existingIndex].quantity = newQuantity;
                 cart[existingIndex].subtotal = discountedPrice * newQuantity;
                 cart[existingIndex].taxAmount = itemTaxAmount * newQuantity;
+                // Actualizar descuento automático si aplica
+                if (appliedAutomaticDiscount) {
+                    cart[existingIndex].automaticDiscount = appliedAutomaticDiscount;
+                }
             }
         } else {
             // Agregar nuevo item si hay stock
@@ -75,8 +106,8 @@ const cartHelper = {
                     id: `${product.id}_${combination ? combination.id : 'simple'}_${Date.now()}`,
                     productId: product.id,
                     productName: product.product_name,
-                    price: discountedPrice,
-                    originalPrice: basePrice,
+                    price: discountedPrice, // Precio con descuento automático si aplica
+                    originalPrice: basePrice, // Precio base sin descuentos
                     quantity: quantity,
                     combinationId: combination ? combination.id : null,
                     combinationName: combination ? 
@@ -87,7 +118,8 @@ const cartHelper = {
                     taxRate: taxRate,
                     taxAmount: itemTaxAmount * quantity,
                     subtotal: discountedPrice * quantity,
-                    productDiscount: productDiscount,
+                    automaticDiscount: appliedAutomaticDiscount, // Guardar descuento automático
+                    manualDiscount: null, // Descuento manual se aplica después
                     categories: product.categories.map(c => c.id),
                     addedAt: new Date().toISOString()
                 };
@@ -128,14 +160,10 @@ const cartHelper = {
         const cartKey = cartHelper.getCartKey(companyId);
         const cart = cartHelper.getCart(companyId);
         
-        // Normalizar combinationId: undefined -> null
         const normalizedCombinationId = combinationId === undefined ? null : combinationId;
         
         const newCart = cart.filter(item => {
-            // Si el productId no coincide, mantener el item
             if (item.productId !== productId) return true;
-            
-            // Si ambos tienen null o el mismo combinationId, eliminar
             return item.combinationId !== normalizedCombinationId;
         });
         
@@ -151,7 +179,7 @@ const cartHelper = {
         return [];
     },
     
-    getCartSummary: (companyId, discounts = []) => {
+    getCartSummary: (companyId, manualDiscount = null, automaticDiscounts = []) => {
         const cart = cartHelper.getCart(companyId);
         
         if (cart.length === 0) {
@@ -159,146 +187,189 @@ const cartHelper = {
                 items: [],
                 subtotal: 0,
                 taxTotal: 0,
-                discountTotal: 0,
+                automaticDiscountTotal: 0,
+                manualDiscountTotal: 0,
                 totalAmount: 0,
-                itemCount: 0
+                itemCount: 0,
+                appliedAutomaticDiscounts: [],
+                appliedManualDiscount: null
             };
         }
         
-        // Calcular subtotal sumando los subtotales de cada item
+        // 1. Calcular subtotal con descuentos automáticos ya aplicados
         const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
         
-        // Calcular total de impuestos sumando los taxAmount de cada item
+        // 2. Calcular total de impuestos
         const taxTotal = cart.reduce((sum, item) => sum + item.taxAmount, 0);
         
-        // Calcular descuentos aplicables
-        let discountTotal = 0;
-        let appliedDiscounts = [];
-        
-        // 1. Descuentos de categoría
-        const categoryDiscounts = discounts.filter(d => d.applies_to === 'category');
-        // 2. Descuentos de orden total
-        const orderDiscounts = discounts.filter(d => d.applies_to === 'order_total');
-        
-        // Aplicar descuentos de categoría
-        categoryDiscounts.forEach(discount => {
-            const categoryIds = discount.categories || [];
-            const applicableItems = cart.filter(item => 
-                item.categories.some(catId => categoryIds.includes(catId))
-            );
-            
-            if (applicableItems.length > 0) {
-                const itemsSubtotal = applicableItems.reduce((sum, item) => sum + item.subtotal, 0);
-                let discountAmount = 0;
-                
-                if (discount.discount_type === 'percentage') {
-                    discountAmount = itemsSubtotal * (discount.value / 100);
-                } else {
-                    discountAmount = Math.min(discount.value, itemsSubtotal);
-                }
-                
-                if (discountAmount > 0) {
-                    discountTotal += discountAmount;
-                    appliedDiscounts.push({
-                        ...discount,
-                        amount: discountAmount,
-                        type: 'category'
-                    });
-                }
+        // 3. Calcular total de descuentos automáticos ya aplicados
+        const automaticDiscountTotal = cart.reduce((sum, item) => {
+            if (item.automaticDiscount) {
+                const originalSubtotal = item.originalPrice * item.quantity;
+                return sum + (originalSubtotal - item.subtotal);
             }
-        });
+            return sum;
+        }, 0);
         
-        // Aplicar descuentos de orden total (después de impuestos)
-        orderDiscounts.forEach(discount => {
-            const orderTotalBeforeDiscount = subtotal + taxTotal - discountTotal;
-            
-            // Verificar monto mínimo de orden
-            if (discount.minimum_order_amount && orderTotalBeforeDiscount < discount.minimum_order_amount) {
+        // 4. Buscar descuentos automáticos de orden total que no se hayan aplicado
+        let orderTotalDiscounts = 0;
+        let appliedOrderDiscounts = [];
+        
+        const orderTotalAutoDiscounts = automaticDiscounts.filter(d => 
+            d.automatic && d.applies_to === 'order_total'
+        );
+        
+        const orderTotalBeforeManual = subtotal + taxTotal;
+        
+        orderTotalAutoDiscounts.forEach(discount => {
+            // Verificar monto mínimo
+            if (discount.minimum_order_amount && orderTotalBeforeManual < discount.minimum_order_amount) {
                 return;
             }
             
             let discountAmount = 0;
             if (discount.discount_type === 'percentage') {
-                discountAmount = orderTotalBeforeDiscount * (discount.value / 100);
+                discountAmount = orderTotalBeforeManual * (discount.value / 100);
             } else {
-                discountAmount = Math.min(discount.value, orderTotalBeforeDiscount);
+                discountAmount = Math.min(discount.value, orderTotalBeforeManual);
             }
             
             if (discountAmount > 0) {
-                discountTotal += discountAmount;
-                appliedDiscounts.push({
+                orderTotalDiscounts += discountAmount;
+                appliedOrderDiscounts.push({
                     ...discount,
                     amount: discountAmount,
-                    type: 'order_total'
+                    type: 'order_total_automatic'
                 });
             }
         });
         
-        // Calcular total final
-        const totalAmount = Math.max(0, subtotal + taxTotal - discountTotal);
+        // 5. Calcular descuento manual (por código)
+        let manualDiscountTotal = 0;
+        let appliedManualDiscount = null;
+        
+        if (manualDiscount) {
+            const orderTotalAfterAuto = orderTotalBeforeManual - orderTotalDiscounts;
+            
+            if (manualDiscount.discount_type === 'percentage') {
+                manualDiscountTotal = orderTotalAfterAuto * (manualDiscount.value / 100);
+            } else {
+                manualDiscountTotal = Math.min(manualDiscount.value, orderTotalAfterAuto);
+            }
+            
+            appliedManualDiscount = manualDiscount;
+        }
+        
+        // 6. Calcular total final
+        const totalAmount = Math.max(0, 
+            subtotal + taxTotal - orderTotalDiscounts - manualDiscountTotal
+        );
         
         return {
             items: cart,
             subtotal: parseFloat(subtotal.toFixed(2)),
             taxTotal: parseFloat(taxTotal.toFixed(2)),
-            discountTotal: parseFloat(discountTotal.toFixed(2)),
+            automaticDiscountTotal: parseFloat((automaticDiscountTotal + orderTotalDiscounts).toFixed(2)),
+            manualDiscountTotal: parseFloat(manualDiscountTotal.toFixed(2)),
             totalAmount: parseFloat(totalAmount.toFixed(2)),
             itemCount: cart.reduce((sum, item) => sum + item.quantity, 0),
-            appliedDiscounts: appliedDiscounts
+            appliedAutomaticDiscounts: [
+                ...cart.filter(item => item.automaticDiscount).map(item => item.automaticDiscount),
+                ...appliedOrderDiscounts
+            ],
+            appliedManualDiscount: appliedManualDiscount
         };
     },
     
-    // AÑADE ESTA FUNCIÓN QUE FALTA - Es la que está causando el error
-    applyProductDiscounts: (cartItems, discounts = []) => {
-        // Esta función aplica descuentos específicos de producto
-        // Nota: En nuestra nueva estructura, los descuentos de producto ya se aplican en addToCart
-        // Pero mantenemos esta función por compatibilidad
+    // Función para aplicar descuento manual (código)
+    applyManualDiscount: (companyId, discountCode, discountData) => {
+        const cartKey = cartHelper.getCartKey(companyId);
+        const cart = cartHelper.getCart(companyId);
         
-        return cartItems.map(item => {
-            let discountedPrice = item.price || item.originalPrice;
-            let appliedDiscount = null;
-            
-            // Buscar descuentos que apliquen a este producto
-            const productDiscounts = discounts.filter(discount => {
-                if (discount.applies_to === 'product') {
-                    // Verificar si el descuento aplica a este producto específico
-                    const productMatch = discount.products?.some(p => 
+        // Primero, quitar cualquier descuento manual previo
+        const cartWithoutManual = cart.map(item => ({
+            ...item,
+            manualDiscount: null
+        }));
+        
+        // Si no hay descuento, solo limpiar
+        if (!discountData) {
+            localStorage.setItem(cartKey, JSON.stringify(cartWithoutManual));
+            window.dispatchEvent(new Event('cartUpdated'));
+            return cartWithoutManual;
+        }
+        
+        // Aplicar nuevo descuento manual según su tipo
+        let updatedCart = cartWithoutManual;
+        
+        switch (discountData.applies_to) {
+            case 'product':
+                // Aplicar a productos específicos
+                updatedCart = cartWithoutManual.map(item => {
+                    const productMatch = discountData.products?.some(p => 
                         p.id === item.productId && 
                         (p.pivot?.combination_id === null || p.pivot?.combination_id === item.combinationId)
                     );
-                    return productMatch;
-                }
-                return false;
-            });
-            
-            // Aplicar el primer descuento válido
-            if (productDiscounts.length > 0) {
-                const discount = productDiscounts[0];
-                appliedDiscount = discount;
+                    
+                    if (productMatch) {
+                        let discountedPrice = item.price;
+                        if (discountData.discount_type === 'percentage') {
+                            discountedPrice = item.originalPrice * (1 - (discountData.value / 100));
+                        } else {
+                            discountedPrice = Math.max(0, item.originalPrice - discountData.value);
+                        }
+                        
+                        return {
+                            ...item,
+                            price: discountedPrice,
+                            manualDiscount: discountData,
+                            subtotal: discountedPrice * item.quantity,
+                            taxAmount: (discountedPrice * (item.taxRate / 100)) * item.quantity
+                        };
+                    }
+                    return item;
+                });
+                break;
                 
-                const basePrice = item.originalPrice || item.price;
+            case 'category':
+                // Aplicar a categorías
+                updatedCart = cartWithoutManual.map(item => {
+                    const categoryMatch = discountData.categories?.some(catId => 
+                        item.categories.includes(catId)
+                    );
+                    
+                    if (categoryMatch) {
+                        let discountedPrice = item.price;
+                        if (discountData.discount_type === 'percentage') {
+                            discountedPrice = item.originalPrice * (1 - (discountData.value / 100));
+                        } else {
+                            discountedPrice = Math.max(0, item.originalPrice - discountData.value);
+                        }
+                        
+                        return {
+                            ...item,
+                            price: discountedPrice,
+                            manualDiscount: discountData,
+                            subtotal: discountedPrice * item.quantity,
+                            taxAmount: (discountedPrice * (item.taxRate / 100)) * item.quantity
+                        };
+                    }
+                    return item;
+                });
+                break;
                 
-                if (discount.discount_type === 'percentage') {
-                    discountedPrice = basePrice * (1 - (discount.value / 100));
-                } else {
-                    discountedPrice = Math.max(0, basePrice - discount.value);
-                }
-                
-                // Recalcular impuesto con el nuevo precio
-                const newTaxAmount = (discountedPrice * (item.taxRate || 0)) / 100;
-                
-                return {
+            case 'order_total':
+                // Descuento de orden total - se aplica en getCartSummary, no en los items
+                updatedCart = cartWithoutManual.map(item => ({
                     ...item,
-                    price: discountedPrice,
-                    originalPrice: basePrice,
-                    appliedDiscount,
-                    taxAmount: newTaxAmount * item.quantity,
-                    subtotal: discountedPrice * item.quantity
-                };
-            }
-            
-            return item;
-        });
+                    manualDiscount: discountData
+                }));
+                break;
+        }
+        
+        localStorage.setItem(cartKey, JSON.stringify(updatedCart));
+        window.dispatchEvent(new Event('cartUpdated'));
+        return updatedCart;
     },
     
     // Función para aplicar gift card
@@ -329,7 +400,6 @@ const cartHelper = {
                 const stockObj = product.stocks?.find(s => s.combination_id === item.combinationId);
                 stock = stockObj?.quantity || 0;
             } else {
-                // Sumar stocks sin combinación
                 stock = product.stocks?.filter(s => s.combination_id === null)
                     .reduce((sum, s) => sum + s.quantity, 0) || 0;
             }
