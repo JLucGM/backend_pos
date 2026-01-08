@@ -1,3 +1,4 @@
+// CartItemsComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 
@@ -51,6 +52,61 @@ const CartItemsComponent = ({
     const titleStyles = getFontStyles('title');
     const textStyles = getFontStyles();
 
+    // Función para calcular si hay descuento
+    const hasDiscount = (item) => {
+        return item.originalPrice && item.originalPrice !== item.price;
+    };
+
+    // Función para renderizar información de descuento
+    const renderDiscountInfo = (item) => {
+        if (!item.automaticDiscount) return null;
+        
+        const discount = item.automaticDiscount;
+        let discountText = '';
+        
+        if (item.discountType === 'direct_discount') {
+            discountText = 'Descuento directo aplicado';
+        } else if (discount.name) {
+            discountText = discount.name;
+        } else {
+            discountText = 'Descuento automático';
+        }
+        
+        let discountValue = '';
+        if (discount.discount_type === 'percentage') {
+            discountValue = ` (${discount.value}%)`;
+        } else if (discount.discount_type === 'fixed_amount') {
+            discountValue = ` ($${parseFloat(discount.value).toFixed(2)})`;
+        }
+        
+        const percentageOff = item.originalPrice > 0 ? 
+            Math.round((1 - item.price / item.originalPrice) * 100) : 0;
+        
+        return (
+            <div className="mt-2">
+                <div className="text-xs" style={{ 
+                    color: '#059669',
+                    fontFamily: themeSettings?.body_font,
+                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    display: 'inline-block',
+                    fontWeight: '500'
+                }}>
+                    {discountText}{discountValue}
+                </div>
+                {percentageOff > 0 && (
+                    <div className="text-xs mt-1" style={{ 
+                        color: '#dc2626',
+                        fontFamily: themeSettings?.body_font
+                    }}>
+                        {percentageOff}% de descuento
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div 
             style={containerStyles}
@@ -61,7 +117,6 @@ const CartItemsComponent = ({
                 {content.title || 'Tu carrito'}
             </h2>
             
-
             {cartItems.length === 0 ? (
                 <div className="text-center py-12" style={textStyles}>
                     <p>{content.emptyMessage || 'Tu carrito está vacío'}</p>
@@ -114,18 +169,54 @@ const CartItemsComponent = ({
                                         )}
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-semibold" style={{ color: themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#1d4ed8' }}>
-                                            ${(item.price * item.quantity).toFixed(2)}
-                                        </div>
-                                        <div className="text-sm" style={{ color: '#6b7280' }}>
-                                            ${item.price.toFixed(2)} c/u
-                                        </div>
+                                        {/* Mostrar precio original tachado si hay descuento */}
+                                        {hasDiscount(item) ? (
+                                            <div>
+                                                <div className="line-through text-sm" style={{ 
+                                                    color: '#999',
+                                                    fontFamily: themeSettings?.body_font
+                                                }}>
+                                                    ${(item.originalPrice * item.quantity).toFixed(2)}
+                                                </div>
+                                                <div className="font-semibold" style={{ 
+                                                    color: themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#1d4ed8',
+                                                    fontFamily: themeSettings?.heading_font
+                                                }}>
+                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                </div>
+                                                {/* Mostrar ahorro */}
+                                                <div className="text-xs mt-1" style={{ 
+                                                    color: '#059669',
+                                                    fontFamily: themeSettings?.body_font
+                                                }}>
+                                                    Ahorras: ${(item.discountAmount || 0).toFixed(2)}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <div className="font-semibold" style={{ 
+                                                    color: themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#1d4ed8',
+                                                    fontFamily: themeSettings?.heading_font
+                                                }}>
+                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                </div>
+                                                <div className="text-sm" style={{ color: '#6b7280' }}>
+                                                    ${item.price.toFixed(2)} c/u
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
+                                {/* Información de descuento */}
+                                {renderDiscountInfo(item)}
+
                                 {/* Stock disponible */}
                                 {content.showStock && (
-                                    <div className="text-sm mt-1" style={{ color: item.stock > 0 ? '#059669' : '#dc2626' }}>
+                                    <div className="text-sm mt-1" style={{ 
+                                        color: item.stock > 0 ? '#059669' : '#dc2626',
+                                        fontFamily: themeSettings?.body_font
+                                    }}>
                                         {item.stock > 0 
                                             ? `${item.stock} disponibles` 
                                             : 'Agotado'}
@@ -145,11 +236,16 @@ const CartItemsComponent = ({
                                             style={{
                                                 borderRight: '1px solid #e5e7eb',
                                                 color: themeSettings?.foreground ? `hsl(${themeSettings.foreground})` : '#374151',
+                                                fontFamily: themeSettings?.body_font
                                             }}
                                         >
                                             -
                                         </button>
-                                        <span className="px-4 py-1">{item.quantity}</span>
+                                        <span className="px-4 py-1" style={{ 
+                                            fontFamily: themeSettings?.body_font 
+                                        }}>
+                                            {item.quantity}
+                                        </span>
                                         <button
                                             type="button"
                                             onClick={(e) => {
@@ -160,6 +256,7 @@ const CartItemsComponent = ({
                                             style={{
                                                 borderLeft: '1px solid #e5e7eb',
                                                 color: themeSettings?.foreground ? `hsl(${themeSettings.foreground})` : '#374151',
+                                                fontFamily: themeSettings?.body_font
                                             }}
                                         >
                                             +
@@ -173,6 +270,7 @@ const CartItemsComponent = ({
                                             onRemoveItem(item.id);
                                         }}
                                         className="flex items-center gap-1 text-red-600 hover:text-red-800"
+                                        style={{ fontFamily: themeSettings?.body_font }}
                                     >
                                         <Trash2 size={16} />
                                         <span className="text-sm">Eliminar</span>

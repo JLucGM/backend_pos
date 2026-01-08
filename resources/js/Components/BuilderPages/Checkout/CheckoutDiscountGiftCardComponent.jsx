@@ -1,7 +1,6 @@
 // components/BuilderPages/Checkout/CheckoutDiscountGiftCardComponent.jsx
 import React, { useState } from 'react';
-import { Button } from '@/Components/ui/button';
-import { Percent, Gift } from 'lucide-react';
+import { Percent, Gift, X, Calendar, DollarSign } from 'lucide-react';
 
 const CheckoutDiscountGiftCardComponent = ({
     comp,
@@ -15,32 +14,42 @@ const CheckoutDiscountGiftCardComponent = ({
     giftCardCode = '',
     setGiftCardCode = () => {},
     onApplyDiscount = () => {},
+    onRemoveDiscount = () => {},
     onApplyGiftCard = () => {},
-    appliedDiscount = null,
+    onRemoveGiftCard = () => {},
+    appliedDiscounts = [],
     appliedGiftCard = null,
+    giftCardAmountUsed = 0,
     userGiftCards = [],
     mode = 'builder'
 }) => {
     const styles = comp.styles || {};
     const content = comp.content || {};
     const [activeTab, setActiveTab] = useState('discount');
+    const [isApplying, setIsApplying] = useState(false);
+    const [isApplyingGiftCard, setIsApplyingGiftCard] = useState(false);
 
     // Datos de ejemplo para modo builder
-    const exampleAppliedDiscount = mode === 'builder' ? {
+    const exampleAppliedDiscounts = mode === 'builder' ? [{
         id: 1,
-        name: 'DESCUENTO10',
-        code: 'DESCUENTO10',
+        name: 'Año nuevo 2026',
+        code: 'AA11',
         discount_type: 'percentage',
-        value: 10,
-        description: '10% de descuento'
-    } : appliedDiscount;
+        value: '15',
+        amount: 1.50,
+        product_name: 'Camisa',
+        description: '15% de descuento en camisas'
+    }] : appliedDiscounts;
 
     const exampleAppliedGiftCard = mode === 'builder' ? {
         id: 1,
-        code: 'GIFT-123456',
-        current_balance: 50.00,
-        amount_used: 25.00
+        code: '407279',
+        initial_balance: '10.00',
+        current_balance: '10.00',
+        expiration_date: '2026-01-15T00:00:00.000000Z'
     } : appliedGiftCard;
+
+    const exampleGiftCardAmountUsed = mode === 'builder' ? 5.00 : giftCardAmountUsed;
 
     const containerStyles = {
         ...getStyles(comp),
@@ -61,6 +70,51 @@ const CheckoutDiscountGiftCardComponent = ({
         gap: '8px',
     };
 
+    // Función para formatear fecha
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Sin expiración';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    // Función para aplicar gift card
+    const handleApplyGiftCard = async () => {
+        if (mode === 'builder') {
+            // En modo builder, simular aplicación
+            const mockGiftCard = {
+                id: 999,
+                code: giftCardCode || '407279',
+                initial_balance: '10.00',
+                current_balance: '10.00',
+                expiration_date: '2026-01-15T00:00:00.000000Z'
+            };
+            onApplyGiftCard();
+            return;
+        }
+        
+        setIsApplyingGiftCard(true);
+        try {
+            await onApplyGiftCard();
+        } finally {
+            setIsApplyingGiftCard(false);
+        }
+    };
+
+    // Función para manejar clic en gift card de la lista
+    const handleGiftCardClick = (giftCard) => {
+        setGiftCardCode(giftCard.code);
+        if (mode === 'frontend') {
+            // Aplicar automáticamente al hacer clic
+            setTimeout(() => {
+                handleApplyGiftCard();
+            }, 100);
+        }
+    };
+
     return (
         <div style={containerStyles}>
             <h3 style={titleStyles}>
@@ -68,7 +122,7 @@ const CheckoutDiscountGiftCardComponent = ({
                 {content.title || 'Cupones y Gift Cards'}
             </h3>
 
-            {/* Tabs para cambiar entre descuento y gift card */}
+            {/* Tabs */}
             <div className="flex border-b mb-4">
                 <button
                     className={`px-4 py-2 font-medium text-sm ${activeTab === 'discount' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600'}`}
@@ -85,85 +139,218 @@ const CheckoutDiscountGiftCardComponent = ({
             </div>
 
             {activeTab === 'discount' ? (
+                // ... Sección de cupones (igual que antes) ...
                 <div className="space-y-3">
+                    {/* Código de descuento */}
                     <div className="flex gap-2">
                         <input
                             type="text"
                             value={discountCode}
                             onChange={(e) => setDiscountCode(e.target.value)}
-                            placeholder="Código de descuento"
+                            placeholder="Código de descuento (ej: AA11)"
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
-                            disabled={mode === 'builder'}
+                            disabled={mode === 'builder' || isApplying}
                         />
                         <button
-                            onClick={onApplyDiscount}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-                            disabled={mode === 'builder'}
+                            onClick={async () => {
+                                setIsApplying(true);
+                                try {
+                                    await onApplyDiscount();
+                                } finally {
+                                    setIsApplying(false);
+                                }
+                            }}
+                            disabled={mode === 'builder' || isApplying || !discountCode.trim()}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                         >
-                            Aplicar
+                            {isApplying ? 'Aplicando...' : 'Aplicar'}
                         </button>
                     </div>
-                    {exampleAppliedDiscount && (
-                        <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-                            <p className="text-green-700 font-medium text-sm">
-                                ✓ Cupón aplicado: {exampleAppliedDiscount.code}
-                            </p>
-                            <p className="text-xs text-green-600 mt-1">
-                                {exampleAppliedDiscount.discount_type === 'percentage' 
-                                    ? `${exampleAppliedDiscount.value}% de descuento`
-                                    : `$${exampleAppliedDiscount.value} de descuento`}
-                            </p>
+                    
+                    {/* Descuentos aplicados */}
+                    {exampleAppliedDiscounts.length > 0 && (
+                        <div className="space-y-2 mt-3">
+                            {exampleAppliedDiscounts.map(discount => (
+                                <div key={discount.code || discount.id} className="p-3 bg-green-50 border border-green-200 rounded-md">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1">
+                                            <p className="text-green-700 font-medium text-sm">
+                                                ✓ Cupón aplicado: {discount.code}
+                                            </p>
+                                            <p className="text-xs text-green-600 mt-1">
+                                                {discount.discount_type === 'percentage' 
+                                                    ? `${discount.value}% de descuento`
+                                                    : `$${discount.value} de descuento`}
+                                            </p>
+                                            {discount.product_name && (
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Aplica a: {discount.product_name}
+                                                </p>
+                                            )}
+                                            {discount.amount && (
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    Descuento: ${discount.amount.toFixed(2)}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={() => onRemoveDiscount(discount.code)}
+                                            className="ml-2 text-red-600 hover:text-red-800 text-sm"
+                                            disabled={mode === 'builder'}
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
             ) : (
                 <div className="space-y-3">
+                    {/* Input para código de gift card */}
                     <div className="flex gap-2">
                         <input
                             type="text"
                             value={giftCardCode}
                             onChange={(e) => setGiftCardCode(e.target.value)}
-                            placeholder="Código de gift card"
+                            placeholder="Código de gift card (ej: 407279)"
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
-                            disabled={mode === 'builder'}
+                            disabled={mode === 'builder' || isApplyingGiftCard || appliedGiftCard}
                         />
                         <button
-                            onClick={onApplyGiftCard}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-                            disabled={mode === 'builder'}
+                            onClick={handleApplyGiftCard}
+                            disabled={mode === 'builder' || isApplyingGiftCard || !giftCardCode.trim() || appliedGiftCard}
+                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                         >
-                            Aplicar
+                            {isApplyingGiftCard ? 'Aplicando...' : 'Aplicar'}
                         </button>
                     </div>
                     
+                    {/* Lista de gift cards del usuario */}
                     {userGiftCards && userGiftCards.length > 0 && mode !== 'builder' && (
-                        <div>
+                        <div className="mt-3">
                             <p className="text-sm font-medium text-gray-700 mb-2">Tus Gift Cards:</p>
-                            <div className="space-y-2">
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {userGiftCards.map(giftCard => (
                                     <div 
                                         key={giftCard.id}
-                                        className="p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 text-sm"
-                                        onClick={() => setGiftCardCode(giftCard.code)}
+                                        className={`p-3 border rounded-md cursor-pointer transition-all hover:shadow-sm ${
+                                            appliedGiftCard?.id === giftCard.id 
+                                                ? 'bg-green-50 border-green-300' 
+                                                : 'border-gray-200 hover:border-green-300'
+                                        }`}
+                                        onClick={() => handleGiftCardClick(giftCard)}
                                     >
-                                        <p className="font-medium">{giftCard.code}</p>
-                                        <p className="text-xs text-gray-600">
-                                            Saldo: ${giftCard.current_balance}
-                                        </p>
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <Gift size={14} className="text-green-600" />
+                                                    <p className="font-medium text-gray-900">{giftCard.code}</p>
+                                                    {appliedGiftCard?.id === giftCard.id && (
+                                                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                                            Aplicada
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                                    <div className="flex items-center gap-1 text-gray-600">
+                                                        <DollarSign size={12} />
+                                                        <span>Saldo: <strong className="text-green-600">${parseFloat(giftCard.current_balance).toFixed(2)}</strong></span>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-1 text-gray-600">
+                                                        <Calendar size={12} />
+                                                        <span>Expira: {formatDate(giftCard.expiration_date)}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                {appliedGiftCard?.id === giftCard.id && exampleGiftCardAmountUsed > 0 && (
+                                                    <div className="mt-2 pt-2 border-t border-green-200">
+                                                        <p className="text-xs text-green-700">
+                                                            Se usarán <strong>${exampleGiftCardAmountUsed.toFixed(2)}</strong> en esta orden
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            Saldo restante: ${(parseFloat(giftCard.current_balance) - exampleGiftCardAmountUsed).toFixed(2)}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
                     
+                    {/* Gift Card aplicada */}
                     {exampleAppliedGiftCard && (
-                        <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-                            <p className="text-green-700 font-medium text-sm">
-                                <Gift size={14} className="inline mr-1" />
-                                Gift Card aplicada: {exampleAppliedGiftCard.code}
+                        <div className="p-3 bg-green-50 border border-green-200 rounded-md mt-3">
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Gift size={16} className="text-green-600" />
+                                        <p className="text-green-700 font-medium text-sm">
+                                            ✓ Gift Card aplicada: {exampleAppliedGiftCard.code}
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-3 text-xs">
+                                        <div>
+                                            <p className="text-gray-600">Saldo total:</p>
+                                            <p className="font-medium text-green-600">
+                                                ${parseFloat(exampleAppliedGiftCard.current_balance).toFixed(2)}
+                                            </p>
+                                        </div>
+                                        
+                                        <div>
+                                            <p className="text-gray-600">Se usará en esta orden:</p>
+                                            <p className="font-medium text-green-600">
+                                                ${exampleGiftCardAmountUsed.toFixed(2)}
+                                            </p>
+                                        </div>
+                                        
+                                        <div className="col-span-2">
+                                            <p className="text-gray-600">Fecha de expiración:</p>
+                                            <p className="font-medium">
+                                                {formatDate(exampleAppliedGiftCard.expiration_date)}
+                                            </p>
+                                        </div>
+                                        
+                                        {exampleGiftCardAmountUsed > 0 && (
+                                            <div className="col-span-2 mt-2 pt-2 border-t border-green-200">
+                                                <p className="text-xs text-green-700 font-medium">
+                                                    Saldo restante después de la compra: 
+                                                    ${(parseFloat(exampleAppliedGiftCard.current_balance) - exampleGiftCardAmountUsed).toFixed(2)}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                <button
+                                    onClick={onRemoveGiftCard}
+                                    className="ml-2 text-red-600 hover:text-red-800 text-sm"
+                                    disabled={mode === 'builder'}
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Información adicional */}
+                    {mode === 'builder' && (
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                            <p className="text-blue-700 text-xs font-medium mb-1">
+                                Ejemplo de Gift Card del usuario:
                             </p>
-                            <p className="text-xs text-green-600 mt-1">
-                                Saldo aplicado: ${exampleAppliedGiftCard.amount_used || exampleAppliedGiftCard.current_balance}
+                            <p className="text-blue-600 text-xs">
+                                Código: <strong>407279</strong> - Saldo: $10.00
+                            </p>
+                            <p className="text-blue-600 text-xs mt-1">
+                                En modo frontend, los usuarios podrán seleccionar sus gift cards disponibles y aplicar el saldo a su orden.
                             </p>
                         </div>
                     )}

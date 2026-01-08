@@ -20,7 +20,8 @@ const ProductDetailComponent = ({
     setComponents,
     hoveredComponentId,
     setHoveredComponentId,
-    product
+    product,
+    storeAutomaticDiscounts = []
 }) => {
     // Extraer configuraciones personalizadas
     const customStyles = comp.styles || {};
@@ -310,23 +311,24 @@ const paddingLeft = customStyles.paddingLeft || '20px';
                     </ComponentWithHover>
                 );
             case 'button':
-                return (
-                    <ComponentWithHover
-                        key={child.id}
-                        component={child}
-                        isPreview={isPreview}
-                        hoveredComponentId={hoveredComponentId}
-                        setHoveredComponentId={setHoveredComponentId}
-                        getComponentTypeName={getComponentTypeName}
-                    >
-                        <ButtonComponent
-                            {...commonProps}
-                            product={product}
-                            selectedCombination={selectedCombination}
-                            quantity={quantity}
-                        />
-                    </ComponentWithHover>
-                );
+    return (
+        <ComponentWithHover
+            key={child.id}
+            component={child}
+            isPreview={isPreview}
+            hoveredComponentId={hoveredComponentId}
+            setHoveredComponentId={setHoveredComponentId}
+            getComponentTypeName={getComponentTypeName}
+        >
+            <ButtonComponent
+                {...commonProps}
+                product={product}
+                selectedCombination={selectedCombination}
+                quantity={quantity}
+                storeAutomaticDiscounts={storeAutomaticDiscounts} // Añade esta línea
+            />
+        </ComponentWithHover>
+    );
             default:
                 return null;
         }

@@ -70,7 +70,7 @@ const componentMap = {
 // ==============================================================
 function renderBlock(block, themeSettings, availableMenus, products, currentProduct = null, companyId, paymentMethods = [], shippingRates = [], userDeliveryLocations = [], userGiftCards = [], currentUser = null) {
     const Component = componentMap[block.type];
-    console.log(products)
+    // console.log(userData)
 
     if (!Component) {
         console.warn(`Componente de layout no reconocido: ${block.type}`);
@@ -168,7 +168,7 @@ export default function Index({
     userDeliveryLocations = [],
     userGiftCards = [],
 }) {
-
+// console.log(availableMenus)
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
     if (typeof page.layout === 'string' && page.layout.trim() !== '') {
