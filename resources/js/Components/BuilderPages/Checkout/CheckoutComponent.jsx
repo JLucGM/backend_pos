@@ -9,8 +9,6 @@ import ComponentWithHover from '../ComponentWithHover';
 import { usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
-// components/BuilderPages/Checkout/CheckoutComponent.jsx
-// import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 const CheckoutComponent = ({
     comp,
@@ -104,7 +102,9 @@ const CheckoutComponent = ({
         image: 'https://picsum.photos/150',
         stock: 10,
         hasDirectDiscount: false,
-        discountAmount: 0
+        discountAmount: 0,
+        taxRate: 16.00,
+        taxName: 'IVA'
     }], []);
 
     const exampleCartTotal = 599.98;
@@ -183,6 +183,9 @@ const CheckoutComponent = ({
                         combination_name: item.combinationName,
                         image: item.image || (product.media?.[0]?.original_url || ''),
                         stock: item.stock,
+                        taxRate: item.taxRate,
+                        taxName: item.taxName,
+                        taxAmount: item.taxAmount
                     };
                 }).filter(Boolean);
 
@@ -253,7 +256,7 @@ const CheckoutComponent = ({
         }
     }, [mode]);
 
-    // Calcular totales - SIN DEPENDENCIAS QUE CAMBIEN CADA RENDER
+    // Calcular totales - INCLUYENDO IMPUESTOS DINÁMICOS
     const totals = useMemo(() => {
         // Calcular desde los items directamente para mayor precisión
         const subtotalCalculated = displayCartItems.reduce((sum, item) =>
@@ -272,12 +275,34 @@ const CheckoutComponent = ({
             sum + (discount.amount || 0), 0);
 
         const shipping = deliveryType === 'delivery' ? (parseFloat(selectedShippingRate?.price) || 0) : 0;
-        const taxRate = 0.16;
-        const subtotalForTax = subtotalCalculated;
-        const tax = subtotalForTax * taxRate;
+
+        // Calcular impuestos por tipo de producto
+        const taxDetails = {};
+        let totalTax = 0;
+
+        displayCartItems.forEach(item => {
+            if (item.taxRate && item.taxRate > 0) {
+                const taxKey = item.taxName ? `${item.taxName}_${item.taxRate}` : `tax_${item.taxRate}`;
+
+                if (!taxDetails[taxKey]) {
+                    taxDetails[taxKey] = {
+                        name: item.taxName || `Impuesto (${item.taxRate}%)`,
+                        rate: `${item.taxRate}%`,
+                        amount: 0
+                    };
+                }
+
+                // Calcular impuesto sobre el precio final del item (después de descuentos)
+                const itemTax = (item.price * item.quantity) * (item.taxRate / 100);
+                taxDetails[taxKey].amount += itemTax;
+                totalTax += itemTax;
+            }
+        });
+
+        const taxDetailsArray = Object.values(taxDetails);
 
         // Calcular total antes de gift card
-        const totalBeforeGiftCard = subtotalCalculated + shipping + tax;
+        const totalBeforeGiftCard = subtotalCalculated + shipping + totalTax;
 
         // Usar el monto de gift card calculado
         const giftCardUsed = giftCardAmountUsed > 0 ?
@@ -287,7 +312,8 @@ const CheckoutComponent = ({
 
         return {
             shipping,
-            tax,
+            tax: totalTax,
+            taxDetails: taxDetailsArray,
             originalSubtotal,
             subtotal: subtotalCalculated,
             automaticDiscountsTotal,
@@ -297,7 +323,6 @@ const CheckoutComponent = ({
             totalBeforeGiftCard,
         };
     }, [displayCartItems, appliedDiscounts, selectedShippingRate?.price, deliveryType, giftCardAmountUsed]);
-
 
     const handleApplyGiftCard = useCallback(() => {
         if (!giftCardCode.trim()) {
@@ -395,7 +420,7 @@ const CheckoutComponent = ({
         }
     }, [mode]);
 
-    
+
     // Manejadores - USAR useCallback para estabilizar
     const handleAddressSelect = useCallback((addressId) => {
         setSelectedAddressId(addressId);
@@ -623,6 +648,7 @@ const CheckoutComponent = ({
             cartTotal: displayCartTotal,
             shipping: totals.shipping,
             tax: totals.tax,
+            taxDetails: totals.taxDetails, // <-- AGREGAR TAX DETAILS
             discounts: totals.manualDiscountsTotal,
             giftCardAmount: totals.giftCardAmount,
             orderTotal: totals.orderTotal,
@@ -712,6 +738,7 @@ const CheckoutComponent = ({
                             cartTotal={displayCartTotal}
                             shipping={totals.shipping}
                             tax={totals.tax}
+                            taxDetails={totals.taxDetails} // <-- Pasar taxDetails
                             discounts={totals.manualDiscountsTotal}
                             automaticDiscountsTotal={totals.automaticDiscountsTotal}
                             giftCardAmount={totals.giftCardAmount}

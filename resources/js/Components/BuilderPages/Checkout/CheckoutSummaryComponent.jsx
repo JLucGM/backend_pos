@@ -13,7 +13,8 @@ const CheckoutSummaryComponent = ({
     themeSettings,
     appliedGiftCard,
     mode = 'builder',
-    automaticDiscountsTotal = 0 // Nuevo prop para descuentos automáticos
+    automaticDiscountsTotal = 0,
+    taxDetails = []
 }) => {
     const styles = comp.styles || {};
     const content = comp.content || {};
@@ -24,20 +25,23 @@ const CheckoutSummaryComponent = ({
             id: '1_simple',
             product_id: 1,
             name: 'Traje de baño',
-            price: 10.00, // Precio CON descuento directo
-            originalPrice: 15.00, // Precio original
+            price: 10.00,
+            originalPrice: 15.00,
             quantity: 2,
             hasDirectDiscount: true,
-            discountAmount: 10.00, // (15-10)*2
+            discountAmount: 10.00,
             discountType: 'direct_discount',
             image: 'https://picsum.photos/150',
-            stock: 10
+            stock: 10,
+            taxRate: 8.00,
+            taxName: 'TaxTest',
+            taxAmount: 1.60
         },
         {
             id: '2_simple',
             product_id: 4,
             name: 'Camisa azul',
-            price: 6.00, // Precio CON descuento automático
+            price: 6.00,
             originalPrice: 8.00,
             quantity: 1,
             hasDirectDiscount: false,
@@ -50,16 +54,26 @@ const CheckoutSummaryComponent = ({
             discountAmount: 2.00,
             discountType: 'product_automatic',
             image: 'https://picsum.photos/151',
-            stock: 5
+            stock: 5,
+            taxRate: 16.00,
+            taxName: 'IVA',
+            taxAmount: 0.96
         }
     ];
 
-    const exampleCartTotal = 26.00; // (10*2) + (6*1) = 20 + 6 = 26
-    const exampleOriginalTotal = 38.00; // (15*2) + (8*1) = 30 + 8 = 38
-    const exampleAutomaticDiscounts = 12.00; // 38 - 26 = 12
+    const exampleCartTotal = 26.00;
+    const exampleOriginalTotal = 38.00;
+    const exampleAutomaticDiscounts = 12.00;
     const exampleShipping = 50.00;
-    const exampleTax = 4.16; // 26 * 0.16
-    const exampleOrderTotal = 80.16; // 26 + 50 + 4.16
+    const exampleTax = 2.56;
+    const exampleTaxDetails = [
+        { name: 'TaxTest', rate: '8%', amount: 1.60 },
+        { name: 'IVA', rate: '16%', amount: 0.96 }
+    ];
+    const exampleOrderTotal = 78.56;
+
+    // Asegurar que taxDetails siempre sea un array
+    const safeTaxDetails = Array.isArray(taxDetails) ? taxDetails : [];
 
     const displayCartItems = mode === 'builder' ? exampleCartItems : cartItems;
     const displayCartTotal = mode === 'builder' ? exampleCartTotal : cartTotal;
@@ -68,6 +82,7 @@ const CheckoutSummaryComponent = ({
     const displayAutomaticDiscounts = mode === 'builder' ? exampleAutomaticDiscounts : automaticDiscountsTotal;
     const displayShipping = mode === 'builder' ? exampleShipping : shipping;
     const displayTax = mode === 'builder' ? exampleTax : tax;
+    const displayTaxDetails = mode === 'builder' ? exampleTaxDetails : safeTaxDetails;
     const displayOrderTotal = mode === 'builder' ? exampleOrderTotal : orderTotal;
 
     const containerStyles = {
@@ -120,11 +135,6 @@ const CheckoutSummaryComponent = ({
                 {content.title || 'Resumen del Pedido'}
             </h2>
 
-            {/* Información de entrega (mantener igual) */}
-            <div className="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
-                {/* ... código existente ... */}
-            </div>
-
             {/* Productos con descuentos */}
             <div className="space-y-4">
                 {displayCartItems.length > 0 && (
@@ -171,6 +181,13 @@ const CheckoutSummaryComponent = ({
                                                 </div>
                                             )}
                                             {renderDiscountInfo(item)}
+                                            {/* Mostrar impuesto del producto */}
+                                            {item.taxRate > 0 && (
+                                                <div className="text-xs text-gray-500 mt-1">
+                                                    Impuesto ({item.taxName || `${item.taxRate}%`}): 
+                                                    ${((item.price * item.quantity) * (item.taxRate / 100)).toFixed(2)}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="font-medium">
@@ -190,49 +207,13 @@ const CheckoutSummaryComponent = ({
                         <span className="line-through text-gray-400">${originalSubtotal.toFixed(2)}</span>
                     </div>
 
-                    {/* Subtotal después de descuentos automáticos */}
-                    {/* {content.showSubtotal !== false && (
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">Subtotal</span>
-                            <span className="font-medium">${displayCartTotal.toFixed(2)}</span>
-                        </div>
-                    )} */}
-
                     {/* Descuentos automáticos */}
-                    {/* {automaticDiscountsTotal > 0 && (
-                    <div className="flex justify-between">
-                        <span>Descuentos automáticos</span>
-                        <span className="text-green-600">-${automaticDiscountsTotal.toFixed(2)}</span>
-                    </div>
-                )} */}
-
-
-                    {/* Descuento manual (por código) */}
-                    {/* {appliedDiscount && discounts > 0 && (
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">Descuento ({appliedDiscount.code})</span>
-                            <span className="font-medium text-green-600">-${discounts.toFixed(2)}</span>
+                    {displayAutomaticDiscounts > 0 && (
+                        <div className="flex justify-between text-green-600">
+                            <span>Descuentos automáticos</span>
+                            <span>-${displayAutomaticDiscounts.toFixed(2)}</span>
                         </div>
                     )}
-
-                    {appliedDiscount && (
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">
-                                Descuento por código ({appliedDiscount.code})
-                                {appliedDiscount.product_name && ` - ${appliedDiscount.product_name}`}
-                            </span>
-                            <span className="font-medium text-green-600">
-                                -${discounts}
-                            </span>
-                        </div>
-                    )} */}
-
-                    {/* {appliedDiscounts.map(discount => (
-                    <div key={discount.code} className="flex justify-between">
-                        <span>Descuento ({discount.code})</span>
-                        <span className="text-green-600">-${(discount.amount || 0).toFixed(2)}</span>
-                    </div>
-                ))} */}
 
                     {/* Gift Card aplicada */}
                     {appliedGiftCard && giftCardAmount > 0 && (
@@ -269,9 +250,30 @@ const CheckoutSummaryComponent = ({
 
                     {/* Impuestos */}
                     {content.showTax !== false && displayTax > 0 && (
-                        <div className="flex justify-between">
-                            <span className="text-gray-600">Impuestos (16%)</span>
-                            <span className="font-medium">${displayTax.toFixed(2)}</span>
+                        <div className="space-y-1">
+                            {displayTaxDetails && displayTaxDetails.length > 0 ? (
+                                <>
+                                    {displayTaxDetails.map((taxDetail, index) => (
+                                        <div key={index} className="flex justify-between">
+                                            <span className="text-gray-600">
+                                                {taxDetail.name} ({taxDetail.rate})
+                                            </span>
+                                            <span className="font-medium">${taxDetail.amount.toFixed(2)}</span>
+                                        </div>
+                                    ))}
+                                    {displayTaxDetails.length > 1 && (
+                                        <div className="flex justify-between border-t pt-1">
+                                            <span className="text-gray-600 font-medium">Total impuestos</span>
+                                            <span className="font-medium">${displayTax.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Impuestos</span>
+                                    <span className="font-medium">${displayTax.toFixed(2)}</span>
+                                </div>
+                            )}
                         </div>
                     )}
 

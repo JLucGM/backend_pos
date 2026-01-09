@@ -1,4 +1,4 @@
-// CartSummaryComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS
+// CartSummaryComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS E IMPUESTOS
 import React from 'react';
 import cartHelper from '@/Helper/cartHelper';
 
@@ -31,10 +31,10 @@ const CartSummaryComponent = ({
         }
     };
 
-    // Obtener resumen del carrito con descuentos automáticos
+    // Obtener resumen del carrito con descuentos automáticos e impuestos
     const getCartSummary = () => {
         if (mode === 'frontend' && companyId) {
-            // En modo frontend, usar cartHelper para calcular con descuentos automáticos
+            // En modo frontend, usar cartHelper
             return cartHelper.getCartSummary(companyId, null, automaticDiscounts);
         }
         
@@ -43,10 +43,33 @@ const CartSummaryComponent = ({
         const originalSubtotal = cartItems.reduce((sum, item) => sum + ((item.originalPrice || item.price) * item.quantity), 0);
         const automaticDiscountTotal = originalSubtotal - subtotal;
         
+        // Calcular impuestos por tipo
+        const taxDetailsMap = {};
+        let taxTotal = 0;
+        
+        cartItems.forEach(item => {
+            if (item.taxRate && item.taxRate > 0) {
+                const taxKey = item.taxName ? `${item.taxName}_${item.taxRate}` : `tax_${item.taxRate}`;
+                if (!taxDetailsMap[taxKey]) {
+                    taxDetailsMap[taxKey] = {
+                        name: item.taxName || `Impuesto (${item.taxRate}%)`,
+                        rate: `${item.taxRate}%`,
+                        amount: 0
+                    };
+                }
+                const itemTax = (item.price * item.quantity) * (item.taxRate / 100);
+                taxDetailsMap[taxKey].amount += itemTax;
+                taxTotal += itemTax;
+            }
+        });
+        
+        const taxDetails = Object.values(taxDetailsMap);
+        
         return {
             subtotal: subtotal,
             originalSubtotal: originalSubtotal,
-            taxTotal: 0,
+            taxTotal: taxTotal,
+            taxDetails: taxDetails,
             automaticDiscountTotal: automaticDiscountTotal,
             manualDiscountTotal: 0,
             totalAmount: subtotal,
@@ -136,9 +159,20 @@ const CartSummaryComponent = ({
 
                 {/* Impuestos */}
                 {cartSummary.taxTotal > 0 && (
-                    <div className="flex justify-between" style={textStyles}>
-                        <span>Impuestos</span>
-                        <span>${cartSummary.taxTotal.toFixed(2)}</span>
+                    <div className="space-y-1">
+                        {cartSummary.taxDetails && cartSummary.taxDetails.length > 0 ? (
+                            cartSummary.taxDetails.map((tax, index) => (
+                                <div key={index} className="flex justify-between" style={textStyles}>
+                                    <span>{tax.name} ({tax.rate})</span>
+                                    <span>${tax.amount.toFixed(2)}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="flex justify-between" style={textStyles}>
+                                <span>Impuestos</span>
+                                <span>${cartSummary.taxTotal.toFixed(2)}</span>
+                            </div>
+                        )}
                     </div>
                 )}
 

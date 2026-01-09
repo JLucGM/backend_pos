@@ -1,4 +1,3 @@
-// Helper/cartHelper.js - VERSIÓN COMPLETA CON DESCUENTOS AUTOMÁTICOS
 const cartHelper = {
     getCartKey: (companyId) => `shoppingCart_${companyId}`,
 
@@ -15,8 +14,10 @@ const cartHelper = {
         // 1. Determinar precio base
         const basePrice = combination ? parseFloat(combination.price) : parseFloat(product.product_price);
 
-        // 2. Determinar tasa de impuesto
+        // 2. Determinar tasa de impuesto del producto
         const taxRate = product.tax ? parseFloat(product.tax.tax_rate) : 0;
+        const hasTax = taxRate > 0;
+        const taxName = product.tax ? product.tax.tax_name : null;
 
         // 3. Inicializar variables para descuentos
         let finalPrice = basePrice;
@@ -139,8 +140,8 @@ const cartHelper = {
             }
         }
 
-        // 7. Calcular impuesto sobre el precio final
-        const itemTaxAmount = (finalPrice * taxRate) / 100;
+        // 7. Calcular impuesto sobre el precio final (después de descuentos)
+        const itemTaxAmount = hasTax ? (finalPrice * taxRate) / 100 : 0;
 
         // 8. Buscar stock
         const stock = combination
@@ -167,6 +168,9 @@ const cartHelper = {
                 cart[existingIndex].discountAmount = discountAmount * newQuantity;
                 cart[existingIndex].discountType = discountType;
                 cart[existingIndex].hasDirectDiscount = product.product_price_discount && parseFloat(product.product_price_discount) > 0;
+                cart[existingIndex].taxRate = taxRate;
+                cart[existingIndex].hasTax = hasTax;
+                cart[existingIndex].taxName = taxName;
             }
         } else {
             // Agregar nuevo item si hay stock
@@ -186,6 +190,8 @@ const cartHelper = {
                     image: product.media?.[0]?.original_url || '',
                     stock: stock,
                     taxRate: taxRate,
+                    hasTax: hasTax,
+                    taxName: taxName,
                     taxAmount: itemTaxAmount * quantity,
                     subtotal: finalPrice * quantity,
                     automaticDiscount: appliedAutomaticDiscount,
@@ -220,7 +226,7 @@ const cartHelper = {
             if (newQuantity <= item.stock && newQuantity > 0) {
                 cart[index].quantity = newQuantity;
                 cart[index].subtotal = item.price * newQuantity;
-                cart[index].taxAmount = (item.price * (item.taxRate / 100)) * newQuantity;
+                cart[index].taxAmount = item.hasTax ? (item.price * (item.taxRate / 100)) * newQuantity : 0;
                 cart[index].discountAmount = (item.originalPrice - item.price) * newQuantity;
                 localStorage.setItem(cartKey, JSON.stringify(cart));
                 window.dispatchEvent(new Event('cartUpdated'));
@@ -253,94 +259,111 @@ const cartHelper = {
     },
 
     getCartSummary: (companyId, storeAutomaticDiscounts = []) => {
-    const cart = cartHelper.getCart(companyId);
-    
-    if (cart.length === 0) {
-        return {
-            items: [],
-            subtotal: 0,
-            originalSubtotal: 0,
-            taxTotal: 0,
-            automaticDiscountTotal: 0,
-            manualDiscountTotal: 0,
-            totalAmount: 0,
-            itemCount: 0,
-            appliedAutomaticDiscounts: [],
-            appliedManualDiscounts: []
-        };
-    }
-    
-    // 1. Calcular subtotal con TODOS los descuentos aplicados
-    const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
-    
-    // 2. Calcular subtotal original (sin descuentos)
-    const originalSubtotal = cart.reduce((sum, item) => 
-        sum + (item.originalPrice * item.quantity), 0);
-    
-    // 3. Calcular total de impuestos
-    const taxTotal = cart.reduce((sum, item) => sum + item.taxAmount, 0);
-    
-    // 4. Calcular total de descuentos automáticos
-    const automaticDiscountTotal = cart.reduce((sum, item) => 
-        sum + (item.discountType !== 'manual' ? item.discountAmount : 0), 0);
-    
-    // 5. Calcular total de descuentos manuales (por código)
-    const manualDiscountTotal = cart.reduce((sum, item) => 
-        sum + (item.discountType === 'manual' ? item.discountAmount : 0), 0);
-    
-    // 6. Recolectar descuentos manuales aplicados
-    const appliedManualDiscounts = [];
-    const manualDiscountsMap = new Map();
-    
-    cart.forEach(item => {
-        if (item.manualDiscount) {
-            const discount = item.manualDiscount;
-            if (!manualDiscountsMap.has(discount.code)) {
-                manualDiscountsMap.set(discount.code, {
-                    ...discount,
-                    amount: 0,
-                    items: []
+        const cart = cartHelper.getCart(companyId);
+        
+        if (cart.length === 0) {
+            return {
+                items: [],
+                subtotal: 0,
+                originalSubtotal: 0,
+                taxTotal: 0,
+                taxDetails: [],
+                automaticDiscountTotal: 0,
+                manualDiscountTotal: 0,
+                totalAmount: 0,
+                itemCount: 0,
+                appliedAutomaticDiscounts: [],
+                appliedManualDiscounts: []
+            };
+        }
+        
+        // 1. Calcular subtotal con TODOS los descuentos aplicados
+        const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0);
+        
+        // 2. Calcular subtotal original (sin descuentos)
+        const originalSubtotal = cart.reduce((sum, item) => 
+            sum + (item.originalPrice * item.quantity), 0);
+        
+        // 3. Calcular total de impuestos y agrupar por tipo
+        const taxDetailsMap = {};
+        let taxTotal = 0;
+        
+        cart.forEach(item => {
+            if (item.hasTax && item.taxRate > 0) {
+                const taxKey = item.taxName ? `${item.taxName}_${item.taxRate}` : `tax_${item.taxRate}`;
+                if (!taxDetailsMap[taxKey]) {
+                    taxDetailsMap[taxKey] = {
+                        name: item.taxName || `Impuesto (${item.taxRate}%)`,
+                        rate: `${item.taxRate}%`,
+                        amount: 0
+                    };
+                }
+                taxDetailsMap[taxKey].amount += item.taxAmount || 0;
+                taxTotal += item.taxAmount || 0;
+            }
+        });
+        
+        const taxDetails = Object.values(taxDetailsMap);
+        
+        // 4. Calcular total de descuentos automáticos
+        const automaticDiscountTotal = cart.reduce((sum, item) => 
+            sum + (item.discountType !== 'manual' ? item.discountAmount : 0), 0);
+        
+        // 5. Calcular total de descuentos manuales (por código)
+        const manualDiscountTotal = cart.reduce((sum, item) => 
+            sum + (item.discountType === 'manual' ? item.discountAmount : 0), 0);
+        
+        // 6. Recolectar descuentos manuales aplicados
+        const appliedManualDiscounts = [];
+        const manualDiscountsMap = new Map();
+        
+        cart.forEach(item => {
+            if (item.manualDiscount) {
+                const discount = item.manualDiscount;
+                if (!manualDiscountsMap.has(discount.code)) {
+                    manualDiscountsMap.set(discount.code, {
+                        ...discount,
+                        amount: 0,
+                        items: []
+                    });
+                }
+                const storedDiscount = manualDiscountsMap.get(discount.code);
+                storedDiscount.amount += item.discountAmount;
+                storedDiscount.items.push({
+                    productId: item.productId,
+                    productName: item.productName,
+                    amount: item.discountAmount
                 });
             }
-            const storedDiscount = manualDiscountsMap.get(discount.code);
-            storedDiscount.amount += item.discountAmount;
-            storedDiscount.items.push({
-                productId: item.productId,
-                productName: item.productName,
-                amount: item.discountAmount
-            });
-        }
-    });
-    
-    manualDiscountsMap.forEach(discount => {
-        appliedManualDiscounts.push(discount);
-    });
-    
-    // 7. Calcular total final
-    const totalAmount = Math.max(0, 
-        originalSubtotal + taxTotal - automaticDiscountTotal - manualDiscountTotal
-    );
-    
-    // IMPORTANTE: El subtotal debe ser el total con todos los descuentos aplicados
-    // Si subtotal no incluye descuentos manuales, ajustarlo
-    const subtotalWithAllDiscounts = originalSubtotal - automaticDiscountTotal - manualDiscountTotal;
-    
-    return {
-        items: cart,
-        subtotal: parseFloat(subtotal.toFixed(2)),
-        subtotalWithAllDiscounts: parseFloat(subtotalWithAllDiscounts.toFixed(2)), // NUEVO
-        originalSubtotal: parseFloat(originalSubtotal.toFixed(2)),
-        taxTotal: parseFloat(taxTotal.toFixed(2)),
-        automaticDiscountTotal: parseFloat(automaticDiscountTotal.toFixed(2)),
-        manualDiscountTotal: parseFloat(manualDiscountTotal.toFixed(2)),
-        totalAmount: parseFloat(totalAmount.toFixed(2)),
-        itemCount: cart.reduce((sum, item) => sum + item.quantity, 0),
-        appliedAutomaticDiscounts: [],
-        appliedManualDiscounts: appliedManualDiscounts
-    };
-},
+        });
+        
+        manualDiscountsMap.forEach(discount => {
+            appliedManualDiscounts.push(discount);
+        });
+        
+        // 7. Calcular total final
+        const totalAmount = Math.max(0, 
+            originalSubtotal + taxTotal - automaticDiscountTotal - manualDiscountTotal
+        );
+        
+        const subtotalWithAllDiscounts = originalSubtotal - automaticDiscountTotal - manualDiscountTotal;
+        
+        return {
+            items: cart,
+            subtotal: parseFloat(subtotal.toFixed(2)),
+            subtotalWithAllDiscounts: parseFloat(subtotalWithAllDiscounts.toFixed(2)),
+            originalSubtotal: parseFloat(originalSubtotal.toFixed(2)),
+            taxTotal: parseFloat(taxTotal.toFixed(2)),
+            taxDetails: taxDetails,
+            automaticDiscountTotal: parseFloat(automaticDiscountTotal.toFixed(2)),
+            manualDiscountTotal: parseFloat(manualDiscountTotal.toFixed(2)),
+            totalAmount: parseFloat(totalAmount.toFixed(2)),
+            itemCount: cart.reduce((sum, item) => sum + item.quantity, 0),
+            appliedAutomaticDiscounts: [],
+            appliedManualDiscounts: appliedManualDiscounts
+        };
+    },
 
-    // cartHelper.js - FUNCIÓN ACTUALIZADA applyManualDiscount
     applyManualDiscount: (companyId, discountCode, discountData) => {
         const cartKey = cartHelper.getCartKey(companyId);
         const cart = cartHelper.getCart(companyId);
@@ -389,7 +412,7 @@ const cartHelper = {
                         price: discountedPrice,
                         manualDiscount: discountData,
                         subtotal: discountedPrice * item.quantity,
-                        taxAmount: (discountedPrice * (item.taxRate / 100)) * item.quantity,
+                        taxAmount: item.hasTax ? (discountedPrice * (item.taxRate / 100)) * item.quantity : 0,
                         discountAmount: (item.originalPrice - discountedPrice) * item.quantity,
                         discountType: item.discountType === 'automatic' ? 'automatic_and_manual' : 'manual'
                     };
@@ -418,7 +441,7 @@ const cartHelper = {
                                     price: discountedPrice,
                                     manualDiscount: discountData,
                                     subtotal: discountedPrice * item.quantity,
-                                    taxAmount: (discountedPrice * (item.taxRate / 100)) * item.quantity,
+                                    taxAmount: item.hasTax ? (discountedPrice * (item.taxRate / 100)) * item.quantity : 0,
                                     discountAmount: (item.originalPrice - discountedPrice) * item.quantity,
                                     discountType: item.discountType === 'automatic' ? 'automatic_and_manual' : 'manual'
                                 };
@@ -432,7 +455,6 @@ const cartHelper = {
                     if (discountData.categories && discountData.categories.length > 0) {
                         updatedCart = cart.map(item => {
                             // Necesitamos pasar información de categorías del producto
-                            // Esto es un ejemplo, ajusta según tu estructura
                             const hasMatchingCategory = item.categories?.some(catId =>
                                 discountData.categories.includes(catId)
                             );
@@ -451,7 +473,7 @@ const cartHelper = {
                                     price: discountedPrice,
                                     manualDiscount: discountData,
                                     subtotal: discountedPrice * item.quantity,
-                                    taxAmount: (discountedPrice * (item.taxRate / 100)) * item.quantity,
+                                    taxAmount: item.hasTax ? (discountedPrice * (item.taxRate / 100)) * item.quantity : 0,
                                     discountAmount: (item.originalPrice - discountedPrice) * item.quantity,
                                     discountType: item.discountType === 'automatic' ? 'automatic_and_manual' : 'manual'
                                 };
