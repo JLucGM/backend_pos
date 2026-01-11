@@ -1,273 +1,504 @@
 <?php
+// app/Http\Controllers\Frontend\CheckoutController.php
 
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\DeliveryLocation;
 use App\Models\Order;
-use App\Models\Discount;
-use App\Models\GiftCard;
+use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Discount;
+use App\Models\DiscountUsage;
+use App\Models\GiftCard;
+use App\Models\GiftCardUsage;
+use App\Models\ShippingRate;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
+use Carbon\Carbon;
 
 class CheckoutController extends Controller
 {
-    // Validar código de descuento
-    public function validateDiscount(Request $request)
-    {
-        $request->validate([
-            'code' => 'required|string',
-            'company_id' => 'required|exists:companies,id',
-            'cart_total' => 'required|numeric|min:0',
-        ]);
-
-        $discount = Discount::where('code', $request->code)
-            ->where('company_id', $request->company_id)
-            ->where('is_active', true)
-            ->first();
-
-        if (!$discount) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Código de descuento no válido',
-            ]);
-        }
-
-        // Validar fechas
-        if ($discount->start_date && now()->lt($discount->start_date)) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Este descuento no está disponible aún',
-            ]);
-        }
-
-        if ($discount->end_date && now()->gt($discount->end_date)) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Este descuento ha expirado',
-            ]);
-        }
-
-        // Validar monto mínimo
-        if ($discount->minimum_order_amount > 0 && 
-            $request->cart_total < $discount->minimum_order_amount) {
-            return response()->json([
-                'valid' => false,
-                'message' => sprintf('El monto mínimo para este descuento es %s', 
-                    number_format($discount->minimum_order_amount, 2)),
-            ]);
-        }
-
-        // Validar límite de uso
-        if ($discount->usage_limit > 0 && 
-            $discount->usages()->count() >= $discount->usage_limit) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Este descuento ha alcanzado su límite de uso',
-            ]);
-        }
-
-        return response()->json([
-            'valid' => true,
-            'discount' => [
-                'id' => $discount->id,
-                'name' => $discount->name,
-                'code' => $discount->code,
-                'discount_type' => $discount->discount_type,
-                'value' => $discount->value,
-                'applies_to' => $discount->applies_to,
-            ],
-        ]);
-    }
-
-    // Validar gift card
-    public function validateGiftCard(Request $request)
-    {
-        $request->validate([
-            'code' => 'required|string',
-            'company_id' => 'required|exists:companies,id',
-            'user_id' => 'nullable|exists:users,id',
-        ]);
-
-        $giftCard = GiftCard::where('code', $request->code)
-            ->where('company_id', $request->company_id)
-            ->where('is_active', true)
-            ->first();
-
-        if (!$giftCard) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Gift Card no válida',
-            ]);
-        }
-
-        // Validar que pertenezca al usuario
-        if ($request->user_id && $giftCard->user_id != $request->user_id) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Esta Gift Card no pertenece a tu cuenta',
-            ]);
-        }
-
-        // Validar saldo
-        if ($giftCard->current_balance <= 0) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Esta Gift Card no tiene saldo disponible',
-            ]);
-        }
-
-        // Validar fecha de expiración
-        if ($giftCard->expiration_date && now()->gt($giftCard->expiration_date)) {
-            return response()->json([
-                'valid' => false,
-                'message' => 'Esta Gift Card ha expirado',
-            ]);
-        }
-
-        return response()->json([
-            'valid' => true,
-            'giftCard' => [
-                'id' => $giftCard->id,
-                'code' => $giftCard->code,
-                'current_balance' => $giftCard->current_balance,
-            ],
-        ]);
-    }
-
-    // Procesar orden
+    /**
+     * Procesar el checkout y crear la orden completa
+     */
     public function processOrder(Request $request)
     {
+        // dd($request->all());
+        DB::beginTransaction();
+
         try {
-            $request->validate([
-                'formData' => 'required|array',
-                'cart_items' => 'required|array',
-                'cart_total' => 'required|numeric|min:0',
-                'company_id' => 'required|exists:companies,id',
-                'selected_payment_method' => 'required',
-                 'delivery_type' => 'required|in:delivery,pickup',
-                 'user_id' => 'nullable|exists:users,id',
+            // Validar datos básicos
+            $validator = Validator::make($request->all(), [
+                'cart_items' => 'required|array|min:1',
+                'cart_items.*.product_id' => 'required|integer|exists:products,id',
+                'cart_items.*.product_name' => 'required|string',
+                'cart_items.*.quantity' => 'required|integer|min:1',
+                'cart_items.*.price' => 'required|numeric|min:0',
+                'cart_items.*.original_price' => 'required|numeric|min:0',
+                'cart_items.*.combination_id' => 'nullable|integer',
+                'cart_items.*.discount_amount' => 'required|numeric|min:0',
+                'cart_items.*.discount_type' => 'nullable|string',
+                'cart_items.*.tax_rate' => 'required|numeric|min:0',
+                'cart_items.*.tax_amount' => 'required|numeric|min:0',
+                
+                'user_info' => 'required|array',
+                'user_info.user_id' => 'required|integer|exists:users,id',
+                'user_info.delivery_location_id' => 'nullable|integer|exists:delivery_locations,id',
+                
+                'shipping_info' => 'required|array',
+                'shipping_info.delivery_type' => 'required|in:delivery,pickup',
+                'shipping_info.shipping_rate_id' => 'nullable|integer|exists:shipping_rates,id',
+                
+                'payment_info' => 'required|array',
+                'payment_info.payment_method_id' => 'required|exists:payments_methods,id',
+                
+                'discounts' => 'nullable|array',
+                'discounts.*.code' => 'required|string',
+                'discounts.*.id' => 'nullable|integer',
+                'discounts.*.amount' => 'required|numeric|min:0',
+                
+                'gift_card' => 'nullable|array',
+                'gift_card.id' => 'nullable|integer|exists:gift_cards,id',
+                'gift_card.code' => 'nullable|string',
+                'gift_card.amount_used' => 'nullable|numeric|min:0',
+                
+                'totals' => 'required|array',
+                'totals.subtotal' => 'required|numeric|min:0',
+                'totals.shipping' => 'required|numeric|min:0',
+                'totals.tax' => 'required|numeric|min:0',
+                'totals.total' => 'required|numeric|min:0',
+                'totals.automatic_discounts' => 'required|numeric|min:0',
+                'totals.manual_discounts' => 'required|numeric|min:0',
+                'totals.gift_card_amount' => 'required|numeric|min:0',
+                
+                'company_id' => 'required|integer|exists:companies,id',
             ]);
 
-            DB::beginTransaction();
-
-            // Validar que el usuario existe y pertenece a la compañía
-        $user = User::where('id', $request->user_id)
-            ->where('company_id', $request->company_id)
-            ->firstOrFail();
-
-        // Validar dirección si es delivery
-        if ($request->delivery_type === 'delivery') {
-            $request->validate([
-                'selected_address_id' => 'required|exists:delivery_locations,id',
-            ]);
-
-            // Verificar que la dirección pertenece al usuario
-            $address = DeliveryLocation::where('id', $request->selected_address_id)
-                ->where('user_id', $user->id)
-                ->firstOrFail();
-        }
-        
-            // Crear la orden similar al backend
-            $orderData = [
-                'status' => 'pending',
-                'payment_status' => 'pending',
-                'delivery_type' => $request->delivery_type,
-                'subtotal' => $request->cart_total,
-                'tax_amount' => $request->tax ?? 0,
-                'total' => $request->order_total,
-                'totaldiscounts' => $request->discounts ?? 0,
-                'totalshipping' => $request->shipping ?? 0,
-                'manual_discount_code' => $request->applied_discount_id ? $request->code : null,
-                'manual_discount_amount' => $request->discounts ?? 0,
-                'gift_card_amount' => $request->gift_card_amount ?? 0,
-                'delivery_location_id' => $request->formData['delivery_location_id'] ?? null,
-                'payments_method_id' => $request->selected_payment_method,
-                'order_origin' => 'frontend',
-                'user_id' => $request->user_id ?? Auth::id(),
-                'company_id' => $request->company_id,
-                'customer_name' => $request->formData['name'] ?? null,
-                'customer_email' => $request->formData['email'],
-                'customer_phone' => $request->formData['phone'],
-                'customer_address' => $request->formData['address'],
-                'customer_city' => $request->formData['city'],
-                'customer_zip_code' => $request->formData['zipCode'],
-                'customer_country' => $request->formData['country'],
-                'notes' => $request->formData['notes'] ?? null,
-            ];
-
-            $order = Order::create($orderData);
-
-            // Crear items de la orden
-            foreach ($request->cart_items as $item) {
-                $order->orderItems()->create([
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'price_product' => $item['price'],
-                    'subtotal' => $item['price'] * $item['quantity'],
-                    'combination_id' => $item['combination_id'] ?? null,
-                    'product_details' => json_encode($item['product_details'] ?? []),
-                ]);
+            if ($validator->fails()) {
+                throw new ValidationException($validator);
             }
 
-            // Actualizar gift card si se usó
-            if ($request->gift_card_amount > 0 && $request->applied_gift_card_id) {
-                $giftCard = GiftCard::find($request->applied_gift_card_id);
-                if ($giftCard) {
-                    $giftCard->current_balance -= $request->gift_card_amount;
-                    $giftCard->save();
+            $validated = $validator->validated();
+            $user = Auth::user();
 
-                    // Registrar uso
-                    \App\Models\GiftCardUsage::create([
-                        'gift_card_id' => $giftCard->id,
+            if (!$user || $user->id != $validated['user_info']['user_id']) {
+                throw new \Exception('Usuario no autenticado o no coincide');
+            }
+
+            // ==================== VALIDACIONES Y PREPARACIÓN ====================
+
+            // 1. Validar stock de todos los productos
+            $stockErrors = [];
+            foreach ($validated['cart_items'] as $item) {
+                $product = Product::find($item['product_id']);
+                if (!$product) {
+                    $stockErrors[] = "Producto ID {$item['product_id']} no encontrado";
+                    continue;
+                }
+
+                $stock = $this->getProductStock($product, $item['combination_id'] ?? null);
+                if ($stock < $item['quantity']) {
+                    $stockErrors[] = "Stock insuficiente para {$item['product_name']}. Disponible: {$stock}, Solicitado: {$item['quantity']}";
+                }
+            }
+
+            if (!empty($stockErrors)) {
+                throw new \Exception(implode(', ', $stockErrors));
+            }
+
+            // 2. Validar gift card si se aplica
+            $giftCard = null;
+            $giftCardAmountUsed = 0;
+            if (!empty($validated['gift_card']['id'])) {
+                $giftCard = GiftCard::find($validated['gift_card']['id']);
+                
+                if (!$giftCard) {
+                    throw new \Exception('Gift Card no encontrada');
+                }
+
+                if ($giftCard->user_id != $user->id) {
+                    throw new \Exception('Esta Gift Card no pertenece al usuario actual');
+                }
+
+                if (!$giftCard->is_active) {
+                    throw new \Exception('Gift Card inactiva');
+                }
+
+                if ($giftCard->current_balance < $validated['gift_card']['amount_used']) {
+                    throw new \Exception('Saldo insuficiente en la Gift Card');
+                }
+
+                if ($giftCard->expiration_date && Carbon::parse($giftCard->expiration_date)->isPast()) {
+                    throw new \Exception('Gift Card expirada');
+                }
+
+                $giftCardAmountUsed = $validated['gift_card']['amount_used'];
+            }
+
+            // 3. Validar descuentos manuales si se aplican
+            $appliedDiscounts = [];
+            if (!empty($validated['discounts'])) {
+                foreach ($validated['discounts'] as $discountData) {
+                    $discount = null;
+                    
+                    if (isset($discountData['id'])) {
+                        $discount = Discount::find($discountData['id']);
+                    } elseif (isset($discountData['code'])) {
+                        $discount = Discount::where('code', $discountData['code'])
+                            ->where('company_id', $validated['company_id'])
+                            ->first();
+                    }
+                    
+                    if (!$discount) {
+                        throw new \Exception('Descuento no válido: ' . ($discountData['code'] ?? 'Desconocido'));
+                    }
+
+                    if (!$discount->is_active) {
+                        throw new \Exception('Descuento inactivo: ' . $discount->code);
+                    }
+
+                    // Validar fechas
+                    if ($discount->start_date && Carbon::parse($discount->start_date)->isFuture()) {
+                        throw new \Exception('Descuento no disponible aún: ' . $discount->code);
+                    }
+
+                    if ($discount->end_date && Carbon::parse($discount->end_date)->isPast()) {
+                        throw new \Exception('Descuento expirado: ' . $discount->code);
+                    }
+
+                    // Validar límite de usos
+                    if ($discount->usage_limit && $discount->usages()->count() >= $discount->usage_limit) {
+                        throw new \Exception('Descuento agotado: ' . $discount->code);
+                    }
+
+                    // Validar mínimo de orden para descuentos automáticos
+                    if ($discount->automatic && $discount->minimum_order_amount > $validated['totals']['subtotal']) {
+                        continue; // No aplicar pero no es error
+                    }
+
+                    $appliedDiscounts[] = [
+                        'discount' => $discount,
+                        'amount' => $discountData['amount']
+                    ];
+                }
+            }
+
+            // 4. Obtener tarifa de envío
+            $shippingRate = null;
+            $shippingAmount = 0;
+            if ($validated['shipping_info']['delivery_type'] === 'delivery' && 
+                !empty($validated['shipping_info']['shipping_rate_id'])) {
+                $shippingRate = ShippingRate::find($validated['shipping_info']['shipping_rate_id']);
+                if ($shippingRate) {
+                    $shippingAmount = $shippingRate->price;
+                }
+            }
+
+            // ==================== CREAR LA ORDEN ====================
+
+            // Calcular total de descuentos
+            $totalDiscounts = $validated['totals']['automatic_discounts'] + 
+                             $validated['totals']['manual_discounts'];
+
+            // Preparar datos de la orden
+            $orderData = [
+                'status' => 'pending',
+                'payment_status' => 'pending', // Se actualizará cuando se procese el pago
+                'delivery_type' => $validated['shipping_info']['delivery_type'],
+                'subtotal' => $validated['totals']['subtotal'],
+                'tax_amount' => $validated['totals']['tax'],
+                'total' => $validated['totals']['total'],
+                'totaldiscounts' => $totalDiscounts,
+                'manual_discount_amount' => $validated['totals']['manual_discounts'],
+                'manual_discount_code' => !empty($validated['discounts']) ? 
+                    implode(', ', array_column($validated['discounts'], 'code')) : null,
+                'delivery_location_id' => $validated['user_info']['delivery_location_id'] ?? null,
+                'payments_method_id' => $validated['payment_info']['payment_method_id'],
+                'user_id' => $user->id,
+                'company_id' => $validated['company_id'],
+                'order_origin' => 'web',
+                'shipping_rate_id' => $validated['shipping_info']['shipping_rate_id'] ?? null,
+                'totalshipping' => $shippingAmount,
+                'gift_card_id' => $giftCard->id ?? null,
+                'gift_card_amount' => $giftCardAmountUsed,
+                'notes' => $request->input('notes', null),
+                'order_number' => $this->generateOrderNumber($validated['company_id']),
+            ];
+
+            // Crear la orden
+            $order = Order::create($orderData);
+
+            // ==================== CREAR ITEMS DE LA ORDEN ====================
+
+            foreach ($validated['cart_items'] as $item) {
+                $product = Product::with('taxes')->find($item['product_id']);
+                
+                // Determinar precio unitario después de descuentos
+                $unitPrice = $item['price'];
+                $originalUnitPrice = $item['original_price'];
+                $itemDiscountAmount = $item['discount_amount'];
+                
+                // Buscar descuento aplicado a este producto (si es manual)
+                $itemDiscount = null;
+                if (!empty($appliedDiscounts) && isset($item['discount_type']) && 
+                    $item['discount_type'] === 'manual') {
+                    foreach ($appliedDiscounts as $appliedDiscount) {
+                        // Verificar si este descuento aplica a este producto
+                        if ($this->discountAppliesToProduct($appliedDiscount['discount'], $product, $item['combination_id'] ?? null)) {
+                            $itemDiscount = $appliedDiscount['discount'];
+                            break;
+                        }
+                    }
+                }
+
+                // Preparar datos del item
+                $orderItemData = [
+                    'order_id' => $order->id,
+                    'product_id' => $item['product_id'],
+                    'combination_id' => $item['combination_id'] ?? null,
+                    'quantity' => $item['quantity'],
+                    'price_product' => $originalUnitPrice,
+                    'discounted_price' => $unitPrice,
+                    'discount_amount' => $itemDiscountAmount,
+                    'discount_id' => $itemDiscount->id ?? null,
+                    'discount_type' => $item['discount_type'] ?? null,
+                    'subtotal' => $unitPrice * $item['quantity'],
+                    'tax_amount' => $item['tax_amount'] ?? ($unitPrice * $item['quantity'] * ($item['tax_rate'] / 100)),
+                    'tax_rate' => $item['tax_rate'],
+                    'name_product' => $item['product_name'],
+                    'product_details' => json_encode([
+                        'product_name' => $item['product_name'],
+                        'combination_name' => $item['combination_name'] ?? null,
+                        'image' => $item['image'] ?? null,
+                        'sku' => $product->sku ?? null,
+                        'weight' => $product->weight ?? null,
+                        'dimensions' => $product->dimensions ?? null,
+                    ]),
+                ];
+
+                $orderItem = $order->orderItems()->create($orderItemData);
+
+                // Actualizar stock
+                $this->updateProductStock($product, $item['quantity'], $item['combination_id'] ?? null);
+
+                // Registrar uso de descuento por item si aplica
+                if ($itemDiscount) {
+                    DiscountUsage::create([
+                        'discount_id' => $itemDiscount->id,
                         'order_id' => $order->id,
-                        'user_id' => $order->user_id,
-                        'amount_used' => $request->gift_card_amount,
+                        'order_item_id' => $orderItem->id,
+                        'user_id' => $user->id,
+                        'discount_amount' => $itemDiscountAmount,
+                        'applied_to_type' => 'product',
+                        'applied_to_id' => $product->id,
                     ]);
                 }
             }
 
-            // Registrar uso de descuento si se aplicó
-            if ($request->applied_discount_id) {
-                \App\Models\DiscountUsage::create([
-                    'discount_id' => $request->applied_discount_id,
+            // ==================== APLICAR GIFT CARD ====================
+
+            if ($giftCard) {
+                // Actualizar saldo de la gift card
+                $giftCard->update([
+                    'current_balance' => $giftCard->current_balance - $giftCardAmountUsed,
+                    'last_used_at' => now(),
+                ]);
+
+                // Registrar uso de gift card
+                GiftCardUsage::create([
+                    'gift_card_id' => $giftCard->id,
                     'order_id' => $order->id,
-                    'user_id' => $order->user_id,
-                    'discount_amount' => $request->discounts,
+                    'user_id' => $user->id,
+                    'amount_used' => $giftCardAmountUsed,
+                    'remaining_balance' => $giftCard->current_balance,
                 ]);
             }
 
+            // ==================== REGISTRAR DESCUENTOS GLOBALES ====================
+
+            foreach ($appliedDiscounts as $appliedDiscountData) {
+                $discount = $appliedDiscountData['discount'];
+                $amount = $appliedDiscountData['amount'];
+                
+                // Solo registrar si no es un descuento por producto (ya se registró por item)
+                if ($discount->applies_to !== 'product') {
+                    DiscountUsage::create([
+                        'discount_id' => $discount->id,
+                        'order_id' => $order->id,
+                        'user_id' => $user->id,
+                        'discount_amount' => $amount,
+                        'applied_to_type' => $discount->applies_to,
+                        'applied_to_id' => null,
+                    ]);
+                }
+            }
+
+            // ==================== LIMPIAR CARRITO (OPCIONAL) ====================
+
+            // Aquí podrías limpiar el carrito del usuario si guardas en base de datos
+            // Si usas localStorage, el frontend se encargará
+
             DB::commit();
+
+            // ==================== ENVIAR NOTIFICACIONES ====================
+
+            // Opcional: Enviar email de confirmación
+            $this->sendOrderConfirmationEmail($order, $user);
+
+            // ==================== RESPUESTA DE ÉXITO ====================
 
             return response()->json([
                 'success' => true,
                 'order_id' => $order->id,
+                'order_number' => $order->order_number,
                 'message' => 'Orden creada exitosamente',
+                'order' => [
+                    'id' => $order->id,
+                    'number' => $order->order_number,
+                    'status' => $order->status,
+                    'total' => $order->total,
+                    'created_at' => $order->created_at->format('d/m/Y H:i'),
+                ],
+                // Redirigir a página de éxito o detalle de orden
+                // 'redirect_url' => '/checkout/success/' . $order->id,
             ]);
 
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error al procesar orden: ' . $e->getMessage());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
                 'message' => 'Error al procesar la orden: ' . $e->getMessage(),
+                'error_details' => config('app.debug') ? $e->getTraceAsString() : null
             ], 500);
         }
     }
 
-    // Página de confirmación
-    public function confirmation(Order $order)
+    /**
+     * Verificar si un descuento aplica a un producto específico
+     */
+    private function discountAppliesToProduct($discount, $product, $combinationId = null)
     {
-        // Verificar que la orden pertenezca al usuario
-        if (Auth::id() !== $order->user_id) {
-            abort(403);
+        if ($discount->applies_to === 'product') {
+            // Verificar productos específicos
+            if ($discount->products->contains($product->id)) {
+                // Si el descuento tiene combinación específica, verificarla
+                if ($combinationId && $discount->pivot && $discount->pivot->combination_id) {
+                    return $discount->pivot->combination_id == $combinationId;
+                }
+                return true;
+            }
+            return false;
+        } elseif ($discount->applies_to === 'category') {
+            // Verificar categorías
+            $productCategoryIds = $product->categories->pluck('id')->toArray();
+            $discountCategoryIds = $discount->categories->pluck('id')->toArray();
+            
+            return !empty(array_intersect($productCategoryIds, $discountCategoryIds));
         }
+        
+        return false;
+    }
 
-        return Inertia::render('Frontend/Checkout/Confirmation', [
-            'order' => $order->load(['orderItems.product', 'paymentMethod', 'user']),
+    /**
+     * Obtener stock del producto
+     */
+    private function getProductStock($product, $combinationId = null)
+    {
+        if ($combinationId) {
+            $stock = $product->stocks()->where('combination_id', $combinationId)->first();
+            return $stock ? $stock->quantity : 0;
+        } else {
+            $stock = $product->stocks()->whereNull('combination_id')->first();
+            return $stock ? $stock->quantity : 0;
+        }
+    }
+
+    /**
+     * Actualizar stock del producto
+     */
+    private function updateProductStock($product, $quantity, $combinationId = null)
+    {
+        if ($combinationId) {
+            $stock = $product->stocks()->where('combination_id', $combinationId)->first();
+            if ($stock) {
+                $stock->decrement('quantity', $quantity);
+                // Opcional: registrar movimiento de stock
+                $this->recordStockMovement($product, $stock, $quantity, 'sale', $combinationId);
+            }
+        } else {
+            $stock = $product->stocks()->whereNull('combination_id')->first();
+            if ($stock) {
+                $stock->decrement('quantity', $quantity);
+                // Opcional: registrar movimiento de stock
+                $this->recordStockMovement($product, $stock, $quantity, 'sale');
+            }
+        }
+    }
+
+    /**
+     * Registrar movimiento de stock (opcional)
+     */
+    private function recordStockMovement($product, $stock, $quantity, $type, $combinationId = null)
+    {
+        // Opcional: Si tienes tabla stock_movements
+        // StockMovement::create([...])
+    }
+
+    /**
+     * Generar número de orden único
+     */
+    private function generateOrderNumber($companyId)
+    {
+        $prefix = 'ORD';
+        $year = date('Y');
+        $month = date('m');
+        
+        // Contar órdenes del mes actual
+        $count = Order::where('company_id', $companyId)
+            ->whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->count();
+        
+        $sequential = str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+        
+        return "{$prefix}-{$year}{$month}-{$sequential}";
+    }
+
+    /**
+     * Enviar email de confirmación (opcional)
+     */
+    private function sendOrderConfirmationEmail($order, $user)
+    {
+        // Implementar envío de email
+        // Mail::to($user->email)->send(new OrderConfirmationMail($order));
+    }
+
+    /**
+     * Página de éxito después del checkout
+     */
+    public function checkoutSuccess($orderId)
+    {
+        $order = Order::with(['orderItems.product', 'paymentMethod', 'shippingRate', 'user'])
+            ->where('user_id', Auth::id())
+            ->findOrFail($orderId);
+
+        return inertia('Frontend/Checkout/Success', [
+            'order' => $order,
+            'company_id' => $order->company_id,
         ]);
     }
 }

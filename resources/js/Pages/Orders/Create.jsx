@@ -8,7 +8,7 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
 export default function Create({ paymentMethods, products, users, discounts, shippingRates }) { // Asegúrate de recibir 'users' aquí
-console.log(paymentMethods, products, users, discounts, shippingRates)
+// console.log(products)
     const initialValues = {
         status: 'pending', // Estado inicial por defecto
         payment_status: 'pending',
@@ -30,7 +30,7 @@ console.log(paymentMethods, products, users, discounts, shippingRates)
     // Función para manejar el envío del formulario
     const submit = (e) => {
         e.preventDefault();
-
+console.log(data)
         post(route('orders.store'), {
             onSuccess: () => {
                 toast.success("Pedido creado con éxito.");

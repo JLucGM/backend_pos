@@ -12,7 +12,7 @@ import OrderStatusButtons from '@/Components/Orders/OrderStatusButtons';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
 export default function Edit({ orders, paymentMethods, products, users, discounts, shippingRates, appliedGiftCard  }) {
-console.log(users)
+console.log(orders)
     const { flash } = usePage().props;
     if (flash?.success) toast.success(flash.success);
     if (flash?.error) toast.error(flash.error);

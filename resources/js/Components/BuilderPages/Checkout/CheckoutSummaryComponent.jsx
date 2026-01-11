@@ -302,13 +302,13 @@ const CheckoutSummaryComponent = ({
                 </div>
             )}
 
-            {mode === 'builder' && (
+            {/* {mode === 'builder' && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="text-xs text-gray-500 italic">
                         Nota: En modo builder se muestran datos de ejemplo para diseño
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 };

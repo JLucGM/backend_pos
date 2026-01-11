@@ -51,7 +51,7 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
         return activeDiscounts.find(discount => {
             const pivotCombId = discount.pivot?.combination_id;
             if (combinationId !== null) {
-                return pivotCombId === combination_id;
+                return pivotCombId === combinationId;
             } else {
                 return pivotCombId === null;
             }
@@ -115,6 +115,7 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
             // Aplica el descuento según applies_to
             let totalManualDiscountAmount = 0;
             let appliedItems = [];
+            
             if (manualDiscount.applies_to === 'order_total') {
                 const discountAmount = calculateDiscount(manualDiscount, data.subtotal, 1);
                 totalManualDiscountAmount = discountAmount;
@@ -122,7 +123,9 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
                 setData('manual_discount_amount', totalManualDiscountAmount);
                 setAppliedDiscount(manualDiscount);
                 toast.success(`Descuento global aplicado: ${manualDiscount.name} - Ahorro: $${totalManualDiscountAmount.toFixed(2)}`);
-            } else if (manualDiscount.applies_to === 'product') {
+            } 
+            
+            else if (manualDiscount.applies_to === 'product') {
                 if (!manualDiscount.products || manualDiscount.products.length === 0) {
                     const errorMsg = 'Este descuento no tiene productos asociados.';
                     setError(errorMsg);
@@ -132,11 +135,13 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
                     setData('manual_discount_amount', 0);
                     return;
                 }
+                
                 // FIX: Mapea productos con combination_id si existe
                 const eligibleProducts = manualDiscount.products.map(p => ({
                     product_id: p.id,
                     combination_id: p.pivot?.combination_id || null
                 }));
+                
                 const eligibleItems = data.order_items.filter(item => {
                     return eligibleProducts.some(ep => 
                         ep.product_id === item.product_id && 
@@ -151,17 +156,25 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
                     setData('manual_discount_amount', 0);
                     return;
                 }
+                
                 const updatedItems = data.order_items.map(item => {
                     const isEligible = eligibleProducts.some(ep => 
                         ep.product_id === item.product_id && 
                         (ep.combination_id === null || ep.combination_id === item.combination_id)
                     );
+                    
                     if (isEligible) {
                         const originalPrice = item.original_price || item.product_price || 0;
                         const itemDiscountAmount = calculateDiscount(manualDiscount, originalPrice, item.quantity);
+                        const originalSubtotal = originalPrice * item.quantity;
+                        
+                        // **CORRECCIÓN: Calcular subtotal después de descuentos**
+                        const itemSubtotalAfterDiscounts = originalSubtotal - itemDiscountAmount;
+                        
+                        // **CORRECCIÓN: Calcular impuesto sobre el subtotal después de descuentos**
+                        const newTaxAmount = itemSubtotalAfterDiscounts * (item.tax_rate / 100);
                         const discountedPrice = calculateDiscountedPrice(manualDiscount, originalPrice, item.quantity);
-                        const discountedSubtotal = calculateDiscountedSubtotal(originalPrice, item.quantity, manualDiscount);
-                        const newTaxAmount = discountedSubtotal * (item.tax_rate / 100);
+                        
                         appliedItems.push({ product_id: item.product_id, combination_id: item.combination_id });
 
                         return {
@@ -171,18 +184,25 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
                             manual_discount_id: manualDiscount.id,
                             discount_amount: itemDiscountAmount,
                             discounted_price: discountedPrice,
-                            subtotal: discountedSubtotal,
-                            tax_amount: newTaxAmount,
+                            subtotal: itemSubtotalAfterDiscounts, // ← Subtotal después de descuentos
+                            tax_amount: newTaxAmount, // ← Impuesto sobre subtotal después de descuentos
                         };
                     }
                     return item;
                 });
-                totalManualDiscountAmount = eligibleItems.reduce((sum, item) => sum + calculateDiscount(manualDiscount, item.original_price || item.product_price || 0, item.quantity), 0);
+                
+                totalManualDiscountAmount = eligibleItems.reduce((sum, item) => {
+                    const originalPrice = item.original_price || item.product_price || 0;
+                    return sum + calculateDiscount(manualDiscount, originalPrice, item.quantity);
+                }, 0);
+                
                 setData('order_items', updatedItems);
                 setData('manual_discount_code', manualDiscount.code);
                 setAppliedDiscount({ ...manualDiscount, applied_to: appliedItems });
                 toast.success(`Descuento aplicado a ${eligibleItems.length} producto(s): ${manualDiscount.name} - Ahorro: $${totalManualDiscountAmount.toFixed(2)}`);
-            } else if (manualDiscount.applies_to === 'category') {
+            } 
+            
+            else if (manualDiscount.applies_to === 'category') {
                 if (!manualDiscount.categories || manualDiscount.categories.length === 0) {
                     const errorMsg = 'Este descuento no tiene categorías asociadas.';
                     setError(errorMsg);
@@ -197,6 +217,7 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
                 const eligibleItems = data.order_items.filter(item => {
                     return item.categories && item.categories.some(cat => eligibleCategoryIds.includes(cat.id));
                 });
+                
                 if (eligibleItems.length === 0) {
                     // FIX: Si no hay productos elegibles, no aplica nada (sin error)
                     setAppliedDiscount(null);
@@ -204,13 +225,20 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
                     setData('manual_discount_amount', 0);
                     return;
                 }
+                
                 const updatedItems = data.order_items.map(item => {
                     if (item.categories && item.categories.some(cat => eligibleCategoryIds.includes(cat.id))) {
                         const originalPrice = item.original_price || item.product_price || 0;
                         const itemDiscountAmount = calculateDiscount(manualDiscount, originalPrice, item.quantity);
+                        const originalSubtotal = originalPrice * item.quantity;
+                        
+                        // **CORRECCIÓN: Calcular subtotal después de descuentos**
+                        const itemSubtotalAfterDiscounts = originalSubtotal - itemDiscountAmount;
+                        
+                        // **CORRECCIÓN: Calcular impuesto sobre el subtotal después de descuentos**
+                        const newTaxAmount = itemSubtotalAfterDiscounts * (item.tax_rate / 100);
                         const discountedPrice = calculateDiscountedPrice(manualDiscount, originalPrice, item.quantity);
-                        const discountedSubtotal = calculateDiscountedSubtotal(originalPrice, item.quantity, manualDiscount);
-                        const newTaxAmount = discountedSubtotal * (item.tax_rate / 100);
+                        
                         appliedItems.push({ product_id: item.product_id, combination_id: item.combination_id });
 
                         return {
@@ -220,13 +248,18 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
                             manual_discount_id: manualDiscount.id,
                             discount_amount: itemDiscountAmount,
                             discounted_price: discountedPrice,
-                            subtotal: discountedSubtotal,
-                            tax_amount: newTaxAmount,
+                            subtotal: itemSubtotalAfterDiscounts, // ← Subtotal después de descuentos
+                            tax_amount: newTaxAmount, // ← Impuesto sobre subtotal después de descuentos
                         };
                     }
                     return item;
                 });
-                totalManualDiscountAmount = eligibleItems.reduce((sum, item) => sum + calculateDiscount(manualDiscount, item.original_price || item.product_price || 0, item.quantity), 0);
+                
+                totalManualDiscountAmount = eligibleItems.reduce((sum, item) => {
+                    const originalPrice = item.original_price || item.product_price || 0;
+                    return sum + calculateDiscount(manualDiscount, originalPrice, item.quantity);
+                }, 0);
+                
                 setData('order_items', updatedItems);
                 setData('manual_discount_code', manualDiscount.code);
                 setAppliedDiscount({ ...manualDiscount, applied_to: appliedItems, type: 'category' });

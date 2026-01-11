@@ -153,11 +153,11 @@ const CustomerInfoComponent = ({
             </h2>
 
             {/* Indicador de datos de ejemplo */}
-            {mode === 'builder' && (
+            {/* {mode === 'builder' && (
                 <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-700">
                     <strong>Modo Builder:</strong> Mostrando datos de ejemplo para personalización
                 </div>
-            )}
+            )} */}
 
             {/* Información del usuario */}
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">

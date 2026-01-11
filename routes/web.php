@@ -70,24 +70,31 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
         Route::post('/logout', [LoginController::class, 'destroy'])
             ->name('frontend.logout');
 
+            Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
+    ->name('frontend.checkout.process');
+
+// Confirmación de orden
+Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
+    ->name('frontend.order.confirmation');
+
         // ========== CHECKOUT ==========
-        Route::prefix('checkout')->group(function () {
-            // Validar descuento
-            Route::post('/validate-discount', [CheckoutController::class, 'validateDiscount'])
-                ->name('frontend.checkout.validateDiscount');
+        // Route::prefix('checkout')->group(function () {
+        //     // Validar descuento
+        //     Route::post('/validate-discount', [CheckoutController::class, 'validateDiscount'])
+        //         ->name('frontend.checkout.validateDiscount');
 
-            // Validar gift card
-            Route::post('/validate-gift-card', [CheckoutController::class, 'validateGiftCard'])
-                ->name('frontend.checkout.validateGiftCard');
+        //     // Validar gift card
+        //     Route::post('/validate-gift-card', [CheckoutController::class, 'validateGiftCard'])
+        //         ->name('frontend.checkout.validateGiftCard');
 
-            // Procesar orden
-            Route::post('/process', [CheckoutController::class, 'processOrder'])
-                ->name('frontend.checkout.process');
+        //     // Procesar orden
+        //     Route::post('/process', [CheckoutController::class, 'processOrder'])
+        //         ->name('frontend.checkout.process');
 
-            // Confirmación de orden
-            Route::get('/confirmation/{order}', [CheckoutController::class, 'confirmation'])
-                ->name('frontend.checkout.confirmation');
-        });
+        //     // Confirmación de orden
+        //     Route::get('/confirmation/{order}', [CheckoutController::class, 'confirmation'])
+        //         ->name('frontend.checkout.confirmation');
+        // });
 
         // // Perfil del cliente
         // Route::get('/profile', [FrontendProfileController::class, 'edit'])
@@ -141,6 +148,13 @@ Route::group([
         Route::post('/logout', [LoginController::class, 'destroy'])
             ->name('frontend.logout.custom');
 
+            Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
+    ->name('frontend.checkout.process');
+
+// Confirmación de orden
+Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
+    ->name('frontend.order.confirmation');
+    
         // Checkout
         // Route::get('/checkout', [FrontendCheckoutController::class, 'create'])
         //     ->name('frontend.checkout.custom');

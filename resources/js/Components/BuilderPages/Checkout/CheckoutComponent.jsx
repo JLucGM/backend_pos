@@ -29,7 +29,7 @@ const CheckoutComponent = ({
     userDeliveryLocations = [],
     userGiftCards = [],
 }) => {
-    console.log(userGiftCards)
+    // console.log(userGiftCards)
     const { props } = usePage();
     const customStyles = comp.styles || {};
     const checkoutConfig = comp.content || {};
@@ -51,6 +51,8 @@ const CheckoutComponent = ({
     const [giftCardCode, setGiftCardCode] = useState('');
     const [isMobile, setIsMobile] = useState(false);
     const [giftCardAmountUsed, setGiftCardAmountUsed] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+const [orderError, setOrderError] = useState(null);
 
     // Referencias para evitar loops
     const hasLoaded = useRef(false);
@@ -558,6 +560,126 @@ const CheckoutComponent = ({
     // Determinar layout type
     const layoutType = customStyles.layoutType || 'compact';
 
+    const submitOrder = async () => {
+    if (!selectedPaymentMethod) {
+        alert('Por favor selecciona un método de pago');
+        return;
+    }
+
+    if (!acceptTerms) {
+        alert('Debes aceptar los términos y condiciones');
+        return;
+    }
+
+    if (!displayUser || !displayUser.id) {
+        alert('Debes iniciar sesión para completar la orden');
+        return;
+    }
+
+    setIsSubmitting(true);
+    setOrderError(null);
+
+    try {
+        // Preparar datos del carrito
+        const cartItemsData = displayCartItems.map(item => ({
+            product_id: item.product_id,
+            product_name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            original_price: item.originalPrice || item.price,
+            combination_id: item.combination_id || null,
+            combination_name: item.combination_name || null,
+            discount_amount: item.discountAmount || 0,
+            discount_type: item.discountType || 'none',
+            automatic_discount: item.automaticDiscount || null,
+            manual_discount: item.manualDiscount || null,
+            tax_rate: item.taxRate || 0,
+            tax_amount: item.taxAmount || 0,
+            tax_name: item.taxName || null,
+        }));
+
+        // Preparar información de usuario
+        const userInfo = {
+            user_id: displayUser.id,
+            delivery_location_id: selectedAddressId,
+        };
+
+        // Preparar información de envío
+        const shippingInfo = {
+            delivery_type: deliveryType,
+            shipping_rate_id: selectedShippingRate?.id || null,
+        };
+
+        // Preparar información de pago
+        const paymentInfo = {
+            payment_method_id: selectedPaymentMethod,
+        };
+
+        // Preparar descuentos aplicados
+        const discountsData = appliedDiscounts.map(discount => ({
+            code: discount.code,
+            name: discount.name,
+            amount: discount.amount || 0,
+            discount_type: discount.discount_type,
+        }));
+
+        // Preparar información de gift card
+        const giftCardData = appliedGiftCard ? {
+            id: appliedGiftCard.id,
+            code: appliedGiftCard.code,
+            amount_used: giftCardAmountUsed,
+        } : null;
+
+        // Preparar totales
+        const totalsData = {
+            subtotal: totals.subtotal,
+            shipping: totals.shipping,
+            tax: totals.tax,
+            total: totals.orderTotal,
+            automatic_discounts: totals.automaticDiscountsTotal,
+            manual_discounts: totals.manualDiscountsTotal,
+            gift_card_amount: totals.giftCardAmount,
+        };
+console.log({cartItemsData, userInfo, shippingInfo, paymentInfo, discountsData, giftCardData, totalsData});
+        // Enviar datos al backend
+        const response = router.post('/checkout/process', {
+            cart_items: cartItemsData,
+            user_info: userInfo,
+            shipping_info: shippingInfo,
+            payment_info: paymentInfo,
+            discounts: discountsData,
+            gift_card: giftCardData,
+            totals: totalsData,
+            company_id: companyId,
+        }, {
+            preserveScroll: true,
+        });
+
+        if (response.data.success) {
+            // Limpiar carrito
+            cartHelper.clearCart(companyId);
+            window.dispatchEvent(new Event('cartUpdated'));
+            
+            // Redirigir a confirmación
+            window.location.href = response.data.redirect_url;
+        } else {
+            setOrderError(response.data.message || 'Error al procesar la orden');
+        }
+
+    } catch (error) {
+        console.error('Error al crear la orden:', error);
+        if (error.response?.data?.errors) {
+            const errors = error.response.data.errors;
+            const errorMsg = Object.values(errors).flat().join(', ');
+            setOrderError(errorMsg);
+        } else {
+            setOrderError(error.response?.data?.message || 'Error al procesar la orden. Por favor intenta de nuevo.');
+        }
+    } finally {
+        setIsSubmitting(false);
+    }
+};
+
     // Configuración por defecto para modo frontend
     const displayChildren = useMemo(() => {
         if (mode === 'frontend' && children.length === 0) {
@@ -764,8 +886,10 @@ const CheckoutComponent = ({
                             setSelectedPaymentMethod={setSelectedPaymentMethod}
                             acceptTerms={acceptTerms}
                             setAcceptTerms={setAcceptTerms}
-                            onSubmitOrder={() => { }}
+                            onSubmitOrder={submitOrder}
                             paymentMethods={displayPaymentMethods}
+                            isSubmitting={isSubmitting}  // <-- Pasar el estado
+                orderError={orderError}      // <-- Pasar error si existe
                         />
                     </ComponentWithHover>
                 );
@@ -890,7 +1014,7 @@ const CheckoutComponent = ({
             )}
 
             {/* Indicador de datos de ejemplo en modo builder */}
-            {mode === 'builder' && (
+            {/* {mode === 'builder' && (
                 <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-blue-500"></div>
@@ -899,7 +1023,7 @@ const CheckoutComponent = ({
                         </span>
                     </div>
                 </div>
-            )}
+            )} */}
 
             {renderLayout()}
         </div>

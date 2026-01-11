@@ -168,7 +168,7 @@ export default function Index({
     userDeliveryLocations = [],
     userGiftCards = [],
 }) {
-// console.log(availableMenus)
+console.log(products)
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
     if (typeof page.layout === 'string' && page.layout.trim() !== '') {

@@ -1,4 +1,4 @@
-// components/BuilderPages/Checkout/CheckoutPaymentComponent.jsx
+// CheckoutPaymentComponent.jsx - VERSIÓN ACTUALIZADA
 import React from 'react';
 import { Button } from '@/Components/ui/button';
 
@@ -12,9 +12,11 @@ const CheckoutPaymentComponent = ({
     setSelectedPaymentMethod,
     acceptTerms,
     setAcceptTerms,
-    onSubmitOrder,
+    onSubmitOrder,  // <-- Recibir función
     paymentMethods = [],
-    mode = 'builder'
+    mode = 'builder',
+    isSubmitting = false,  // <-- Recibir estado
+    orderError = null      // <-- Recibir error
 }) => {
     const styles = comp.styles || {};
     const content = comp.content || {};
@@ -56,11 +58,27 @@ const CheckoutPaymentComponent = ({
         fontWeight: '600',
     };
 
+    // Manejar envío de orden
+    const handleSubmit = async () => {
+        if (typeof onSubmitOrder === 'function') {
+            await onSubmitOrder();
+        } else if (mode === 'builder') {
+            alert('En modo builder: Simulando envío de orden...');
+        }
+    };
+
     return (
         <div style={containerStyles}>
             <h2 style={titleStyles}>
                 {content.title || 'Método de Pago'}
             </h2>
+
+            {/* Mostrar error si existe */}
+            {orderError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-red-700 text-sm">{orderError}</p>
+                </div>
+            )}
 
             {/* Mostrar métodos de pago */}
             {displayPaymentMethods.length > 0 ? (
@@ -110,6 +128,7 @@ const CheckoutPaymentComponent = ({
                             checked={acceptTerms}
                             onChange={(e) => setAcceptTerms(e.target.checked)}
                             className="mr-3 h-5 w-5"
+                            disabled={isSubmitting}
                         />
                         <span className="text-gray-700">
                             Acepto los términos y condiciones de compra
@@ -120,8 +139,8 @@ const CheckoutPaymentComponent = ({
 
             {/* Botón de submit */}
             <Button
-                onClick={onSubmitOrder}
-                disabled={!selectedPaymentMethod || (content.showTerms && !acceptTerms)}
+                onClick={handleSubmit}
+                disabled={!selectedPaymentMethod || (content.showTerms && !acceptTerms) || isSubmitting}
                 className="w-full py-3 text-lg"
                 style={{
                     backgroundColor: styles.buttonBackgroundColor || '#3b82f6',
@@ -129,16 +148,24 @@ const CheckoutPaymentComponent = ({
                     borderRadius: styles.buttonBorderRadius || '8px'
                 }}
             >
-                {content.buttonText || 'Realizar Pedido'}
+                {isSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                        Procesando...
+                    </span>
+                ) : (
+                    content.buttonText || 'Realizar Pedido'
+                )}
             </Button>
 
-            {mode === 'builder' && (
+            {/* Información adicional en modo builder */}
+            {/* {mode === 'builder' && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="text-xs text-gray-500 italic">
                         Nota: En modo builder los botones son interactivos para diseño
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 };
