@@ -23,26 +23,23 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
             // Convertir estructura antigua a nueva
             setEditContent({
                 menuId: null,
-                items: editContent
             });
             setSelectedMenuId('none');
+        } else if (editContent?.menuId) {
+            setSelectedMenuId(editContent.menuId.toString());
         }
     }, []);
 
     const handleMenuChange = (menuId) => {
         setSelectedMenuId(menuId);
-        
+
         if (menuId === 'none') {
-            // Sin menú seleccionado
             setEditContent({
                 menuId: null,
-                items: []
             });
         } else {
-            const selectedMenu = availableMenus?.find(menu => menu.id.toString() === menuId);
             setEditContent({
-                menuId: selectedMenu ? parseInt(menuId) : null,
-                items: selectedMenu ? selectedMenu.items : []
+                menuId: parseInt(menuId),
             });
         }
     };

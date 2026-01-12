@@ -68,9 +68,8 @@ const componentMap = {
 // ==============================================================
 // 3. FUNCIÓN DE RENDERIZADO PÚBLICO
 // ==============================================================
-function renderBlock(block, themeSettings, availableMenus, products, currentProduct = null, companyId, paymentMethods = [], shippingRates = [], userDeliveryLocations = [], userGiftCards = [], currentUser = null) {
+function renderBlock(block, themeSettings, availableMenus, products, currentProduct = null, companyId, paymentMethods = [], shippingRates = [], userDeliveryLocations = [], userGiftCards = [], mode = 'frontend') {
     const Component = componentMap[block.type];
-    // console.log(userData)
 
     if (!Component) {
         console.warn(`Componente de layout no reconocido: ${block.type}`);
@@ -92,6 +91,7 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
         setComponents: () => { },
         hoveredComponentId: null,
         setHoveredComponentId: () => { },
+        mode: mode,
     };
 
     // Props específicas por tipo de componente
@@ -102,9 +102,35 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
         case 'productDetail':
             return <Component key={block.id} {...baseProps} product={currentProduct} companyId={companyId} />;
 
-        case 'headerMenu':
-            return <Component key={block.id} {...baseProps} availableMenus={availableMenus} />;
-
+        case 'header':
+    return (
+        <HeaderComponent
+            key={block.id}
+            {...baseProps}
+            appliedTheme={themeSettings}
+            mode="frontend"
+            availableMenus={availableMenus}  // <-- ¡ESTO ES CLAVE!
+        />
+    );
+    case 'footer':
+    return (
+        <FooterComponent
+            key={block.id}
+            comp={block}
+            getStyles={(c) => c.styles || {}}
+            onEdit={() => {}}
+            onDelete={() => {}}
+            isPreview={true}
+            themeSettings={themeSettings}
+            appliedTheme={themeSettings}
+            setComponents={() => {}}
+            hoveredComponentId={null}
+            setHoveredComponentId={() => {}}
+            mode="frontend"
+            availableMenus={availableMenus}  // <-- ¡ESTO ES CLAVE!
+        />
+    );
+    
         case 'cart':
             return (
                 <Component
@@ -141,12 +167,6 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
                 />
             );
 
-        // case 'checkoutForm':
-        // case 'checkoutSummary':
-        // case 'checkoutPayment':
-            // Estos componentes se renderizan dentro de CheckoutComponent, pero por si acaso
-            // return <Component key={block.id} {...baseProps} mode="frontend" />;
-
         default:
             return <Component key={block.id} {...baseProps} />;
     }
@@ -168,7 +188,6 @@ export default function Index({
     userDeliveryLocations = [],
     userGiftCards = [],
 }) {
-console.log(products)
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
     if (typeof page.layout === 'string' && page.layout.trim() !== '') {
@@ -244,6 +263,7 @@ console.log(products)
                     products,
                     currentProduct,
                     companyId,
+                    'frontend',
                     paymentMethods,
                     shippingRates,
                     userDeliveryLocations,

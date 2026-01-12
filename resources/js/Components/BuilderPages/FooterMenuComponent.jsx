@@ -1,138 +1,143 @@
+// components/BuilderPages/FooterMenuComponent.jsx
+import React, { useState, useEffect } from 'react';
+import { Link } from '@inertiajs/react';
 
-const FooterMenuComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, availableMenus = [] }) => {
+const FooterMenuComponent = ({ 
+    comp, 
+    getStyles, 
+    onEdit, 
+    isPreview, 
+    themeSettings, 
+    availableMenus = [],
+    mode = 'frontend'
+}) => {
     const styles = getStyles(comp);
+    const [menuItems, setMenuItems] = useState([]);
 
-    // OBTENER LOS ITEMS DEL MENÚ - MISMOS MÉTODOS QUE HEADER
-    let menuItems = [];
-    
-    // PRIMERA OPCIÓN: Usar los items directos de comp.content (SIEMPRE)
-    if (comp.content?.items && Array.isArray(comp.content.items)) {
-        menuItems = comp.content.items;
-    }
-    // SEGUNDA OPCIÓN: Buscar por menuId SOLO SI availableMenus tiene datos
-    else if (comp.content?.menuId && availableMenus.length > 0) {
-        const menuId = parseInt(comp.content.menuId);
-        const menu = availableMenus.find(m => parseInt(m.id) === menuId);
-        
-        if (menu?.items) {
-            menuItems = menu.items;
+    // OBTENER LOS ITEMS DEL MENÚ DINÁMICAMENTE
+    useEffect(() => {        
+        if (!comp.content?.menuId) {
+            setMenuItems([]);
+            return;
         }
-    }
-    // TERCERA OPCIÓN: Formato antiguo (array directo)
-    else if (Array.isArray(comp.content)) {
-        menuItems = comp.content;
-    }
 
-    // Si no hay items en modo edición, mostrar mensaje
-    if (!isPreview && menuItems.length === 0) {
+        const menuId = parseInt(comp.content.menuId);
+        
+        const foundMenu = availableMenus.find(menu => parseInt(menu.id) === menuId);
+        
+        if (foundMenu?.items) {
+            setMenuItems(foundMenu.items);
+        } else {
+            setMenuItems([]);
+        }
+    }, [comp.content, availableMenus]);
+
+    // Función para procesar URLs
+    const processUrl = (url) => {
+        if (!url) return '#';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        if (url.startsWith('/')) return url;
+        return `/${url}`;
+    };
+
+    // Si no hay items en modo builder
+    if (menuItems.length === 0 && mode === 'builder' && !isPreview) {
         return (
             <div 
                 style={{
-                    padding: '15px',
+                    padding: '10px',
                     border: '2px dashed #f59e0b',
                     backgroundColor: '#fffbeb',
                     borderRadius: '6px',
                     color: '#92400e',
                     textAlign: 'center',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    minWidth: '150px',
                 }}
-                onDoubleClick={() => onEdit(comp)}
+                onDoubleClick={() => onEdit && onEdit(comp)}
             >
-                <strong>Menú de footer vacío</strong><br/>
+                <strong>Menú Footer</strong><br/>
                 <small>Doble clic para configurar</small>
+                <div style={{ fontSize: '10px', marginTop: '5px' }}>
+                    ID: {comp.id} | menuId: {comp.content?.menuId || 'none'}
+                </div>
             </div>
         );
     }
 
-    // En modo preview, si no hay items, mostrar un placeholder simple
-    if (isPreview && menuItems.length === 0) {
+    // En modo frontend/preview sin items
+    if (menuItems.length === 0 && (isPreview || mode === 'frontend')) {
         return (
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px' }}>
-                <span style={{ opacity: 0.5 }}>[Menú del footer]</span>
-            </nav>
+            <div style={{ 
+                padding: '10px',
+                border: '1px dashed #ccc',
+                borderRadius: '4px'
+            }}>
+                <span style={{ opacity: 0.5 }}>[Menú Footer {comp.content?.menuId || 'sin configurar'}]</span>
+            </div>
         );
     }
 
-    // Obtener estilos de display
-    const getFlexDirection = () => {
-        const display = comp.styles?.display || 'column';
-        if (display === 'row') return 'row';
-        if (display === 'grid') return 'grid';
-        return 'column';
-    };
-
-    // Estilos del contenedor principal
+    // Determinar disposición (column o row)
+    const displayStyle = comp.styles?.display || 'column';
+    
     const containerStyles = {
         ...styles,
-        display: getFlexDirection() === 'grid' ? 'grid' : 'flex',
-        flexDirection: getFlexDirection() === 'row' ? 'row' : 'column',
-        gridTemplateColumns: getFlexDirection() === 'grid' ? 'repeat(auto-fit, minmax(150px, 1fr))' : 'none',
-        gap: comp.styles?.gap || '10px',
-        fontFamily: (() => {
-            // Lógica para fuente basada en fontType
-            const fontType = comp.styles?.fontType || 'default';
-            if (fontType === 'body_font') return themeSettings?.body_font || 'inherit';
-            if (fontType === 'heading_font') return themeSettings?.heading_font || 'inherit';
-            if (fontType === 'custom') return comp.styles?.customFont || 'inherit';
-            return themeSettings?.fontFamily || 'inherit';
-        })(),
-        fontSize: comp.styles?.fontSize || '14px',
-        fontWeight: comp.styles?.fontWeight || 'normal',
-        textTransform: comp.styles?.textTransform || 'none',
-    };
-
-    // Renderizar cada item del menú
-    const renderMenuItem = (item) => {
-        const baseColor = comp.styles?.color || '#666666';
-        const hoverColor = comp.styles?.hoverColor || '#007bff';
-        const hoverDecoration = comp.styles?.hoverDecoration || 'underline';
-
-        return (
-            <a
-                key={item.id}
-                href={isPreview ? (item.url || '#') : '#'}
-                style={{
-                    color: baseColor,
-                    textDecoration: 'none',
-                    padding: '3px 0',
-                    transition: 'all 0.2s',
-                    fontSize: 'inherit',
-                    fontWeight: 'inherit',
-                    textTransform: 'inherit',
-                }}
-                onMouseEnter={(e) => {
-                    e.target.style.color = hoverColor;
-                    if (hoverDecoration !== 'none') {
-                        e.target.style.textDecoration = hoverDecoration;
-                    }
-                }}
-                onMouseLeave={(e) => {
-                    e.target.style.color = baseColor;
-                    if (hoverDecoration !== 'none') {
-                        e.target.style.textDecoration = 'none';
-                    }
-                }}
-                onClick={(e) => {
-                    if (!isPreview) {
-                        e.preventDefault();
-                        onEdit(comp);
-                    }
-                }}
-            >
-                {/* Usar item.title en lugar de item.label para consistencia */}
-                {item.title || item.label || item.name || `Item ${item.id}`}
-            </a>
-        );
+        display: 'flex',
+        flexDirection: displayStyle === 'column' ? 'column' : 'row',
+        gap: comp.styles?.gap || '8px',
+        alignItems: displayStyle === 'column' ? 'flex-start' : 'center',
     };
 
     return (
-        <nav
+        <div
             style={containerStyles}
-            onDoubleClick={isPreview ? undefined : () => onEdit(comp)}
-            className={isPreview ? '' : 'hover:opacity-80 cursor-pointer'}
+            onDoubleClick={mode === 'builder' && !isPreview && onEdit ? () => onEdit(comp) : undefined}
         >
-            {menuItems.map(item => renderMenuItem(item))}
-        </nav>
+            {menuItems.map(item => {
+                const processedUrl = processUrl(item.url);
+                
+                return (
+                    <div key={item.id}>
+                        {mode === 'frontend' || isPreview ? (
+                            <Link
+                                href={processedUrl}
+                                style={{
+                                    color: comp.styles?.color || '#666666',
+                                    textDecoration: 'none',
+                                    fontSize: comp.styles?.fontSize || '14px',
+                                    textTransform: comp.styles?.textTransform || 'none',
+                                    display: 'block',
+                                    padding: '4px 0',
+                                    transition: 'color 0.2s',
+                                }}
+                                className="hover:opacity-80"
+                            >
+                                {item.title || item.label || item.name}
+                            </Link>
+                        ) : (
+                            <div
+                                style={{
+                                    color: comp.styles?.color || '#666666',
+                                    textDecoration: 'none',
+                                    fontSize: comp.styles?.fontSize || '14px',
+                                    textTransform: comp.styles?.textTransform || 'none',
+                                    display: 'block',
+                                    padding: '4px 0',
+                                    cursor: 'pointer',
+                                }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (onEdit) onEdit(comp);
+                                }}
+                            >
+                                {item.title || item.label || item.name}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
     );
 };
 

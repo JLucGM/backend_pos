@@ -21,6 +21,12 @@ class TaxesSeeder extends Seeder
                 'tax_rate' => '16',
                 'company_id' => 1,
             ],            
+            [
+                'tax_name' => 'IVA',
+                'tax_description' => 'Impuesto al Valor Agregado',
+                'tax_rate' => '16',
+                'company_id' => 2,
+            ],            
         ];
 
         foreach ($categorias as $categoriasData) {

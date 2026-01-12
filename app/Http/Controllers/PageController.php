@@ -153,8 +153,8 @@ class PageController extends RoutingController
 
         $themes = Theme::all();
 
-        $page->load('template.theme', 'theme');
-
+        $page->load('template.theme', 'theme', 'company.setting.media');
+// dd($page);
         // Obtener configuración del tema (personalizada o del tema original)
         $pageThemeSettings = $this->getPageThemeSettings($page);
 

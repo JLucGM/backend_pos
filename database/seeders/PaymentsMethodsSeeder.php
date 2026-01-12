@@ -20,6 +20,11 @@ class PaymentsMethodsSeeder extends Seeder
                 'is_active' => true,
                 'company_id' => 1,
             ],            
+            [
+                'payment_method_name' => 'Efectivo',
+                'is_active' => true,
+                'company_id' => 2,
+            ],            
         ];
 
         foreach ($paymetsMethods as $paymetsMethodsData) {

@@ -193,13 +193,11 @@ export default function ComponentTree({
     hoveredComponentId,
     setHoveredComponentId,
     onTreeChange,
-    onAddChild // Nueva prop para agregar hijos
+    expandedItems,
+    setExpandedItems
 }) {
     const [activeId, setActiveId] = useState(null);
     const [offsetLeft, setOffsetLeft] = useState(0);
-
-    // Inicializar el estado de expandedItems como un conjunto vacío
-    const [expandedItems, setExpandedItems] = useState(new Set());
 
     // Función para agregar un hijo a un componente padre
     const handleAddChild = (parentId, childType) => {
@@ -209,7 +207,7 @@ export default function ComponentTree({
             type: childType,
             content: getDefaultContent(childType)
         };
-        console.log('Nuevo hijo creado:', newChild);
+        
         // Función recursiva para agregar el hijo al árbol
         const addChildToTree = (tree) => {
             return tree.map(component => {
@@ -263,12 +261,9 @@ export default function ComponentTree({
 
         // Expandir automáticamente el padre después de agregar un hijo
         if (!expandedItems.has(parentId)) {
-            setExpandedItems(prev => new Set(prev).add(parentId));
-        }
-
-        // Si se proporcionó un callback, llamarlo
-        if (onAddChild) {
-            onAddChild(parentId, childType, newChild);
+            const newExpanded = new Set(expandedItems);
+            newExpanded.add(parentId);
+            setExpandedItems(newExpanded);
         }
     };
 

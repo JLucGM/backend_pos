@@ -1,5 +1,4 @@
-// components/BuilderPages/HeaderMenuComponent.jsx (para frontend)
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 
 const HeaderMenuComponent = ({ 
@@ -8,42 +7,51 @@ const HeaderMenuComponent = ({
     onEdit, 
     isPreview, 
     themeSettings, 
-    availableMenus = [] 
+    availableMenus = [],
+    mode = 'frontend' // 'builder' o 'frontend'
 }) => {
     const styles = getStyles(comp);
     const [activeSubmenu, setActiveSubmenu] = useState(null);
     const [activeSubSubmenu, setActiveSubSubmenu] = useState(null);
+    const [menuItems, setMenuItems] = useState([]);
 
-    // OBTENER LOS ITEMS DEL MENÚ - SOLUCIÓN MEJORADA
-    let menuItems = [];
-    
-    if (comp.content?.items && Array.isArray(comp.content.items)) {
-        menuItems = comp.content.items;
-    } else if (comp.content?.menuId && availableMenus.length > 0) {
-        const menuId = parseInt(comp.content.menuId);
-        const menu = availableMenus.find(m => parseInt(m.id) === menuId);
-        if (menu?.items) {
-            menuItems = menu.items;
+    // OBTENER LOS ITEMS DEL MENÚ DINÁMICAMENTE
+    useEffect(() => {
+        if (!comp.content?.menuId) {
+            // Si no hay menuId, verificar si hay items directos (backward compatibility)
+            if (comp.content?.items && Array.isArray(comp.content.items)) {
+                setMenuItems(comp.content.items);
+            } else if (Array.isArray(comp.content)) {
+                setMenuItems(comp.content);
+            } else {
+                setMenuItems([]);
+            }
+            return;
         }
-    } else if (Array.isArray(comp.content)) {
-        menuItems = comp.content;
-    }
+
+        // Buscar el menú por ID en availableMenus
+        const menuId = parseInt(comp.content.menuId);
+        const foundMenu = availableMenus.find(menu => parseInt(menu.id) === menuId);
+        
+        if (foundMenu?.items) {
+            setMenuItems(foundMenu.items);
+        } else {
+            setMenuItems([]);
+        }
+    }, [comp.content, availableMenus]);
 
     // Función para procesar URLs
     const processUrl = (url) => {
         if (!url) return '#';
         
-        // Si la URL ya es absoluta (http/https), dejarla como está
         if (url.startsWith('http://') || url.startsWith('https://')) {
             return url;
         }
         
-        // Si es una ruta interna, asegurarse de que empiece con '/'
         if (url.startsWith('/')) {
             return url;
         }
         
-        // Si no empieza con '/', agregarlo
         return `/${url}`;
     };
 
@@ -117,8 +125,8 @@ const HeaderMenuComponent = ({
                     else setActiveSubSubmenu(null);
                 }}
             >
-                {isPreview ? (
-                    // En modo preview (frontend), usar Inertia Link para navegación SPA
+                {mode === 'frontend' || isPreview ? (
+                    // En modo frontend o preview, usar Inertia Link para navegación SPA
                     <Link
                         href={processedUrl}
                         style={itemStyles}

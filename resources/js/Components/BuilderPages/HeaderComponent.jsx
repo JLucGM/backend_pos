@@ -3,18 +3,19 @@ import { ShoppingCart, Search, User, LogOut } from 'lucide-react';
 import CanvasItem from './CanvasItem';
 import { Link, usePage, router } from '@inertiajs/react';
 
-const HeaderComponent = ({ 
-    comp, 
-    getStyles, 
-    onEdit, 
-    onDelete, 
-    isPreview, 
+const HeaderComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    onDelete,
+    isPreview,
     themeSettings,
     appliedTheme,
     setComponents,
     hoveredComponentId,
     setHoveredComponentId,
-    mode = 'frontend' // 'builder' o 'frontend'
+    mode = 'frontend', // 'builder' o 'frontend',
+    availableMenus = []
 }) => {
     const { props } = usePage();
     const user = props.auth?.user;
@@ -22,12 +23,12 @@ const HeaderComponent = ({
     const headerStyles = getStyles(comp);
     const customStyles = comp.styles || {};
     const content = comp.content || {};
-    
+
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-    
+
     // Determinar si estamos en modo de edición
     const isEditable = mode === 'builder' && !isPreview;
-    
+
     // Estilos del contenedor principal del header
     const containerStyles = {
         ...headerStyles,
@@ -67,7 +68,7 @@ const HeaderComponent = ({
     };
 
     const { logo, menu } = classifyChildren();
-    
+
     // Configuración de botones con valores por defecto seguros
     const buttonsConfig = content?.buttons || {};
     const defaultButtonStyles = {
@@ -84,16 +85,16 @@ const HeaderComponent = ({
         padding: '8px',
         fontSize: '16px'
     };
-    
+
     const cartConfig = buttonsConfig.cart || { count: '0', styles: { ...defaultButtonStyles, iconColor: '#ffffff' } };
     const searchConfig = buttonsConfig.search || { styles: { ...defaultButtonStyles, backgroundColor: 'transparent' } };
     const profileConfig = buttonsConfig.profile || { styles: { ...defaultButtonStyles, backgroundColor: '#f0f0f0' } };
     const showSearch = buttonsConfig.showSearch !== false; // Por defecto mostrar
     const buttonsGap = buttonsConfig.buttonsGap || '10px';
-    
+
     // Determinar la posición del logo
     const logoPosition = content?.logoPosition || 'left';
-    
+
     // Función para construir estilos de botón
     const getButtonStyles = (buttonConfig) => {
         if (!buttonConfig || !buttonConfig.styles) {
@@ -114,23 +115,23 @@ const HeaderComponent = ({
                 borderColor: 'transparent',
             };
         }
-        
+
         const styles = buttonConfig.styles;
-        
+
         // Calcular opacidades
         const bgOpacity = styles.backgroundOpacity || '1';
         const borderOpacity = styles.borderOpacity || '1';
-        
+
         // Funciones helper para convertir colores
         const parseColor = (color) => {
             if (!color) return '0, 0, 0';
-            
+
             // Si es rgba, extraer los valores rgb
             if (color.startsWith('rgba')) {
                 const matches = color.match(/\d+/g);
                 return `${matches[0]}, ${matches[1]}, ${matches[2]}`;
             }
-            
+
             // Si es hex, convertir
             if (color.startsWith('#')) {
                 const hex = color.replace('#', '');
@@ -147,7 +148,7 @@ const HeaderComponent = ({
                     return `${r}, ${g}, ${b}`;
                 }
             }
-            
+
             // Si es nombre de color común
             const colorMap = {
                 'black': '0, 0, 0',
@@ -157,10 +158,10 @@ const HeaderComponent = ({
                 'blue': '0, 0, 255',
                 'transparent': '0, 0, 0'
             };
-            
+
             return colorMap[color.toLowerCase()] || '0, 0, 0';
         };
-        
+
         const bgColor = styles.backgroundColor || '#000000';
         const borderColor = styles.borderColor || '#000000';
 
@@ -185,11 +186,11 @@ const HeaderComponent = ({
     // Función para obtener la ruta de login/logout correcta
     const getAuthRoute = () => {
         if (mode !== 'frontend') return '#';
-        
+
         try {
             const hostname = window.location.hostname;
             const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
-            
+
             // Si estamos en un subdominio
             if (hostname.endsWith(sessionDomain)) {
                 const subdomain = hostname.split('.')[0];
@@ -201,7 +202,7 @@ const HeaderComponent = ({
                     return route('frontend.login', { subdomain });
                 }
             }
-            
+
             // Si estamos en un dominio personalizado
             const domain = hostname;
             if (user) {
@@ -218,17 +219,17 @@ const HeaderComponent = ({
     // Función para obtener la ruta del carrito
     const getCartRoute = () => {
         if (mode !== 'frontend') return '#';
-        
+
         try {
             const hostname = window.location.hostname;
             const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
-            
+
             // Si estamos en un subdominio
             if (hostname.endsWith(sessionDomain)) {
                 const subdomain = hostname.split('.')[0];
                 return route('frontend.cart', { subdomain });
             }
-            
+
             // Si estamos en un dominio personalizado
             const domain = hostname;
             return route('frontend.cart.custom', { domain });
@@ -241,17 +242,17 @@ const HeaderComponent = ({
     // Función para obtener la ruta del perfil
     const getProfileRoute = () => {
         if (mode !== 'frontend') return '#';
-        
+
         try {
             const hostname = window.location.hostname;
             const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
-            
+
             // Si estamos en un subdominio
             if (hostname.endsWith(sessionDomain)) {
                 const subdomain = hostname.split('.')[0];
                 return route('frontend.profile', { subdomain });
             }
-            
+
             // Si estamos en un dominio personalizado
             const domain = hostname;
             return route('frontend.profile.custom', { domain });
@@ -264,17 +265,17 @@ const HeaderComponent = ({
     // Función para obtener la ruta de pedidos
     const getOrdersRoute = () => {
         if (mode !== 'frontend') return '#';
-        
+
         try {
             const hostname = window.location.hostname;
             const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
-            
+
             // Si estamos en un subdominio
             if (hostname.endsWith(sessionDomain)) {
                 const subdomain = hostname.split('.')[0];
                 return route('frontend.orders', { subdomain });
             }
-            
+
             // Si estamos en un dominio personalizado
             const domain = hostname;
             return route('frontend.orders.custom', { domain });
@@ -310,10 +311,10 @@ const HeaderComponent = ({
     const renderButtons = () => {
         const isAuthenticated = user && mode === 'frontend';
         const cartCount = getCartCount();
-        
+
         return (
-            <div style={{ 
-                display: 'flex', 
+            <div style={{
+                display: 'flex',
                 alignItems: 'center',
                 gap: buttonsGap
             }}>
@@ -324,12 +325,12 @@ const HeaderComponent = ({
                     className="hover:opacity-80 relative"
                     href='/carrito-de-compras'
                 >
-                    <ShoppingCart 
-                        size={16} 
-                        style={{ 
+                    <ShoppingCart
+                        size={16}
+                        style={{
                             color: cartConfig.styles?.iconColor || '#ffffff',
                             transition: 'color 0.2s'
-                        }} 
+                        }}
                     />
                     {cartCount && cartCount !== '0' && parseInt(cartCount) > 0 && (
                         <span style={{
@@ -351,7 +352,7 @@ const HeaderComponent = ({
                         </span>
                     )}
                 </Link>
-                
+
                 {/* Buscador - solo si showSearch es true */}
                 {showSearch && (
                     <button
@@ -368,16 +369,16 @@ const HeaderComponent = ({
                             }
                         }}
                     >
-                        <Search 
-                            size={16} 
-                            style={{ 
+                        <Search
+                            size={16}
+                            style={{
                                 color: searchConfig.styles?.iconColor || '#000000',
                                 transition: 'color 0.2s'
-                            }} 
+                            }}
                         />
                     </button>
                 )}
-                
+
                 {/* Botón de Perfil/Login condicional */}
                 <div style={{ position: 'relative' }}>
                     {isAuthenticated ? (
@@ -389,17 +390,17 @@ const HeaderComponent = ({
                                 className="hover:opacity-80"
                                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                             >
-                                <User 
-                                    size={16} 
-                                    style={{ 
+                                <User
+                                    size={16}
+                                    style={{
                                         color: profileConfig.styles?.iconColor || '#000000',
                                         transition: 'color 0.2s'
-                                    }} 
+                                    }}
                                 />
                             </button>
-                            
+
                             {showProfileDropdown && (
-                                <div 
+                                <div
                                     style={{
                                         position: 'absolute',
                                         top: '100%',
@@ -436,7 +437,7 @@ const HeaderComponent = ({
                                             {user.email}
                                         </div>
                                     </div>
-                                    
+
                                     {/* Opciones del menú */}
                                     <Link
                                         // href={getProfileRoute()}
@@ -453,7 +454,7 @@ const HeaderComponent = ({
                                     >
                                         Mi perfil
                                     </Link>
-                                    
+
                                     <Link
                                         // href={getOrdersRoute()}
                                         href='/pedidos'
@@ -469,7 +470,7 @@ const HeaderComponent = ({
                                     >
                                         Mis pedidos
                                     </Link>
-                                    
+
                                     <button
                                         onClick={handleLogout}
                                         style={{
@@ -523,12 +524,12 @@ const HeaderComponent = ({
                             title="Iniciar sesión"
                             className="hover:opacity-80 flex items-center justify-center"
                         >
-                            <User 
-                                size={16} 
-                                style={{ 
+                            <User
+                                size={16}
+                                style={{
                                     color: profileConfig.styles?.iconColor || '#000000',
                                     transition: 'color 0.2s'
-                                }} 
+                                }}
                             />
                         </Link>
                     )}
@@ -575,7 +576,7 @@ const HeaderComponent = ({
                             />
                         )}
                     </div>
-                    
+
                     {/* Menú en el centro */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         {menu && (
@@ -590,10 +591,11 @@ const HeaderComponent = ({
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
                                 mode={mode}
+                                availableMenus={availableMenus}
                             />
                         )}
                     </div>
-                    
+
                     {/* Botones a la derecha */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                         {renderButtons()}
@@ -601,7 +603,7 @@ const HeaderComponent = ({
                 </>
             );
         }
-        
+
         // Caso 2: Logo en el centro (orden: menú -> logo -> botones)
         if (logoPosition === 'center') {
             return (
@@ -620,10 +622,11 @@ const HeaderComponent = ({
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
                                 mode={mode}
+                                availableMenus={availableMenus}
                             />
                         )}
                     </div>
-                    
+
                     {/* Logo en el centro */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         {logo && (
@@ -641,7 +644,7 @@ const HeaderComponent = ({
                             />
                         )}
                     </div>
-                    
+
                     {/* Botones a la derecha */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                         {renderButtons()}
@@ -649,7 +652,7 @@ const HeaderComponent = ({
                 </>
             );
         }
-        
+
         // Caso 3: Logo a la derecha (orden: menú -> botones+logo con logo pegado a botones)
         if (logoPosition === 'right') {
             return (
@@ -668,15 +671,16 @@ const HeaderComponent = ({
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
                                 mode={mode}
+                                availableMenus={availableMenus}
                             />
                         )}
                     </div>
-                    
+
                     {/* Logo y botones juntos a la derecha */}
-                    <div style={{ 
-                        flex: 1, 
-                        display: 'flex', 
-                        justifyContent: 'flex-end', 
+                    <div style={{
+                        flex: 1,
+                        display: 'flex',
+                        justifyContent: 'flex-end',
                         alignItems: 'center',
                         gap: '10px'
                     }}>
@@ -699,7 +703,7 @@ const HeaderComponent = ({
                 </>
             );
         }
-        
+
         // Fallback: Logo a la izquierda por defecto
         return (
             <>
@@ -719,7 +723,7 @@ const HeaderComponent = ({
                         />
                     )}
                 </div>
-                
+
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     {menu && (
                         <CanvasItem
@@ -733,10 +737,11 @@ const HeaderComponent = ({
                             hoveredComponentId={hoveredComponentId}
                             setHoveredComponentId={setHoveredComponentId}
                             mode={mode}
+                            availableMenus={availableMenus}
                         />
                     )}
                 </div>
-                
+
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                     {renderButtons()}
                 </div>

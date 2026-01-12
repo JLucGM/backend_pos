@@ -1,162 +1,139 @@
+// components/BuilderPages/FooterComponent.jsx
 import React from 'react';
-import CanvasItem from './CanvasItem';
+import FooterMenuComponent from './FooterMenuComponent'; // Importar directamente
 
-const FooterComponent = ({ 
-    comp, 
-    getStyles, 
-    onEdit, 
-    onDelete, 
-    isPreview, 
+const FooterComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    onDelete,
+    isPreview,
     themeSettings,
     appliedTheme,
     setComponents,
     hoveredComponentId,
-    setHoveredComponentId
+    setHoveredComponentId,
+    mode = 'frontend',
+    availableMenus = []
 }) => {
-    const footerStyles = getStyles(comp);
-    const customStyles = comp.styles || {};
+    const styles = getStyles(comp);
     const content = comp.content || {};
-    
+
+    // Determinar si estamos en modo de edición
+    const isEditable = mode === 'builder' && !isPreview;
+
     // Estilos del contenedor principal del footer
     const containerStyles = {
-        ...footerStyles,
+        ...styles,
         width: '100%',
-        backgroundColor: customStyles.backgroundColor || '#f8fafc',
-        paddingTop: customStyles.paddingTop || '40px',
-        paddingRight: customStyles.paddingRight || '20px',
-        paddingBottom: customStyles.paddingBottom || '40px',
-        paddingLeft: customStyles.paddingLeft || '20px',
-        borderTop: customStyles.borderTop || '1px solid #e5e7eb'
+        backgroundColor: styles.backgroundColor || '#f9f9f9',
+        padding: '40px 20px',
     };
 
-    // Renderizar los hijos del footer
-    const renderChildren = () => {
+    // Clasificar los componentes hijos por tipo
+    const classifyChildren = () => {
         if (!content?.children || !Array.isArray(content.children)) {
-            return null;
+            return { text1: null, menu: null, text2: null };
         }
 
-        const columns = content.columns || 3;
-        const layout = content.layout || 'grid';
-        
-        if (layout === 'grid') {
-            return (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${columns}, 1fr)`,
-                    gap: '20px',
-                    maxWidth: '1200px',
-                    margin: '0 auto'
-                }}>
-                    {content.children.map(child => (
-                        <CanvasItem
-                            key={child.id}
-                            comp={child}
-                            onEditComponent={onEdit}
-                            onDeleteComponent={onDelete}
-                            themeSettings={themeSettings}
-                            appliedTheme={appliedTheme}
-                            isPreview={isPreview}
-                            setComponents={setComponents}
-                            hoveredComponentId={hoveredComponentId}
-                            setHoveredComponentId={setHoveredComponentId}
-                        />
-                    ))}
-                </div>
-            );
-        } else {
-            // Layout flex
-            return (
-                <div style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    justifyContent: 'space-between',
-                    gap: '20px',
-                    maxWidth: '1200px',
-                    margin: '0 auto'
-                }}>
-                    {content.children.map(child => (
-                        <div key={child.id} style={{ flex: '1 0 200px' }}>
-                            <CanvasItem
-                                comp={child}
-                                onEditComponent={onEdit}
-                                onDeleteComponent={onDelete}
-                                themeSettings={themeSettings}
-                                appliedTheme={appliedTheme}
-                                isPreview={isPreview}
-                                setComponents={setComponents}
-                                hoveredComponentId={hoveredComponentId}
-                                setHoveredComponentId={setHoveredComponentId}
-                            />
-                        </div>
-                    ))}
-                </div>
-            );
-        }
+        let text1 = null;
+        let menu = null;
+        let text2 = null;
+
+        content.children.forEach(child => {
+            if (child.type === 'footerText' && !text1) {
+                text1 = child;
+            } else if (child.type === 'footerMenu') {
+                menu = child;
+            } else if (child.type === 'footerText' && text1) {
+                text2 = child;
+            }
+        });
+
+        return { text1, menu, text2 };
     };
 
-    // Renderizar redes sociales si están habilitadas
-    const renderSocialMedia = () => {
-        if (!content?.socialMedia?.show) return null;
-        
-        const social = content.socialMedia;
-        return (
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '15px',
-                marginTop: '20px'
-            }}>
-                {social.facebook && (
-                    <a href={social.facebook} target="_blank" rel="noopener noreferrer">
-                        Facebook
-                    </a>
-                )}
-                {social.twitter && (
-                    <a href={social.twitter} target="_blank" rel="noopener noreferrer">
-                        Twitter
-                    </a>
-                )}
-                {social.instagram && (
-                    <a href={social.instagram} target="_blank" rel="noopener noreferrer">
-                        Instagram
-                    </a>
-                )}
-                {social.linkedin && (
-                    <a href={social.linkedin} target="_blank" rel="noopener noreferrer">
-                        LinkedIn
-                    </a>
-                )}
-            </div>
-        );
-    };
-
-    // Renderizar texto de copyright si está habilitado
-    const renderCopyright = () => {
-        if (!content?.showCopyright) return null;
-        
-        return (
-            <div style={{
-                textAlign: 'center',
-                marginTop: '30px',
-                paddingTop: '20px',
-                borderTop: '1px solid #e5e7eb',
-                fontSize: '14px',
-                color: '#666666'
-            }}>
-                {content.copyrightText || '© 2023 Mi Empresa. Todos los derechos reservados.'}
-            </div>
-        );
-    };
+    const { text1, menu, text2 } = classifyChildren();
 
     return (
         <footer
             style={containerStyles}
-            onDoubleClick={isPreview ? undefined : () => onEdit(comp)}
-            className={isPreview ? '' : 'hover:opacity-80 cursor-pointer'}
+            onDoubleClick={isEditable ? () => onEdit(comp) : undefined}
+            className={isEditable ? 'hover:opacity-80 cursor-pointer' : ''}
         >
-            {renderChildren()}
-            {renderSocialMedia()}
-            {renderCopyright()}
+            {/* Mostrar columnas */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${content.columns || 3}, 1fr)`,
+                gap: '40px',
+                maxWidth: '1200px',
+                margin: '0 auto'
+            }}>
+                {/* Columna 1: Texto */}
+                <div>
+                    {text1 && (
+                        <div
+                            style={{
+                                color: text1.styles?.color || '#666666',
+                                fontSize: text1.styles?.fontSize || '14px',
+                                lineHeight: text1.styles?.lineHeight || '1.6',
+                                cursor: isEditable ? 'pointer' : 'default'
+                            }}
+                            onDoubleClick={isEditable ? () => onEdit(text1) : undefined}
+                            className={isEditable ? 'hover:opacity-80' : ''}
+                        >
+                            {text1.content || 'Texto del footer'}
+                        </div>
+                    )}
+                </div>
+
+                {/* Columna 2: Menú - USANDO FooterMenuComponent DIRECTAMENTE */}
+                <div>
+                    {menu && (
+                        <FooterMenuComponent
+                            comp={menu} // <-- Pasar el objeto footerMenu
+                            getStyles={getStyles}
+                            onEdit={onEdit}
+                            isPreview={isPreview}
+                            themeSettings={themeSettings}
+                            availableMenus={availableMenus} // <-- Pasar availableMenus
+                            mode={mode} // <-- Pasar el modo
+                        />
+                    )}
+                </div>
+
+                {/* Columna 3: Texto */}
+                <div>
+                    {text2 && (
+                        <div
+                            style={{
+                                color: text2.styles?.color || '#666666',
+                                fontSize: text2.styles?.fontSize || '14px',
+                                lineHeight: text2.styles?.lineHeight || '1.6',
+                                cursor: isEditable ? 'pointer' : 'default'
+                            }}
+                            onDoubleClick={isEditable ? () => onEdit(text2) : undefined}
+                            className={isEditable ? 'hover:opacity-80' : ''}
+                        >
+                            {text2.content || 'Texto del footer'}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Copyright */}
+            {content.showCopyright && (
+                <div style={{
+                    textAlign: 'center',
+                    marginTop: '40px',
+                    paddingTop: '20px',
+                    borderTop: '1px solid #e5e5e5',
+                    color: '#666',
+                    fontSize: '14px'
+                }}>
+                    {content.copyrightText || '© 2023 Mi Empresa. Todos los derechos reservados.'}
+                </div>
+            )}
         </footer>
     );
 };

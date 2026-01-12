@@ -50,6 +50,15 @@ class DatabaseSeeder extends Seeder
             // 'avatar' => asset('img/profile/default.jpg'),
         ])->assignRole('super admin');
         User::create([
+            'name' => 'Edduar Villegas',
+            'email' => 'pepsi@gmail.com',
+            'password' => bcrypt('123456789'),
+            'phone' => '04121234567',
+            'is_active' => '1',
+            'company_id' => 2,
+            // 'avatar' => asset('img/profile/default.jpg'),
+        ])->assignRole('super admin');
+        User::create([
             'name' => 'Cliente',
             'email' => 'cliente@example.com',
             'password' => bcrypt('123456789'),

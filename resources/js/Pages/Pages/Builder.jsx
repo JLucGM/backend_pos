@@ -191,6 +191,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     const [currentThemeSettings, setCurrentThemeSettings] = useState(pageThemeSettings);
     const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
     const [hasCopiedTheme, setHasCopiedTheme] = useState(!!page.theme_settings);
+    const [expandedItems, setExpandedItems] = useState(new Set());
 
     // Función para obtener el tema aplicado
     const getAppliedTheme = () => {
@@ -2346,6 +2347,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                             hoveredComponentId={hoveredComponentId}
                                             setHoveredComponentId={setHoveredComponentId}
                                             onTreeChange={handleComponentsUpdate}
+                                            expandedItems={expandedItems}
+                                            setExpandedItems={setExpandedItems}
                                         />
                                         <DragOverlay dropAnimation={null}>
                                             {activeComponent ? (

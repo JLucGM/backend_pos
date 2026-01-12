@@ -65,7 +65,6 @@ const CanvasItem = ({
     pageContent,
     availableMenus
 }) => {
-    // console.log(availableMenus)
     const getStyles = (comp) => {
         const styles = comp.styles || {};
 
@@ -148,6 +147,7 @@ const CanvasItem = ({
                         setComponents={setComponents}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
+                        availableMenus={availableMenus}
                     />
                 );
             case 'headerLogo':
@@ -163,6 +163,7 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         availableMenus={availableMenus || []}
+                        mode={isPreview ? 'frontend' : 'builder'}
                     />
                 );
             case 'footerText':
@@ -178,6 +179,7 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         availableMenus={availableMenus || []}
+                        mode={isPreview ? 'frontend' : 'builder'}
                     />
                 );
             case 'link':
@@ -615,32 +617,32 @@ const CanvasItem = ({
                     />
                 );
             case 'checkoutDiscountGiftCard':
-    return (
-        <CheckoutDiscountGiftCardComponent
-            {...commonProps}
-            discountCode={''}
-            setDiscountCode={() => {}}
-            giftCardCode={''}
-            setGiftCardCode={() => {}}
-            onApplyDiscount={() => {}}
-            onApplyGiftCard={() => {}}
-            appliedDiscount={isPreview ? null : {
-                id: 1,
-                name: 'DESCUENTO10',
-                code: 'DESCUENTO10',
-                discount_type: 'percentage',
-                value: 10
-            }}
-            appliedGiftCard={isPreview ? null : {
-                id: 1,
-                code: 'GIFT-123456',
-                current_balance: 50.00,
-                amount_used: 25.00
-            }}
-            userGiftCards={[]}
-            mode={isPreview ? 'frontend' : 'builder'}
-        />
-    );
+                return (
+                    <CheckoutDiscountGiftCardComponent
+                        {...commonProps}
+                        discountCode={''}
+                        setDiscountCode={() => { }}
+                        giftCardCode={''}
+                        setGiftCardCode={() => { }}
+                        onApplyDiscount={() => { }}
+                        onApplyGiftCard={() => { }}
+                        appliedDiscount={isPreview ? null : {
+                            id: 1,
+                            name: 'DESCUENTO10',
+                            code: 'DESCUENTO10',
+                            discount_type: 'percentage',
+                            value: 10
+                        }}
+                        appliedGiftCard={isPreview ? null : {
+                            id: 1,
+                            code: 'GIFT-123456',
+                            current_balance: 50.00,
+                            amount_used: 25.00
+                        }}
+                        userGiftCards={[]}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                    />
+                );
             case 'checkoutPayment':
                 return (
                     <CheckoutPaymentComponent

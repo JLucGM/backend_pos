@@ -26,6 +26,14 @@ class SettingsSeeder extends Seeder
                 // 'shipping_base_price' => "2.00",
                 'company_id' => 1,
             ],            
+            [
+                // 'app_name' => 'Mi empresa',
+                'default_currency' => "$",
+                // 'admin_email' => "joedoe@example.com",
+                // 'admin_phone' => "04125549950",
+                // 'shipping_base_price' => "2.00",
+                'company_id' => 2,
+            ],            
         ];
 
         foreach ($settings as $settingsData) {
