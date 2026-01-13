@@ -474,8 +474,48 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             let content = 'Nuevo ' + selectedType;
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
             if (selectedType === 'link') content = 'https://example.com';
-            if (selectedType === 'image') content = 'https://picsum.photos/150';
+if (selectedType === 'image') {
+  content = {
+    src: 'https://picsum.photos/400/300',
+    alt: 'Imagen de ejemplo'
+  };
+  
+  const initialStyles = {
+    layout: 'fit',
+    width: '100%',  // Solo porcentaje
+    height: '100%', // Solo porcentaje
+    borderRadius: '0px',
+    borderWidth: '0px',
+    borderStyle: 'solid',
+    borderColor: '#e5e7eb',
+    marginTop: '0px',
+    marginRight: '0px',
+    marginBottom: '0px',
+    marginLeft: '0px',
+    paddingTop: '0px',
+    paddingRight: '0px',
+    paddingBottom: '0px',
+    paddingLeft: '0px',
+    objectFit: 'cover'
+  };
 
+  const newItem = {
+    id: Date.now(),
+    type: 'image',
+    content: content,
+    styles: initialStyles
+  };
+
+  setComponents((prev) => {
+    const newComponents = [...prev, newItem];
+    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+    setHasUnsavedChanges(true);
+    return newComponents;
+  });
+  setIsAddDialogOpen(false);
+  setSelectedType('');
+  return;
+}
             if (selectedType === 'header') {
                 const headerId = Date.now();
                 const logoId = headerId + 1;
@@ -2409,6 +2449,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <SelectItem value="bento">Bento</SelectItem>
                                 <SelectItem value="product">Productos</SelectItem>
                                 <SelectItem value="carousel">Carrusel de Productos</SelectItem>
+                                <SelectItem value="image">Imagen</SelectItem>
                                 <SelectItem value="productDetail">Detalle de Producto</SelectItem>
                                 <SelectItem value="cart">Carrito de Compras</SelectItem>
                                 <SelectItem value="checkout">Checkout / Finalizar Compra</SelectItem>

@@ -24,11 +24,11 @@ export const pagesColumns = [
                         <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem>
+                        {/* <DropdownMenuItem>
                             <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.show', row.original)}>
                                 <Eye /> Ver
                             </Link>
-                        </DropdownMenuItem>
+                        </DropdownMenuItem> */}
                         <DropdownMenuItem>
                             <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.edit', row.original)}>
                                 <Pen /> Editar
