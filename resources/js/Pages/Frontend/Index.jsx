@@ -68,7 +68,7 @@ const componentMap = {
 // ==============================================================
 // 3. FUNCIÓN DE RENDERIZADO PÚBLICO
 // ==============================================================
-function renderBlock(block, themeSettings, availableMenus, products, currentProduct = null, companyId, paymentMethods = [], shippingRates = [], userDeliveryLocations = [], userGiftCards = [], mode = 'frontend') {
+function renderBlock(block, themeSettings, availableMenus, products, currentProduct = null, companyId, paymentMethods = [], shippingRates = [], userDeliveryLocations = [], userGiftCards = [], mode = 'frontend', companyLogo, companyFavicon) {
     const Component = componentMap[block.type];
 
     if (!Component) {
@@ -92,6 +92,8 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
         hoveredComponentId: null,
         setHoveredComponentId: () => { },
         mode: mode,
+        companyLogo: companyLogo,
+        companyFavicon: companyFavicon,
     };
 
     // Props específicas por tipo de componente
@@ -187,6 +189,8 @@ export default function Index({
     shippingRates = [],
     userDeliveryLocations = [],
     userGiftCards = [],
+    companyLogo,
+    companyFavicon,
 }) {
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
@@ -246,11 +250,11 @@ export default function Index({
         <>
             <Head>
                 <title>{page.title}</title>
+                {companyFavicon && (
+                    <link rel="icon" href={companyFavicon} type="image/x-icon" />
+                )}
                 {fontUrl && (
-                    <link
-                        rel="stylesheet"
-                        href={fontUrl}
-                    />
+                    <link rel="stylesheet" href={fontUrl} />
                 )}
             </Head>
 
@@ -268,6 +272,8 @@ export default function Index({
                     shippingRates,
                     userDeliveryLocations,
                     userGiftCards,
+                    companyLogo,
+                    companyFavicon
                 )
             )}
 

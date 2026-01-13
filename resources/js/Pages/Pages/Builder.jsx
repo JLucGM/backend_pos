@@ -174,7 +174,7 @@ const EditDialogRenderer = ({
     return <DialogComponent {...baseProps} {...additionalProps} />;
 };
 
-export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus }) {
+export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo }) {
     const [components, setComponents] = useState([]);
     const [editingComponent, setEditingComponent] = useState(null);
     const [editContent, setEditContent] = useState('');
@@ -2157,7 +2157,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     const activeComponent = activeId ? findActiveComponent(activeId) : null;
 
-    // En Builder.jsx - agregar estas funciones
     const copyThemeSettings = () => {
         router.post(route('pages.copyThemeSettings', page), {}, {
             onSuccess: () => {
@@ -2240,6 +2239,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             isPreview={true}
                             pageContent={page.content}
                             availableMenus={availableMenus || []}
+                            companyLogo={companyLogo}
                         />
                     </div>
                 </div>
@@ -2369,22 +2369,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                             products={products}
                                         />
                                     </ScrollArea>
-
-                                    <div className="flex gap-2 pt-4 border-t mt-4">
-                                        <Button
-                                            variant="outline"
-                                            onClick={cancelEdit}
-                                            className="flex-1"
-                                        >
-                                            Cancelar
-                                        </Button>
-                                        <Button
-                                            onClick={saveEdit}
-                                            className="flex-1"
-                                        >
-                                            Guardar
-                                        </Button>
-                                    </div>
                                 </ScrollArea>
                             ) : (
                                 // MODO NORMAL - Mostrar árbol de componentes
@@ -2460,6 +2444,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 setHoveredComponentId={setHoveredComponentId}
                                 pageContent={page.content}
                                 availableMenus={availableMenus || []}
+                                companyLogo={companyLogo}
                             />
                         </div>
                     </div>

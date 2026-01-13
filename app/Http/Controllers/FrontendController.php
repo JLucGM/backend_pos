@@ -17,6 +17,17 @@ class FrontendController extends Controller
         $company = $request->attributes->get('company');
         $slug = $request->route('page_path');
 
+        $logoUrl = null;
+    if ($company->setting && $company->setting->getFirstMedia('logo')) {
+        $logoUrl = $company->setting->getFirstMedia('logo')->getUrl();
+    }
+    
+    // Obtener también favicon si lo necesitas
+    $faviconUrl = null;
+    if ($company->setting && $company->setting->getFirstMedia('favicon')) {
+        $faviconUrl = $company->setting->getFirstMedia('favicon')->getUrl();
+    }
+
         $query = $company->pages()
             ->withoutGlobalScope(CompanyScope::class);
 
@@ -136,6 +147,8 @@ class FrontendController extends Controller
                 'availableMenus' => $availableMenus,
                 'products' => $products,
                 'companyId' => $company->id,
+                'companyLogo' => $logoUrl, // Agregar logo aquí
+            'companyFavicon' => $faviconUrl, // Opcional
             ],
             $userData,
             $checkoutData,

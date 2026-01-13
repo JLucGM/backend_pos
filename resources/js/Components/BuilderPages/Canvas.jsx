@@ -15,7 +15,8 @@ const Canvas = memo(({
     setHoveredComponentId,
     isPreview = false,
     pageContent,
-    availableMenus
+    availableMenus,
+    companyLogo 
 }) => {
     // Usar useMemo para memorizar los componentes renderizados
     const renderedComponents = useMemo(() => {
@@ -34,9 +35,10 @@ const Canvas = memo(({
                 setHoveredComponentId={setHoveredComponentId}
                 pageContent={pageContent}
                 availableMenus={availableMenus}
+                companyLogo ={companyLogo}
             />
         ));
-    }, [components, themeSettings, appliedTheme, isPreview, products, hoveredComponentId, pageContent, availableMenus]);
+    }, [components, themeSettings, appliedTheme, isPreview, products, hoveredComponentId, pageContent, availableMenus, companyLogo]);
 
     return (
         <div

@@ -154,7 +154,12 @@ class PageController extends RoutingController
         $themes = Theme::all();
 
         $page->load('template.theme', 'theme', 'company.setting.media');
-        // dd($page);
+        
+        $logoUrl = null;
+    if ($page->company->setting && $page->company->setting->getFirstMedia('logo')) {
+        $logoUrl = $page->company->setting->getFirstMedia('logo')->getUrl();
+    }
+        // dd($logoUrl);
         // Obtener configuración del tema (personalizada o del tema original)
         $pageThemeSettings = $this->getPageThemeSettings($page);
 
@@ -171,6 +176,7 @@ class PageController extends RoutingController
             'themes' => $themes,
             'pageThemeSettings' => $pageThemeSettings,
             'availableMenus' => $availableMenus,
+            'companyLogo' => $logoUrl,
         ]);
     }
 

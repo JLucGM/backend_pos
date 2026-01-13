@@ -63,7 +63,8 @@ const CanvasItem = ({
     hoveredComponentId,
     setHoveredComponentId,
     pageContent,
-    availableMenus
+    availableMenus,
+    companyLogo 
 }) => {
     const getStyles = (comp) => {
         const styles = comp.styles || {};
@@ -122,6 +123,7 @@ const CanvasItem = ({
             isPreview,
             themeSettings: themeSettings,
             appliedTheme,
+            companyLogo,
         };
 
         switch (comp.type) {
@@ -145,6 +147,7 @@ const CanvasItem = ({
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                         availableMenus={availableMenus}
+                        companyLogo={companyLogo}
                     />
                 );
 
@@ -165,6 +168,7 @@ const CanvasItem = ({
                     <HeaderLogoComponent
                         {...commonProps}
                         onEdit={onEditComponent}
+                        companyLogo={companyLogo}
                     />
                 );
             case 'headerMenu':

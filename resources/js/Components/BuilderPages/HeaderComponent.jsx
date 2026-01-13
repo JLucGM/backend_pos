@@ -15,11 +15,12 @@ const HeaderComponent = ({
     hoveredComponentId,
     setHoveredComponentId,
     mode = 'frontend', // 'builder' o 'frontend',
-    availableMenus = []
+    availableMenus = [],
+    companyLogo // Agregar esta prop
 }) => {
     const { props } = usePage();
     const user = props.auth?.user;
-    const cart = props.cart || { items_count: 0 }; // Agregar cart a las props
+    const cart = props.cart || { items_count: 0 };
     const headerStyles = getStyles(comp);
     const customStyles = comp.styles || {};
     const content = comp.content || {};
@@ -343,7 +344,6 @@ const HeaderComponent = ({
                             width: '18px',
                             height: '18px',
                             fontSize: '10px',
-                            // display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontWeight: 'bold'
@@ -361,8 +361,6 @@ const HeaderComponent = ({
                         className="hover:opacity-80"
                         onClick={() => {
                             if (mode === 'frontend') {
-                                // Implementar lógica de búsqueda real aquí
-                                // Por ejemplo: abrir un modal o redirigir a página de búsqueda
                                 router.visit('/search');
                             } else if (isPreview) {
                                 alert('Abrir buscador (simulación)');
@@ -440,7 +438,6 @@ const HeaderComponent = ({
 
                                     {/* Opciones del menú */}
                                     <Link
-                                        // href={getProfileRoute()}
                                         href='/perfil-de-usuario'
                                         style={{
                                             display: 'block',
@@ -456,7 +453,6 @@ const HeaderComponent = ({
                                     </Link>
 
                                     <Link
-                                        // href={getOrdersRoute()}
                                         href='/pedidos'
                                         style={{
                                             display: 'block',
@@ -496,28 +492,6 @@ const HeaderComponent = ({
                         </>
                     ) : (
                         // Usuario no autenticado: Mostrar botón de login
-                        // <button
-                        //     style={getButtonStyles(profileConfig)}
-                        //     title="Iniciar sesión"
-                        //     className="hover:opacity-80"
-                        //     onClick={() => {
-                        //         if (mode === 'frontend') {
-                        //             // Redirigir a login en modo frontend
-                        //             router.visit(getAuthRoute());
-                        //         } else if (isPreview) {
-                        //             alert('Iniciar sesión (simulación)');
-                        //         }
-                        //     }}
-                        // >
-                        //     <User 
-                        //         size={16} 
-                        //         style={{ 
-                        //             color: profileConfig.styles?.iconColor || '#000000',
-                        //             transition: 'color 0.2s'
-                        //         }} 
-                        //     />
-                        // </button>
-
                         <Link
                             href={'/iniciar-sesion'}
                             style={getButtonStyles(profileConfig)}
@@ -553,7 +527,7 @@ const HeaderComponent = ({
         };
     }, [showProfileDropdown]);
 
-    // Función para renderizar según la posición
+    // Función para renderizar según la posición - PASAR companyLogo A LOS CanvasItem DE LOGO
     const renderByPosition = () => {
         // Caso 1: Logo a la izquierda (orden: logo -> menu -> botones)
         if (logoPosition === 'left') {
@@ -573,6 +547,7 @@ const HeaderComponent = ({
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
                                 mode={mode}
+                                companyLogo={companyLogo} // Pasar companyLogo
                             />
                         )}
                     </div>
@@ -641,6 +616,7 @@ const HeaderComponent = ({
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
                                 mode={mode}
+                                companyLogo={companyLogo} // Pasar companyLogo
                             />
                         )}
                     </div>
@@ -696,6 +672,7 @@ const HeaderComponent = ({
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
                                 mode={mode}
+                                companyLogo={companyLogo} // Pasar companyLogo
                             />
                         )}
                         {renderButtons()}
@@ -720,6 +697,7 @@ const HeaderComponent = ({
                             hoveredComponentId={hoveredComponentId}
                             setHoveredComponentId={setHoveredComponentId}
                             mode={mode}
+                            companyLogo={companyLogo} // Pasar companyLogo
                         />
                     )}
                 </div>
@@ -755,7 +733,6 @@ const HeaderComponent = ({
             onDoubleClick={isEditable ? () => onEdit(comp) : undefined}
             className={isEditable ? 'hover:opacity-80 cursor-pointer' : ''}
             onClick={(e) => {
-                // Prevenir que clicks en el header cierren el dropdown
                 e.stopPropagation();
             }}
         >

@@ -122,8 +122,6 @@ class Page extends Model implements HasMedia
         return null;
     }
 
-    
-
     public function resolveRouteBinding($value, $field = null)
     {
         $field = $field ?: $this->getRouteKeyName();
