@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Input } from '@/Components/ui/input';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const CarouselImageEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
+const CarouselImageEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({
             ...prev,

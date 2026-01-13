@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const QuantitySelectorEditDialog = ({
     editContent,
@@ -11,7 +12,17 @@ const QuantitySelectorEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings, // Añadir themeSettings como prop
+
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const handleStyleChange = (key, value) => {
         setEditStyles(prev => ({
             ...prev,
@@ -37,7 +48,7 @@ const QuantitySelectorEditDialog = ({
             buttonSize: themeSettings?.quantity_buttonSize || themeSettings?.button_font_size || '16px',
             inputSize: themeSettings?.quantity_inputSize || themeSettings?.input_font_size || '16px',
         };
-        
+
         setEditStyles(prev => ({
             ...prev,
             ...defaultStyles
@@ -55,7 +66,7 @@ const QuantitySelectorEditDialog = ({
             'buttonSize': themeSettings?.quantity_buttonSize || themeSettings?.button_font_size,
             'inputSize': themeSettings?.quantity_inputSize || themeSettings?.input_font_size,
         };
-        
+
         return themeMap[key];
     };
 
@@ -77,7 +88,7 @@ const QuantitySelectorEditDialog = ({
 
             <div>
                 <Label htmlFor="label">Etiqueta del selector</Label>
-                <Input 
+                <Input
                     id="label"
                     value={editContent?.label || 'Cantidad:'}
                     onChange={(e) => handleContentChange('label', e.target.value)}
@@ -86,7 +97,7 @@ const QuantitySelectorEditDialog = ({
             </div>
 
             <div className="flex items-center space-x-2">
-                <Switch 
+                <Switch
                     id="showMax"
                     checked={editContent?.showMax || false}
                     onCheckedChange={(checked) => handleContentChange('showMax', checked)}
@@ -98,7 +109,7 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="labelColor">Color de la etiqueta</Label>
                     <div className="flex items-center gap-2">
-                        <Input 
+                        <Input
                             id="labelColor"
                             type="color"
                             value={editStyles.labelColor || getThemeValue('labelColor') || '#666666'}
@@ -117,7 +128,7 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="borderColor">Color del borde</Label>
                     <div className="flex items-center gap-2">
-                        <Input 
+                        <Input
                             id="borderColor"
                             type="color"
                             value={editStyles.borderColor || getThemeValue('borderColor') || '#d1d5db'}
@@ -139,7 +150,7 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="buttonColor">Color de botones</Label>
                     <div className="flex items-center gap-2">
-                        <Input 
+                        <Input
                             id="buttonColor"
                             type="color"
                             value={editStyles.buttonColor || getThemeValue('buttonColor') || '#374151'}
@@ -158,7 +169,7 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="inputColor">Color del input</Label>
                     <div className="flex items-center gap-2">
-                        <Input 
+                        <Input
                             id="inputColor"
                             type="color"
                             value={editStyles.inputColor || getThemeValue('inputColor') || '#000000'}
@@ -179,7 +190,7 @@ const QuantitySelectorEditDialog = ({
             <div>
                 <Label htmlFor="borderRadius">Borde redondeado</Label>
                 <div className="flex gap-2">
-                    <Input 
+                    <Input
                         id="borderRadius"
                         value={editStyles.borderRadius || getThemeValue('borderRadius') || '6px'}
                         onChange={(e) => handleStyleChange('borderRadius', e.target.value)}
@@ -201,7 +212,7 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="buttonSize">Tamaño botones</Label>
                     <div className="flex gap-2">
-                        <Input 
+                        <Input
                             id="buttonSize"
                             value={editStyles.buttonSize || getThemeValue('buttonSize') || '16px'}
                             onChange={(e) => handleStyleChange('buttonSize', e.target.value)}
@@ -221,7 +232,7 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="inputSize">Tamaño input</Label>
                     <div className="flex gap-2">
-                        <Input 
+                        <Input
                             id="inputSize"
                             value={editStyles.inputSize || getThemeValue('inputSize') || '16px'}
                             onChange={(e) => handleStyleChange('inputSize', e.target.value)}

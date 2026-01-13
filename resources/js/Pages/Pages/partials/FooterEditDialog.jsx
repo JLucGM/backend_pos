@@ -2,9 +2,20 @@ import { Input } from "@/Components/ui/input";
 import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
-import {  Switch } from "@headlessui/react";
+import { useDebounce } from "@/hooks/Builder/useDebounce";
+import { Switch } from "@headlessui/react";
+import { useEffect } from "react";
 
-const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
+const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateContent = (key, value) => {
         setEditContent(prev => ({ ...prev, [key]: value }));
     };
@@ -18,7 +29,7 @@ const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             {/* Configuración general */}
             <div>
                 <h4 className="font-medium mb-3">Configuración General</h4>
-                
+
                 <div className="flex items-center justify-between mb-4">
                     <Label htmlFor="showCopyright">Mostrar Copyright</Label>
                     <Switch
@@ -79,7 +90,7 @@ const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             {/* Redes Sociales */}
             <div>
                 <h4 className="font-medium mb-3">Redes Sociales</h4>
-                
+
                 <div className="flex items-center justify-between mb-4">
                     <Label htmlFor="showSocial">Mostrar Redes Sociales</Label>
                     <Switch

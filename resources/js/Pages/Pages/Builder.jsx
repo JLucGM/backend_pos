@@ -156,6 +156,7 @@ const EditDialogRenderer = ({
         editStyles,
         setEditStyles,
         themeSettings,
+        isLiveEdit: true,
     };
 
     // Props específicas para ciertos diálogos
@@ -269,65 +270,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     };
 
     const saveEdit = () => {
-        if (editingComponent) {
-            setComponents((prev) => {
-                const updateComponentInTree = (components, targetId, newData) => {
-                    return components.map(component => {
-                        if (component.id === targetId) {
-                            return {
-                                ...component,
-                                content: newData.content,
-                                styles: newData.styles
-                            };
-                        }
-
-                        // Buscar en contenedores
-                        if (component.type === 'container' && Array.isArray(component.content)) {
-                            return {
-                                ...component,
-                                content: updateComponentInTree(component.content, targetId, newData)
-                            };
-                        }
-
-                        // Buscar en banners, products, carousels, etc.
-                        const typesWithChildren = [
-                            'banner', 'product', 'productCard', 'carousel',
-                            'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                            'productDetail', 'cart', 'checkout'
-                        ];
-
-                        if (typesWithChildren.includes(component.type) &&
-                            component.content &&
-                            Array.isArray(component.content.children)) {
-                            return {
-                                ...component,
-                                content: {
-                                    ...component.content,
-                                    children: updateComponentInTree(component.content.children, targetId, newData)
-                                }
-                            };
-                        }
-
-                        return component;
-                    });
-                };
-
-                const newData = {
-                    content: editContent,
-                    styles: editStyles
-                };
-
-                const newComponents = updateComponentInTree(prev, editingComponent.id, newData);
-                addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-                setHasUnsavedChanges(true);
-                return newComponents;
-            });
-
-            setEditingComponent(null);
-            setEditContent('');
-            setEditStyles({});
-            toast.success("Cambios guardados correctamente");
-        }
+        setEditingComponent(null);
+        setEditContent('');
+        setEditStyles({});
+        toast.success("Cambios aplicados");
     };
 
     const cancelEdit = () => {
@@ -473,6 +419,61 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             }
         });
     };
+
+    useEffect(() => {
+        if (editingComponent) {
+            // Actualizar el componente en el estado mientras se edita
+            setComponents((prev) => {
+                const updateComponentInTree = (components, targetId, newData) => {
+                    return components.map(component => {
+                        if (component.id === targetId) {
+                            return {
+                                ...component,
+                                content: newData.content,
+                                styles: newData.styles
+                            };
+                        }
+
+                        // Buscar en contenedores
+                        if (component.type === 'container' && Array.isArray(component.content)) {
+                            return {
+                                ...component,
+                                content: updateComponentInTree(component.content, targetId, newData)
+                            };
+                        }
+
+                        // Buscar en banners, products, carousels, etc.
+                        const typesWithChildren = [
+                            'banner', 'product', 'productCard', 'carousel',
+                            'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
+                            'productDetail', 'cart', 'checkout', 'login', 'register'
+                        ];
+
+                        if (typesWithChildren.includes(component.type) &&
+                            component.content &&
+                            Array.isArray(component.content.children)) {
+                            return {
+                                ...component,
+                                content: {
+                                    ...component.content,
+                                    children: updateComponentInTree(component.content.children, targetId, newData)
+                                }
+                            };
+                        }
+
+                        return component;
+                    });
+                };
+
+                const newData = {
+                    content: editContent,
+                    styles: editStyles
+                };
+
+                return updateComponentInTree(prev, editingComponent.id, newData);
+            });
+        }
+    }, [editContent, editStyles, editingComponent]);
 
     const handleAddComponent = () => {
         if (selectedType) {
@@ -1008,98 +1009,98 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 };
             }
 
-if (selectedType === 'banner') {
-    const bannerId = Date.now();
-    const titleId = bannerId + 1;
-    const textId = bannerId + 2;
+            if (selectedType === 'banner') {
+                const bannerId = Date.now();
+                const titleId = bannerId + 1;
+                const textId = bannerId + 2;
 
-    content = {
-        containerHeight: '400px',
-        containerWidth: '100%',
-        marginTop: '0px',
-        marginRight: '0px',
-        marginBottom: '0px',
-        marginLeft: '0px',
-        paddingTop: '20px',
-        paddingRight: '20px',
-        paddingBottom: '20px',
-        paddingLeft: '20px',
-        backgroundColor: '#ffffff',
-        backgroundImage: null,
-        backgroundVideo: null,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center center',
-        containerVerticalPosition: 'center',
-        containerHorizontalPosition: 'center',
-        contentDirection: 'vertical',
-        // NUEVAS PROPIEDADES: Contenedor interno
-        innerContainerShow: true,
-        innerContainerHasBackground: true, // NUEVO: Switch activado por defecto
-        innerContainerBackgroundColor: '#ffffff',
-        innerContainerBackgroundOpacity: 0.8,
-        innerContainerPaddingTop: '30px',
-        innerContainerPaddingRight: '30px',
-        innerContainerPaddingBottom: '30px',
-        innerContainerPaddingLeft: '30px',
-        innerContainerBorderRadius: '10px',
-        innerContainerWidth: 'auto',
-        innerContainerMaxWidth: '800px',
-        children: [
-            {
-                id: titleId,
-                type: 'heading',
-                content: 'Título del Banner',
-                styles: {
-                    textStyle: 'heading2',
-                    layout: 'fit',
-                    paddingTop: '10px',
-                    paddingRight: '10px',
-                    paddingBottom: '10px',
-                    paddingLeft: '10px',
-                    backgroundColor: 'transparent',
-                    borderRadius: '0px',
-                    color: '#000000'
-                }
-            },
-            {
-                id: textId,
-                type: 'bannerText',
-                content: 'Texto descriptivo del banner',
-                styles: {
-                    layout: 'fit',
-                    alignment: 'center',
-                    background: 'transparent',
-                    backgroundOpacity: '1',
-                    borderRadius: '0px',
-                    paddingTop: '10px',
-                    paddingRight: '10px',
-                    paddingBottom: '10px',
-                    paddingLeft: '10px',
-                    color: '#000000',
-                    fontSize: '16px',
-                    fontWeight: 'normal'
-                }
+                content = {
+                    containerHeight: '400px',
+                    containerWidth: '100%',
+                    marginTop: '0px',
+                    marginRight: '0px',
+                    marginBottom: '0px',
+                    marginLeft: '0px',
+                    paddingTop: '20px',
+                    paddingRight: '20px',
+                    paddingBottom: '20px',
+                    paddingLeft: '20px',
+                    backgroundColor: '#ffffff',
+                    backgroundImage: null,
+                    backgroundVideo: null,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    containerVerticalPosition: 'center',
+                    containerHorizontalPosition: 'center',
+                    contentDirection: 'vertical',
+                    // NUEVAS PROPIEDADES: Contenedor interno
+                    innerContainerShow: true,
+                    innerContainerHasBackground: true, // NUEVO: Switch activado por defecto
+                    innerContainerBackgroundColor: '#ffffff',
+                    innerContainerBackgroundOpacity: 0.8,
+                    innerContainerPaddingTop: '30px',
+                    innerContainerPaddingRight: '30px',
+                    innerContainerPaddingBottom: '30px',
+                    innerContainerPaddingLeft: '30px',
+                    innerContainerBorderRadius: '10px',
+                    innerContainerWidth: 'auto',
+                    innerContainerMaxWidth: '800px',
+                    children: [
+                        {
+                            id: titleId,
+                            type: 'heading',
+                            content: 'Título del Banner',
+                            styles: {
+                                textStyle: 'heading2',
+                                layout: 'fit',
+                                paddingTop: '10px',
+                                paddingRight: '10px',
+                                paddingBottom: '10px',
+                                paddingLeft: '10px',
+                                backgroundColor: 'transparent',
+                                borderRadius: '0px',
+                                color: '#000000'
+                            }
+                        },
+                        {
+                            id: textId,
+                            type: 'bannerText',
+                            content: 'Texto descriptivo del banner',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'center',
+                                background: 'transparent',
+                                backgroundOpacity: '1',
+                                borderRadius: '0px',
+                                paddingTop: '10px',
+                                paddingRight: '10px',
+                                paddingBottom: '10px',
+                                paddingLeft: '10px',
+                                color: '#000000',
+                                fontSize: '16px',
+                                fontWeight: 'normal'
+                            }
+                        }
+                    ]
+                };
+
+                const newItem = {
+                    id: bannerId,
+                    type: selectedType,
+                    content,
+                    styles: {}
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
             }
-        ]
-    };
-    
-    const newItem = {
-        id: bannerId,
-        type: selectedType,
-        content,
-        styles: {}
-    };
-
-    setComponents((prev) => {
-        const newComponents = [...prev, newItem];
-        addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-        setHasUnsavedChanges(true);
-        return newComponents;
-    });
-    setIsAddDialogOpen(false);
-    setSelectedType('');
-    return;
-}
 
             if (selectedType === 'bento') {
                 const bentoId = Date.now();

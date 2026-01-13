@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,14 +7,25 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw, Info } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { Badge } from '@/Components/ui/badge';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const ProductDetailPriceEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
     setEditStyles,
-    themeSettings
+    themeSettings,
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const theme = themeSettings || {};
 
     const handleStyleChange = (key, value) => {
@@ -28,7 +39,7 @@ const ProductDetailPriceEditDialog = ({
     const renderThemeReference = (themeKey, label) => {
         const themeValue = theme[themeKey];
         if (!themeValue) return null;
-        
+
         return (
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                 <Info size={12} />
@@ -43,9 +54,9 @@ const ProductDetailPriceEditDialog = ({
     // Función para restablecer a valores por defecto del tema
     const resetToThemeDefaults = () => {
         const textStyle = editStyles.textStyle || 'heading3';
-        
+
         let defaultStyles = {};
-        
+
         if (textStyle === 'paragraph') {
             defaultStyles = {
                 fontSize: theme.paragraph_fontSize || '16px',
@@ -182,7 +193,7 @@ const ProductDetailPriceEditDialog = ({
                         <div>
                             <Label htmlFor="fontSize">
                                 Tamaño de fuente
-                                {editStyles.textStyle?.startsWith('heading') && 
+                                {editStyles.textStyle?.startsWith('heading') &&
                                     renderThemeReference(`${editStyles.textStyle}_fontSize`, 'Valor del tema')}
                             </Label>
                             <div className="flex gap-2">
@@ -218,7 +229,7 @@ const ProductDetailPriceEditDialog = ({
                         <div>
                             <Label htmlFor="fontWeight">
                                 Grosor de fuente
-                                {editStyles.textStyle?.startsWith('heading') && 
+                                {editStyles.textStyle?.startsWith('heading') &&
                                     renderThemeReference(`${editStyles.textStyle}_fontWeight`, 'Valor del tema')}
                             </Label>
                             <div className="flex gap-2">
@@ -266,7 +277,7 @@ const ProductDetailPriceEditDialog = ({
                     <div>
                         <Label htmlFor="lineHeight">
                             Altura de línea
-                            {editStyles.textStyle?.startsWith('heading') && 
+                            {editStyles.textStyle?.startsWith('heading') &&
                                 renderThemeReference(`${editStyles.textStyle}_lineHeight`, 'Valor del tema')}
                         </Label>
                         <div className="flex gap-2">
@@ -400,7 +411,7 @@ const ProductDetailPriceEditDialog = ({
             <div>
                 <Label htmlFor="textTransform">
                     Transformación de texto
-                    {editStyles.textStyle?.startsWith('heading') && 
+                    {editStyles.textStyle?.startsWith('heading') &&
                         renderThemeReference(`${editStyles.textStyle}_textTransform`, 'Valor del tema')}
                 </Label>
                 <Select
@@ -429,7 +440,7 @@ const ProductDetailPriceEditDialog = ({
                         {renderThemeReference('text', 'Color del tema')}
                     </Label>
                     <div className="flex gap-2 mt-1">
-                        <Input 
+                        <Input
                             id="color"
                             type="color"
                             value={editStyles.color || (theme.text ? `#${parseInt(theme.text.split(' ')[2]).toString(16)}` : '#666666')}
@@ -455,8 +466,8 @@ const ProductDetailPriceEditDialog = ({
 
                 <div>
                     <Label htmlFor="alignment">Alineación</Label>
-                    <Select 
-                        value={editStyles.alignment || 'left'} 
+                    <Select
+                        value={editStyles.alignment || 'left'}
                         onValueChange={(value) => handleStyleChange('alignment', value)}
                     >
                         <SelectTrigger>
@@ -472,7 +483,7 @@ const ProductDetailPriceEditDialog = ({
             </div>
 
             <div className="flex items-center space-x-2">
-                <Switch 
+                <Switch
                     id="showDiscount"
                     checked={editStyles.showDiscount !== false}
                     onCheckedChange={(checked) => handleStyleChange('showDiscount', checked)}
@@ -488,7 +499,7 @@ const ProductDetailPriceEditDialog = ({
                             {renderThemeReference('text', 'Color base')}
                         </Label>
                         <div className="flex gap-2 mt-1">
-                            <Input 
+                            <Input
                                 id="originalPriceColor"
                                 type="color"
                                 value={editStyles.originalPriceColor || (theme.text ? `#${parseInt(theme.text.split(' ')[2]).toString(16)}` : '#999999')}
@@ -509,7 +520,7 @@ const ProductDetailPriceEditDialog = ({
                             {renderThemeReference('primary', 'Color primario')}
                         </Label>
                         <div className="flex gap-2 mt-1">
-                            <Input 
+                            <Input
                                 id="discountPriceColor"
                                 type="color"
                                 value={editStyles.discountPriceColor || (theme.primary ? `#${parseInt(theme.primary.split(' ')[2]).toString(16)}` : '#dc2626')}
@@ -528,7 +539,7 @@ const ProductDetailPriceEditDialog = ({
             )}
 
             <div className="flex items-center space-x-2">
-                <Switch 
+                <Switch
                     id="showCurrency"
                     checked={editStyles.showCurrency !== false}
                     onCheckedChange={(checked) => handleStyleChange('showCurrency', checked)}
@@ -539,7 +550,7 @@ const ProductDetailPriceEditDialog = ({
             {editStyles.showCurrency !== false && (
                 <div>
                     <Label htmlFor="currencySymbol">Símbolo de moneda</Label>
-                    <Input 
+                    <Input
                         id="currencySymbol"
                         value={editStyles.currencySymbol || '$'}
                         onChange={(e) => handleStyleChange('currencySymbol', e.target.value)}

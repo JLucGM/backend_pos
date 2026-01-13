@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const CheckoutSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
+const CheckoutSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+        const debouncedStyles = useDebounce(editStyles, 300);
+    
+        useEffect(() => {
+            if (isLiveEdit) {
+                // Las actualizaciones se manejan automáticamente
+            }
+        }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     return (
         <div className="space-y-4">
             <div>

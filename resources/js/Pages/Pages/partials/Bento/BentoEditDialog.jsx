@@ -1,18 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const BentoEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
+const BentoEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const handleContentChange = (key, value) => {
         setEditContent(prev => ({
-            ...prev,
-            [key]: value
-        }));
-    };
-
-    const handleStyleChange = (key, value) => {
-        setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
@@ -21,7 +24,7 @@ const BentoEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
     return (
         <div className="space-y-4">
             <h3 className="text-lg font-semibold">Configuración del Bento</h3>
-            
+
             {/* Configuración del grid */}
             <div className="space-y-2">
                 <Label htmlFor="gridColumns">Columnas del grid</Label>

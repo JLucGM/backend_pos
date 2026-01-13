@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
@@ -8,14 +8,25 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const ProductDetailStockEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
     setEditStyles,
-    themeSettings
+    themeSettings,
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+        const debouncedStyles = useDebounce(editStyles, 300);
+    
+        useEffect(() => {
+            if (isLiveEdit) {
+                // Las actualizaciones se manejan automáticamente
+            }
+        }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const handleStyleChange = (key, value) => {
         setEditStyles(prev => ({
             ...prev,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -6,14 +6,25 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw, Info } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { Badge } from '@/Components/ui/badge';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const ProductDetailNameEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
     setEditStyles,
-    themeSettings
+    themeSettings,
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const theme = themeSettings || {};
 
     const handleStyleChange = (key, value) => {
@@ -27,7 +38,7 @@ const ProductDetailNameEditDialog = ({
     const renderThemeReference = (themeKey, label) => {
         const themeValue = theme[themeKey];
         if (!themeValue) return null;
-        
+
         return (
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                 <Info size={12} />
@@ -42,9 +53,9 @@ const ProductDetailNameEditDialog = ({
     // Función para restablecer a valores por defecto del tema
     const resetToThemeDefaults = () => {
         const textStyle = editStyles.textStyle || 'heading1';
-        
+
         let defaultStyles = {};
-        
+
         if (textStyle === 'paragraph') {
             defaultStyles = {
                 fontSize: theme.paragraph_fontSize || '16px',
@@ -270,10 +281,10 @@ const ProductDetailNameEditDialog = ({
                                     <Badge variant="outline" className="text-xs">
                                         {theme.heading_font || 'Inter'}
                                     </Badge>
-                                ) 
-                                : (
-                                    null
                                 )
+                                    : (
+                                        null
+                                    )
                                 }
                             </span>
                         </SelectItem>
@@ -335,7 +346,7 @@ const ProductDetailNameEditDialog = ({
             <div>
                 <Label htmlFor="lineHeight">
                     Altura de línea
-                    {editStyles.textStyle?.startsWith('heading') && 
+                    {editStyles.textStyle?.startsWith('heading') &&
                         renderThemeReference(`${editStyles.textStyle}_lineHeight`, 'Valor del tema')}
                 </Label>
                 <div className="flex gap-2">
@@ -390,7 +401,7 @@ const ProductDetailNameEditDialog = ({
             <div>
                 <Label htmlFor="textTransform">
                     Transformación de texto
-                    {editStyles.textStyle?.startsWith('heading') && 
+                    {editStyles.textStyle?.startsWith('heading') &&
                         renderThemeReference(`${editStyles.textStyle}_textTransform`, 'Valor del tema')}
                 </Label>
                 <Select
@@ -419,7 +430,7 @@ const ProductDetailNameEditDialog = ({
                         {renderThemeReference('heading', 'Color del tema')}
                     </Label>
                     <div className="flex gap-2 mt-1">
-                        <Input 
+                        <Input
                             id="color"
                             type="color"
                             value={editStyles.color || theme.heading || '#000000'}
@@ -445,8 +456,8 @@ const ProductDetailNameEditDialog = ({
 
                 <div>
                     <Label htmlFor="alignment">Alineación</Label>
-                    <Select 
-                        value={editStyles.alignment || 'left'} 
+                    <Select
+                        value={editStyles.alignment || 'left'}
                         onValueChange={(value) => handleStyleChange('alignment', value)}
                     >
                         <SelectTrigger>
@@ -464,8 +475,8 @@ const ProductDetailNameEditDialog = ({
             {/* Layout */}
             <div>
                 <Label htmlFor="layout">Layout</Label>
-                <Select 
-                    value={editStyles.layout || 'fit'} 
+                <Select
+                    value={editStyles.layout || 'fit'}
                     onValueChange={(value) => handleStyleChange('layout', value)}
                 >
                     <SelectTrigger>
@@ -481,7 +492,7 @@ const ProductDetailNameEditDialog = ({
             {/* Margen */}
             <div>
                 <Label htmlFor="margin">Margen</Label>
-                <Input 
+                <Input
                     id="margin"
                     value={editStyles.margin || '0 0 1rem 0'}
                     onChange={(e) => handleStyleChange('margin', e.target.value)}

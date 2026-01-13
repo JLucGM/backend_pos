@@ -1,13 +1,13 @@
 // components/BuilderPages/Canvas.jsx
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import CanvasItem from './CanvasItem';
 
 const Canvas = memo(({
     components,
     onEditComponent,
     onDeleteComponent,
-    themeSettings,  // Recibe themeSettings desde Builder
-    appliedTheme,   // Nuevo: recibe el objeto tema completo
+    themeSettings,
+    appliedTheme,
     products,
     setComponents,
     canvasWidth,
@@ -17,6 +17,26 @@ const Canvas = memo(({
     pageContent,
     availableMenus
 }) => {
+    // Usar useMemo para memorizar los componentes renderizados
+    const renderedComponents = useMemo(() => {
+        return components.map((comp) => (
+            <CanvasItem
+                key={comp.id}
+                comp={comp}
+                onEditComponent={onEditComponent}
+                onDeleteComponent={onDeleteComponent}
+                themeSettings={themeSettings}
+                appliedTheme={appliedTheme}
+                isPreview={isPreview}
+                products={products}
+                setComponents={setComponents}
+                hoveredComponentId={hoveredComponentId}
+                setHoveredComponentId={setHoveredComponentId}
+                pageContent={pageContent}
+                availableMenus={availableMenus}
+            />
+        ));
+    }, [components, themeSettings, appliedTheme, isPreview, products, hoveredComponentId, pageContent, availableMenus]);
 
     return (
         <div
@@ -32,27 +52,10 @@ const Canvas = memo(({
                     <div className="text-center" >
                         <p className="text-lg font-semibold">Canvas Vacío</p>
                         <p className="text-sm">Arrastra componentes aquí o agrega nuevos</p>
-
                     </div>
                 </div>
             ) : (
-                components.map((comp) => (
-                    <CanvasItem
-                        key={comp.id}
-                        comp={comp}
-                        onEditComponent={onEditComponent}
-                        onDeleteComponent={onDeleteComponent}
-                        themeSettings={themeSettings}
-                        appliedTheme={appliedTheme}  // Pasar el tema aplicado
-                        isPreview={isPreview}
-                        products={products}
-                        setComponents={setComponents}
-                        hoveredComponentId={hoveredComponentId}
-                        setHoveredComponentId={setHoveredComponentId}
-                        pageContent={pageContent}
-                        availableMenus={availableMenus}
-                    />
-                ))
+                renderedComponents
             )}
         </div>
     );

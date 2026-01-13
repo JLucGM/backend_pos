@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Badge } from '@/Components/ui/badge';
 import { Info } from 'lucide-react';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const ProductDetailImageEditDialog = ({
     editContent,
@@ -12,7 +13,17 @@ const ProductDetailImageEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings, // Recibir themeSettings
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const theme = themeSettings || {};
 
     const handleStyleChange = (key, value) => {
@@ -26,7 +37,7 @@ const ProductDetailImageEditDialog = ({
     const renderThemeReference = (themeKey, label) => {
         const themeValue = theme[themeKey];
         if (!themeValue) return null;
-        
+
         return (
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                 <Info size={12} />
@@ -45,7 +56,7 @@ const ProductDetailImageEditDialog = ({
                     <TabsTrigger value="styles">Estilos</TabsTrigger>
                     <TabsTrigger value="content">Contenido</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="styles" className="space-y-4">
                     {/* Sección de referencia al tema */}
                     <div className="p-3 bg-blue-50 rounded-md border border-blue-200">
@@ -78,8 +89,8 @@ const ProductDetailImageEditDialog = ({
                             Relación de aspecto
                             {renderThemeReference('image_aspect_ratio', 'Valor por defecto')}
                         </Label>
-                        <Select 
-                            value={editStyles.aspectRatio || 'square'} 
+                        <Select
+                            value={editStyles.aspectRatio || 'square'}
                             onValueChange={(value) => handleStyleChange('aspectRatio', value)}
                         >
                             <SelectTrigger>
@@ -101,8 +112,8 @@ const ProductDetailImageEditDialog = ({
                                 Borde
                                 {renderThemeReference('image_default_border', 'Configuración')}
                             </Label>
-                            <Select 
-                                value={editStyles.imageBorder || 'theme'} 
+                            <Select
+                                value={editStyles.imageBorder || 'theme'}
                                 onValueChange={(value) => handleStyleChange('imageBorder', value)}
                             >
                                 <SelectTrigger>
@@ -124,7 +135,7 @@ const ProductDetailImageEditDialog = ({
                                         Grosor del borde
                                         {renderThemeReference('image_border_thickness', 'Valor del tema')}
                                     </Label>
-                                    <Input 
+                                    <Input
                                         id="imageBorderThickness"
                                         value={editStyles.imageBorderThickness || theme.image_border_thickness || '1px'}
                                         onChange={(e) => handleStyleChange('imageBorderThickness', e.target.value)}
@@ -136,7 +147,7 @@ const ProductDetailImageEditDialog = ({
                                         Opacidad del borde
                                         {renderThemeReference('image_border_opacity', 'Valor del tema')}
                                     </Label>
-                                    <Input 
+                                    <Input
                                         id="imageBorderOpacity"
                                         type="range"
                                         min="0"
@@ -158,7 +169,7 @@ const ProductDetailImageEditDialog = ({
                             Borde redondeado
                             {renderThemeReference('image_border_radius', 'Valor del tema')}
                         </Label>
-                        <Input 
+                        <Input
                             id="imageBorderRadius"
                             value={editStyles.imageBorderRadius || theme.image_border_radius || theme.border_radius || '12px'}
                             onChange={(e) => handleStyleChange('imageBorderRadius', e.target.value)}
@@ -187,8 +198,8 @@ const ProductDetailImageEditDialog = ({
                             Ajuste de imagen
                             {renderThemeReference('image_object_fit', 'Valor del tema')}
                         </Label>
-                        <Select 
-                            value={editStyles.objectFit || theme.image_object_fit || 'cover'} 
+                        <Select
+                            value={editStyles.objectFit || theme.image_object_fit || 'cover'}
                             onValueChange={(value) => handleStyleChange('objectFit', value)}
                         >
                             <SelectTrigger>
@@ -207,7 +218,7 @@ const ProductDetailImageEditDialog = ({
                 <TabsContent value="content" className="space-y-4">
                     <div>
                         <Label htmlFor="imageUrl">URL de la imagen</Label>
-                        <Input 
+                        <Input
                             id="imageUrl"
                             value={editContent || ''}
                             onChange={(e) => setEditContent(e.target.value)}
@@ -220,7 +231,7 @@ const ProductDetailImageEditDialog = ({
 
                     <div>
                         <Label htmlFor="altText">Texto alternativo</Label>
-                        <Input 
+                        <Input
                             id="altText"
                             value={editStyles.altText || ''}
                             onChange={(e) => handleStyleChange('altText', e.target.value)}

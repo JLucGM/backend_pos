@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { Button } from '@/Components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const CheckoutPaymentEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
+const CheckoutPaymentEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const handleAddPaymentMethod = () => {
         const newMethod = {
             id: `method_${Date.now()}`,

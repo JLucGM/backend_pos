@@ -1,18 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const CarouselPriceEditDialog = ({ 
-    editContent, 
-    setEditContent, 
-    editStyles, 
+const CarouselPriceEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
     setEditStyles,
-    themeSettings 
+    themeSettings,
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
     };
@@ -46,8 +57,8 @@ const CarouselPriceEditDialog = ({
 
             <div>
                 <Label htmlFor="priceLayout">Layout</Label>
-                <Select 
-                    value={editStyles.layout || 'fit'} 
+                <Select
+                    value={editStyles.layout || 'fit'}
                     onValueChange={(value) => updateStyle('layout', value)}
                 >
                     <SelectTrigger>
@@ -62,8 +73,8 @@ const CarouselPriceEditDialog = ({
 
             <div>
                 <Label htmlFor="priceAlignment">Alineación</Label>
-                <Select 
-                    value={editStyles.alignment || 'left'} 
+                <Select
+                    value={editStyles.alignment || 'left'}
                     onValueChange={(value) => updateStyle('alignment', value)}
                 >
                     <SelectTrigger>
@@ -104,7 +115,7 @@ const CarouselPriceEditDialog = ({
                     value={editStyles.textStyle || 'paragraph'}
                     onValueChange={(value) => {
                         updateStyle('textStyle', value);
-                        
+
                         if (value === 'paragraph' && themeSettings) {
                             updateStyle('fontSize', themeSettings.paragraph_fontSize || '14px');
                             updateStyle('fontWeight', themeSettings.paragraph_fontWeight || 'normal');
@@ -133,8 +144,8 @@ const CarouselPriceEditDialog = ({
                 <>
                     <div>
                         <Label htmlFor="fontSize">Tamaño de fuente</Label>
-                        <Select 
-                            value={editStyles.fontSize || '14px'} 
+                        <Select
+                            value={editStyles.fontSize || '14px'}
                             onValueChange={(value) => updateStyle('fontSize', value)}
                         >
                             <SelectTrigger>
@@ -151,8 +162,8 @@ const CarouselPriceEditDialog = ({
 
                     <div>
                         <Label htmlFor="fontWeight">Peso de fuente</Label>
-                        <Select 
-                            value={editStyles.fontWeight || 'normal'} 
+                        <Select
+                            value={editStyles.fontWeight || 'normal'}
                             onValueChange={(value) => updateStyle('fontWeight', value)}
                         >
                             <SelectTrigger>

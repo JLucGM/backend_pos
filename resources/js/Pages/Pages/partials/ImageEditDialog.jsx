@@ -1,5 +1,5 @@
 // components/Builder/dialogs/ImageEditDialog.jsx - VERSIÓN CON ASPECT RATIO
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
@@ -7,18 +7,28 @@ import ImageSelector from '@/Components/BuilderPages/ImageSelector';
 import { Button } from '@/Components/ui/button';
 import { ImageIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const ImageEditDialog = ({ 
-  editContent, 
-  setEditContent, 
-  editStyles, 
+const ImageEditDialog = ({
+  editContent,
+  setEditContent,
+  editStyles,
   setEditStyles,
-  products = []
+  products = [],
+  isLiveEdit = true
 }) => {
   const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
+  const debouncedContent = useDebounce(editContent, 300);
+  const debouncedStyles = useDebounce(editStyles, 300);
 
-  const normalizedContent = typeof editContent === 'string' 
-    ? { src: editContent, alt: '' } 
+  useEffect(() => {
+    if (isLiveEdit) {
+      // Las actualizaciones se manejan automáticamente
+    }
+  }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
+  const normalizedContent = typeof editContent === 'string'
+    ? { src: editContent, alt: '' }
     : editContent || { src: '', alt: '' };
 
   const updateContent = (key, value) => {
@@ -215,7 +225,7 @@ const ImageEditDialog = ({
       <div className="mt-6 pt-4 border-t">
         <Label className="mb-2 block">Vista Previa</Label>
         <div className="flex justify-center">
-          <div 
+          <div
             className="border rounded p-4 bg-gray-50"
             style={{
               width: '200px',
@@ -227,8 +237,8 @@ const ImageEditDialog = ({
               <div style={{
                 width: '100%',
                 height: '0',
-                paddingBottom: editStyles.aspectRatio === 'landscape' ? '56.25%' : 
-                               editStyles.aspectRatio === 'portrait' ? '125%' : '100%',
+                paddingBottom: editStyles.aspectRatio === 'landscape' ? '56.25%' :
+                  editStyles.aspectRatio === 'portrait' ? '125%' : '100%',
                 position: 'relative'
               }}>
                 <img

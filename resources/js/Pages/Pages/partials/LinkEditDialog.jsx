@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
@@ -6,14 +6,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/Components/ui/separator';
 import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const LinkEditDialog = ({ 
-    editContent, 
-    setEditContent, 
-    editStyles, 
+const LinkEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
     setEditStyles,
-    themeSettings 
+    themeSettings,
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
     };
@@ -76,7 +87,7 @@ const LinkEditDialog = ({
                     value={editStyles.textStyle || 'paragraph'}
                     onValueChange={(value) => {
                         updateStyle('textStyle', value);
-                        
+
                         if (value === 'paragraph' && themeSettings) {
                             updateStyle('fontSize', themeSettings.paragraph_fontSize || '16px');
                             updateStyle('fontWeight', themeSettings.paragraph_fontWeight || 'normal');

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -6,21 +6,32 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const BentoFeatureTitleEditDialog = ({ 
-    editContent, 
-    setEditContent, 
-    editStyles, 
-    setEditStyles, 
-    themeSettings 
+const BentoFeatureTitleEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
     };
 
     const resetToDefaults = () => {
         const textStyle = editStyles.textStyle || 'heading4';
-        
+
         if (textStyle.startsWith('heading')) {
             const level = textStyle.replace('heading', '');
             setEditStyles(prev => ({
@@ -90,7 +101,7 @@ const BentoFeatureTitleEditDialog = ({
                     value={editStyles.textStyle || 'heading4'}
                     onValueChange={(value) => {
                         updateStyle('textStyle', value);
-                        
+
                         if (value.startsWith('heading') && themeSettings) {
                             const level = value.replace('heading', '');
                             updateStyle('fontSize', themeSettings[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`);

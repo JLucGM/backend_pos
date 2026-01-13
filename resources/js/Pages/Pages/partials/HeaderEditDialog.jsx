@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,8 +7,18 @@ import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Info } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Separator } from '@/Components/ui/separator';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
+const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateContent = (key, value) => {
         setEditContent(prev => ({ ...prev, [key]: value }));
     };
@@ -17,13 +27,13 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         setEditContent(prev => {
             const newContent = { ...prev };
             let current = newContent;
-            
+
             // Navegar hasta el objeto padre
             for (const p of path) {
                 if (!current[p]) current[p] = {};
                 current = current[p];
             }
-            
+
             // Actualizar la propiedad
             current[key] = value;
             return newContent;
@@ -36,7 +46,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             if (!newContent.buttons) newContent.buttons = {};
             if (!newContent.buttons[buttonName]) newContent.buttons[buttonName] = {};
             if (!newContent.buttons[buttonName].styles) newContent.buttons[buttonName].styles = {};
-            
+
             newContent.buttons[buttonName].styles[styleKey] = value;
             return newContent;
         });
@@ -48,7 +58,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
 
     const getPositionInfo = () => {
         const logoPos = editContent?.logoPosition || 'left';
-        
+
         if (logoPos === 'left') {
             return "Orden: Logo → Menú → Botones (Carrito, Buscador, Perfil)";
         } else if (logoPos === 'center') {
@@ -63,11 +73,11 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
     const ButtonStyleEditor = ({ buttonName, buttonLabel }) => {
         const buttonConfig = editContent?.buttons?.[buttonName] || {};
         const buttonStyles = buttonConfig.styles || {};
-        
+
         return (
             <div className="space-y-2 p-4 border rounded-lg">
                 <h4 className="font-medium text-sm">{buttonLabel}</h4>
-                
+
                 {/* Color del icono */}
                 <div>
                     <Label htmlFor={`${buttonName}-iconColor`} className="text-xs">Color del icono</Label>
@@ -86,7 +96,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         />
                     </div>
                 </div>
-                
+
                 {/* Color de fondo */}
                 <div>
                     <Label htmlFor={`${buttonName}-backgroundColor`} className="text-xs">Color de fondo</Label>
@@ -105,7 +115,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         />
                     </div>
                 </div>
-                
+
                 {/* Opacidad del fondo */}
                 <div>
                     <Label htmlFor={`${buttonName}-backgroundOpacity`} className="text-xs">Opacidad del fondo (0-1)</Label>
@@ -120,9 +130,9 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         className="h-8 text-xs"
                     />
                 </div>
-                
+
                 <Separator />
-                
+
                 {/* Configuración del borde */}
                 <div className="grid grid-cols-1 gap-2">
                     <div>
@@ -135,7 +145,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             className="h-8 text-xs"
                         />
                     </div>
-                    
+
                     <div>
                         <Label htmlFor={`${buttonName}-borderColor`} className="text-xs">Color borde</Label>
                         <Input
@@ -145,7 +155,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             className="h-8 w-full"
                         />
                     </div>
-                    
+
                     <div>
                         <Label htmlFor={`${buttonName}-borderOpacity`} className="text-xs">Opac. borde</Label>
                         <Input
@@ -160,7 +170,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         />
                     </div>
                 </div>
-                
+
                 {/* Radio de borde */}
                 <div>
                     <Label htmlFor={`${buttonName}-borderRadius`} className="text-xs">Radio de borde (px)</Label>
@@ -172,9 +182,9 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         className="h-8 text-xs"
                     />
                 </div>
-                
+
                 <Separator />
-                
+
                 {/* Tamaño */}
                 <div className="grid grid-cols-3 gap-2">
                     <div>
@@ -187,7 +197,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             className="h-8 text-xs"
                         />
                     </div>
-                    
+
                     <div>
                         <Label htmlFor={`${buttonName}-height`} className="text-xs">Alto (px)</Label>
                         <Input
@@ -198,7 +208,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             className="h-8 text-xs"
                         />
                     </div>
-                    
+
                     <div>
                         <Label htmlFor={`${buttonName}-padding`} className="text-xs">Padding (px)</Label>
                         <Input
@@ -210,7 +220,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         />
                     </div>
                 </div>
-                
+
                 {/* Para el carrito, mostrar contador */}
                 {buttonName === 'cart' && (
                     <div>
@@ -235,7 +245,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                 <TabsTrigger value="buttons">Botones</TabsTrigger>
                 <TabsTrigger value="styles">Estilos</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="general" className="space-y-4">
                 <Alert>
                     <Info className="h-4 w-4" />
@@ -295,7 +305,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     />
                 </div>
             </TabsContent>
-            
+
             <TabsContent value="buttons" className="space-y-6">
                 <div className="flex items-center justify-between">
                     <Label htmlFor="showSearch">Mostrar botón de búsqueda</Label>
@@ -317,10 +327,10 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                 </div>
 
                 <Separator />
-                
+
                 <div className="space-y-4">
                     <h4 className="font-medium">Personalización de botones</h4>
-                    
+
                     <div className="grid grid-cols-1 gap-4">
                         <ButtonStyleEditor buttonName="cart" buttonLabel="Carrito" />
                         <ButtonStyleEditor buttonName="search" buttonLabel="Buscador" />
@@ -328,7 +338,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     </div>
                 </div>
             </TabsContent>
-            
+
             <TabsContent value="styles" className="space-y-4">
                 <h4 className="font-medium mb-3">Estilos del Header</h4>
 

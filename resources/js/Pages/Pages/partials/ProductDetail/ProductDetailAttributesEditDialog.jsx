@@ -1,20 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
-import { Switch } from '@/Components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Button } from '@/Components/ui/button';
 import { RotateCcw, Info } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { Badge } from '@/Components/ui/badge';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const ProductDetailAttributesEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
     setEditStyles,
-    themeSettings
+    themeSettings,
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const handleStyleChange = (key, value) => {
         setEditStyles(prev => ({
             ...prev,
@@ -33,7 +43,7 @@ const ProductDetailAttributesEditDialog = ({
     const renderThemeReference = (themeKey, label) => {
         const themeValue = themeSettings?.[themeKey];
         if (!themeValue) return null;
-        
+
         return (
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                 <Info size={12} />
@@ -49,11 +59,11 @@ const ProductDetailAttributesEditDialog = ({
     const resetToThemeDefaults = () => {
         const textStyle = editStyles.titleTextStyle || 'heading3';
         const theme = themeSettings || {};
-        
+
         let defaultTitleStyles = {};
         let defaultLabelStyles = {};
         let defaultButtonStyles = {};
-        
+
         // Estilos del título según el estilo seleccionado
         if (textStyle === 'paragraph') {
             defaultTitleStyles = {
@@ -96,44 +106,6 @@ const ProductDetailAttributesEditDialog = ({
 
     return (
         <div className="space-y-4">
-            {/* Sección de referencia al tema */}
-            {/* <div className="p-3 bg-blue-50 rounded-md border border-blue-200">
-                <h4 className="text-sm font-medium text-blue-800 mb-2">
-                    <Info className="inline mr-1" size={14} />
-                    Valores del tema actual
-                </h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                        <span className="text-gray-600">Color heading: </span>
-                        <div className="inline-block w-3 h-3 rounded-full ml-1 border"
-                            style={{ 
-                                backgroundColor: themeSettings?.heading ? `hsl(${themeSettings.heading})` : '#000000' 
-                            }}
-                        />
-                    </div>
-                    <div>
-                        <span className="text-gray-600">Color text: </span>
-                        <div className="inline-block w-3 h-3 rounded-full ml-1 border"
-                            style={{ 
-                                backgroundColor: themeSettings?.text ? `hsl(${themeSettings.text})` : '#666666' 
-                            }}
-                        />
-                    </div>
-                    <div>
-                        <span className="text-gray-600">Border radius: </span>
-                        <Badge variant="secondary" className="ml-1 text-xs">
-                            {themeSettings?.border_radius || '0.5rem'}
-                        </Badge>
-                    </div>
-                    <div>
-                        <span className="text-gray-600">Fuente heading: </span>
-                        <Badge variant="outline" className="ml-1 text-xs">
-                            {themeSettings?.heading_font || 'Inter'}
-                        </Badge>
-                    </div>
-                </div>
-            </div> */}
-
             {/* Botón para restablecer a valores del tema */}
             <div className="flex justify-end">
                 <Button
@@ -151,7 +123,7 @@ const ProductDetailAttributesEditDialog = ({
             {/* Título del selector */}
             <div>
                 <Label htmlFor="title">Título del selector</Label>
-                <Input 
+                <Input
                     id="title"
                     value={editContent?.title || 'Opciones del Producto'}
                     onChange={(e) => handleContentChange('title', e.target.value)}
@@ -164,7 +136,7 @@ const ProductDetailAttributesEditDialog = ({
             {/* Estilo del Título */}
             <div className="space-y-4">
                 <h4 className="font-medium">Estilo del Título</h4>
-                
+
                 {/* Estilo de Texto - Opciones predefinidas */}
                 <div>
                     <Label htmlFor="titleTextStyle">Estilo de Texto del Título</Label>
@@ -223,7 +195,7 @@ const ProductDetailAttributesEditDialog = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="titleSize">Tamaño del título</Label>
-                            <Input 
+                            <Input
                                 id="titleSize"
                                 value={editStyles.titleSize || '18px'}
                                 onChange={(e) => handleStyleChange('titleSize', e.target.value)}
@@ -232,8 +204,8 @@ const ProductDetailAttributesEditDialog = ({
                         </div>
                         <div>
                             <Label htmlFor="titleFontWeight">Peso del título</Label>
-                            <Select 
-                                value={editStyles.titleFontWeight || 'bold'} 
+                            <Select
+                                value={editStyles.titleFontWeight || 'bold'}
                                 onValueChange={(value) => handleStyleChange('titleFontWeight', value)}
                             >
                                 <SelectTrigger>
@@ -309,7 +281,7 @@ const ProductDetailAttributesEditDialog = ({
                 {editStyles.titleFontType === 'custom' && (
                     <div>
                         <Label htmlFor="titleCustomFont">Fuente Personalizada del Título</Label>
-                        <Input 
+                        <Input
                             id="titleCustomFont"
                             value={editStyles.titleCustomFont || ''}
                             onChange={(e) => handleStyleChange('titleCustomFont', e.target.value)}
@@ -325,7 +297,7 @@ const ProductDetailAttributesEditDialog = ({
                             {renderThemeReference('heading', 'Color del tema')}
                         </Label>
                         <div className="flex gap-2 mt-1">
-                            <Input 
+                            <Input
                                 id="titleColor"
                                 type="color"
                                 value={editStyles.titleColor || (themeSettings?.heading ? `hsl(${themeSettings.heading})` : '#000000')}
@@ -356,7 +328,7 @@ const ProductDetailAttributesEditDialog = ({
             {/* Estilo de las Etiquetas */}
             <div className="space-y-4">
                 <h4 className="font-medium">Estilo de las Etiquetas</h4>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="labelColor">
@@ -364,7 +336,7 @@ const ProductDetailAttributesEditDialog = ({
                             {renderThemeReference('text', 'Color del tema')}
                         </Label>
                         <div className="flex gap-2 mt-1">
-                            <Input 
+                            <Input
                                 id="labelColor"
                                 type="color"
                                 value={editStyles.labelColor || (themeSettings?.text ? `hsl(${themeSettings.text})` : '#666666')}
@@ -390,7 +362,7 @@ const ProductDetailAttributesEditDialog = ({
                     <div>
                         <Label htmlFor="labelSize">Tamaño de etiquetas</Label>
                         <div className="flex gap-2">
-                            <Input 
+                            <Input
                                 id="labelSize"
                                 value={editStyles.labelSize || '14px'}
                                 onChange={(e) => handleStyleChange('labelSize', e.target.value)}
@@ -413,8 +385,8 @@ const ProductDetailAttributesEditDialog = ({
                 <div>
                     <Label htmlFor="labelFontWeight">Peso de fuente de etiquetas</Label>
                     <div className="flex gap-2">
-                        <Select 
-                            value={editStyles.labelFontWeight || 'normal'} 
+                        <Select
+                            value={editStyles.labelFontWeight || 'normal'}
                             onValueChange={(value) => handleStyleChange('labelFontWeight', value)}
                             className="flex-1"
                         >
@@ -445,7 +417,7 @@ const ProductDetailAttributesEditDialog = ({
             {/* Estilo de los Botones */}
             <div className="space-y-4">
                 <h4 className="font-medium">Estilo de los Botones</h4>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="selectedBgColor">
@@ -453,7 +425,7 @@ const ProductDetailAttributesEditDialog = ({
                             {renderThemeReference('primary_button_background', 'Color del tema')}
                         </Label>
                         <div className="flex gap-2 mt-1">
-                            <Input 
+                            <Input
                                 id="selectedBgColor"
                                 type="color"
                                 value={editStyles.selectedBgColor || (themeSettings?.primary_button_background ? `hsl(${themeSettings.primary_button_background})` : '#dbeafe')}
@@ -482,7 +454,7 @@ const ProductDetailAttributesEditDialog = ({
                             {renderThemeReference('primary_button_text', 'Color del tema')}
                         </Label>
                         <div className="flex gap-2 mt-1">
-                            <Input 
+                            <Input
                                 id="selectedTextColor"
                                 type="color"
                                 value={editStyles.selectedTextColor || (themeSettings?.primary_button_text ? `hsl(${themeSettings.primary_button_text})` : '#1e40af')}
@@ -513,7 +485,7 @@ const ProductDetailAttributesEditDialog = ({
                         {renderThemeReference('border_radius', 'Valor del tema')}
                     </Label>
                     <div className="flex gap-2">
-                        <Input 
+                        <Input
                             id="buttonBorderRadius"
                             value={editStyles.buttonBorderRadius || (themeSettings?.border_radius || '6px')}
                             onChange={(e) => handleStyleChange('buttonBorderRadius', e.target.value)}
@@ -535,7 +507,7 @@ const ProductDetailAttributesEditDialog = ({
                 {/* Estilos de borde para botones no seleccionados */}
                 <div className="space-y-4">
                     <h5 className="text-sm font-medium">Estilo de botones no seleccionados</h5>
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="buttonBgColor">
@@ -543,7 +515,7 @@ const ProductDetailAttributesEditDialog = ({
                                 {renderThemeReference('secondary_button_background', 'Color del tema')}
                             </Label>
                             <div className="flex gap-2 mt-1">
-                                <Input 
+                                <Input
                                     id="buttonBgColor"
                                     type="color"
                                     value={editStyles.buttonBgColor || (themeSettings?.secondary_button_background ? `hsl(${themeSettings.secondary_button_background})` : '#ffffff')}
@@ -566,7 +538,7 @@ const ProductDetailAttributesEditDialog = ({
                                 {renderThemeReference('secondary_button_text', 'Color del tema')}
                             </Label>
                             <div className="flex gap-2 mt-1">
-                                <Input 
+                                <Input
                                     id="buttonColor"
                                     type="color"
                                     value={editStyles.buttonColor || (themeSettings?.secondary_button_text ? `hsl(${themeSettings.secondary_button_text})` : '#374151')}
@@ -591,7 +563,7 @@ const ProductDetailAttributesEditDialog = ({
                             {renderThemeReference('borders', 'Color del tema')}
                         </Label>
                         <div className="flex gap-2 mt-1">
-                            <Input 
+                            <Input
                                 id="buttonBorderColor"
                                 type="color"
                                 value={editStyles.buttonBorderColor || (themeSettings?.borders ? `hsl(${themeSettings.borders})` : '#d1d5db')}

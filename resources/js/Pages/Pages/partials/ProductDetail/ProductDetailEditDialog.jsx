@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const ProductDetailEditDialog = ({
     editStyles,
     setEditStyles,
-    themeSettings
+    themeSettings,
+    editContent,
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const handleStyleChange = (key, value) => {
         setEditStyles(prev => ({
             ...prev,
@@ -44,7 +56,7 @@ const ProductDetailEditDialog = ({
         <div className="space-y-4">
             <div>
                 <Label htmlFor="backgroundColor">Color de fondo</Label>
-                <Input 
+                <Input
                     id="backgroundColor"
                     type="color"
                     value={editStyles.backgroundColor || '#ffffff'}
@@ -70,7 +82,7 @@ const ProductDetailEditDialog = ({
                         <span className="text-sm text-gray-500">100%</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Input 
+                        <Input
                             className="w-20"
                             type="number"
                             min="0"
@@ -88,8 +100,8 @@ const ProductDetailEditDialog = ({
 
             <div>
                 <Label htmlFor="layoutType">Diseño</Label>
-                <Select 
-                    value={editStyles.layoutType || 'grid'} 
+                <Select
+                    value={editStyles.layoutType || 'grid'}
                     onValueChange={(value) => handleStyleChange('layoutType', value)}
                 >
                     <SelectTrigger>
@@ -105,7 +117,7 @@ const ProductDetailEditDialog = ({
             {editStyles.layoutType === 'grid' && (
                 <div>
                     <Label htmlFor="gap">Espacio entre columnas (px)</Label>
-                    <Input 
+                    <Input
                         id="gap"
                         type="number"
                         value={parseInt(editStyles.gap) || 60}

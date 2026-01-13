@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const DividerEditDialog = ({
     editStyles,
-    setEditStyles
+    setEditStyles,
+    editContent,
+    setEditContent,
+    isLiveEdit
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({
             ...prev,

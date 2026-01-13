@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const CheckoutEditDialog = ({
     editContent,
@@ -10,7 +11,17 @@ const CheckoutEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    isLiveEdit = true,
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const handleStyleChange = (property, value) => {
         setEditStyles(prev => ({ ...prev, [property]: value }));
     };
@@ -20,7 +31,7 @@ const CheckoutEditDialog = ({
             <DialogHeader>
                 <DialogTitle>Configurar Checkout</DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4 py-4">
                 <div className="space-y-2">
                     <Label htmlFor="layoutType">Tipo de Layout</Label>
@@ -39,9 +50,9 @@ const CheckoutEditDialog = ({
                         </SelectContent>
                     </Select>
                     <p className="text-xs text-gray-500 mt-1">
-                        • Compacto: Columna ancha para información del cliente, sidebar para descuentos y resumen<br/>
-                        • Dos Columnas: Columnas iguales sin espacios<br/>
-                        • Grid: 2x2 grid ordenado<br/>
+                        • Compacto: Columna ancha para información del cliente, sidebar para descuentos y resumen<br />
+                        • Dos Columnas: Columnas iguales sin espacios<br />
+                        • Grid: 2x2 grid ordenado<br />
                         • Vertical: Todo en una columna
                     </p>
                 </div>

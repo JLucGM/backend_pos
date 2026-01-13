@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -6,14 +6,25 @@ import { Textarea } from '@/Components/ui/textarea';
 import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const BentoTitleEditDialog = ({ 
     editContent, 
     setEditContent, 
     editStyles, 
     setEditStyles, 
-    themeSettings 
+    themeSettings,
+    isLiveEdit = true 
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+        const debouncedStyles = useDebounce(editStyles, 300);
+    
+        useEffect(() => {
+            if (isLiveEdit) {
+                // Las actualizaciones se manejan automáticamente
+            }
+        }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
     };

@@ -1,5 +1,5 @@
 // components/BuilderPages/CanvasItem.jsx
-import React from 'react';
+import React, { useCallback } from 'react';
 import HeadingComponent from './HeadingComponent';
 import ButtonComponent from './ButtonComponent';
 import ImageComponent from './ImageComponent';
@@ -91,17 +91,27 @@ const CanvasItem = ({
     const isHovered = hoveredComponentId === comp.id;
 
     // Funciones seguras para eventos de mouse
-    const handleMouseEnter = () => {
+    // const handleMouseEnter = () => {
+    //     if (setHoveredComponentId && !isPreview) {
+    //         setHoveredComponentId(comp.id);
+    //     }
+    // };
+    const handleMouseEnter = useCallback(() => {
         if (setHoveredComponentId && !isPreview) {
             setHoveredComponentId(comp.id);
         }
-    };
+    }, [setHoveredComponentId, isPreview, comp.id]);
 
-    const handleMouseLeave = () => {
+    // const handleMouseLeave = () => {
+    //     if (setHoveredComponentId && !isPreview) {
+    //         setHoveredComponentId(null);
+    //     }
+    // };
+    const handleMouseLeave = useCallback(() => {
         if (setHoveredComponentId && !isPreview) {
             setHoveredComponentId(null);
         }
-    };
+    }, [setHoveredComponentId, isPreview]);
 
     const renderComponent = () => {
         // Propiedades comunes para todos los componentes

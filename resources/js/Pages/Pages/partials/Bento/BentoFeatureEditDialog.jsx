@@ -1,19 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Slider } from '@/Components/ui/slider';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
+const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const handleContentChange = (key, value) => {
         setEditContent(prev => ({
-            ...prev,
-            [key]: value
-        }));
-    };
-
-    const handleStyleChange = (key, value) => {
-        setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
@@ -22,7 +25,7 @@ const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEd
     return (
         <div className="space-y-4">
             <h3 className="text-lg font-semibold">Configuración de la Característica</h3>
-            
+
             {/* Color de fondo */}
             <div className="space-y-2">
                 <Label htmlFor="backgroundColor">Color de fondo</Label>

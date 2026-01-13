@@ -1,9 +1,10 @@
 // components/BuilderPages/partials/Checkout/CheckoutDiscountGiftCardEditDialog.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const CheckoutDiscountGiftCardEditDialog = ({
     editContent,
@@ -11,7 +12,17 @@ const CheckoutDiscountGiftCardEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    isLiveEdit = true,
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const handleStyleChange = (property, value) => {
         setEditStyles(prev => ({ ...prev, [property]: value }));
     };
@@ -21,7 +32,7 @@ const CheckoutDiscountGiftCardEditDialog = ({
             <DialogHeader>
                 <DialogTitle>Editar Cupones y Gift Cards</DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4 py-4">
                 <div className="space-y-2">
                     <Label htmlFor="title">Título del componente</Label>

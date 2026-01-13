@@ -5,8 +5,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, availableMenus }) => {
+const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, availableMenus, isLiveEdit = true }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
     };
@@ -30,7 +40,7 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
 
     const handleMenuChange = (menuId) => {
         setSelectedMenuId(menuId);
-        
+
         if (menuId === 'none') {
             // Sin menú seleccionado
             setEditContent({
@@ -108,7 +118,7 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
             {/* DISPLAY Y DIRECCIÓN */}
             <div>
                 <h4 className="font-medium mb-3">Diseño del Menú</h4>
-                
+
                 <div className="mb-3">
                     <Label htmlFor="display">Tipo de visualización</Label>
                     <Select
