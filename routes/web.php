@@ -44,8 +44,7 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
     // Solo para invitados (no autenticados)
     Route::middleware('frontend.guest')->group(function () {
         // Login de clientes
-        // Route::get('/iniciar-sesion', [LoginController::class, 'create'])
-        //     ->name('frontend.login');
+
         Route::post('/iniciar-sesion', [LoginController::class, 'store'], function () {
             dd(request()->all());
         })
@@ -56,12 +55,6 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
             ->name('frontend.register');
         Route::post('/registrarse', [RegisterController::class, 'store'])
             ->name('frontend.register.store');
-
-        // Recuperación de contraseña (opcional)
-        // Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])
-        //     ->name('frontend.password.request');
-        // Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-        //     ->name('frontend.password.email');
     });
 
     // ========== RUTAS PROTEGIDAS (SOLO CLIENTES AUTENTICADOS) ==========
@@ -70,43 +63,12 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
         Route::post('/logout', [LoginController::class, 'destroy'])
             ->name('frontend.logout');
 
-            Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
-    ->name('frontend.checkout.process');
+        Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
+            ->name('frontend.checkout.process');
 
-// Confirmación de orden
-Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
-    ->name('frontend.order.confirmation');
-
-        // ========== CHECKOUT ==========
-        // Route::prefix('checkout')->group(function () {
-        //     // Validar descuento
-        //     Route::post('/validate-discount', [CheckoutController::class, 'validateDiscount'])
-        //         ->name('frontend.checkout.validateDiscount');
-
-        //     // Validar gift card
-        //     Route::post('/validate-gift-card', [CheckoutController::class, 'validateGiftCard'])
-        //         ->name('frontend.checkout.validateGiftCard');
-
-        //     // Procesar orden
-        //     Route::post('/process', [CheckoutController::class, 'processOrder'])
-        //         ->name('frontend.checkout.process');
-
-        //     // Confirmación de orden
-        //     Route::get('/confirmation/{order}', [CheckoutController::class, 'confirmation'])
-        //         ->name('frontend.checkout.confirmation');
-        // });
-
-        // // Perfil del cliente
-        // Route::get('/profile', [FrontendProfileController::class, 'edit'])
-        //     ->name('frontend.profile');
-        // Route::patch('/profile', [FrontendProfileController::class, 'update'])
-        //     ->name('frontend.profile.update');
-
-        // // Historial de pedidos
-        // Route::get('/orders', [FrontendOrderController::class, 'index'])
-        //     ->name('frontend.orders');
-        // Route::get('/orders/{order}', [FrontendOrderController::class, 'show'])
-        //     ->name('frontend.orders.show');
+        // Confirmación de orden
+        Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
+            ->name('frontend.order.confirmation');
     });
 });
 
@@ -148,34 +110,12 @@ Route::group([
         Route::post('/logout', [LoginController::class, 'destroy'])
             ->name('frontend.logout.custom');
 
-            Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
-    ->name('frontend.checkout.process');
+        Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
+            ->name('frontend.checkout.process');
 
-// Confirmación de orden
-Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
-    ->name('frontend.order.confirmation');
-    
-        // Checkout
-        // Route::get('/checkout', [FrontendCheckoutController::class, 'create'])
-        //     ->name('frontend.checkout.custom');
-        // Route::post('/checkout', [FrontendCheckoutController::class, 'store'])
-        //     ->name('frontend.checkout.store.custom');
-
-        // // Confirmación de pedido
-        // Route::get('/checkout/confirmation/{order}', [FrontendCheckoutController::class, 'confirmation'])
-        //     ->name('frontend.checkout.confirmation.custom');
-
-        // // Perfil del cliente
-        // Route::get('/profile', [FrontendProfileController::class, 'edit'])
-        //     ->name('frontend.profile.custom');
-        // Route::patch('/profile', [FrontendProfileController::class, 'update'])
-        //     ->name('frontend.profile.update.custom');
-
-        // // Historial de pedidos
-        // Route::get('/orders', [FrontendOrderController::class, 'index'])
-        //     ->name('frontend.orders.custom');
-        // Route::get('/orders/{order}', [FrontendOrderController::class, 'show'])
-        //     ->name('frontend.orders.show.custom');
+        // Confirmación de orden
+        Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
+            ->name('frontend.order.confirmation');
     });
 });
 
@@ -325,6 +265,7 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::post('/pages/{page}/copy-theme-settings', [PageController::class, 'copyThemeSettings'])->name('pages.copyThemeSettings');
     Route::post('/pages/{page}/update-theme-settings', [PageController::class, 'updateThemeSettings'])->name('pages.updateThemeSettings');
     Route::post('/pages/{page}/reset-theme-settings', [PageController::class, 'resetThemeSettings'])->name('pages.resetThemeSettings');
+    Route::post('/pages/{page}/copy-image', [PageController::class, 'copyImage'])->name('pages.copy-image')->middleware(['auth', 'backend.company']);
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');

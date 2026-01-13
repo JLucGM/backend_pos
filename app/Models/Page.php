@@ -8,10 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Page extends Model
+class Page extends Model implements HasMedia
 {
-    use HasFactory, HasSlug;
+    use HasFactory, HasSlug, InteractsWithMedia;
 
     protected $fillable = [
         'title',
@@ -24,7 +27,6 @@ class Page extends Model
         'sort_order',
         'company_id',
         'template_id',
-        // 'template_overrides',
         'theme_settings',
         'uses_template',
         'theme_id',
@@ -53,7 +55,7 @@ class Page extends Model
             ->saveSlugsTo('slug')
             // LA CLAVE: Spatie solo verifica duplicidad en las páginas 
             // que pertenecen a la misma compañía.
-            ->extraScope(fn ($query) => $query->where('company_id', $this->company_id))
+            ->extraScope(fn($query) => $query->where('company_id', $this->company_id))
             ->allowDuplicateSlugs(); // <--- IMPORTANTE: Desactiva la verificación global
 
     }
@@ -64,20 +66,78 @@ class Page extends Model
         static::addGlobalScope(new CompanyScope);
     }
 
-    public function resolveRouteBinding($value, $field = null)
-{
-    $field = $field ?: $this->getRouteKeyName();
-    
-    // Si hay usuario autenticado, filtrar por su company_id
-    if (Auth::check()) {
-        return $this->where($field, $value)
-            ->where('company_id', Auth::user()->company_id)
-            ->firstOrFail();
+    // Registrar colecciones de medios
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('page_images')
+            ->useDisk('public')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+            ->singleFile(); // O multiple según necesites
     }
+
+    // Conversiones de medios
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(150)
+            ->height(150)
+            ->sharpen(10);
+
+        $this->addMediaConversion('medium')
+            ->width(400)
+            ->height(400);
+
+        $this->addMediaConversion('large')
+            ->width(800)
+            ->height(800);
+    }
+
+    // Método para copiar imagen desde otro modelo
+    public function copyImageFromProduct(Product $product, $mediaId = null)
+    {
+        // Si se especifica un ID de medio específico
+        if ($mediaId) {
+            $media = $product->media()->find($mediaId);
+            if ($media) {
+                return $this->copyMedia($media->getPath())->toMediaCollection('page_images');
+            }
+        }
+
+        // O copiar la primera imagen del producto
+        $firstMedia = $product->getFirstMedia('products');
+        if ($firstMedia) {
+            return $this->copyMedia($firstMedia->getPath())->toMediaCollection('page_images');
+        }
+
+        return null;
+    }
+
+    // Obtener URL de imagen de página
+    public function getImageUrl($conversion = '')
+    {
+        $media = $this->getFirstMedia('page_images');
+        if ($media) {
+            return $media->getUrl($conversion);
+        }
+        return null;
+    }
+
     
-    // Fallback al comportamiento original
-    return parent::resolveRouteBinding($value, $field);
-}
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $field = $field ?: $this->getRouteKeyName();
+
+        // Si hay usuario autenticado, filtrar por su company_id
+        if (Auth::check()) {
+            return $this->where($field, $value)
+                ->where('company_id', Auth::user()->company_id)
+                ->firstOrFail();
+        }
+
+        // Fallback al comportamiento original
+        return parent::resolveRouteBinding($value, $field);
+    }
 
     // Evitar borrar páginas por defecto
     public function delete()
@@ -102,36 +162,6 @@ class Page extends Model
     {
         return $this->belongsTo(Company::class);
     }
-
-    // Método para obtener layout combinado
-    // public function getCombinedLayout()
-    // {
-    //     if (!$this->uses_template || !$this->template) {
-    //         return $this->layout;
-    //     }
-
-    //     $templateLayout = $this->template->layout_structure ?? [];
-    //     $pageLayout = $this->layout ?? [];
-    //     $overrides = $this->template_overrides ?? [];
-
-    //     // Combinar lógica (template base + personalizaciones página)
-    //     return $this->mergeLayouts($templateLayout, $pageLayout, $overrides);
-    // }
-
-    // Método para aplicar tema
-    // public function getAppliedTheme()
-    // {
-    //     // Prioridad: Tema de página → Tema de template → Tema default
-    //     if ($this->theme_id) {
-    //         return $this->theme;
-    //     }
-
-    //     if ($this->template && $this->template->theme_id) {
-    //         return $this->template->theme;
-    //     }
-
-    //     return Theme::where('slug', 'tema-azul')->first(); // Tema por defecto
-    // }
 
     // Método para detectar si tiene tema personalizado
     public function hasCustomTheme()

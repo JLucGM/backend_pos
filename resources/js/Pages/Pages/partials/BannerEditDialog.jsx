@@ -1,9 +1,10 @@
-// components/BuilderPages/partials/BannerEditDialog.jsx
 import React from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Switch } from '@/Components/ui/switch';
+import { Separator } from '@/Components/ui/separator';
 
 const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles }) => {
     const updateBannerConfig = (key, value) => {
@@ -13,14 +14,30 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         }));
     };
 
+    // Estado para controlar si se muestra el fondo del contenedor interno
+    const hasInnerContainerBackground = editContent.innerContainerHasBackground !== false;
+    const innerContainerBackgroundColor = editContent.innerContainerBackgroundColor || '#ffffff';
+
+    // Función para manejar el cambio del switch
+    const handleBackgroundToggle = (checked) => {
+        updateBannerConfig('innerContainerHasBackground', checked);
+        // Si se desactiva el fondo, establecer transparent
+        if (!checked) {
+            updateBannerConfig('innerContainerBackgroundColor', 'transparent');
+            updateBannerConfig('innerContainerBackgroundOpacity', 1);
+        } else if (innerContainerBackgroundColor === 'transparent') {
+            // Si se activa y actualmente es transparent, establecer un color por defecto
+            updateBannerConfig('innerContainerBackgroundColor', '#ffffff');
+        }
+    };
+
     return (
         <div className="space-y-4">
             <Tabs defaultValue="contenedor" className="w-full">
-                <TabsList className="grid grid-cols-2 mb-4">
+                <TabsList className="grid grid-cols-3 mb-4">
                     <TabsTrigger value="contenedor">Contenedor</TabsTrigger>
                     <TabsTrigger value="posicion">Posición</TabsTrigger>
-                    {/* <TabsTrigger value="titulo">Título</TabsTrigger> */}
-                    {/* <TabsTrigger value="texto">Texto</TabsTrigger> */}
+                    <TabsTrigger value="interno">Contenedor Interno</TabsTrigger>
                 </TabsList>
 
                 {/* Pestaña Contenedor */}
@@ -206,6 +223,143 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             <SelectItem value="horizontal">Horizontal (Fila)</SelectItem>
                         </SelectContent>
                     </Select>
+                </TabsContent>
+
+                {/* Pestaña Contenedor Interno */}
+                <TabsContent value="interno" className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="innerContainerShow">Mostrar Contenedor Interno</Label>
+                        <Switch
+                            id="innerContainerShow"
+                            checked={editContent.innerContainerShow !== false}
+                            onCheckedChange={(checked) => updateBannerConfig('innerContainerShow', checked)}
+                        />
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="innerContainerHasBackground">Mostrar Fondo</Label>
+                            <Switch
+                                id="innerContainerHasBackground"
+                                checked={hasInnerContainerBackground}
+                                onCheckedChange={handleBackgroundToggle}
+                            />
+                        </div>
+
+                        {hasInnerContainerBackground && (
+                            <>
+                                <div>
+                                    <Label htmlFor="innerContainerBackgroundColor">Color de Fondo</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            id="innerContainerBackgroundColor"
+                                            type="color"
+                                            value={innerContainerBackgroundColor === 'transparent' ? '#ffffff' : innerContainerBackgroundColor}
+                                            onChange={(e) => updateBannerConfig('innerContainerBackgroundColor', e.target.value)}
+                                            className="w-12"
+                                        />
+                                        <Input
+                                            id="innerContainerBackgroundColorHex"
+                                            value={innerContainerBackgroundColor === 'transparent' ? '#ffffff' : innerContainerBackgroundColor}
+                                            onChange={(e) => updateBannerConfig('innerContainerBackgroundColor', e.target.value)}
+                                            placeholder="#ffffff"
+                                            className="flex-1"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="innerContainerBackgroundOpacity">Opacidad (0-1)</Label>
+                                    <Input
+                                        id="innerContainerBackgroundOpacity"
+                                        type="number"
+                                        min="0"
+                                        max="1"
+                                        step="0.1"
+                                        value={editContent.innerContainerBackgroundOpacity || 0.8}
+                                        onChange={(e) => updateBannerConfig('innerContainerBackgroundOpacity', parseFloat(e.target.value))}
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        0 = transparente, 1 = opaco
+                                    </p>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    <div>
+                        <Label htmlFor="innerContainerBorderRadius">Border Radius (px)</Label>
+                        <Input
+                            id="innerContainerBorderRadius"
+                            type="number"
+                            value={parseInt(editContent.innerContainerBorderRadius) || 0}
+                            onChange={(e) => updateBannerConfig('innerContainerBorderRadius', `${e.target.value}px`)}
+                        />
+                    </div>
+
+                    <Label>Padding del Contenedor Interno (px)</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="innerContainerPaddingTop">Superior</Label>
+                            <Input
+                                id="innerContainerPaddingTop"
+                                type="number"
+                                value={parseInt(editContent.innerContainerPaddingTop) || 20}
+                                onChange={(e) => updateBannerConfig('innerContainerPaddingTop', `${e.target.value}px`)}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="innerContainerPaddingRight">Derecha</Label>
+                            <Input
+                                id="innerContainerPaddingRight"
+                                type="number"
+                                value={parseInt(editContent.innerContainerPaddingRight) || 20}
+                                onChange={(e) => updateBannerConfig('innerContainerPaddingRight', `${e.target.value}px`)}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="innerContainerPaddingBottom">Inferior</Label>
+                            <Input
+                                id="innerContainerPaddingBottom"
+                                type="number"
+                                value={parseInt(editContent.innerContainerPaddingBottom) || 20}
+                                onChange={(e) => updateBannerConfig('innerContainerPaddingBottom', `${e.target.value}px`)}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="innerContainerPaddingLeft">Izquierda</Label>
+                            <Input
+                                id="innerContainerPaddingLeft"
+                                type="number"
+                                value={parseInt(editContent.innerContainerPaddingLeft) || 20}
+                                onChange={(e) => updateBannerConfig('innerContainerPaddingLeft', `${e.target.value}px`)}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <Label htmlFor="innerContainerWidth">Ancho del Contenedor</Label>
+                        <Input
+                            id="innerContainerWidth"
+                            value={editContent.innerContainerWidth || 'auto'}
+                            onChange={(e) => updateBannerConfig('innerContainerWidth', e.target.value)}
+                            placeholder="auto, 100%, 500px"
+                        />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="innerContainerMaxWidth">Ancho Máximo</Label>
+                        <Input
+                            id="innerContainerMaxWidth"
+                            value={editContent.innerContainerMaxWidth || '800px'}
+                            onChange={(e) => updateBannerConfig('innerContainerMaxWidth', e.target.value)}
+                            placeholder="800px"
+                        />
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>

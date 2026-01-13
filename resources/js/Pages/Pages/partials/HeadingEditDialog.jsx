@@ -401,7 +401,7 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                 </div>
 
                 {/* Background */}
-                <div>
+                {/* <div>
                     <Label htmlFor="backgroundColor">Color de Fondo</Label>
                     <div className="flex gap-2">
                         <Input
@@ -418,7 +418,7 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                             className="w-12"
                         />
                     </div>
-                </div>
+                </div> */}
 
                 {/* Border-Radius */}
                 <div>

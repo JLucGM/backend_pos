@@ -1,16 +1,22 @@
-// components/Builder/dialogs/ImageEditDialog.jsx - VERSIÓN SOLO PORCENTAJES
-import React from 'react';
+// components/Builder/dialogs/ImageEditDialog.jsx - VERSIÓN CON ASPECT RATIO
+import React, { useState } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import ImageSelector from '@/Components/BuilderPages/ImageSelector';
+import { Button } from '@/Components/ui/button';
+import { ImageIcon } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 const ImageEditDialog = ({ 
   editContent, 
   setEditContent, 
   editStyles, 
-  setEditStyles 
+  setEditStyles,
+  products = []
 }) => {
-  // Normalizar editContent para manejar tanto string como objeto
+  const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
+
   const normalizedContent = typeof editContent === 'string' 
     ? { src: editContent, alt: '' } 
     : editContent || { src: '', alt: '' };
@@ -25,6 +31,16 @@ const ImageEditDialog = ({
     });
   };
 
+  const handleImageSelect = (imageData) => {
+    setEditContent({
+      src: imageData.src,
+      alt: imageData.alt,
+      product_id: imageData.product_id,
+      media_id: imageData.media_id,
+      is_from_product: true
+    });
+  };
+
   const updateStyle = (key, value) => {
     setEditStyles(prev => ({
       ...prev,
@@ -32,57 +48,41 @@ const ImageEditDialog = ({
     }));
   };
 
-  // Función para manejar el cambio de porcentaje
-  const handlePercentChange = (dimension, value) => {
-    // Asegurarse de que el valor termine con % o esté vacío
-    if (value === '') {
-      updateStyle(dimension, '');
-    } else if (value === '%') {
-      updateStyle(dimension, '100%');
-    } else {
-      // Remover cualquier carácter que no sea número o punto decimal
-      const numValue = value.replace(/[^0-9.]/g, '');
-      if (numValue === '') {
-        updateStyle(dimension, '0%');
-      } else {
-        updateStyle(dimension, `${numValue}%`);
-      }
-    }
-  };
-
-  // Obtener el valor numérico sin el símbolo %
-  const getPercentValue = (dimension) => {
-    const value = editStyles[dimension] || '';
-    if (value.endsWith('%')) {
-      return value.replace('%', '');
-    }
-    // Si no tiene %, asumir que es 100% por defecto
-    return dimension === 'width' || dimension === 'height' ? '100' : '';
-  };
-
   return (
     <div className="space-y-4">
       <Tabs defaultValue="contenido" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
+        <TabsList className="grid grid-cols-2 mb-4">
           <TabsTrigger value="contenido">Contenido</TabsTrigger>
-          {/* <TabsTrigger value="tamaño">Tamaño</TabsTrigger> */}
           <TabsTrigger value="bordes">Bordes</TabsTrigger>
         </TabsList>
 
         {/* Pestaña Contenido */}
         <TabsContent value="contenido" className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="imageUrl">URL de la Imagen</Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="imageUrl">URL de la Imagen</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsImageSelectorOpen(true)}
+              >
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Seleccionar de Productos
+              </Button>
+            </div>
             <Input
               id="imageUrl"
               value={normalizedContent.src || ''}
               onChange={(e) => updateContent('src', e.target.value)}
-              placeholder="https://ejemplo.com/imagen.jpg"
+              placeholder="URL de la imagen o selecciona de productos"
               className="w-full"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Ingresa la URL completa de la imagen
-            </p>
+            {normalizedContent.product_id && (
+              <p className="text-xs text-green-600 mt-1">
+                ✓ Imagen seleccionada del producto: {normalizedContent.alt}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -99,48 +99,24 @@ const ImageEditDialog = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="imageWidth">Ancho (%)</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="imageWidth"
-                  type="number"
-                  min="0"
-                  max="1000"
-                  step="1"
-                  value={getPercentValue('width')}
-                  onChange={(e) => handlePercentChange('width', e.target.value)}
-                  placeholder="100"
-                  className="flex-1"
-                />
-                <span className="text-gray-500">%</span>
-              </div>
-              <p className="text-xs text-gray-500">
-                0-1000% del contenedor padre
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="imageHeight">Alto (%)</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="imageHeight"
-                  type="number"
-                  min="0"
-                  max="1000"
-                  step="1"
-                  value={getPercentValue('height')}
-                  onChange={(e) => handlePercentChange('height', e.target.value)}
-                  placeholder="100"
-                  className="flex-1"
-                />
-                <span className="text-gray-500">%</span>
-              </div>
-              <p className="text-xs text-gray-500">
-                0-1000% del contenedor padre
-              </p>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="aspectRatio">Aspect Ratio</Label>
+            <Select
+              value={editStyles.aspectRatio || 'square'}
+              onValueChange={(value) => updateStyle('aspectRatio', value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="landscape">Landscape (16:9)</SelectItem>
+                <SelectItem value="square">Square (1:1)</SelectItem>
+                <SelectItem value="portrait">Portrait (4:5)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">
+              Controla la proporción de la imagen
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -161,55 +137,7 @@ const ImageEditDialog = ({
               Controla cómo se ajusta la imagen al contenedor
             </p>
           </div>
-          
         </TabsContent>
-
-        {/* Pestaña Tamaño */}
-        {/* <TabsContent value="tamaño" className="space-y-4">
-          
-
-          <div className="pt-4 border-t">
-            <Label className="mb-2 block">Márgenes (px)</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="marginTop" className="text-xs">Superior</Label>
-                <Input
-                  id="marginTop"
-                  type="number"
-                  value={parseInt(editStyles.marginTop) || 0}
-                  onChange={(e) => updateStyle('marginTop', `${e.target.value}px`)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="marginRight" className="text-xs">Derecha</Label>
-                <Input
-                  id="marginRight"
-                  type="number"
-                  value={parseInt(editStyles.marginRight) || 0}
-                  onChange={(e) => updateStyle('marginRight', `${e.target.value}px`)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="marginBottom" className="text-xs">Inferior</Label>
-                <Input
-                  id="marginBottom"
-                  type="number"
-                  value={parseInt(editStyles.marginBottom) || 0}
-                  onChange={(e) => updateStyle('marginBottom', `${e.target.value}px`)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="marginLeft" className="text-xs">Izquierda</Label>
-                <Input
-                  id="marginLeft"
-                  type="number"
-                  value={parseInt(editStyles.marginLeft) || 0}
-                  onChange={(e) => updateStyle('marginLeft', `${e.target.value}px`)}
-                />
-              </div>
-            </div>
-          </div>
-        </TabsContent> */}
 
         {/* Pestaña Bordes */}
         <TabsContent value="bordes" className="space-y-4">
@@ -275,6 +203,14 @@ const ImageEditDialog = ({
         </TabsContent>
       </Tabs>
 
+      {/* Selector de imágenes de productos */}
+      <ImageSelector
+        open={isImageSelectorOpen}
+        onOpenChange={setIsImageSelectorOpen}
+        onSelectImage={handleImageSelect}
+        products={products}
+      />
+
       {/* Vista previa rápida */}
       <div className="mt-6 pt-4 border-t">
         <Label className="mb-2 block">Vista Previa</Label>
@@ -283,30 +219,35 @@ const ImageEditDialog = ({
             className="border rounded p-4 bg-gray-50"
             style={{
               width: '200px',
-              height: '150px',
               overflow: 'hidden',
               position: 'relative'
             }}
           >
             {normalizedContent.src ? (
-              <img
-                src={normalizedContent.src}
-                alt="Vista previa"
-                style={{
-                  width: editStyles.width || '100%',
-                  height: editStyles.height || '100%',
-                  borderRadius: editStyles.borderRadius || '0px',
-                  borderWidth: editStyles.borderWidth || '0px',
-                  borderStyle: editStyles.borderStyle || 'solid',
-                  borderColor: editStyles.borderColor || '#000000',
-                  objectFit: editStyles.objectFit || 'cover',
-                  marginTop: editStyles.marginTop || '0px',
-                  marginRight: editStyles.marginRight || '0px',
-                  marginBottom: editStyles.marginBottom || '0px',
-                  marginLeft: editStyles.marginLeft || '0px',
-                }}
-                className="max-w-full max-h-full"
-              />
+              <div style={{
+                width: '100%',
+                height: '0',
+                paddingBottom: editStyles.aspectRatio === 'landscape' ? '56.25%' : 
+                               editStyles.aspectRatio === 'portrait' ? '125%' : '100%',
+                position: 'relative'
+              }}>
+                <img
+                  src={normalizedContent.src}
+                  alt="Vista previa"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: editStyles.borderRadius || '0px',
+                    borderWidth: editStyles.borderWidth || '0px',
+                    borderStyle: editStyles.borderStyle || 'solid',
+                    borderColor: editStyles.borderColor || '#000000',
+                    objectFit: editStyles.objectFit || 'cover',
+                  }}
+                />
+              </div>
             ) : (
               <div className="text-center text-gray-400 py-8">
                 Ingresa una URL para ver la vista previa
@@ -315,7 +256,7 @@ const ImageEditDialog = ({
           </div>
         </div>
         <div className="text-xs text-gray-500 text-center mt-2">
-          Tamaño del contenedor: 200x150px - Imagen: {editStyles.width || '100%'} × {editStyles.height || '100%'}
+          Aspect ratio: {editStyles.aspectRatio || 'square'}
         </div>
       </div>
     </div>

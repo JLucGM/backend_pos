@@ -48,6 +48,18 @@ const BannerComponent = ({
     const containerHorizontalPosition = bannerConfig.containerHorizontalPosition || 'center';
     const contentDirection = bannerConfig.contentDirection || 'vertical';
 
+    // NUEVO: Configuración del contenedor interno
+    const innerContainerBackgroundColor = bannerConfig.innerContainerBackgroundColor || 'transparent';
+    const innerContainerBackgroundOpacity = bannerConfig.innerContainerBackgroundOpacity || 1;
+    const innerContainerPaddingTop = bannerConfig.innerContainerPaddingTop || '20px';
+    const innerContainerPaddingRight = bannerConfig.innerContainerPaddingRight || '20px';
+    const innerContainerPaddingBottom = bannerConfig.innerContainerPaddingBottom || '20px';
+    const innerContainerPaddingLeft = bannerConfig.innerContainerPaddingLeft || '20px';
+    const innerContainerBorderRadius = bannerConfig.innerContainerBorderRadius || '0px';
+    const innerContainerWidth = bannerConfig.innerContainerWidth || 'auto';
+    const innerContainerMaxWidth = bannerConfig.innerContainerMaxWidth || '800px';
+    const innerContainerShow = bannerConfig.innerContainerShow !== false; // Por defecto true
+
     // Funciones de alineación
     const getVerticalAlignment = () => {
         switch (containerVerticalPosition) {
@@ -102,6 +114,56 @@ const BannerComponent = ({
         position: 'relative',
         width: '100%',
     };
+
+    // NUEVO: Estilos del contenedor interno que envuelve los hijos
+    const innerContainerStyles = {
+        paddingTop: innerContainerPaddingTop,
+        paddingRight: innerContainerPaddingRight,
+        paddingBottom: innerContainerPaddingBottom,
+        paddingLeft: innerContainerPaddingLeft,
+        borderRadius: innerContainerBorderRadius,
+        width: innerContainerWidth,
+        maxWidth: innerContainerMaxWidth,
+        // Mantener las propiedades flex para los hijos
+        display: 'flex',
+        flexDirection: contentDirection === 'horizontal' ? 'row' : 'column',
+        gap: contentDirection === 'horizontal' ? '20px' : '10px',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxSizing: 'border-box',
+    };
+
+    if (bannerConfig.innerContainerHasBackground !== false &&
+        innerContainerBackgroundColor !== 'transparent') {
+        innerContainerStyles.backgroundColor = hexToRgba(
+            innerContainerBackgroundColor,
+            innerContainerBackgroundOpacity
+        );
+    } else {
+        innerContainerStyles.backgroundColor = 'transparent';
+    }
+
+    // Función para convertir HEX a RGBA
+    function hexToRgba(hex, opacity) {
+        // Remove the hash if it exists
+        hex = hex.replace('#', '');
+
+        // Parse the hex values
+        let r, g, b;
+        if (hex.length === 3) {
+            r = parseInt(hex[0] + hex[0], 16);
+            g = parseInt(hex[1] + hex[1], 16);
+            b = parseInt(hex[2] + hex[2], 16);
+        } else if (hex.length === 6) {
+            r = parseInt(hex[0] + hex[1], 16);
+            g = parseInt(hex[2] + hex[3], 16);
+            b = parseInt(hex[4] + hex[5], 16);
+        } else {
+            return hex; // Return as-is if invalid
+        }
+
+        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
 
     // Manejo de eventos de mouse
     const handleMouseEnter = () => {
@@ -164,12 +226,12 @@ const BannerComponent = ({
                 return <HeadingComponent {...commonProps} />;
             case 'image':
                 return <ImageComponent {...commonProps} />;
-                case 'marquee': // ¡AGREGA ESTE CASO!
-                return <MarqueeTextComponent {...commonProps} />
-                case 'link': // ¡AGREGA ESTE CASO!
-                return <LinkComponent {...commonProps} />
-                case 'divider': // ¡AGREGA ESTE CASO!
-                return <DividerComponent {...commonProps} />
+            case 'marquee':
+                return <MarqueeTextComponent {...commonProps} />;
+            case 'link':
+                return <LinkComponent {...commonProps} />;
+            case 'divider':
+                return <DividerComponent {...commonProps} />;
             case 'container':
                 return (
                     <ContainerComponent
@@ -224,11 +286,25 @@ const BannerComponent = ({
             {/* Capa de contenido interno con subcomponentes */}
             <div style={contentStyles}>
                 {children.length > 0 ? (
-                    children.map((child) => (
-                        <div key={child.id} style={{ width: '100%' }}>
-                            {renderChildComponent(child)}
+                    innerContainerShow ? (
+                        // Con contenedor interno
+                        <div style={innerContainerStyles}>
+                            {children.map((child) => (
+                                <div key={child.id} style={{ width: '100%' }}>
+                                    {renderChildComponent(child)}
+                                </div>
+                            ))}
                         </div>
-                    ))
+                    ) : (
+                        // Sin contenedor interno
+                        <>
+                            {children.map((child) => (
+                                <div key={child.id} style={{ width: '100%' }}>
+                                    {renderChildComponent(child)}
+                                </div>
+                            ))}
+                        </>
+                    )
                 ) : (
                     !isPreview && (
                         <div className="text-center text-gray-400 py-8 border border-dashed border-gray-300 rounded cursor-pointer w-full">

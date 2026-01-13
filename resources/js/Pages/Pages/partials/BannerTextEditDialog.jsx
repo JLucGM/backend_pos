@@ -298,7 +298,7 @@ const BannerTextEditDialog = ({
                     </div>
                 </div>
 
-                <div>
+                {/* <div>
                     <Label htmlFor="background">Color de Fondo</Label>
                     <div className="flex gap-2">
                         <Input
@@ -328,7 +328,7 @@ const BannerTextEditDialog = ({
                         value={editStyles.backgroundOpacity || 1}
                         onChange={(e) => updateStyle('backgroundOpacity', e.target.value)}
                     />
-                </div>
+                </div> */}
 
                 <div>
                     <Label htmlFor="borderRadius">Radio de Borde (px)</Label>

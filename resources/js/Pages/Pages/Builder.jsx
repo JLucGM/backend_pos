@@ -137,7 +137,8 @@ const EditDialogRenderer = ({
     editStyles,
     setEditStyles,
     themeSettings,
-    availableMenus
+    availableMenus,
+    products,
 }) => {
     if (!editingComponent?.type) return null;
 
@@ -163,6 +164,10 @@ const EditDialogRenderer = ({
     if (editingComponent.type === 'headerMenu' ||
         editingComponent.type === 'footerMenu') {
         additionalProps.availableMenus = availableMenus;
+    }
+
+    if (editingComponent.type === 'image') {
+        additionalProps.products = products;
     }
 
     return <DialogComponent {...baseProps} {...additionalProps} />;
@@ -474,48 +479,47 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             let content = 'Nuevo ' + selectedType;
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
             if (selectedType === 'link') content = 'https://example.com';
-if (selectedType === 'image') {
-  content = {
-    src: 'https://picsum.photos/400/300',
-    alt: 'Imagen de ejemplo'
-  };
-  
-  const initialStyles = {
-    layout: 'fit',
-    width: '100%',  // Solo porcentaje
-    height: '100%', // Solo porcentaje
-    borderRadius: '0px',
-    borderWidth: '0px',
-    borderStyle: 'solid',
-    borderColor: '#e5e7eb',
-    marginTop: '0px',
-    marginRight: '0px',
-    marginBottom: '0px',
-    marginLeft: '0px',
-    paddingTop: '0px',
-    paddingRight: '0px',
-    paddingBottom: '0px',
-    paddingLeft: '0px',
-    objectFit: 'cover'
-  };
+            if (selectedType === 'image') {
+                content = {
+                    src: 'https://picsum.photos/400/300',
+                    alt: 'Imagen de ejemplo'
+                };
 
-  const newItem = {
-    id: Date.now(),
-    type: 'image',
-    content: content,
-    styles: initialStyles
-  };
+                const initialStyles = {
+                    aspectRatio: 'square', // Agregar esta línea
+                    layout: 'fit',
+                    borderRadius: '0px',
+                    borderWidth: '0px',
+                    borderStyle: 'solid',
+                    borderColor: '#e5e7eb',
+                    marginTop: '0px',
+                    marginRight: '0px',
+                    marginBottom: '0px',
+                    marginLeft: '0px',
+                    paddingTop: '0px',
+                    paddingRight: '0px',
+                    paddingBottom: '0px',
+                    paddingLeft: '0px',
+                    objectFit: 'cover'
+                };
 
-  setComponents((prev) => {
-    const newComponents = [...prev, newItem];
-    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-    setHasUnsavedChanges(true);
-    return newComponents;
-  });
-  setIsAddDialogOpen(false);
-  setSelectedType('');
-  return;
-}
+                const newItem = {
+                    id: Date.now(),
+                    type: 'image',
+                    content: content,
+                    styles: initialStyles
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
             if (selectedType === 'header') {
                 const headerId = Date.now();
                 const logoId = headerId + 1;
@@ -1004,69 +1008,98 @@ if (selectedType === 'image') {
                 };
             }
 
-            if (selectedType === 'banner') {
-                const bannerId = Date.now();
-                const titleId = bannerId + 1;
-                const textId = bannerId + 2;
+if (selectedType === 'banner') {
+    const bannerId = Date.now();
+    const titleId = bannerId + 1;
+    const textId = bannerId + 2;
 
-                content = {
-                    containerHeight: '400px',
-                    containerWidth: '100%',
-                    marginTop: '0px',
-                    marginRight: '0px',
-                    marginBottom: '0px',
-                    marginLeft: '0px',
-                    paddingTop: '20px',
-                    paddingRight: '20px',
-                    paddingBottom: '20px',
-                    paddingLeft: '20px',
-                    backgroundColor: '#ffffff',
-                    backgroundImage: null,
-                    backgroundVideo: null,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center center',
-                    containerVerticalPosition: 'center',
-                    containerHorizontalPosition: 'center',
-                    contentDirection: 'vertical',
-                    children: [
-                        {
-                            id: titleId,
-                            type: 'heading',
-                            content: 'Título del Banner',
-                            styles: {
-                                textStyle: 'heading2',
-                                layout: 'fit',
-                                paddingTop: '10px',
-                                paddingRight: '10px',
-                                paddingBottom: '10px',
-                                paddingLeft: '10px',
-                                backgroundColor: 'transparent',
-                                borderRadius: '0px',
-                                color: '#000000'
-                            }
-                        },
-                        {
-                            id: textId,
-                            type: 'bannerText',
-                            content: 'Texto descriptivo del banner',
-                            styles: {
-                                layout: 'fit',
-                                alignment: 'center',
-                                background: 'transparent',
-                                backgroundOpacity: '1',
-                                borderRadius: '0px',
-                                paddingTop: '10px',
-                                paddingRight: '10px',
-                                paddingBottom: '10px',
-                                paddingLeft: '10px',
-                                color: '#000000',
-                                fontSize: '16px',
-                                fontWeight: 'normal'
-                            }
-                        }
-                    ]
-                };
+    content = {
+        containerHeight: '400px',
+        containerWidth: '100%',
+        marginTop: '0px',
+        marginRight: '0px',
+        marginBottom: '0px',
+        marginLeft: '0px',
+        paddingTop: '20px',
+        paddingRight: '20px',
+        paddingBottom: '20px',
+        paddingLeft: '20px',
+        backgroundColor: '#ffffff',
+        backgroundImage: null,
+        backgroundVideo: null,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center center',
+        containerVerticalPosition: 'center',
+        containerHorizontalPosition: 'center',
+        contentDirection: 'vertical',
+        // NUEVAS PROPIEDADES: Contenedor interno
+        innerContainerShow: true,
+        innerContainerHasBackground: true, // NUEVO: Switch activado por defecto
+        innerContainerBackgroundColor: '#ffffff',
+        innerContainerBackgroundOpacity: 0.8,
+        innerContainerPaddingTop: '30px',
+        innerContainerPaddingRight: '30px',
+        innerContainerPaddingBottom: '30px',
+        innerContainerPaddingLeft: '30px',
+        innerContainerBorderRadius: '10px',
+        innerContainerWidth: 'auto',
+        innerContainerMaxWidth: '800px',
+        children: [
+            {
+                id: titleId,
+                type: 'heading',
+                content: 'Título del Banner',
+                styles: {
+                    textStyle: 'heading2',
+                    layout: 'fit',
+                    paddingTop: '10px',
+                    paddingRight: '10px',
+                    paddingBottom: '10px',
+                    paddingLeft: '10px',
+                    backgroundColor: 'transparent',
+                    borderRadius: '0px',
+                    color: '#000000'
+                }
+            },
+            {
+                id: textId,
+                type: 'bannerText',
+                content: 'Texto descriptivo del banner',
+                styles: {
+                    layout: 'fit',
+                    alignment: 'center',
+                    background: 'transparent',
+                    backgroundOpacity: '1',
+                    borderRadius: '0px',
+                    paddingTop: '10px',
+                    paddingRight: '10px',
+                    paddingBottom: '10px',
+                    paddingLeft: '10px',
+                    color: '#000000',
+                    fontSize: '16px',
+                    fontWeight: 'normal'
+                }
             }
+        ]
+    };
+    
+    const newItem = {
+        id: bannerId,
+        type: selectedType,
+        content,
+        styles: {}
+    };
+
+    setComponents((prev) => {
+        const newComponents = [...prev, newItem];
+        addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+        setHasUnsavedChanges(true);
+        return newComponents;
+    });
+    setIsAddDialogOpen(false);
+    setSelectedType('');
+    return;
+}
 
             if (selectedType === 'bento') {
                 const bentoId = Date.now();
@@ -2332,6 +2365,7 @@ if (selectedType === 'image') {
                                             setEditStyles={setEditStyles}
                                             themeSettings={themeSettings}
                                             availableMenus={availableMenus}
+                                            products={products}
                                         />
                                     </ScrollArea>
 

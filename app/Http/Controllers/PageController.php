@@ -154,7 +154,7 @@ class PageController extends RoutingController
         $themes = Theme::all();
 
         $page->load('template.theme', 'theme', 'company.setting.media');
-// dd($page);
+        // dd($page);
         // Obtener configuración del tema (personalizada o del tema original)
         $pageThemeSettings = $this->getPageThemeSettings($page);
 
@@ -369,4 +369,30 @@ class PageController extends RoutingController
             'message' => 'Configuraciones del tema restablecidas al tema original'
         ]);
     }
+
+    // En PageController.php
+public function copyImage(Request $request, Page $page)
+{
+    $request->validate([
+        'product_id' => 'required|exists:products,id',
+        'media_id' => 'nullable|exists:media,id'
+    ]);
+
+    $product = Product::find($request->product_id);
+    
+    try {
+        $media = $page->copyImageFromProduct($product, $request->media_id);
+        
+        return response()->json([
+            'success' => true,
+            'image_url' => $media->getUrl(),
+            'media_id' => $media->id
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al copiar la imagen: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }
