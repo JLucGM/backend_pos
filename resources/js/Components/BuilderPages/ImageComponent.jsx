@@ -1,12 +1,13 @@
-// components/Builder/components/ImageComponent.jsx - VERSIÓN CON ASPECT RATIO
 import React from 'react';
+import { Link } from '@inertiajs/react';
 
 const ImageComponent = ({
   comp,
   getStyles,
   onEdit,
   isPreview,
-  themeSettings
+  themeSettings,
+  mode = 'builder' // 'builder' o 'frontend'
 }) => {
   // Obtener la URL de la imagen
   const getImageUrl = () => {
@@ -34,8 +35,17 @@ const ImageComponent = ({
     return '';
   };
 
+  // Obtener la URL del enlace (si existe)
+  const getLinkUrl = () => {
+    return comp.styles?.imageUrl || '';
+  };
+
   const imageUrl = getImageUrl();
   const altText = getAltText();
+  const linkUrl = getLinkUrl();
+
+  // Determinar si tiene enlace
+  const hasLink = Boolean(linkUrl && linkUrl.trim() !== '');
 
   // Obtener estilos base
   const baseStyles = getStyles(comp);
@@ -94,17 +104,32 @@ const ImageComponent = ({
     marginLeft: comp.styles?.marginLeft || baseStyles.marginLeft || '0px',
   };
 
-  // Manejar clic para editar (solo en modo edición)
+  // Manejar clic
   const handleClick = (e) => {
-    if (!isPreview && onEdit) {
+    // MODO BUILDER (no preview): editar componente
+    if (mode === 'builder' && !isPreview) {
+      e.preventDefault();
       e.stopPropagation();
-      onEdit(comp);
+      if (onEdit) {
+        onEdit(comp);
+      }
+      return;
     }
+
+    // MODO FRONTEND o PREVIEW con enlace: dejar navegar
+    if ((mode === 'frontend' || isPreview) && hasLink) {
+      // NO hacer preventDefault() - dejar que Link o <a> navegue
+      return;
+    }
+
+    // MODO FRONTEND sin enlace: no hacer nada (solo imagen)
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   // Si no hay URL, mostrar placeholder
   if (!imageUrl) {
-    return (
+    const placeholder = (
       <div
         onClick={handleClick}
         style={{
@@ -114,7 +139,7 @@ const ImageComponent = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: isPreview ? 'default' : 'pointer',
+          cursor: (mode === 'builder' && !isPreview) ? 'pointer' : 'default',
         }}
         className="image-placeholder"
       >
@@ -127,13 +152,38 @@ const ImageComponent = ({
             <div className="text-xs text-gray-400 mt-2">
               Aspect ratio: {aspectRatio}
             </div>
+            {hasLink && (
+              <div className="text-xs text-blue-500 mt-1">
+                ✓ Tiene enlace configurado
+              </div>
+            )}
           </div>
         )}
       </div>
     );
+
+    // Envolver en enlace si tiene enlace y no está en modo builder
+    if (hasLink && (mode === 'frontend' || isPreview)) {
+      if (linkUrl.startsWith('/')) {
+        return (
+          <Link href={linkUrl} style={{ display: 'block' }}>
+            {placeholder}
+          </Link>
+        );
+      } else {
+        return (
+          <a href={linkUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
+            {placeholder}
+          </a>
+        );
+      }
+    }
+
+    return placeholder;
   }
 
-  return (
+  // Crear el elemento de imagen
+  const imageElement = (
     <div
       onClick={handleClick}
       style={{
@@ -142,8 +192,10 @@ const ImageComponent = ({
         marginRight: imageStyles.marginRight,
         marginBottom: imageStyles.marginBottom,
         marginLeft: imageStyles.marginLeft,
+        cursor: (mode === 'builder' && !isPreview) ? 'pointer' : 
+                (hasLink ? 'pointer' : 'default'),
       }}
-      className={isPreview ? '' : 'cursor-pointer hover:opacity-95 transition-opacity'}
+      className={isPreview ? '' : 'hover:opacity-95 transition-opacity'}
     >
       <img
         src={imageUrl}
@@ -164,6 +216,30 @@ const ImageComponent = ({
       />
     </div>
   );
+
+  // Envolver en enlace si tiene enlace y no está en modo builder
+  if (hasLink && (mode === 'frontend' || isPreview)) {
+    if (linkUrl.startsWith('/')) {
+      return (
+        <Link href={linkUrl} style={{ display: 'block' }}>
+          {imageElement}
+        </Link>
+      );
+    } else {
+      return (
+        <a 
+          href={linkUrl} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          style={{ display: 'block' }}
+        >
+          {imageElement}
+        </a>
+      );
+    }
+  }
+
+  return imageElement;
 };
 
 export default ImageComponent;

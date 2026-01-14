@@ -1,6 +1,7 @@
 // components/BuilderPages/FooterComponent.jsx
 import React from 'react';
-import FooterMenuComponent from './FooterMenuComponent'; // Importar directamente
+import FooterMenuComponent from './FooterMenuComponent';
+import TextComponent from './TextComponent'; 
 
 const FooterComponent = ({
     comp,
@@ -30,30 +31,8 @@ const FooterComponent = ({
         padding: '40px 20px',
     };
 
-    // Clasificar los componentes hijos por tipo
-    const classifyChildren = () => {
-        if (!content?.children || !Array.isArray(content.children)) {
-            return { text1: null, menu: null, text2: null };
-        }
-
-        let text1 = null;
-        let menu = null;
-        let text2 = null;
-
-        content.children.forEach(child => {
-            if (child.type === 'footerText' && !text1) {
-                text1 = child;
-            } else if (child.type === 'footerMenu') {
-                menu = child;
-            } else if (child.type === 'footerText' && text1) {
-                text2 = child;
-            }
-        });
-
-        return { text1, menu, text2 };
-    };
-
-    const { text1, menu, text2 } = classifyChildren();
+    // Obtener los hijos del footer
+    const children = content.children || [];
 
     return (
         <footer
@@ -61,7 +40,7 @@ const FooterComponent = ({
             onDoubleClick={isEditable ? () => onEdit(comp) : undefined}
             className={isEditable ? 'hover:opacity-80 cursor-pointer' : ''}
         >
-            {/* Mostrar columnas */}
+            {/* Grid de columnas */}
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: `repeat(${content.columns || 3}, 1fr)`,
@@ -69,56 +48,36 @@ const FooterComponent = ({
                 maxWidth: '1200px',
                 margin: '0 auto'
             }}>
-                {/* Columna 1: Texto */}
-                <div>
-                    {text1 && (
-                        <div
-                            style={{
-                                color: text1.styles?.color || '#666666',
-                                fontSize: text1.styles?.fontSize || '14px',
-                                lineHeight: text1.styles?.lineHeight || '1.6',
-                                cursor: isEditable ? 'pointer' : 'default'
-                            }}
-                            onDoubleClick={isEditable ? () => onEdit(text1) : undefined}
-                            className={isEditable ? 'hover:opacity-80' : ''}
-                        >
-                            {text1.content || 'Texto del footer'}
-                        </div>
-                    )}
-                </div>
-
-                {/* Columna 2: Menú - USANDO FooterMenuComponent DIRECTAMENTE */}
-                <div>
-                    {menu && (
-                        <FooterMenuComponent
-                            comp={menu} // <-- Pasar el objeto footerMenu
-                            getStyles={getStyles}
-                            onEdit={onEdit}
-                            isPreview={isPreview}
-                            themeSettings={themeSettings}
-                            availableMenus={availableMenus} // <-- Pasar availableMenus
-                            mode={mode} // <-- Pasar el modo
-                        />
-                    )}
-                </div>
-
-                {/* Columna 3: Texto */}
-                <div>
-                    {text2 && (
-                        <div
-                            style={{
-                                color: text2.styles?.color || '#666666',
-                                fontSize: text2.styles?.fontSize || '14px',
-                                lineHeight: text2.styles?.lineHeight || '1.6',
-                                cursor: isEditable ? 'pointer' : 'default'
-                            }}
-                            onDoubleClick={isEditable ? () => onEdit(text2) : undefined}
-                            className={isEditable ? 'hover:opacity-80' : ''}
-                        >
-                            {text2.content || 'Texto del footer'}
-                        </div>
-                    )}
-                </div>
+                {children.map(child => {
+                    // Renderizar según el tipo de componente hijo
+                    if (child.type === 'footerMenu') {
+                        return (
+                            <div key={child.id}>
+                                <FooterMenuComponent
+                                    comp={child}
+                                    getStyles={getStyles}
+                                    onEdit={onEdit}
+                                    isPreview={isPreview}
+                                    themeSettings={themeSettings}
+                                    availableMenus={availableMenus}
+                                    mode={mode}
+                                />
+                            </div>
+                        );
+                    } else if (child.type === 'text') {
+                        return (
+                            <div key={child.id}>
+                                <TextComponent
+                                    comp={child}
+                                    getStyles={getStyles}
+                                    themeSettings={themeSettings}
+                                    isPreview={isPreview}
+                                />
+                            </div>
+                        );
+                    }
+                    return null;
+                })}
             </div>
 
             {/* Copyright */}

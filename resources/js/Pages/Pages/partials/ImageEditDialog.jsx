@@ -1,12 +1,12 @@
-// components/Builder/dialogs/ImageEditDialog.jsx - VERSIÓN CON ASPECT RATIO
 import React, { useEffect, useState } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Separator } from '@/Components/ui/separator';
 import ImageSelector from '@/Components/BuilderPages/ImageSelector';
 import { Button } from '@/Components/ui/button';
 import { ImageIcon } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const ImageEditDialog = ({
@@ -15,17 +15,94 @@ const ImageEditDialog = ({
   editStyles,
   setEditStyles,
   products = [],
-  isLiveEdit = true
+  isLiveEdit = true,
+  dynamicPages = [],
 }) => {
   const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
+  const [linkType, setLinkType] = useState('none');
+  const [selectedPage, setSelectedPage] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [customUrl, setCustomUrl] = useState('');
+  const [isInitialized, setIsInitialized] = useState(false);
+  
   const debouncedContent = useDebounce(editContent, 300);
   const debouncedStyles = useDebounce(editStyles, 300);
 
+  // 1. INICIALIZACIÓN
   useEffect(() => {
-    if (isLiveEdit) {
-      // Las actualizaciones se manejan automáticamente
+    if (isInitialized) return;
+    
+    const currentUrl = editStyles?.imageUrl || '';
+    
+    // Inicializar el tipo de enlace
+    if (currentUrl) {
+      if (currentUrl.startsWith('/')) {
+        // Verificar si es una página dinámica
+        const pageSlug = currentUrl.replace('/', '');
+        const page = dynamicPages.find(p => p.slug === pageSlug);
+        if (page) {
+          setLinkType('page');
+          setSelectedPage(page.slug);
+        } else {
+          // Verificar si es un producto
+          const productMatch = currentUrl.match(/\/detalles-del-producto\?product=(.+)/);
+          if (productMatch) {
+            const productSlug = productMatch[1];
+            const product = products.find(p => p.slug === productSlug);
+            if (product) {
+              setLinkType('product');
+              setSelectedProduct(product.slug);
+            } else {
+              setLinkType('custom');
+              setCustomUrl(currentUrl);
+            }
+          } else {
+            setLinkType('custom');
+            setCustomUrl(currentUrl);
+          }
+        }
+      } else if (currentUrl.startsWith('http')) {
+        setLinkType('custom');
+        setCustomUrl(currentUrl);
+      }
+    } else {
+      setLinkType('none');
     }
-  }, [debouncedContent, debouncedStyles, isLiveEdit]);
+    
+    setIsInitialized(true);
+  }, [editStyles, dynamicPages, products, isInitialized]);
+
+  // 2. ACTUALIZAR LA URL cuando cambian los controles
+  useEffect(() => {
+    if (!isInitialized) return;
+    
+    let newUrl = '';
+    
+    switch (linkType) {
+      case 'page':
+        if (selectedPage) {
+          newUrl = `/${selectedPage}`;
+        }
+        break;
+      case 'product':
+        if (selectedProduct) {
+          newUrl = `/detalles-del-producto?product=${selectedProduct}`;
+        }
+        break;
+      case 'custom':
+        newUrl = customUrl;
+        break;
+      case 'none':
+        newUrl = '';
+        break;
+    }
+    
+    // Actualizar la URL en los estilos
+    const currentUrl = editStyles?.imageUrl || '';
+    if (newUrl !== currentUrl) {
+      setEditStyles(prev => ({ ...prev, imageUrl: newUrl }));
+    }
+  }, [linkType, selectedPage, selectedProduct, customUrl, isInitialized]);
 
   const normalizedContent = typeof editContent === 'string'
     ? { src: editContent, alt: '' }
@@ -58,11 +135,20 @@ const ImageEditDialog = ({
     }));
   };
 
+  // Manejar cambio de URL personalizada
+  const handleCustomUrlChange = (value) => {
+    setCustomUrl(value);
+    if (linkType === 'custom') {
+      setEditStyles(prev => ({ ...prev, imageUrl: value }));
+    }
+  };
+
   return (
     <div className="space-y-4">
       <Tabs defaultValue="contenido" className="w-full">
-        <TabsList className="grid grid-cols-2 mb-4">
+        <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="contenido">Contenido</TabsTrigger>
+          <TabsTrigger value="enlace">Enlace</TabsTrigger>
           <TabsTrigger value="bordes">Bordes</TabsTrigger>
         </TabsList>
 
@@ -147,6 +233,130 @@ const ImageEditDialog = ({
               Controla cómo se ajusta la imagen al contenedor
             </p>
           </div>
+        </TabsContent>
+
+        {/* Pestaña Enlace */}
+        <TabsContent value="enlace" className="space-y-4">
+          <h3 className="font-medium">Enlace de la Imagen</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Configura dónde navegará el usuario al hacer clic en la imagen
+          </p>
+          
+          <div>
+            <Label htmlFor="linkType">Tipo de Enlace</Label>
+            <Select
+              value={linkType}
+              onValueChange={(value) => {
+                setLinkType(value);
+                if (value === 'custom') {
+                  const currentUrl = editStyles?.imageUrl || '';
+                  if (currentUrl && !customUrl) {
+                    setCustomUrl(currentUrl);
+                  }
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona el tipo de enlace" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sin enlace (solo imagen)</SelectItem>
+                <SelectItem value="page">Página Dinámica</SelectItem>
+                <SelectItem value="product">Página de Producto</SelectItem>
+                <SelectItem value="custom">URL Personalizada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Selector de Página Dinámica */}
+          {linkType === 'page' && (
+            <div>
+              <Label htmlFor="dynamicPage">Seleccionar Página</Label>
+              <Select
+                value={selectedPage}
+                onValueChange={setSelectedPage}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una página" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dynamicPages.length > 0 ? (
+                    dynamicPages.map((page) => (
+                      <SelectItem key={page.slug} value={page.slug}>
+                        {page.title} (/{page.slug})
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-sm text-gray-500">
+                      No hay páginas dinámicas disponibles
+                    </div>
+                  )}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                URL: /{selectedPage || '[selecciona una página]'}
+              </p>
+            </div>
+          )}
+
+          {/* Selector de Producto */}
+          {linkType === 'product' && (
+            <div>
+              <Label htmlFor="product">Seleccionar Producto</Label>
+              <Select
+                value={selectedProduct}
+                onValueChange={setSelectedProduct}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un producto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.length > 0 ? (
+                    products.map((product) => (
+                      <SelectItem key={product.slug} value={product.slug}>
+                        {product.product_name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-sm text-gray-500">
+                      No hay productos disponibles
+                    </div>
+                  )}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                URL: /detalles-del-producto?product={selectedProduct || '[selecciona un producto]'}
+              </p>
+            </div>
+          )}
+
+          {/* URL Personalizada */}
+          {linkType === 'custom' && (
+            <div>
+              <Label htmlFor="customUrl">URL Personalizada</Label>
+              <Input
+                id="customUrl"
+                value={customUrl}
+                onChange={(e) => handleCustomUrlChange(e.target.value)}
+                placeholder="https://ejemplo.com o /ruta-interna"
+                className="mt-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Ejemplos:<br/>
+                • Enlace interno: /contacto<br/>
+                • Enlace externo: https://google.com<br/>
+                • Página estática: /inicio
+              </p>
+            </div>
+          )}
+
+          {linkType === 'none' && (
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+              <p className="text-sm text-gray-700">
+                La imagen no tendrá enlace. Los usuarios verán la imagen sin poder hacer clic.
+              </p>
+            </div>
+          )}
         </TabsContent>
 
         {/* Pestaña Bordes */}
@@ -267,6 +477,11 @@ const ImageEditDialog = ({
         </div>
         <div className="text-xs text-gray-500 text-center mt-2">
           Aspect ratio: {editStyles.aspectRatio || 'square'}
+          {editStyles.imageUrl && (
+            <div className="mt-1 text-blue-600">
+              ✓ Enlace configurado
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -170,6 +170,7 @@ const EditDialogRenderer = ({
 
     if (editingComponent.type === 'image') {
         additionalProps.products = products;
+        additionalProps.dynamicPages = dynamicPages; // ¡Agregar esta línea!
     }
 
     if (editingComponent.type === 'button') {
@@ -666,9 +667,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const footerId = Date.now();
                 const column1Id = footerId + 1;
                 const column2Id = footerId + 2;
-                const column3Id = footerId + 3;
-                const footerMenuId = footerId + 4;
-
+              
                 content = {
                     showCopyright: true,
                     copyrightText: '© 2023 Mi Empresa. Todos los derechos reservados.',
@@ -684,10 +683,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         linkedin: ''
                     },
                     children: [
-                        {
+                                                {
                             id: column1Id,
-                            type: 'footerText',
-                            content: 'Información de la empresa o texto descriptivo.',
+                            type: 'text',
+                            content: 'Dirección: Calle Principal 123\nTeléfono: (123) 456-7890\nEmail: info@empresa.com',
                             styles: {
                                 layout: 'fit',
                                 color: '#666666',
@@ -710,17 +709,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 textTransform: 'none'
                             }
                         },
-                        {
-                            id: column3Id,
-                            type: 'footerText',
-                            content: 'Dirección: Calle Principal 123\nTeléfono: (123) 456-7890\nEmail: info@empresa.com',
-                            styles: {
-                                layout: 'fit',
-                                color: '#666666',
-                                fontSize: '14px',
-                                lineHeight: '1.6'
-                            }
-                        }
                     ]
                 };
 

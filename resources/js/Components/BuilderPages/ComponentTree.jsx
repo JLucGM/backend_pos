@@ -25,7 +25,7 @@ const COLLAPSIBLE_TYPES = [
     'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail','cart', 'checkout','checkoutDiscountGiftCard'
 ];
 
-const NO_ADD_BUTTON_TYPES = ['header', 'footer', 'bentoFeature', 'productCard', 'carouselCard','productDetail'];
+const NO_ADD_BUTTON_TYPES = ['header',  'bentoFeature', 'productCard', 'carouselCard','productDetail'];
 
 // Función para determinar si un componente puede tener hijos
 const canHaveChildren = (type) => {

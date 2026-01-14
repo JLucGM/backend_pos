@@ -33,7 +33,6 @@ import HeaderMenuComponent from './HeaderMenuComponent';
 import HeaderComponent from './HeaderComponent';
 import FooterComponent from './FooterComponent';
 import HeaderLogoComponent from './HeaderLogoComponent';
-import FooterTextComponent from './FooterTextComponent';
 import FooterMenuComponent from './FooterMenuComponent';
 import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
 import ProductDetailComponent from './ProductDetailComponent';
@@ -178,13 +177,6 @@ const CanvasItem = ({
                         onEdit={onEditComponent}
                         availableMenus={availableMenus || []}
                         mode={isPreview ? 'frontend' : 'builder'}
-                    />
-                );
-            case 'footerText':
-                return (
-                    <FooterTextComponent
-                        {...commonProps}
-                        onEdit={onEditComponent}
                     />
                 );
             case 'footerMenu':

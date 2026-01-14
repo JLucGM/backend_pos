@@ -35,12 +35,12 @@ const ALL_COMPONENT_OPTIONS = [
         icon: <ChatBubbleBottomCenterIcon className="size-4" />,
         description: 'Agregar un botón'
     },
-    {
-        type: 'video',
-        label: 'Video',
-        icon: <VideoIcon className="size-4" />,
-        description: 'Agregar un video'
-    },
+    // {
+    //     type: 'video',
+    //     label: 'Video',
+    //     icon: <VideoIcon className="size-4" />,
+    //     description: 'Agregar un video'
+    // },
     {
         type: 'link',
         label: 'Enlace',
@@ -64,6 +64,12 @@ const ALL_COMPONENT_OPTIONS = [
         label: 'Característica Bento',
         icon: <CubeIcon className="size-4" />,
         description: 'Agregar una nueva característica al bento'
+    },
+    {
+        type: 'footerMenu',
+        label: 'Menú Footer',
+        icon: <CubeIcon className="size-4" />,
+        description: 'Agregar un menú al footer'
     }
 ];
 
@@ -88,7 +94,9 @@ const ALLOWED_CHILD_TYPES = {
     
     // Header y Footer: no permiten agregar hijos desde este menú
     header: [],
-    footer: [],
+    footer: ['text', 'footerMenu'],
+
+    image: ['link', 'button', 'text'],
     
     // ProductCard, CarouselCard, BentoFeature: no permiten agregar hijos
     productCard: [],
