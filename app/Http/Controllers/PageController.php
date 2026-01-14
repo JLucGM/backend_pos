@@ -154,7 +154,19 @@ class PageController extends RoutingController
         $themes = Theme::all();
 
         $page->load('template.theme', 'theme', 'company.setting.media');
-        
+      
+        $dynamicPages = $page->company->pages()
+        ->select('title', 'slug')
+        ->where('is_published', true)
+        ->where('id', '!=', $page->id) // Excluir la página actual
+        ->get()
+        ->map(function ($page) {
+            return [
+                'title' => $page->title,
+                'slug' => $page->slug,
+            ];
+        });
+
         $logoUrl = null;
     if ($page->company->setting && $page->company->setting->getFirstMedia('logo')) {
         $logoUrl = $page->company->setting->getFirstMedia('logo')->getUrl();
@@ -177,6 +189,7 @@ class PageController extends RoutingController
             'pageThemeSettings' => $pageThemeSettings,
             'availableMenus' => $availableMenus,
             'companyLogo' => $logoUrl,
+            'dynamicPages' => $dynamicPages,
         ]);
     }
 

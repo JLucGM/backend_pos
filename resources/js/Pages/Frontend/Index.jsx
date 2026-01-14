@@ -168,7 +168,8 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
                     userGiftCards={userGiftCards}
                 />
             );
-
+case 'button':
+    return <ButtonComponent key={block.id} {...baseProps} />;
         default:
             return <Component key={block.id} {...baseProps} />;
     }
@@ -250,9 +251,9 @@ export default function Index({
         <>
             <Head>
                 <title>{page.title}</title>
-                {companyFavicon && (
+                {/* {companyFavicon && (
                     <link rel="icon" href={companyFavicon} type="image/x-icon" />
-                )}
+                )} */}
                 {fontUrl && (
                     <link rel="stylesheet" href={fontUrl} />
                 )}

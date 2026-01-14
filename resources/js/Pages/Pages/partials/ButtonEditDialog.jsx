@@ -1,77 +1,302 @@
-// components/BuilderPages/partials/ButtonEditDialog.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Separator } from '@/Components/ui/separator';
-import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, isLiveEdit = true }) => {
-    const debouncedContent = useDebounce(editContent, 300);
-    const debouncedStyles = useDebounce(editStyles, 300);
+const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, isLiveEdit = true, dynamicPages = [], products = [] }) => {
+    const [linkType, setLinkType] = useState('none');
+    const [selectedPage, setSelectedPage] = useState('');
+    const [selectedProduct, setSelectedProduct] = useState('');
+    const [customUrl, setCustomUrl] = useState('');
+    const [isInitialized, setIsInitialized] = useState(false);
+    
+    const prevEditStylesRef = useRef(editStyles);
+    const prevEditContentRef = useRef(editContent);
 
+    // 1. INICIALIZACIÓN UNA VEZ - sin reaccionar a cambios posteriores
     useEffect(() => {
-        if (isLiveEdit) {
-            // Las actualizaciones se manejan automáticamente
+        // Solo inicializar una vez
+        if (isInitialized) return;
+        
+        const currentUrl = editStyles?.buttonUrl || editContent || '';
+        
+        // Inicializar el tipo de enlace
+        if (currentUrl) {
+            if (currentUrl.startsWith('/')) {
+                // Verificar si es una página dinámica
+                const pageSlug = currentUrl.replace('/', '');
+                const page = dynamicPages.find(p => p.slug === pageSlug);
+                if (page) {
+                    setLinkType('page');
+                    setSelectedPage(page.slug);
+                } else {
+                    // Verificar si es un producto
+                    const productMatch = currentUrl.match(/\/detalles-del-producto\?product=(.+)/);
+                    if (productMatch) {
+                        const productSlug = productMatch[1];
+                        const product = products.find(p => p.slug === productSlug);
+                        if (product) {
+                            setLinkType('product');
+                            setSelectedProduct(product.slug);
+                        } else {
+                            setLinkType('custom');
+                            setCustomUrl(currentUrl);
+                        }
+                    } else {
+                        setLinkType('custom');
+                        setCustomUrl(currentUrl);
+                    }
+                }
+            } else if (currentUrl.startsWith('http')) {
+                setLinkType('custom');
+                setCustomUrl(currentUrl);
+            }
+        } else {
+            setLinkType('none');
         }
-    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+        
+        setIsInitialized(true);
+        
+        // Guardar valores iniciales
+        prevEditStylesRef.current = editStyles;
+        prevEditContentRef.current = editContent;
+    }, [editStyles, editContent, dynamicPages, products, isInitialized]);
+
+    // 2. SINCRONIZACIÓN MANUAL cuando cambia la URL desde fuera
+    useEffect(() => {
+        // Solo actualizar si realmente cambió la URL
+        const currentUrl = editStyles?.buttonUrl || editContent || '';
+        const prevUrl = prevEditStylesRef.current?.buttonUrl || prevEditContentRef.current || '';
+        
+        if (currentUrl !== prevUrl && currentUrl) {
+            // Reinicializar con la nueva URL
+            setIsInitialized(false);
+            setLinkType('none');
+            setSelectedPage('');
+            setSelectedProduct('');
+            setCustomUrl('');
+        }
+        
+        // Actualizar referencias
+        prevEditStylesRef.current = editStyles;
+        prevEditContentRef.current = editContent;
+    }, [editStyles?.buttonUrl, editContent]);
+
+    // 3. ACTUALIZAR LA URL cuando cambian los controles
+    useEffect(() => {
+        if (!isInitialized) return;
+        
+        let newUrl = '';
+        
+        switch (linkType) {
+            case 'page':
+                if (selectedPage) {
+                    newUrl = `/${selectedPage}`;
+                }
+                break;
+            case 'product':
+                if (selectedProduct) {
+                    newUrl = `/detalles-del-producto?product=${selectedProduct}`;
+                }
+                break;
+            case 'custom':
+                newUrl = customUrl;
+                break;
+            case 'none':
+                newUrl = '';
+                break;
+        }
+        
+        // Solo actualizar si realmente cambió
+        const currentUrl = editStyles?.buttonUrl || editContent || '';
+        if (newUrl !== currentUrl) {
+            // Guardar la URL en buttonUrl de los estilos
+            setEditStyles(prev => ({ ...prev, buttonUrl: newUrl }));
+            
+            // Si el contenido actual era la misma URL, limpiarlo para mantener solo el texto
+            if (editContent === currentUrl) {
+                setEditContent(editStyles?.buttonText || '');
+            }
+        }
+    }, [linkType, selectedPage, selectedProduct, customUrl, isInitialized]);
 
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
     };
 
-    // Extraer el texto del contenido (puede ser string u objeto)
-    const getTextValue = () => {
-        if (!editContent) return '';
-
-        if (typeof editContent === 'string') {
-            return editContent;
+    // Manejar cambio de texto del botón
+    const handleTextChange = (value) => {
+        // Guardar en buttonText de los estilos
+        updateStyle('buttonText', value);
+        
+        // También actualizar el contenido principal si no es una URL
+        const currentUrl = editStyles?.buttonUrl || editContent || '';
+        if (editContent && !currentUrl.startsWith('/') && !currentUrl.startsWith('http')) {
+            setEditContent(value);
         }
-
-        if (typeof editContent === 'object' && editContent !== null) {
-            return editContent.text || editContent.title || '';
-        }
-
-        return String(editContent);
     };
 
-    // Manejar cambio de texto
-    const handleTextChange = (value) => {
-        // Asegurarnos de que editContent siempre sea un string para botón
-        setEditContent(value);
+    // Manejar cambio de URL personalizada
+    const handleCustomUrlChange = (value) => {
+        setCustomUrl(value);
+        if (linkType === 'custom') {
+            // Actualizar inmediatamente
+            setEditStyles(prev => ({ ...prev, buttonUrl: value }));
+        }
+    };
+
+    // Obtener el texto actual del botón
+    const getCurrentText = () => {
+        return editStyles?.buttonText || editContent || '';
     };
 
     return (
         <div className="space-y-4">
-            <Label htmlFor="content">Contenido</Label>
-            <textarea
-                id="content"
-                value={getTextValue()} // Usar getTextValue en lugar de editContent directamente
-                onChange={(e) => handleTextChange(e.target.value)}
-                className="w-full h-20 p-2 border rounded"
-            />
+            {/* Texto del botón */}
+            <div>
+                <Label htmlFor="buttonText">Texto del Botón</Label>
+                <Input
+                    id="buttonText"
+                    value={getCurrentText()}
+                    onChange={(e) => handleTextChange(e.target.value)}
+                    placeholder="Texto que se mostrará"
+                    className="mt-1"
+                />
+            </div>
 
-            {/* Selector de tipo de botón */}
-            <Label htmlFor="buttonType">Tipo de Botón</Label>
-            <Select
-                value={editStyles.buttonType || 'primary'}
-                onValueChange={(value) => updateStyle('buttonType', value)}
-            >
-                <SelectTrigger>
-                    <SelectValue placeholder="Selecciona el tipo de botón" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="primary">Primario (Usa estilos del tema)</SelectItem>
-                    <SelectItem value="secondary">Secundario (Usa estilos del tema)</SelectItem>
-                    <SelectItem value="custom">Personalizado (Ignora estilos del tema)</SelectItem>
-                </SelectContent>
-            </Select>
+            <Separator className="my-4" />
 
-            {/* Solo mostrar opciones de personalización completas si el tipo es "custom" */}
-            {editStyles.buttonType === 'custom' && (
-                <>
-                    {/* Layout */}
-                    <Label htmlFor="layout">Layout</Label>
+            {/* Configuración de enlace */}
+            <div className="space-y-4">
+                <h3 className="font-medium">Enlace del Botón</h3>
+                
+                <div>
+                    <Label htmlFor="linkType">Tipo de Enlace</Label>
+                    <Select
+                        value={linkType}
+                        onValueChange={(value) => {
+                            setLinkType(value);
+                            if (value === 'custom') {
+                                // Inicializar customUrl si está vacío
+                                const currentUrl = editStyles?.buttonUrl || editContent || '';
+                                if (currentUrl && !customUrl) {
+                                    setCustomUrl(currentUrl);
+                                }
+                            }
+                        }}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecciona el tipo de enlace" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">Sin enlace (acción)</SelectItem>
+                            <SelectItem value="page">Página Dinámica</SelectItem>
+                            <SelectItem value="product">Página de Producto</SelectItem>
+                            <SelectItem value="custom">URL Personalizada</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Selector de Página Dinámica */}
+                {linkType === 'page' && (
+                    <div>
+                        <Label htmlFor="dynamicPage">Seleccionar Página</Label>
+                        <Select
+                            value={selectedPage}
+                            onValueChange={setSelectedPage}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una página" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {dynamicPages.length > 0 ? (
+                                    dynamicPages.map((page) => (
+                                        <SelectItem key={page.slug} value={page.slug}>
+                                            {page.title} (/{page.slug})
+                                        </SelectItem>
+                                    ))
+                                ) : (
+                                    <div className="p-2 text-sm text-gray-500">
+                                        No hay páginas dinámicas disponibles
+                                    </div>
+                                )}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-gray-500 mt-1">
+                            URL: /{selectedPage || '[selecciona una página]'}
+                        </p>
+                    </div>
+                )}
+
+                {/* Selector de Producto */}
+                {linkType === 'product' && (
+                    <div>
+                        <Label htmlFor="product">Seleccionar Producto</Label>
+                        <Select
+                            value={selectedProduct}
+                            onValueChange={setSelectedProduct}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecciona un producto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {products.length > 0 ? (
+                                    products.map((product) => (
+                                        <SelectItem key={product.slug} value={product.slug}>
+                                            {product.product_name}
+                                        </SelectItem>
+                                    ))
+                                ) : (
+                                    <div className="p-2 text-sm text-gray-500">
+                                        No hay productos disponibles
+                                    </div>
+                                )}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-gray-500 mt-1">
+                            URL: /detalles-del-producto?product={selectedProduct || '[selecciona un producto]'}
+                        </p>
+                    </div>
+                )}
+
+                {/* URL Personalizada */}
+                {linkType === 'custom' && (
+                    <div>
+                        <Label htmlFor="customUrl">URL Personalizada</Label>
+                        <Input
+                            id="customUrl"
+                            value={customUrl}
+                            onChange={(e) => handleCustomUrlChange(e.target.value)}
+                            placeholder="https://ejemplo.com o /ruta-interna"
+                            className="mt-1"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Ejemplos:<br/>
+                            • Enlace interno: /contacto<br/>
+                            • Enlace externo: https://google.com<br/>
+                            • Página estática: /inicio
+                        </p>
+                    </div>
+                )}
+
+                {linkType === 'none' && (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <p className="text-sm text-yellow-800">
+                            El botón no tendrá enlace. Se usará para acciones como "Agregar al carrito".
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            <Separator className="my-4" />
+
+            {/* Configuración de ancho */}
+            <div className="space-y-4">
+                <h3 className="font-medium">Ancho del Botón</h3>
+                
+                <div>
+                    <Label htmlFor="layout">Tipo de Ancho</Label>
                     <Select
                         value={editStyles.layout || 'fit'}
                         onValueChange={(value) => updateStyle('layout', value)}
@@ -80,11 +305,70 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="fit">Fit (Ancho natural)</SelectItem>
-                            <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
+                            <SelectItem value="fit">Ancho Natural</SelectItem>
+                            <SelectItem value="fill">Ancho Completo (100%)</SelectItem>
                         </SelectContent>
                     </Select>
+                    <p className="text-xs text-gray-500 mt-1">
+                        {editStyles.layout === 'fill' 
+                            ? 'El botón ocupará todo el ancho disponible'
+                            : 'El botón tendrá el ancho según su contenido'}
+                    </p>
+                </div>
+            </div>
 
+            <Separator className="my-4" />
+
+            {/* Configuración de posición */}
+            <div className="space-y-4">
+                <h3 className="font-medium">Posición del Botón</h3>
+                
+                <div>
+                    <Label htmlFor="align">Alineación</Label>
+                    <Select
+                        value={editStyles.align || 'start'}
+                        onValueChange={(value) => updateStyle('align', value)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="start">Start (Izquierda)</SelectItem>
+                            <SelectItem value="center">Center (Centro)</SelectItem>
+                            <SelectItem value="end">End (Derecha)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500 mt-1">
+                        {editStyles.layout === 'fill' 
+                            ? 'La posición afecta la alineación del texto dentro del botón'
+                            : 'La posición afecta la alineación del botón dentro de su contenedor'}
+                    </p>
+                </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            {/* Estilos del botón */}
+            <div>
+                <Label htmlFor="buttonType">Tipo de Botón</Label>
+                <Select
+                    value={editStyles.buttonType || 'primary'}
+                    onValueChange={(value) => updateStyle('buttonType', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue placeholder="Selecciona el tipo de botón" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="primary">Primario (Usa estilos del tema)</SelectItem>
+                        <SelectItem value="secondary">Secundario (Usa estilos del tema)</SelectItem>
+                        <SelectItem value="custom">Personalizado (Ignora estilos del tema)</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Solo mostrar opciones de personalización completas si el tipo es "custom" */}
+            {editStyles.buttonType === 'custom' && (
+                <>
                     {/* Padding Individual */}
                     <Label>Padding (px)</Label>
                     <div className="grid grid-cols-2 gap-4">
@@ -332,21 +616,21 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     {/* Opciones de sobrescritura específicas */}
                     <div className="flex flex-col gap-4">
                         <div>
-                            <Label htmlFor="customBorderRadius">Radio de Borde Personalizado</Label>
+                            <Label htmlFor="borderRadius">Radio de Borde Personalizado</Label>
                             <Input
-                                id="customBorderRadius"
+                                id="borderRadius"
                                 placeholder="Ej: 8px"
-                                value={editStyles.customBorderRadius || ''}
-                                onChange={(e) => updateStyle('customBorderRadius', e.target.value)}
+                                value={editStyles.borderRadius || ''}
+                                onChange={(e) => updateStyle('borderRadius', e.target.value)}
                             />
                         </div>
                         <div>
-                            <Label htmlFor="customFontSize">Tamaño de Fuente Personalizado</Label>
+                            <Label htmlFor="fontSize">Tamaño de Fuente Personalizado</Label>
                             <Input
-                                id="customFontSize"
+                                id="fontSize"
                                 placeholder="Ej: 18px"
-                                value={editStyles.customFontSize || ''}
-                                onChange={(e) => updateStyle('customFontSize', e.target.value)}
+                                value={editStyles.fontSize || ''}
+                                onChange={(e) => updateStyle('fontSize', e.target.value)}
                             />
                         </div>
                     </div>

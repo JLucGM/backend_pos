@@ -74,16 +74,16 @@ const getLoginRoute = () => {
     if (mode === 'frontend') {
         try {
             const hostname = window.location.hostname;
-            console.log('Current hostname:', hostname);
-            console.log('Session domain:', sessionDomain);
+            // console.log('Current hostname:', hostname);
+            // console.log('Session domain:', sessionDomain);
             
             const logRoute = getLoginRoute();
             const regRoute = getRegisterRoute();
             setLoginUrl(logRoute);
             setRegisterUrl(regRoute);
             
-            console.log('Generated Login URL:', logRoute);
-            console.log('Generated Register URL:', regRoute);
+            // console.log('Generated Login URL:', logRoute);
+            // console.log('Generated Register URL:', regRoute);
         } catch (error) {
             console.error('Error generating routes:', error);
             toast.error('Error de configuración de rutas');
@@ -114,8 +114,8 @@ const getLoginRoute = () => {
         setErrors({});
 
         try {
-            console.log('Submitting to login URL:', loginUrl);
-            console.log('Current loginUrl state:', loginUrl);
+            // console.log('Submitting to login URL:', loginUrl);
+            // console.log('Current loginUrl state:', loginUrl);
             
             // Verificar si loginUrl es válido
             if (!loginUrl) {

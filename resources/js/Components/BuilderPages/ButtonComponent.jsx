@@ -1,68 +1,123 @@
-// components/Builder/components/ButtonComponent.jsx - VERSIÓN COMPLETA
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Link } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
 
 const ButtonComponent = ({ 
-    comp, 
+    comp: originalComp, 
     getStyles, 
     onEdit, 
-    isPreview, 
-    themeSettings,
-    product,
-    selectedCombination,
+    isPreview = false, 
+    themeSettings = {},
+    product = null,
+    selectedCombination = null,
     quantity = 1,
-    companyId,
-    storeAutomaticDiscounts = []
+    companyId = null,
+    storeAutomaticDiscounts = [],
+    mode = 'builder' // 'builder' o 'frontend'
 }) => {
-    const [localStyles, setLocalStyles] = useState({});
     const [isHovered, setIsHovered] = useState(false);
-    const [buttonType, setButtonType] = useState('primary');
-
-    // Función para obtener la familia de fuentes
-    const getFontFamily = () => {
-        const customStyles = comp.styles || {};
-        const fontType = customStyles.fontType;
+    
+    // ===========================================
+    // 1. NORMALIZAR EL COMPONENTE
+    // ===========================================
+    const comp = React.useMemo(() => {
+        // Asegurar que styles sea un objeto, no un array
+        const normalizedStyles = Array.isArray(originalComp.styles) 
+            ? {} 
+            : (originalComp.styles || {});
         
-        if (fontType === 'default' || !fontType) {
-            return themeSettings?.body_font || "'Inter', sans-serif";
+        return {
+            ...originalComp,
+            styles: normalizedStyles
+        };
+    }, [originalComp]);
+    
+    // ===========================================
+    // 2. DETERMINAR SI ES UNA URL
+    // ===========================================
+    const isUrl = React.useMemo(() => {
+        const url = comp.styles?.buttonUrl || comp.content;
+        if (!url) return false;
+        
+        if (typeof url === 'string') {
+            return url.startsWith('/') || url.startsWith('http');
         }
         
-        if (fontType === 'custom' && customStyles.customFont) {
-            return customStyles.customFont;
+        return false;
+    }, [comp.styles?.buttonUrl, comp.content]);
+    
+    // ===========================================
+    // 3. OBTENER Y PROCESAR URL
+    // ===========================================
+    const getButtonUrl = () => {
+        // Prioridad 1: URL específica en estilos
+        const urlFromStyles = comp.styles?.buttonUrl;
+        if (urlFromStyles) {
+            return urlFromStyles;
         }
         
-        switch(fontType) {
-            case 'body_font':
-                return themeSettings?.body_font || "'Inter', sans-serif";
-            case 'heading_font':
-                return themeSettings?.heading_font || "'Inter', sans-serif";
-            case 'subheading_font':
-                return themeSettings?.subheading_font || "'Inter', sans-serif";
-            case 'accent_font':
-                return themeSettings?.accent_font || "'Inter', sans-serif";
-            default:
-                return themeSettings?.body_font || "'Inter', sans-serif";
+        // Prioridad 2: Contenido (para compatibilidad con versiones anteriores)
+        const content = comp.content;
+        if (!content) return '';
+        
+        if (typeof content === 'string') {
+            // Si parece una URL, usarla
+            if (content.startsWith('/') || content.startsWith('http')) {
+                return content;
+            }
         }
+        
+        return '';
     };
-
-    // Inicializar el tipo de botón y estilos
-    useEffect(() => {
+    
+    const processUrl = (url) => {
+        if (!url) return '#';
+        
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        
+        if (url.startsWith('/')) {
+            return url;
+        }
+        
+        return `/${url}`;
+    };
+    
+    const buttonUrl = getButtonUrl();
+    const processedUrl = processUrl(buttonUrl);
+    
+    // ===========================================
+    // 4. OBTENER ESTILOS DEL BOTÓN
+    // ===========================================
+    const getButtonStyles = () => {
+        const baseStyles = getStyles ? getStyles(comp) : {};
         const customStyles = comp.styles || {};
         
-        // Determinar el tipo de botón (primary, secondary, o custom)
-        const type = customStyles.buttonType || 'primary';
-        setButtonType(type);
+        // Estilos base
+        let styles = {
+            ...baseStyles,
+            fontFamily: themeSettings?.body_font || 'inherit',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            textDecoration: 'none',
+            display: 'inline-block',
+            outline: 'none',
+            border: 'none',
+        };
         
-        if (type === 'custom') {
-            const layout = customStyles.layout || 'fit';
-            const width = layout === 'fill' ? '100%' : 'auto';
-            
-            setLocalStyles({
-                width,
+        // Determinar tipo de botón
+        const buttonType = customStyles.buttonType || 'primary';
+        
+        // ===== ESTILOS PARA TIPO "custom" =====
+        if (buttonType === 'custom') {
+            styles = {
+                ...styles,
                 backgroundColor: customStyles.backgroundColor || '#007bff',
                 color: customStyles.color || '#ffffff',
                 borderColor: customStyles.borderColor || customStyles.backgroundColor || '#007bff',
                 borderWidth: customStyles.borderWidth || '1px',
+                borderStyle: customStyles.borderStyle || 'solid',
                 borderRadius: customStyles.borderRadius || '4px',
                 paddingTop: customStyles.paddingTop || '10px',
                 paddingRight: customStyles.paddingRight || '10px',
@@ -70,186 +125,333 @@ const ButtonComponent = ({
                 paddingLeft: customStyles.paddingLeft || '10px',
                 fontSize: customStyles.fontSize || '16px',
                 textTransform: customStyles.textTransform || 'none',
-                fontFamily: getFontFamily(),
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-            });
-        } else {
-            const baseStyles = getStyles(comp);
-            const themeStyles = {};
+                fontWeight: customStyles.fontWeight || 'normal',
+            };
+        }
+        // ===== ESTILOS PARA TIPO "primary" =====
+        else if (buttonType === 'primary') {
+            // Usar estilos del tema si están disponibles
+            const primaryBg = themeSettings?.primary_button_background 
+                ? `hsl(${themeSettings.primary_button_background})` 
+                : (customStyles.backgroundColor || '#007bff');
             
-            if (type === 'primary') {
-                themeStyles.backgroundColor = themeSettings?.primary_button_background 
-                    ? `hsl(${themeSettings.primary_button_background})` 
-                    : '#e1f0fe';
-                themeStyles.color = themeSettings?.primary_button_text 
-                    ? `hsl(${themeSettings.primary_button_text})` 
-                    : '#0a0a0a';
-                themeStyles.borderColor = themeSettings?.primary_button_border 
+            const primaryColor = themeSettings?.primary_button_text 
+                ? `hsl(${themeSettings.primary_button_text})` 
+                : (customStyles.color || '#ffffff');
+            
+            styles = {
+                ...styles,
+                backgroundColor: primaryBg,
+                color: primaryColor,
+                borderColor: themeSettings?.primary_button_border 
                     ? `hsl(${themeSettings.primary_button_border})` 
-                    : '#e1f0fe';
-                themeStyles.borderWidth = themeSettings?.primary_button_border_thickness || '1px';
-                themeStyles.textTransform = themeSettings?.primary_button_text_case || 'none';
-                
-                themeStyles.borderRadius = customStyles.customBorderRadius || themeSettings?.primary_button_corner_radius || '0.5rem';
-                themeStyles.fontSize = customStyles.customFontSize || '16px';
-            } else if (type === 'secondary') {
-                themeStyles.backgroundColor = themeSettings?.secondary_button_background 
-                    ? `hsl(${themeSettings.secondary_button_background})` 
-                    : '#f5f5f5';
-                themeStyles.color = themeSettings?.secondary_button_text 
-                    ? `hsl(${themeSettings.secondary_button_text})` 
-                    : '#0a0a0a';
-                themeStyles.borderColor = themeSettings?.secondary_button_border 
+                    : primaryBg,
+                borderWidth: customStyles.borderWidth || themeSettings?.primary_button_border_thickness || '1px',
+                borderStyle: 'solid',
+                borderRadius: customStyles.borderRadius || themeSettings?.primary_button_corner_radius || '4px',
+                fontSize: customStyles.fontSize || '16px',
+                textTransform: customStyles.textTransform || themeSettings?.primary_button_text_case || 'none',
+                fontWeight: customStyles.fontWeight || 'normal',
+                paddingTop: customStyles.paddingTop || '10px',
+                paddingRight: customStyles.paddingRight || '10px',
+                paddingBottom: customStyles.paddingBottom || '10px',
+                paddingLeft: customStyles.paddingLeft || '10px',
+            };
+        }
+        // ===== ESTILOS PARA TIPO "secondary" =====
+        else if (buttonType === 'secondary') {
+            // Usar estilos del tema si están disponibles
+            const secondaryBg = themeSettings?.secondary_button_background 
+                ? `hsl(${themeSettings.secondary_button_background})` 
+                : (customStyles.backgroundColor || '#6c757d');
+            
+            const secondaryColor = themeSettings?.secondary_button_text 
+                ? `hsl(${themeSettings.secondary_button_text})` 
+                : (customStyles.color || '#ffffff');
+            
+            styles = {
+                ...styles,
+                backgroundColor: secondaryBg,
+                color: secondaryColor,
+                borderColor: themeSettings?.secondary_button_border 
                     ? `hsl(${themeSettings.secondary_button_border})` 
-                    : '#f5f5f5';
-                themeStyles.borderWidth = themeSettings?.secondary_button_border_thickness || '1px';
-                themeStyles.textTransform = themeSettings?.secondary_button_text_case || 'none';
-                
-                themeStyles.borderRadius = customStyles.customBorderRadius || themeSettings?.secondary_button_corner_radius || '0.5rem';
-                themeStyles.fontSize = customStyles.customFontSize || '16px';
-            }
-            
-            themeStyles.paddingTop = customStyles.paddingTop || '10px';
-            themeStyles.paddingRight = customStyles.paddingRight || '10px';
-            themeStyles.paddingBottom = customStyles.paddingBottom || '10px';
-            themeStyles.paddingLeft = customStyles.paddingLeft || '10px';
-            
-            const layout = customStyles.layout || 'fit';
-            themeStyles.width = layout === 'fill' ? '100%' : 'auto';
-            
-            themeStyles.fontFamily = getFontFamily();
-            themeStyles.cursor = 'pointer';
-            themeStyles.transition = 'all 0.2s ease';
-            
-            setLocalStyles({
-                ...baseStyles,
-                ...themeStyles,
-            });
+                    : secondaryBg,
+                borderWidth: customStyles.borderWidth || themeSettings?.secondary_button_border_thickness || '1px',
+                borderStyle: 'solid',
+                borderRadius: customStyles.borderRadius || themeSettings?.secondary_button_corner_radius || '4px',
+                fontSize: customStyles.fontSize || '16px',
+                textTransform: customStyles.textTransform || themeSettings?.secondary_button_text_case || 'none',
+                fontWeight: customStyles.fontWeight || 'normal',
+                paddingTop: customStyles.paddingTop || '10px',
+                paddingRight: customStyles.paddingRight || '10px',
+                paddingBottom: customStyles.paddingBottom || '10px',
+                paddingLeft: customStyles.paddingLeft || '10px',
+            };
         }
-    }, [comp.styles, themeSettings, getStyles]);
-
-    // Función para obtener estilos según hover state
-    const getButtonStyles = () => {
-        const baseStyles = localStyles;
-        
-        if (buttonType === 'custom') {
-            if (isHovered && comp.styles?.hoverBackgroundColor) {
-                return {
-                    ...baseStyles,
-                    backgroundColor: comp.styles.hoverBackgroundColor,
-                    borderColor: comp.styles.hoverBorderColor || comp.styles.hoverBackgroundColor,
-                    color: comp.styles.hoverColor || baseStyles.color,
-                };
-            }
-            return baseStyles;
+        // ===== ESTILOS POR DEFECTO (si no hay tipo especificado) =====
+        else {
+            styles = {
+                ...styles,
+                backgroundColor: customStyles.backgroundColor || '#007bff',
+                color: customStyles.color || '#ffffff',
+                border: customStyles.borderWidth 
+                    ? `${customStyles.borderWidth} solid ${customStyles.borderColor || '#007bff'}`
+                    : '1px solid transparent',
+                borderRadius: customStyles.borderRadius || '4px',
+                fontSize: customStyles.fontSize || '16px',
+                fontWeight: customStyles.fontWeight || 'normal',
+                padding: `${customStyles.paddingTop || '10px'} ${customStyles.paddingRight || '20px'} ${customStyles.paddingBottom || '10px'} ${customStyles.paddingLeft || '20px'}`,
+            };
         }
         
+        // Ajustar ancho según layout
+        const layout = customStyles.layout || 'fit';
+        if (layout === 'fill') {
+            styles.width = '100%';
+            // Para botones de ancho completo, el texto se alinea según textAlign
+            styles.textAlign = customStyles.textAlign || 'center';
+        }
+        
+        // Aplicar estilos de hover
         if (isHovered) {
-            if (buttonType === 'primary') {
-                return {
-                    ...baseStyles,
-                    backgroundColor: themeSettings?.primary_button_hover_background 
-                        ? `hsl(${themeSettings.primary_button_hover_background})` 
-                        : '#b3d7ff',
-                    color: themeSettings?.primary_button_hover_text 
-                        ? `hsl(${themeSettings.primary_button_hover_text})` 
-                        : '#0a0a0a',
-                    borderColor: themeSettings?.primary_button_hover_border 
-                        ? `hsl(${themeSettings.primary_button_hover_border})` 
-                        : '#b3d7ff',
-                    borderWidth: themeSettings?.primary_button_hover_border_thickness || '1px',
-                };
+            if (buttonType === 'custom' && customStyles.hoverBackgroundColor) {
+                styles.backgroundColor = customStyles.hoverBackgroundColor;
+                styles.borderColor = customStyles.hoverBorderColor || customStyles.hoverBackgroundColor;
+                styles.color = customStyles.hoverColor || styles.color;
+            } else if (buttonType === 'primary') {
+                const hoverBg = themeSettings?.primary_button_hover_background 
+                    ? `hsl(${themeSettings.primary_button_hover_background})` 
+                    : (customStyles.hoverBackgroundColor || '#0056b3');
+                styles.backgroundColor = hoverBg;
+                styles.borderColor = themeSettings?.primary_button_hover_border 
+                    ? `hsl(${themeSettings.primary_button_hover_border})` 
+                    : hoverBg;
             } else if (buttonType === 'secondary') {
-                return {
-                    ...baseStyles,
-                    backgroundColor: themeSettings?.secondary_button_hover_background 
-                        ? `hsl(${themeSettings.secondary_button_hover_background})` 
-                        : '#d6d6d6',
-                    color: themeSettings?.secondary_button_hover_text 
-                        ? `hsl(${themeSettings.secondary_button_hover_text})` 
-                        : '#0a0a0a',
-                    borderColor: themeSettings?.secondary_button_hover_border 
-                        ? `hsl(${themeSettings.secondary_button_hover_border})` 
-                        : '#d6d6d6',
-                    borderWidth: themeSettings?.secondary_button_hover_border_thickness || '1px',
-                };
+                const hoverBg = themeSettings?.secondary_button_hover_background 
+                    ? `hsl(${themeSettings.secondary_button_hover_background})` 
+                    : (customStyles.hoverBackgroundColor || '#545b62');
+                styles.backgroundColor = hoverBg;
+                styles.borderColor = themeSettings?.secondary_button_hover_border 
+                    ? `hsl(${themeSettings.secondary_button_hover_border})` 
+                    : hoverBg;
+            } else {
+                // Efecto hover genérico
+                styles.opacity = 0.9;
+                styles.transform = 'translateY(-1px)';
             }
         }
         
-        return baseStyles;
+        return styles;
     };
-
-    // Manejar clic para agregar al carrito
+    
+    // ===========================================
+    // 5. MANEJAR CLIC
+    // ===========================================
     const handleClick = (e) => {
-        e.stopPropagation();
         
-        // Verificar si estamos en modo preview
-        if (isPreview) {
+        // MODO BUILDER (no preview): editar componente
+        if (mode === 'builder' && !isPreview) {
+            e.preventDefault();
+            e.stopPropagation();
             if (onEdit) {
                 onEdit(comp);
             }
             return;
         }
         
-        // Si tenemos producto y companyId, agregar al carrito
-        if (product && companyId) {
-            // Filtrar descuentos automáticos del producto (sin código)
+        // MODO FRONTEND o PREVIEW con URL: dejar navegar
+        if ((mode === 'frontend' || isPreview) && isUrl) {
+            // NO hacer preventDefault() - dejar que Link navegue
+            return;
+        }
+        
+        // MODO FRONTEND: botón de acción (agregar al carrito)
+        if (product && companyId && !isUrl) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const productAutoDiscounts = product.discounts ? 
                 product.discounts.filter(d => !d.code) : [];
-            
-            // Combinar descuentos del producto con descuentos de la tienda
             const allAutomaticDiscounts = [...productAutoDiscounts, ...storeAutomaticDiscounts];
             
-            // Agregar al carrito con todos los descuentos automáticos
             cartHelper.addToCart(companyId, product, selectedCombination, quantity, allAutomaticDiscounts);
             
-            // Mostrar notificación
             const discountInfo = productAutoDiscounts.length > 0 || storeAutomaticDiscounts.length > 0 ?
                 " con descuento automático aplicado!" : "!";
             alert(`¡${product.product_name} agregado al carrito${discountInfo}`);
             
-            // Disparar evento para actualizar el carrito en otros componentes
             window.dispatchEvent(new Event('cartUpdated'));
-        } else {
-            // Modo builder - editar componente
-            if (onEdit) {
-                onEdit(comp);
-            }
         }
     };
-
-    // EXTRAER EL TEXTO DEL CONTENIDO
+    
+    // ===========================================
+    // 6. OBTENER TEXTO DEL BOTÓN
+    // ===========================================
     const getButtonText = () => {
+        // Prioridad 1: Texto personalizado en estilos
         if (comp.styles?.contentOverride) {
             return comp.styles.contentOverride;
         }
         
-        if (!comp.content) return 'Agregar al carrito';
-        
-        if (typeof comp.content === 'string') {
-            return comp.content;
+        // Prioridad 2: Texto específico para botón
+        if (comp.styles?.buttonText) {
+            return comp.styles.buttonText;
         }
         
-        if (typeof comp.content === 'object' && comp.content !== null) {
-            return comp.content.text || comp.content.label || 'Agregar al carrito';
+        const content = comp.content;
+        if (!content) return 'Botón';
+        
+        // Si el contenido NO es una URL, usarlo como texto
+        if (typeof content === 'string') {
+            // Verificar si es una URL
+            if (content.startsWith('/') || content.startsWith('http')) {
+                // Es una URL, mostrar texto por defecto según tipo
+                if (content.includes('detalles-del-producto')) {
+                    return 'Ver Producto';
+                } else if (content.startsWith('/')) {
+                    return 'Ir a Página';
+                } else if (content.startsWith('http')) {
+                    return 'Visitar Enlace';
+                }
+            }
+            // No es URL, usar como texto
+            return content;
         }
         
-        return String(comp.content);
+        return String(content);
     };
-
-    const buttonContent = getButtonText();
-
+    
+    // ===========================================
+    // 7. OBTENER ESTILOS Y TEXTO
+    // ===========================================
+    const buttonStyles = getButtonStyles();
+    const buttonText = getButtonText();
+    const customStyles = comp.styles || {};
+    const layout = customStyles.layout || 'fit';
+    const align = customStyles.align || 'start';
+    
+    // ===========================================
+    // 8. FUNCIÓN PARA CREAR EL ELEMENTO DEL BOTÓN
+    // ===========================================
+    const createButtonElement = () => {
+        // CASO 1: BOTÓN VACÍO EN MODO BUILDER → PLACEHOLDER EDITABLE
+        if (mode === 'builder' && !isPreview && (!comp.content || !buttonText.trim())) {
+            return (
+                <div 
+                    style={{
+                        ...buttonStyles,
+                        border: '2px dashed #f59e0b',
+                        backgroundColor: '#fffbeb',
+                        color: '#92400e',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        padding: '20px',
+                        minWidth: '100px',
+                    }}
+                    onClick={handleClick}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className="button-placeholder"
+                >
+                    <strong>Botón</strong><br/>
+                    <small>Haz clic para configurar</small>
+                </div>
+            );
+        }
+        
+        // CASO 2: MODO FRONTEND o PREVIEW con URL INTERNA → LINK DE INERTIA
+        if ((mode === 'frontend' || isPreview) && isUrl && processedUrl.startsWith('/')) {
+            return (
+                <Link
+                    href={processedUrl}
+                    style={buttonStyles}
+                    onClick={handleClick}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className="button-link-inertia"
+                >
+                    {buttonText}
+                </Link>
+            );
+        }
+        
+        // CASO 3: MODO FRONTEND o PREVIEW con URL EXTERNA → <a> CON TARGET="_blank"
+        if ((mode === 'frontend' || isPreview) && isUrl && processedUrl.startsWith('http')) {
+            return (
+                <a
+                    href={processedUrl}
+                    style={buttonStyles}
+                    onClick={handleClick}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="button-link-external"
+                >
+                    {buttonText}
+                </a>
+            );
+        }
+        
+        // CASO 4: MODO BUILDER (edición) con URL → ENLACE EDITABLE
+        if (mode === 'builder' && !isPreview && isUrl) {
+            return (
+                <a
+                    href="#"
+                    style={{
+                        ...buttonStyles,
+                        border: '2px dashed #4CAF50',
+                    }}
+                    onClick={handleClick}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className="button-editable-link"
+                >
+                    {buttonText} <small style={{ fontSize: '12px', opacity: 0.7 }}>{buttonUrl ? `(${buttonUrl})` : ''}</small>
+                </a>
+            );
+        }
+        
+        // CASO 5: BOTÓN NORMAL (sin URL) → <button>
+        return (
+            <button
+                style={buttonStyles}
+                onClick={handleClick}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className="button-normal"
+                type="button"
+            >
+                {buttonText}
+            </button>
+        );
+    };
+    
+    // ===========================================
+    // 9. LÓGICA DE RENDERIZADO CON POSICIÓN
+    // ===========================================
+    const buttonElement = createButtonElement();
+    
+    // Si no hay posición o es 'start', devolver el botón directamente
+    if (!align || align === 'start') {
+        return buttonElement;
+    }
+    
+    // Si es layout 'fill', el botón ya tiene width: 100%, solo aplicar textAlign interno
+    if (layout === 'fill') {
+        return buttonElement;
+    }
+    
+    // Si es layout 'fit' con posición 'center' o 'end', usar contenedor
     return (
-        <button
-            style={getButtonStyles()}
-            onClick={handleClick}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="focus:outline-none"
-        >
-            {buttonContent}
-        </button>
+        <div style={{
+            display: 'flex',
+            justifyContent: align === 'center' ? 'center' : 
+                          align === 'end' ? 'flex-end' : 'flex-start',
+            width: '100%',
+        }}>
+            {buttonElement}
+        </div>
     );
 };
 

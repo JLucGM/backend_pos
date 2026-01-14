@@ -139,6 +139,7 @@ const EditDialogRenderer = ({
     themeSettings,
     availableMenus,
     products,
+        dynamicPages, // Agregar esto
 }) => {
     if (!editingComponent?.type) return null;
 
@@ -171,10 +172,15 @@ const EditDialogRenderer = ({
         additionalProps.products = products;
     }
 
+    if (editingComponent.type === 'button') {
+        additionalProps.dynamicPages = dynamicPages;
+        additionalProps.products = products;
+    }
+
     return <DialogComponent {...baseProps} {...additionalProps} />;
 };
 
-export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo }) {
+export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo, dynamicPages }) {
     const [components, setComponents] = useState([]);
     const [editingComponent, setEditingComponent] = useState(null);
     const [editContent, setEditContent] = useState('');
@@ -2367,6 +2373,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                             themeSettings={themeSettings}
                                             availableMenus={availableMenus}
                                             products={products}
+                                            dynamicPages={dynamicPages}
                                         />
                                     </ScrollArea>
                                 </ScrollArea>
