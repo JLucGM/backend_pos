@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Head, router } from '@inertiajs/react';
+import React from 'react';
+import { Head } from '@inertiajs/react';
 
-// IMPORTANTE: Importar CartComponent en lugar de FrontendCartComponent
-import CartComponent from '@/Components/BuilderPages/Cart/CartComponent';
+// IMPORTANTE: Importar ProductComponent unificado
+import ProductComponent from '@/Components/BuilderPages/ProductComponent';
 
 // Importar otros componentes
 import BannerComponent from '@/Components/BuilderPages/BannerComponent';
@@ -13,28 +13,28 @@ import TextComponent from '@/Components/BuilderPages/TextComponent';
 import ImageComponent from '@/Components/BuilderPages/ImageComponent';
 import VideoComponent from '@/Components/BuilderPages/VideoComponent';
 import LinkComponent from '@/Components/BuilderPages/LinkComponent';
+import ButtonComponent from '@/Components/BuilderPages/ButtonComponent'; // IMPORTANTE: Agregado
 import DividerComponent from '@/Components/BuilderPages/DividerComponent/DividerComponent';
 import HeaderComponent from '@/Components/BuilderPages/HeaderComponent';
 import FooterComponent from '@/Components/BuilderPages/FooterComponent';
 import MarqueeTextComponent from '@/Components/BuilderPages/MarqueeComponent/MarqueeTextComponent';
 import HeaderMenuComponent from '@/Components/BuilderPages/HeaderMenuComponent';
-import FrontendProductComponent from '@/Components/Frontend/ProductComponent';
 import QuantitySelectorComponent from '@/Components/BuilderPages/QuantitySelectorComponent';
 import ProductDetailStockComponent from '@/Components/BuilderPages/ProductDetailStockComponent';
 import ProductDetailAttributesComponent from '@/Components/BuilderPages/ProductDetailAttributesComponent';
 import FrontendProductDetailComponent from '@/Components/Frontend/FrontendProductDetailComponent';
 
-// Importar los nuevos componentes de autenticación y checkout
+// Importar componentes de autenticación y checkout
 import LoginComponent from '@/Components/BuilderPages/Auth/LoginComponent';
 import RegisterComponent from '@/Components/BuilderPages/Auth/RegisterComponent';
 import CheckoutComponent from '@/Components/BuilderPages/Checkout/CheckoutComponent';
-// import CheckoutFormComponent from '@/Components/BuilderPages/Checkout/CheckoutFormComponent';
 import CheckoutSummaryComponent from '@/Components/BuilderPages/Checkout/CheckoutSummaryComponent';
 import CheckoutPaymentComponent from '@/Components/BuilderPages/Checkout/CheckoutPaymentComponent';
 import CustomerInfoComponent from '@/Components/BuilderPages/Checkout/CustomerInfoComponent';
+import CartComponent from '@/Components/BuilderPages/Cart/CartComponent';
 
 // ==============================================================
-// 2. MAPEO DE TIPOS A COMPONENTES
+// MAPEO DE TIPOS A COMPONENTES
 // ==============================================================
 const componentMap = {
     'banner': BannerComponent,
@@ -50,7 +50,7 @@ const componentMap = {
     'headerMenu': HeaderMenuComponent,
     'footer': FooterComponent,
     'marquee': MarqueeTextComponent,
-    'product': FrontendProductComponent,
+    'product': ProductComponent, // ← Usando ProductComponent unificado
     'productDetail': FrontendProductDetailComponent,
     'productDetailAttributes': ProductDetailAttributesComponent,
     'productDetailStock': ProductDetailStockComponent,
@@ -59,16 +59,30 @@ const componentMap = {
     'login': LoginComponent,
     'register': RegisterComponent,
     'checkout': CheckoutComponent,
-    // 'checkoutForm': CheckoutFormComponent,
     'checkoutSummary': CheckoutSummaryComponent,
     'checkoutPayment': CheckoutPaymentComponent,
     'customerInfo': CustomerInfoComponent,
+    'button': ButtonComponent, // IMPORTANTE: Agregado
 };
 
 // ==============================================================
-// 3. FUNCIÓN DE RENDERIZADO PÚBLICO
+// FUNCIÓN DE RENDERIZADO PÚBLICO - CORREGIDA
 // ==============================================================
-function renderBlock(block, themeSettings, availableMenus, products, currentProduct = null, companyId, paymentMethods = [], shippingRates = [], userDeliveryLocations = [], userGiftCards = [], mode = 'frontend', companyLogo, companyFavicon) {
+function renderBlock(
+    block, 
+    themeSettings, 
+    availableMenus, 
+    products, 
+    currentProduct = null, 
+    companyId, 
+    paymentMethods = [], 
+    shippingRates = [], 
+    userDeliveryLocations = [], 
+    userGiftCards = [], 
+    mode = 'frontend', 
+    companyLogo, 
+    companyFavicon
+) {
     const Component = componentMap[block.type];
 
     if (!Component) {
@@ -80,11 +94,11 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
         );
     }
 
-    // Props base para todos los componentes
+    // Props base para todos los componentes - SIMPLIFICADO
     const baseProps = {
         comp: block,
         themeSettings: themeSettings,
-        isPreview: true, // En frontend siempre es preview (no modo edición)
+        isPreview: mode === 'frontend', // En frontend es preview
         getStyles: (c) => c.styles || {},
         onEdit: () => { },
         onDelete: () => { },
@@ -96,61 +110,55 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
         companyFavicon: companyFavicon,
     };
 
-    // Props específicas por tipo de componente
+    // Props específicas por tipo de componente - CORREGIDO
     switch (block.type) {
         case 'product':
-            return <Component key={block.id} {...baseProps} products={products} companyId={companyId} />;
+            return (
+                <Component 
+                    key={block.id} 
+                    {...baseProps} 
+                    products={products} 
+                    companyId={companyId}
+                />
+            );
 
         case 'productDetail':
-            return <Component key={block.id} {...baseProps} product={currentProduct} companyId={companyId} />;
+            return (
+                <Component 
+                    key={block.id} 
+                    {...baseProps} 
+                    product={currentProduct} 
+                    companyId={companyId} 
+                />
+            );
 
         case 'header':
-    return (
-        <HeaderComponent
-            key={block.id}
-            {...baseProps}
-            appliedTheme={themeSettings}
-            mode="frontend"
-            availableMenus={availableMenus}  // <-- ¡ESTO ES CLAVE!
-        />
-    );
-    case 'footer':
-    return (
-        <FooterComponent
-            key={block.id}
-            comp={block}
-            getStyles={(c) => c.styles || {}}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            isPreview={true}
-            themeSettings={themeSettings}
-            appliedTheme={themeSettings}
-            setComponents={() => {}}
-            hoveredComponentId={null}
-            setHoveredComponentId={() => {}}
-            mode="frontend"
-            availableMenus={availableMenus}  // <-- ¡ESTO ES CLAVE!
-        />
-    );
-    
+            return (
+                <HeaderComponent
+                    key={block.id}
+                    {...baseProps}
+                    appliedTheme={themeSettings}
+                    availableMenus={availableMenus}
+                />
+            );
+            
+        case 'footer':
+            return (
+                <FooterComponent
+                    key={block.id}
+                    {...baseProps}
+                    appliedTheme={themeSettings}
+                    availableMenus={availableMenus}
+                />
+            );
+
         case 'cart':
             return (
                 <Component
                     key={block.id}
                     {...baseProps}
-                    mode="frontend"
                     companyId={companyId}
                     products={products}
-                />
-            );
-
-        case 'login':
-        case 'register':
-            return (
-                <Component
-                    key={block.id}
-                    {...baseProps}
-                    mode="frontend"
                 />
             );
 
@@ -159,24 +167,25 @@ function renderBlock(block, themeSettings, availableMenus, products, currentProd
                 <Component
                     key={block.id}
                     {...baseProps}
-                    mode="frontend"
                     companyId={companyId}
                     products={products}
                     paymentMethods={paymentMethods}
                     shippingRates={shippingRates}
-                    userDeliveryLocations={userDeliveryLocations} // Asegúrate de que esto viene de las props
+                    userDeliveryLocations={userDeliveryLocations}
                     userGiftCards={userGiftCards}
                 />
             );
-case 'button':
-    return <ButtonComponent key={block.id} {...baseProps} />;
+
+        case 'button':
+            return <ButtonComponent key={block.id} {...baseProps} />;
+            
         default:
             return <Component key={block.id} {...baseProps} />;
     }
 }
 
 // ==============================================================
-// 4. LÓGICA DE CARGA DE FUENTES Y VISTA PRINCIPAL
+// LÓGICA DE CARGA DE FUENTES Y VISTA PRINCIPAL
 // ==============================================================
 export default function Index({
     page,
@@ -251,16 +260,16 @@ export default function Index({
         <>
             <Head>
                 <title>{page.title}</title>
-                {/* {companyFavicon && (
+                {companyFavicon && (
                     <link rel="icon" href={companyFavicon} type="image/x-icon" />
-                )} */}
+                )}
                 {fontUrl && (
                     <link rel="stylesheet" href={fontUrl} />
                 )}
             </Head>
 
             {/* Renderizar cada bloque del layout */}
-            {layoutBlocks.map(block =>
+            {layoutBlocks.map(block => 
                 renderBlock(
                     block,
                     themeSettings,
@@ -268,11 +277,11 @@ export default function Index({
                     products,
                     currentProduct,
                     companyId,
-                    'frontend',
                     paymentMethods,
                     shippingRates,
                     userDeliveryLocations,
                     userGiftCards,
+                    'frontend', // Modo frontend siempre
                     companyLogo,
                     companyFavicon
                 )
