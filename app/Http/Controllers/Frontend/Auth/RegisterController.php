@@ -21,7 +21,7 @@ class RegisterController extends Controller
     public function create(Request $request)
     {
         $company = $request->attributes->get('company');
-        
+
         return Inertia::render('Frontend/Auth/Register', [
             'companyId' => $company->id,
             'companyName' => $company->company_name,
@@ -42,14 +42,14 @@ class RegisterController extends Controller
     public function store(Request $request)
     {
         $company = $request->attributes->get('company');
-        
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required', 
-                'string', 
-                'email', 
-                'max:255', 
+                'required',
+                'string',
+                'email',
+                'max:255',
                 'unique:users,email,NULL,id,company_id,' . $company->id
             ],
             'phone' => ['nullable', 'string', 'max:20'],
@@ -80,6 +80,6 @@ class RegisterController extends Controller
         $request->session()->regenerate();
 
         // Redirigir al home o página anterior
-        return redirect()->intended(route('custom.page', ['company_slug' => $company->slug]));
+        return redirect()->intended('/');
     }
 }

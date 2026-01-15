@@ -11,15 +11,15 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
     // Función para obtener la URL de login basada en el hostname actual
     const getLoginUrl = () => {
         if (typeof window === 'undefined') return '';
-        
+
         const hostname = window.location.hostname;
-        
+
         // Si estamos en un subdominio (ej: tienda.pos.test)
         if (hostname.includes('.pos.test') && hostname.split('.').length > 2) {
             const subdomain = hostname.split('.')[0];
             return route('frontend.login.store', { subdomain });
         }
-        
+
         // Para dominio personalizado
         const domain = hostname;
         return route('frontend.login.store.custom', { domain });
@@ -28,17 +28,20 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
     // Función para obtener la URL de registro basada en el hostname actual
     const getRegisterUrl = () => {
         if (typeof window === 'undefined') return '';
-        
+
         const hostname = window.location.hostname;
-        
+        console.log('Hostname:', hostname); // Debug
+
         // Si estamos en un subdominio (ej: tienda.pos.test)
         if (hostname.includes('.pos.test') && hostname.split('.').length > 2) {
             const subdomain = hostname.split('.')[0];
+            console.log('Subdomain route:', route('frontend.register.store', { subdomain })); // Debug
             return route('frontend.register.store', { subdomain });
         }
-        
+
         // Para dominio personalizado
         const domain = hostname;
+        console.log('Custom domain route:', route('frontend.register.store.custom', { domain })); // Debug
         return route('frontend.register.store.custom', { domain });
     };
 
@@ -57,6 +60,7 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
         password: '',
         password_confirmation: '',
         phone: '',
+        terms: false,
         company_id: companyId,
     });
 
@@ -64,11 +68,11 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
         e.preventDefault();
         setIsLoading(true);
         setErrors({});
-        
+
         try {
             const loginUrl = getLoginUrl();
-            
-            await router.post(loginUrl, {
+
+            router.post(loginUrl, {
                 email: loginForm.data.email,
                 password: loginForm.data.password,
                 remember: loginForm.data.remember,
@@ -98,16 +102,17 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
         e.preventDefault();
         setIsLoading(true);
         setErrors({});
-        
+
         try {
             const registerUrl = getRegisterUrl();
-            
-            await router.post(registerUrl, {
+
+            router.post(registerUrl, {
                 name: registerForm.data.name,
                 email: registerForm.data.email,
                 password: registerForm.data.password,
                 password_confirmation: registerForm.data.password_confirmation,
                 phone: registerForm.data.phone,
+                terms: registerForm.data.terms,
                 company_id: companyId,
             }, {
                 preserveScroll: true,
@@ -171,7 +176,7 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
                                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                             )}
                         </div>
-                        
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Contraseña *
@@ -188,7 +193,7 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
                                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                             )}
                         </div>
-                        
+
                         <div className="flex items-center">
                             <input
                                 type="checkbox"
@@ -202,7 +207,7 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
                                 Recordar sesión
                             </label>
                         </div>
-                        
+
                         <button
                             type="submit"
                             disabled={isLoading}
@@ -229,7 +234,7 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
                                 <p className="mt-1 text-sm text-red-600">{errors.name}</p>
                             )}
                         </div>
-                        
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Email *
@@ -246,7 +251,7 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
                                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                             )}
                         </div>
-                        
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Teléfono *
@@ -263,7 +268,7 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
                                 <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
                             )}
                         </div>
-                        
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Contraseña *
@@ -280,7 +285,7 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
                                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                             )}
                         </div>
-                        
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Confirmar contraseña *
@@ -294,7 +299,25 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
                                 disabled={isLoading}
                             />
                         </div>
-                        
+
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                id="terms"
+                                checked={registerForm.data.terms}
+                                onChange={(e) => registerForm.setData('terms', e.target.checked)}
+                                className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
+                                required
+                                disabled={isLoading}
+                            />
+                            <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+                                Acepto los términos y condiciones
+                            </label>
+                        </div>
+                        {errors.terms && (
+                            <p className="mt-1 text-sm text-red-600">{errors.terms}</p>
+                        )}
+
                         <button
                             type="submit"
                             disabled={isLoading}
