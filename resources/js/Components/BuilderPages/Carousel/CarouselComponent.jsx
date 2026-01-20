@@ -1,15 +1,15 @@
 import React, { useState, useRef } from 'react';
 import CarouselTitleComponent from './CarouselTitleComponent';
 import CarouselCardComponent from './CarouselCardComponent';
-import TextComponent from './TextComponent';
-import HeadingComponent from './HeadingComponent';
-import ButtonComponent from './ButtonComponent';
-import ImageComponent from './ImageComponent';
-import LinkComponent from './LinkComponent';
-import VideoComponent from './VideoComponent';
+import TextComponent from '../TextComponent';
+import HeadingComponent from '../HeadingComponent';
+import ButtonComponent from '../ButtonComponent';
+import ImageComponent from '../ImageComponent';
+import LinkComponent from '../LinkComponent';
+import VideoComponent from '../VideoComponent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '../ui/button';
-import ComponentWithHover from './ComponentWithHover';
+import ComponentWithHover from '../ComponentWithHover';
+import { Button } from '@/Components/ui/button';
 
 const CarouselComponent = ({
     comp,

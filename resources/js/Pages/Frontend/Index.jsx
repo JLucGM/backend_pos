@@ -5,7 +5,7 @@ import { Head } from '@inertiajs/react';
 import ProductComponent from '@/Components/BuilderPages/ProductComponent';
 
 // Importar otros componentes
-import BannerComponent from '@/Components/BuilderPages/BannerComponent';
+import BannerComponent from '@/Components/BuilderPages/Banner/BannerComponent';
 import BentoComponent from '@/Components/BuilderPages/BentoComponent/BentoComponent';
 import ContainerComponent from '@/Components/BuilderPages/ContainerComponent';
 import HeadingComponent from '@/Components/BuilderPages/HeadingComponent';
@@ -15,13 +15,13 @@ import VideoComponent from '@/Components/BuilderPages/VideoComponent';
 import LinkComponent from '@/Components/BuilderPages/LinkComponent';
 import ButtonComponent from '@/Components/BuilderPages/ButtonComponent'; // IMPORTANTE: Agregado
 import DividerComponent from '@/Components/BuilderPages/DividerComponent/DividerComponent';
-import HeaderComponent from '@/Components/BuilderPages/HeaderComponent';
-import FooterComponent from '@/Components/BuilderPages/FooterComponent';
+import HeaderComponent from '@/Components/BuilderPages/Header/HeaderComponent';
+import FooterComponent from '@/Components/BuilderPages/Footer/FooterComponent';
 import MarqueeTextComponent from '@/Components/BuilderPages/MarqueeComponent/MarqueeTextComponent';
-import HeaderMenuComponent from '@/Components/BuilderPages/HeaderMenuComponent';
-import QuantitySelectorComponent from '@/Components/BuilderPages/QuantitySelectorComponent';
-import ProductDetailStockComponent from '@/Components/BuilderPages/ProductDetailStockComponent';
-import ProductDetailAttributesComponent from '@/Components/BuilderPages/ProductDetailAttributesComponent';
+import HeaderMenuComponent from '@/Components/BuilderPages/Header/HeaderMenuComponent';
+import QuantitySelectorComponent from '@/Components/BuilderPages/ProductDetail/QuantitySelectorComponent';
+import ProductDetailStockComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailStockComponent';
+import ProductDetailAttributesComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailAttributesComponent';
 import FrontendProductDetailComponent from '@/Components/Frontend/FrontendProductDetailComponent';
 
 // Importar componentes de autenticación y checkout

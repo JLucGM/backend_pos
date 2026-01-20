@@ -6,8 +6,8 @@ import ProductDetailDescriptionComponent from './ProductDetailDescriptionCompone
 import ProductDetailAttributesComponent from './ProductDetailAttributesComponent';
 import ProductDetailStockComponent from './ProductDetailStockComponent';
 import QuantitySelectorComponent from './QuantitySelectorComponent';
-import ButtonComponent from './ButtonComponent';
-import ComponentWithHover from './ComponentWithHover';
+import ButtonComponent from '../ButtonComponent';
+import ComponentWithHover from '../ComponentWithHover';
 
 const ProductDetailComponent = ({
     comp,

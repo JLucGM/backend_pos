@@ -2,7 +2,7 @@ import React from 'react';
 import CarouselImageComponent from './CarouselImageComponent';
 import CarouselNameComponent from './CarouselNameComponent';
 import CarouselPriceComponent from './CarouselPriceComponent';
-import ComponentWithHover from './ComponentWithHover';
+import ComponentWithHover from '../ComponentWithHover';
 
 const CarouselCardComponent = ({
     comp,

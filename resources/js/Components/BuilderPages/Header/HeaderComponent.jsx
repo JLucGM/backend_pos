@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Search, User, LogOut } from 'lucide-react';
-import CanvasItem from './CanvasItem';
+import CanvasItem from '../CanvasItem';
 import { Link, usePage, router } from '@inertiajs/react';
 
 const HeaderComponent = ({

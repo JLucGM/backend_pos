@@ -1,7 +1,7 @@
 // components/BuilderPages/FooterComponent.jsx
 import React from 'react';
 import FooterMenuComponent from './FooterMenuComponent';
-import TextComponent from './TextComponent'; 
+import TextComponent from '../TextComponent'; 
 
 const FooterComponent = ({
     comp,

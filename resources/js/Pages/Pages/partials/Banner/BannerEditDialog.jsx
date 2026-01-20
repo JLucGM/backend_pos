@@ -162,13 +162,13 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         placeholder="https://ejemplo.com/imagen.jpg"
                     />
 
-                    <Label htmlFor="backgroundVideo">Video de Fondo (URL)</Label>
+                    {/* <Label htmlFor="backgroundVideo">Video de Fondo (URL)</Label>
                     <Input
                         id="backgroundVideo"
                         value={editContent.backgroundVideo || ''}
                         onChange={(e) => updateBannerConfig('backgroundVideo', e.target.value)}
                         placeholder="https://ejemplo.com/video.mp4"
-                    />
+                    /> */}
 
                     <Label htmlFor="backgroundSize">Tamaño de Fondo</Label>
                     <Select 

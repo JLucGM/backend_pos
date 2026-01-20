@@ -1,15 +1,15 @@
 import React from 'react';
 import BannerTitleComponent from './BannerTitleComponent';
 import BannerTextComponent from './BannerTextComponent';
-import ButtonComponent from './ButtonComponent';
-import TextComponent from './TextComponent';
-import HeadingComponent from './HeadingComponent';
-import ImageComponent from './ImageComponent';
-import ComponentWithHover from './ComponentWithHover';
-import ContainerComponent from './ContainerComponent';
-import MarqueeTextComponent from './MarqueeComponent/MarqueeTextComponent';
-import LinkComponent from './LinkComponent';
-import DividerComponent from './DividerComponent/DividerComponent';
+import ButtonComponent from '../ButtonComponent';
+import TextComponent from '../TextComponent';
+import HeadingComponent from '../HeadingComponent';
+import ImageComponent from '../ImageComponent';
+import ComponentWithHover from '../ComponentWithHover';
+import ContainerComponent from '../ContainerComponent';
+import MarqueeTextComponent from '../MarqueeComponent/MarqueeTextComponent';
+import LinkComponent from '../LinkComponent';
+import DividerComponent from '../DividerComponent/DividerComponent';
 
 const BannerComponent = ({
     comp,
