@@ -107,8 +107,8 @@ const BannerComponent = ({
         display: 'flex',
         flexDirection: contentDirection === 'horizontal' ? 'row' : 'column',
         gap: contentDirection === 'horizontal' ? '20px' : '10px',
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: contentDirection === 'horizontal' ? getVerticalAlignment() : getHorizontalAlignment(),
+        justifyContent: contentDirection === 'horizontal' ? getHorizontalAlignment() : getVerticalAlignment(),
         maxWidth: '100%',
         zIndex: 2,
         position: 'relative',
@@ -124,14 +124,14 @@ const BannerComponent = ({
         borderRadius: innerContainerBorderRadius,
         width: innerContainerWidth,
         maxWidth: innerContainerMaxWidth,
-        // Mantener las propiedades flex para los hijos
         display: 'flex',
         flexDirection: contentDirection === 'horizontal' ? 'row' : 'column',
         gap: contentDirection === 'horizontal' ? '20px' : '10px',
-        alignItems: 'center',
-        justifyContent: 'center',
         boxSizing: 'border-box',
     };
+
+    innerContainerStyles.alignItems = contentDirection === 'horizontal' ? getVerticalAlignment() : getHorizontalAlignment();
+    innerContainerStyles.justifyContent = contentDirection === 'horizontal' ? getHorizontalAlignment() : getVerticalAlignment();
 
     if (bannerConfig.innerContainerHasBackground !== false &&
         innerContainerBackgroundColor !== 'transparent') {
