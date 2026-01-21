@@ -21,7 +21,8 @@ const CarouselComponent = ({
     products,
     setComponents,
     hoveredComponentId,
-    setHoveredComponentId
+    setHoveredComponentId,
+    mode = 'builder' // Agregar mode prop
 }) => {
     const carouselConfig = comp.content || {};
     const children = carouselConfig.children || [];
@@ -283,6 +284,7 @@ const CarouselComponent = ({
                                     setComponents={setComponents}
                                     hoveredComponentId={hoveredComponentId}
                                     setHoveredComponentId={setHoveredComponentId}
+                                    mode={mode} // Pasar mode prop
                                 />
                             </ComponentWithHover>
                         </div>

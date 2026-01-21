@@ -4,6 +4,7 @@ import { Ellipsis, Pen, Trash } from "lucide-react";
 import { Link, usePage } from "@inertiajs/react";
 import { formatDate } from "@/utils/dateFormatter";
 import { Badge } from "@/Components/ui/badge";
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
 
 export const ordersColumns = [
     {
@@ -78,9 +79,9 @@ export const ordersColumns = [
         header: "Total",
         accessorKey: "total",
         cell: ({ row }) => {
-            const settings = usePage().props.settings.default_currency;
+            const { settings } = usePage().props;
             return (
-                <p>{settings} {row.original.total}</p>
+                <p><CurrencyDisplay currency={settings?.currency} amount={row.original.total} /></p>
             );
         },
     },

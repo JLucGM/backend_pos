@@ -9,15 +9,14 @@ import Loader from '@/Components/ui/loader';
 // Define SettingsForm as a lazy component
 const SettingsForm = lazy(() => import('@/Pages/Settings/SettingsForm'));
 
-export default function Edit({ setting }) {
+export default function Edit({ setting, currencies }) {
     // console.log("Entrada", setting);
     const initialValues = {
         name: setting.company.name,
-        default_currency: setting.default_currency,
+        currency_id: setting.currency_id || '',
         email: setting.company.email,
         address: setting.company.address,
         phone: setting.company.phone,
-        shipping_base_price: setting.shipping_base_price,
     }
 
     const { data, setData, errors, post } = useForm(initialValues)
@@ -62,6 +61,7 @@ export default function Edit({ setting }) {
                                             setData={setData}
                                             errors={errors}
                                             setting={setting}
+                                            currencies={currencies}
                                         />
                                     </Suspense>
                                 </DivSection>

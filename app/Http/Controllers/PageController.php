@@ -153,7 +153,7 @@ class PageController extends RoutingController
 
         $themes = Theme::all();
 
-        $page->load('template.theme', 'theme', 'company.setting.media');
+        $page->load('template.theme', 'theme', 'company.setting.media', 'company.setting.currency');
       
         $dynamicPages = $page->company->pages()
         ->select('title', 'slug')

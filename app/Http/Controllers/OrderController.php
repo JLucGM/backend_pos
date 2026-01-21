@@ -29,14 +29,12 @@ class OrderController extends Controller
      */
     public function index()
     {
-
         $userAuth = Auth::user();
         $orders = Order::with('user')->where('company_id', $userAuth->company_id)->get();
 
         $role = $userAuth->getRoleNames();
         $permission = $userAuth->getAllPermissions();
 
-        // dd($orders);
         return Inertia::render('Orders/Index', compact('orders', 'role', 'permission'));
     }
 
@@ -605,6 +603,7 @@ class OrderController extends Controller
     public function edit(Order $orders)
     {
         $userAuth = Auth::user();
+        
         if ($orders->company_id !== $userAuth->company_id) {
             abort(403, 'No tienes permiso para esta operación.');
         }

@@ -1,4 +1,6 @@
 import React from 'react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const ProductDetailPriceComponent = ({
     comp,
@@ -10,6 +12,8 @@ const ProductDetailPriceComponent = ({
     currentPrice,
     selectedCombination
 }) => {
+    const { settings } = usePage().props;
+    
     // Función para obtener los estilos del precio
     const getTextStyles = () => {
         const baseStyles = getStyles(comp);
@@ -168,9 +172,8 @@ const ProductDetailPriceComponent = ({
         const price = currentPrice || product.product_price;
         const hasDiscount = product.product_price_discount && parseFloat(product.product_price_discount) > 0;
         const showDiscount = customStyles.showDiscount !== false;
-        const showCurrency = customStyles.showCurrency !== false;
 
-        if (hasDiscount && showDiscount) {
+        if (hasDiscount && showDiscount && settings?.currency) {
             return (
                 <>
                     <span 
@@ -181,7 +184,7 @@ const ProductDetailPriceComponent = ({
                             opacity: 0.7,
                         }}
                     >
-                        {showCurrency ? (customStyles.currencySymbol || '$') : ''}{parseFloat(product.product_price).toFixed(2)}
+                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(product.product_price)} />
                     </span>
                     <span 
                         style={{
@@ -190,18 +193,24 @@ const ProductDetailPriceComponent = ({
                             fontWeight: 'bold',
                         }}
                     >
-                        {showCurrency ? (customStyles.currencySymbol || '$') : ''}{parseFloat(product.product_price_discount).toFixed(2)}
+                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(product.product_price_discount)} />
                     </span>
                 </>
             );
         }
 
-        const currencySymbol = showCurrency ? (customStyles.currencySymbol || '$') : '';
+        if (settings?.currency) {
+            return (
+                <span style={{ fontWeight: 'bold' }}>
+                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(price)} />
+                </span>
+            );
+        }
+
+        // Fallback si no hay configuración de moneda
         return (
-            <span style={{
-                fontWeight: 'bold',
-            }}>
-                {currencySymbol}{parseFloat(price).toFixed(2)}
+            <span style={{ fontWeight: 'bold' }}>
+                ${parseFloat(price).toFixed(2)}
             </span>
         );
     };

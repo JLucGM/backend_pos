@@ -1,6 +1,6 @@
 import React from 'react';
 import ProductCardComponent from './ProductCardComponent';
-import ComponentWithHover from './ComponentWithHover';
+import ComponentWithHover from '../ComponentWithHover';
 
 const ProductComponent = ({
     comp,

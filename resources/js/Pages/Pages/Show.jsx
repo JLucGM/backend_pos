@@ -1,6 +1,7 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import CarouselComponent from '@/Components/BuilderPages/CarouselComponent';
 
 // Componente Producto (igual que antes)
@@ -11,7 +12,7 @@ const ProductComponent = ({ products }) => {
             {products.map((product) => (
                 <div key={product.id} style={{ border: '1px solid #ddd', padding: '10px', width: '200px' }}>
                     <h4>{product.product_name}</h4>
-                    <p>Precio: ${product.product_price}</p>
+                    <p>Precio: <CurrencyDisplay currency={settings?.currency} amount={product.product_price} /></p>
                     {product.media && product.media.length > 0 && (
                         <img src={product.media[0].original_url} alt={product.product_name} style={{ width: '100%' }} />
                     )}

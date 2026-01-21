@@ -2,7 +2,7 @@ import React from 'react';
 import { Head } from '@inertiajs/react';
 
 // IMPORTANTE: Importar ProductComponent unificado
-import ProductComponent from '@/Components/BuilderPages/ProductComponent';
+import ProductComponent from '@/Components/BuilderPages/Product/ProductComponent';
 
 // Importar otros componentes
 import BannerComponent from '@/Components/BuilderPages/Banner/BannerComponent';
@@ -23,6 +23,7 @@ import QuantitySelectorComponent from '@/Components/BuilderPages/ProductDetail/Q
 import ProductDetailStockComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailStockComponent';
 import ProductDetailAttributesComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailAttributesComponent';
 import FrontendProductDetailComponent from '@/Components/Frontend/FrontendProductDetailComponent';
+import CarouselComponent from '@/Components/BuilderPages/Carousel/CarouselComponent';
 
 // Importar componentes de autenticación y checkout
 import LoginComponent from '@/Components/BuilderPages/Auth/LoginComponent';
@@ -51,6 +52,7 @@ const componentMap = {
     'footer': FooterComponent,
     'marquee': MarqueeTextComponent,
     'product': ProductComponent, // ← Usando ProductComponent unificado
+    'carousel': CarouselComponent, // ← Agregado CarouselComponent
     'productDetail': FrontendProductDetailComponent,
     'productDetailAttributes': ProductDetailAttributesComponent,
     'productDetailStock': ProductDetailStockComponent,
@@ -113,6 +115,16 @@ function renderBlock(
     // Props específicas por tipo de componente - CORREGIDO
     switch (block.type) {
         case 'product':
+            return (
+                <Component 
+                    key={block.id} 
+                    {...baseProps} 
+                    products={products} 
+                    companyId={companyId}
+                />
+            );
+
+        case 'carousel':
             return (
                 <Component 
                     key={block.id} 

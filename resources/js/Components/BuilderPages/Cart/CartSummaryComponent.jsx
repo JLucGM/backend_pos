@@ -1,6 +1,8 @@
 // CartSummaryComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS E IMPUESTOS
 import React from 'react';
 import cartHelper from '@/Helper/cartHelper';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const CartSummaryComponent = ({
     comp,
@@ -14,6 +16,7 @@ const CartSummaryComponent = ({
     automaticDiscounts = [],
     companyId
 }) => {
+    const { settings } = usePage().props;
     const styles = comp.styles || {};
     const content = comp.content || {};
 
@@ -138,7 +141,11 @@ const CartSummaryComponent = ({
                     <div className="flex justify-between" style={textStyles}>
                         <span>Subtotal original</span>
                         <span className="line-through text-gray-500">
-                            ${cartSummary.originalSubtotal.toFixed(2)}
+                            {settings?.currency ? (
+                                <CurrencyDisplay currency={settings.currency} amount={cartSummary.originalSubtotal} />
+                            ) : (
+                                `$${cartSummary.originalSubtotal.toFixed(2)}`
+                            )}
                         </span>
                     </div>
                 )}
@@ -147,14 +154,26 @@ const CartSummaryComponent = ({
                 {cartSummary.automaticDiscountTotal > 0 && (
                     <div className="flex justify-between" style={discountStyles}>
                         <span>Descuentos automáticos</span>
-                        <span>-${cartSummary.automaticDiscountTotal.toFixed(2)}</span>
+                        <span>
+                            {settings?.currency ? (
+                                <>-<CurrencyDisplay currency={settings.currency} amount={cartSummary.automaticDiscountTotal} /></>
+                            ) : (
+                                `-$${cartSummary.automaticDiscountTotal.toFixed(2)}`
+                            )}
+                        </span>
                     </div>
                 )}
 
                 {/* Subtotal */}
                 <div className="flex justify-between" style={textStyles}>
                     <span>Subtotal</span>
-                    <span>${cartSummary.subtotal.toFixed(2)}</span>
+                    <span>
+                        {settings?.currency ? (
+                            <CurrencyDisplay currency={settings.currency} amount={cartSummary.subtotal} />
+                        ) : (
+                            `$${cartSummary.subtotal.toFixed(2)}`
+                        )}
+                    </span>
                 </div>
 
                 {/* Impuestos */}
@@ -164,13 +183,25 @@ const CartSummaryComponent = ({
                             cartSummary.taxDetails.map((tax, index) => (
                                 <div key={index} className="flex justify-between" style={textStyles}>
                                     <span>{tax.name} ({tax.rate})</span>
-                                    <span>${tax.amount.toFixed(2)}</span>
+                                    <span>
+                                        {settings?.currency ? (
+                                            <CurrencyDisplay currency={settings.currency} amount={tax.amount} />
+                                        ) : (
+                                            `$${tax.amount.toFixed(2)}`
+                                        )}
+                                    </span>
                                 </div>
                             ))
                         ) : (
                             <div className="flex justify-between" style={textStyles}>
                                 <span>Impuestos</span>
-                                <span>${cartSummary.taxTotal.toFixed(2)}</span>
+                                <span>
+                                    {settings?.currency ? (
+                                        <CurrencyDisplay currency={settings.currency} amount={cartSummary.taxTotal} />
+                                    ) : (
+                                        `$${cartSummary.taxTotal.toFixed(2)}`
+                                    )}
+                                </span>
                             </div>
                         )}
                     </div>
@@ -180,7 +211,13 @@ const CartSummaryComponent = ({
                 {cartSummary.manualDiscountTotal > 0 && (
                     <div className="flex justify-between" style={discountStyles}>
                         <span>Descuento por código</span>
-                        <span>-${cartSummary.manualDiscountTotal.toFixed(2)}</span>
+                        <span>
+                            {settings?.currency ? (
+                                <>-<CurrencyDisplay currency={settings.currency} amount={cartSummary.manualDiscountTotal} /></>
+                            ) : (
+                                `-$${cartSummary.manualDiscountTotal.toFixed(2)}`
+                            )}
+                        </span>
                     </div>
                 )}
 
@@ -192,7 +229,13 @@ const CartSummaryComponent = ({
                 {/* Total */}
                 <div className="flex justify-between" style={{ ...totalStyles, marginTop: '16px' }}>
                     <span>Total</span>
-                    <span>${cartSummary.totalAmount.toFixed(2)}</span>
+                    <span>
+                        {settings?.currency ? (
+                            <CurrencyDisplay currency={settings.currency} amount={cartSummary.totalAmount} />
+                        ) : (
+                            `$${cartSummary.totalAmount.toFixed(2)}`
+                        )}
+                    </span>
                 </div>
 
                 {/* Botón de checkout */}
@@ -227,7 +270,11 @@ const CartSummaryComponent = ({
                         border: '1px solid rgba(5, 150, 105, 0.2)'
                     }}>
                         <p className="text-sm text-center" style={{ color: '#059669' }}>
-                            ¡Has ahorrado ${cartSummary.automaticDiscountTotal.toFixed(2)} con descuentos automáticos!
+                            ¡Has ahorrado {settings?.currency ? (
+                                <CurrencyDisplay currency={settings.currency} amount={cartSummary.automaticDiscountTotal} />
+                            ) : (
+                                `$${cartSummary.automaticDiscountTotal.toFixed(2)}`
+                            )} con descuentos automáticos!
                         </p>
                     </div>
                 )}

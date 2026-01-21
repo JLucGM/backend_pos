@@ -5,17 +5,16 @@ import ButtonComponent from './ButtonComponent';
 import ImageComponent from './ImageComponent';
 import VideoComponent from './VideoComponent';
 import LinkComponent from './LinkComponent';
-import ProductComponent from './ProductComponent';
 import CarouselComponent from './Carousel/CarouselComponent';
 import ContainerComponent from './ContainerComponent';
 import BannerComponent from './Banner/BannerComponent';
 import BannerTitleComponent from './Banner/BannerTitleComponent';
 import BannerTextComponent from './Banner/BannerTextComponent';
-import ProductTitleComponent from './ProductTitleComponent';
-import ProductCardComponent from './ProductCardComponent';
-import ProductImageComponent from './ProductImageComponent';
-import ProductNameComponent from './ProductNameComponent';
-import ProductPriceComponent from './ProductPriceComponent';
+import ProductTitleComponent from './Product/ProductTitleComponent';
+import ProductCardComponent from './Product/ProductCardComponent';
+import ProductImageComponent from './Product/ProductImageComponent';
+import ProductNameComponent from './Product/ProductNameComponent';
+import ProductPriceComponent from './Product/ProductPriceComponent';
 import CarouselNameComponent from './Carousel/CarouselNameComponent';
 import CarouselImageComponent from './Carousel/CarouselImageComponent';
 import CarouselCardComponent from './Carousel/CarouselCardComponent';
@@ -49,6 +48,7 @@ import CheckoutPaymentComponent from './Checkout/CheckoutPaymentComponent';
 import CheckoutSummaryComponent from './Checkout/CheckoutSummaryComponent';
 import CustomerInfoComponent from './Checkout/CustomerInfoComponent';
 import CheckoutDiscountGiftCardComponent from './Checkout/CheckoutDiscountGiftCardComponent';
+import ProductComponent from './Product/ProductComponent';
 
 const CanvasItem = ({
     comp,

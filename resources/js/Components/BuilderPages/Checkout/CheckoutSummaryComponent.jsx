@@ -1,5 +1,7 @@
 // components/BuilderPages/Checkout/CheckoutSummaryComponent.jsx - VERSIÓN ACTUALIZADA
 import React from 'react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const CheckoutSummaryComponent = ({
     comp,
@@ -16,6 +18,7 @@ const CheckoutSummaryComponent = ({
     automaticDiscountsTotal = 0,
     taxDetails = []
 }) => {
+    const { settings } = usePage().props;
     const styles = comp.styles || {};
     const content = comp.content || {};
 
@@ -114,7 +117,11 @@ const CheckoutSummaryComponent = ({
                     {item.discountType === 'direct_discount' ? 'Descuento directo' :
                         item.discountType === 'product_automatic' ? 'Descuento automático' :
                             'Descuento aplicado'}
-                    : -${discountAmount.toFixed(2)}
+                    : {settings?.currency ? (
+                        <>-<CurrencyDisplay currency={settings.currency} amount={discountAmount} /></>
+                    ) : (
+                        `-$${discountAmount.toFixed(2)}`
+                    )}
                 </div>
                 <div className="text-xs text-gray-500">
                     {discountPercentage}% de descuento
@@ -157,14 +164,28 @@ const CheckoutSummaryComponent = ({
                                                     {item.originalPrice > item.price ? (
                                                         <>
                                                             <span className="line-through text-gray-400 ml-1">
-                                                                ${item.originalPrice.toFixed(2)}
+                                                                {settings?.currency ? (
+                                                                    <CurrencyDisplay currency={settings.currency} amount={item.originalPrice} />
+                                                                ) : (
+                                                                    `$${item.originalPrice.toFixed(2)}`
+                                                                )}
                                                             </span>
                                                             <span className="ml-1 font-medium text-green-600">
-                                                                ${item.price.toFixed(2)}
+                                                                {settings?.currency ? (
+                                                                    <CurrencyDisplay currency={settings.currency} amount={item.price} />
+                                                                ) : (
+                                                                    `$${item.price.toFixed(2)}`
+                                                                )}
                                                             </span>
                                                         </>
                                                     ) : (
-                                                        <span className="ml-1">${item.price.toFixed(2)}</span>
+                                                        <span className="ml-1">
+                                                            {settings?.currency ? (
+                                                                <CurrencyDisplay currency={settings.currency} amount={item.price} />
+                                                            ) : (
+                                                                `$${item.price.toFixed(2)}`
+                                                            )}
+                                                        </span>
                                                     )}
                                                 </span>
                                             </div>
@@ -185,13 +206,21 @@ const CheckoutSummaryComponent = ({
                                             {item.taxRate > 0 && (
                                                 <div className="text-xs text-gray-500 mt-1">
                                                     Impuesto ({item.taxName || `${item.taxRate}%`}): 
-                                                    ${((item.price * item.quantity) * (item.taxRate / 100)).toFixed(2)}
+                                                    {settings?.currency ? (
+                                                        <CurrencyDisplay currency={settings.currency} amount={(item.price * item.quantity) * (item.taxRate / 100)} />
+                                                    ) : (
+                                                        `$${((item.price * item.quantity) * (item.taxRate / 100)).toFixed(2)}`
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                     <div className="font-medium">
-                                        ${(item.price * item.quantity).toFixed(2)}
+                                        {settings?.currency ? (
+                                            <CurrencyDisplay currency={settings.currency} amount={item.price * item.quantity} />
+                                        ) : (
+                                            `$${(item.price * item.quantity).toFixed(2)}`
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -204,14 +233,26 @@ const CheckoutSummaryComponent = ({
                     {/* Subtotal original (sin descuentos) */}
                     <div className="flex justify-between">
                         <span>Subtotal original</span>
-                        <span className="line-through text-gray-400">${originalSubtotal.toFixed(2)}</span>
+                        <span className="line-through text-gray-400">
+                            {settings?.currency ? (
+                                <CurrencyDisplay currency={settings.currency} amount={originalSubtotal} />
+                            ) : (
+                                `$${originalSubtotal.toFixed(2)}`
+                            )}
+                        </span>
                     </div>
 
                     {/* Descuentos automáticos */}
                     {displayAutomaticDiscounts > 0 && (
                         <div className="flex justify-between text-green-600">
                             <span>Descuentos automáticos</span>
-                            <span>-${displayAutomaticDiscounts.toFixed(2)}</span>
+                            <span>
+                                {settings?.currency ? (
+                                    <>-<CurrencyDisplay currency={settings.currency} amount={displayAutomaticDiscounts} /></>
+                                ) : (
+                                    `-$${displayAutomaticDiscounts.toFixed(2)}`
+                                )}
+                            </span>
                         </div>
                     )}
 
@@ -222,7 +263,11 @@ const CheckoutSummaryComponent = ({
                                 Gift Card ({appliedGiftCard.code})
                             </span>
                             <span className="font-medium text-green-600">
-                                -${giftCardAmount.toFixed(2)}
+                                {settings?.currency ? (
+                                    <>-<CurrencyDisplay currency={settings.currency} amount={giftCardAmount} /></>
+                                ) : (
+                                    `-$${giftCardAmount.toFixed(2)}`
+                                )}
                             </span>
                         </div>
                     )}
@@ -231,13 +276,23 @@ const CheckoutSummaryComponent = ({
                     {appliedGiftCard && giftCardAmount > 0 && (
                         <div className="text-xs text-gray-500 italic mt-1">
                             Saldo restante en {appliedGiftCard.code}:
-                            ${(parseFloat(appliedGiftCard.current_balance) - giftCardAmount).toFixed(2)}
+                            {settings?.currency ? (
+                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(appliedGiftCard.current_balance) - giftCardAmount} />
+                            ) : (
+                                `$${(parseFloat(appliedGiftCard.current_balance) - giftCardAmount).toFixed(2)}`
+                            )}
                         </div>
                     )}
 
                     <div className="flex justify-between font-medium">
                         <span>Subtotal</span>
-                        <span>${calculatedSubtotal.toFixed(2)}</span>
+                        <span>
+                            {settings?.currency ? (
+                                <CurrencyDisplay currency={settings.currency} amount={calculatedSubtotal} />
+                            ) : (
+                                `$${calculatedSubtotal.toFixed(2)}`
+                            )}
+                        </span>
                     </div>
 
                     {/* Envío */}
@@ -258,20 +313,38 @@ const CheckoutSummaryComponent = ({
                                             <span className="text-gray-600">
                                                 {taxDetail.name} ({taxDetail.rate})
                                             </span>
-                                            <span className="font-medium">${taxDetail.amount.toFixed(2)}</span>
+                                            <span className="font-medium">
+                                                {settings?.currency ? (
+                                                    <CurrencyDisplay currency={settings.currency} amount={taxDetail.amount} />
+                                                ) : (
+                                                    `$${taxDetail.amount.toFixed(2)}`
+                                                )}
+                                            </span>
                                         </div>
                                     ))}
                                     {displayTaxDetails.length > 1 && (
                                         <div className="flex justify-between border-t pt-1">
                                             <span className="text-gray-600 font-medium">Total impuestos</span>
-                                            <span className="font-medium">${displayTax.toFixed(2)}</span>
+                                            <span className="font-medium">
+                                                {settings?.currency ? (
+                                                    <CurrencyDisplay currency={settings.currency} amount={displayTax} />
+                                                ) : (
+                                                    `$${displayTax.toFixed(2)}`
+                                                )}
+                                            </span>
                                         </div>
                                     )}
                                 </>
                             ) : (
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Impuestos</span>
-                                    <span className="font-medium">${displayTax.toFixed(2)}</span>
+                                    <span className="font-medium">
+                                        {settings?.currency ? (
+                                            <CurrencyDisplay currency={settings.currency} amount={displayTax} />
+                                        ) : (
+                                            `$${displayTax.toFixed(2)}`
+                                        )}
+                                    </span>
                                 </div>
                             )}
                         </div>
@@ -283,7 +356,13 @@ const CheckoutSummaryComponent = ({
                             <hr className="my-3 border-gray-300" />
                             <div className="flex justify-between font-bold text-lg">
                                 <span>Total</span>
-                                <span>${displayOrderTotal.toFixed(2)}</span>
+                                <span>
+                                    {settings?.currency ? (
+                                        <CurrencyDisplay currency={settings.currency} amount={displayOrderTotal} />
+                                    ) : (
+                                        `$${displayOrderTotal.toFixed(2)}`
+                                    )}
+                                </span>
                             </div>
                         </>
                     )}
@@ -296,7 +375,11 @@ const CheckoutSummaryComponent = ({
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-green-500"></div>
                         <span className="text-sm text-green-700 font-medium">
-                            ¡Has ahorrado ${displayAutomaticDiscounts.toFixed(2)} con descuentos automáticos!
+                            ¡Has ahorrado {settings?.currency ? (
+                                <CurrencyDisplay currency={settings.currency} amount={displayAutomaticDiscounts} />
+                            ) : (
+                                `$${displayAutomaticDiscounts.toFixed(2)}`
+                            )} con descuentos automáticos!
                         </span>
                     </div>
                 </div>

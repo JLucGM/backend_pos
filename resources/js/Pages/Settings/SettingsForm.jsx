@@ -2,9 +2,9 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Input } from '@/Components/ui/input';
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
-export default function SettingsForm({ data, setting, setData, errors }) {
+export default function SettingsForm({ data, setting, setData, errors, currencies }) {
 
     const favicon = setting.media.find(mediaItem => mediaItem.collection_name === 'favicon');
     const logo = setting.media.find(mediaItem => mediaItem.collection_name === 'logo');
@@ -12,17 +12,7 @@ export default function SettingsForm({ data, setting, setData, errors }) {
 
     return (
         <>
-            {/* <Tabs defaultValue="account" className="flex">
-                <TabsList className="flex flex-col h-full">
-                    <TabsTrigger value="account" className="w-full text-wrap">Account</TabsTrigger>
-                    <TabsTrigger value="password" className="w-full text-wrap">Password</TabsTrigger>
-                </TabsList>
-                <TabsContent value="account">Make changes to your account here.</TabsContent>
-                <TabsContent value="password">Change your password here.</TabsContent>
-            </Tabs> */}
-
             <div>
-                {/* setting{setting.app_name} */}
                 <InputLabel htmlFor="name" value="Nombre" />
                 <TextInput
                     id="name"
@@ -35,6 +25,7 @@ export default function SettingsForm({ data, setting, setData, errors }) {
                 />
                 <InputError message={errors.name} className="mt-2" />
             </div>
+            
             <div>
                 <InputLabel htmlFor="email" value="Correo" />
                 <TextInput
@@ -43,52 +34,64 @@ export default function SettingsForm({ data, setting, setData, errors }) {
                     name="email"
                     value={data.email}
                     className="mt-1 block w-full"
-                    isFocused={true}
                     onChange={(e) => setData('email', e.target.value)}
                 />
                 <InputError message={errors.email} className="mt-2" />
             </div>
 
             <div>
-                <InputLabel htmlFor="phone" value="Telefono" />
+                <InputLabel htmlFor="phone" value="Teléfono" />
                 <TextInput
                     id="phone"
                     type="text"
                     name="phone"
                     value={data.phone}
                     className="mt-1 block w-full"
-                    isFocused={true}
                     onChange={(e) => setData('phone', e.target.value)}
                 />
                 <InputError message={errors.phone} className="mt-2" />
             </div>
             
             <div>
-                <InputLabel htmlFor="address" value="address" />
+                <InputLabel htmlFor="address" value="Dirección" />
                 <TextInput
                     id="address"
                     type="text"
                     name="address"
                     value={data.address}
                     className="mt-1 block w-full"
-                    isFocused={true}
                     onChange={(e) => setData('address', e.target.value)}
                 />
                 <InputError message={errors.address} className="mt-2" />
             </div>
 
             <div>
-                <InputLabel htmlFor="default_currency" value="default_currency" />
-                <TextInput
-                    id="default_currency"
-                    type="text"
-                    name="default_currency"
-                    value={data.default_currency}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('default_currency', e.target.value)}
-                />
-                <InputError message={errors.default_currency} className="mt-2" />
+                <InputLabel htmlFor="currency_id" value="Moneda" />
+                <Select 
+                    value={data.currency_id?.toString() || ''} 
+                    onValueChange={(value) => setData('currency_id', parseInt(value))}
+                >
+                    <SelectTrigger className="mt-1 w-full">
+                        <SelectValue placeholder="Selecciona una moneda" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {currencies?.map((currency) => (
+                            <SelectItem key={currency.id} value={currency.id.toString()}>
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium">{currency.symbol}</span>
+                                    <span>{currency.name}</span>
+                                    <span className="text-sm text-gray-500">({currency.code})</span>
+                                </div>
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <InputError message={errors.currency_id} className="mt-2" />
+                {setting.currency && (
+                    <div className="mt-2 text-sm text-gray-600">
+                        Moneda actual: {setting.currency.symbol} {setting.currency.name} ({setting.currency.code})
+                    </div>
+                )}
             </div>
 
             <div>
@@ -98,45 +101,44 @@ export default function SettingsForm({ data, setting, setData, errors }) {
                     type="file"
                     name="logo"
                     className="mt-1 block w-full"
-                    onChange={(e) => setData('logo', Array.from(e.target.files))} // Almacena todos los archivos
+                    onChange={(e) => setData('logo', Array.from(e.target.files))}
                     multiple
                 />
                 <InputError message={errors.logo} className="mt-2" />
             </div>
 
             <div>
-                <InputLabel htmlFor="favicon" value="favicon" />
+                <InputLabel htmlFor="favicon" value="Favicon" />
                 <Input
                     id="favicon"
                     type="file"
                     name="favicon"
                     className="mt-1 block w-full"
-                    onChange={(e) => setData('favicon', Array.from(e.target.files))} // Almacena todos los archivos
+                    onChange={(e) => setData('favicon', Array.from(e.target.files))}
                     multiple
                 />
                 <InputError message={errors.favicon} className="mt-2" />
             </div>
 
             <div>
-                <InputLabel htmlFor="logofooter" value="logofooter" />
+                <InputLabel htmlFor="logofooter" value="Logo Footer" />
                 <Input
                     id="logofooter"
                     type="file"
                     name="logofooter"
                     className="mt-1 block w-full"
-                    onChange={(e) => setData('logofooter', Array.from(e.target.files))} // Almacena todos los archivos
+                    onChange={(e) => setData('logofooter', Array.from(e.target.files))}
                     multiple
                 />
                 <InputError message={errors.logofooter} className="mt-2" />
             </div>
 
-
             <div>
                 <h2>Favicon</h2>
                 {favicon && (
                     <img
-                        src={favicon.original_url} // URL del favicon
-                        alt={favicon.name} // Nombre del favicon
+                        src={favicon.original_url}
+                        alt={favicon.name}
                         className="w-10 h-10 object-cover rounded-full"
                     />
                 )}
@@ -146,19 +148,19 @@ export default function SettingsForm({ data, setting, setData, errors }) {
                 <h2>Logo</h2>
                 {logo && (
                     <img
-                        src={logo.original_url} // URL del logo
-                        alt={logo.name} // Nombre del logo
+                        src={logo.original_url}
+                        alt={logo.name}
                         className="w-44 h-44 object-cover rounded-xl"
                     />
                 )}
             </div>
 
             <div>
-                <h2>logofooter</h2>
+                <h2>Logo Footer</h2>
                 {logofooter && (
                     <img
-                        src={logofooter.original_url} // URL del logofooter
-                        alt={logofooter.name} // Nombre del logofooter
+                        src={logofooter.original_url}
+                        alt={logofooter.name}
                         className="w-44 h-44 object-cover rounded-xl"
                     />
                 )}

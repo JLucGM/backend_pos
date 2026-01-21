@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const FrontendCartComponent = ({ comp, themeSettings, companyId }) => {
+    const { settings } = usePage().props;
     const [cartItems, setCartItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [cartTotal, setCartTotal] = useState(0);
@@ -196,7 +199,11 @@ const FrontendCartComponent = ({ comp, themeSettings, companyId }) => {
                                     <p className="text-gray-600" style={{
                                         fontFamily: themeSettings?.body_font || 'inherit',
                                     }}>
-                                        ${parseFloat(item.price).toFixed(2)} c/u
+                                        {settings?.currency ? (
+                                            <><CurrencyDisplay currency={settings.currency} amount={parseFloat(item.price)} /> c/u</>
+                                        ) : (
+                                            `$${parseFloat(item.price).toFixed(2)} c/u`
+                                        )}
                                     </p>
                                 </div>
                                 
@@ -258,7 +265,13 @@ const FrontendCartComponent = ({ comp, themeSettings, companyId }) => {
                             fontFamily: themeSettings?.body_font || 'inherit',
                         }}>
                             <span>Subtotal:</span>
-                            <span>${cartTotal.toFixed(2)}</span>
+                            <span>
+                                {settings?.currency ? (
+                                    <CurrencyDisplay currency={settings.currency} amount={cartTotal} />
+                                ) : (
+                                    `$${cartTotal.toFixed(2)}`
+                                )}
+                            </span>
                         </div>
                         
                         {/* Aquí puedes agregar impuestos, envío, etc. si lo necesitas */}
@@ -268,7 +281,13 @@ const FrontendCartComponent = ({ comp, themeSettings, companyId }) => {
                             color: themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#007bff',
                         }}>
                             <span>Total:</span>
-                            <span>${cartTotal.toFixed(2)}</span>
+                            <span>
+                                {settings?.currency ? (
+                                    <CurrencyDisplay currency={settings.currency} amount={cartTotal} />
+                                ) : (
+                                    `$${cartTotal.toFixed(2)}`
+                                )}
+                            </span>
                         </div>
                     </div>
 

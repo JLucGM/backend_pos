@@ -26,27 +26,82 @@ const HeaderComponent = ({
     const content = comp.content || {};
 
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
+    const [lastScrollY, setLastScrollY] = useState(0);
 
     // Determinar si estamos en modo de edición
     const isEditable = mode === 'builder' && !isPreview;
 
+    // Configuración de sticky
+    const stickyType = content?.stickyType || 'none'; // 'none', 'fixed', 'smart'
+
+    // Efecto para manejar el scroll solo en modo frontend y sticky smart
+    useEffect(() => {
+        if (mode !== 'frontend' || stickyType !== 'smart') return;
+
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            
+            if (currentScrollY < lastScrollY) {
+                // Scrolling up - mostrar header
+                setIsVisible(true);
+            } else if (currentScrollY > 100 && currentScrollY > lastScrollY) {
+                // Scrolling down y pasó los 100px - ocultar header
+                setIsVisible(false);
+            }
+            
+            setLastScrollY(currentScrollY);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [lastScrollY, mode, stickyType]);
+
     // Estilos del contenedor principal del header
-    const containerStyles = {
-        ...headerStyles,
-        position: content?.sticky ? 'sticky' : 'static',
-        top: 0,
-        zIndex: 1000,
-        width: content?.fullWidth ? '100%' : customStyles.width || '100%',
-        height: content?.height || '70px',
-        display: 'flex',
-        alignItems: 'center',
-        backgroundColor: customStyles.backgroundColor || '#ffffff',
-        paddingTop: customStyles.paddingTop || '20px',
-        paddingRight: customStyles.paddingRight || '20px',
-        paddingBottom: customStyles.paddingBottom || '20px',
-        paddingLeft: customStyles.paddingLeft || '20px',
-        borderBottom: customStyles.borderBottom || '1px solid #e5e5e5'
+    const getContainerStyles = () => {
+        const baseStyles = {
+            ...headerStyles,
+            width: content?.fullWidth ? '100%' : customStyles.width || '100%',
+            height: content?.height || '70px',
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: customStyles.backgroundColor || '#ffffff',
+            paddingTop: customStyles.paddingTop || '20px',
+            paddingRight: customStyles.paddingRight || '20px',
+            paddingBottom: customStyles.paddingBottom || '20px',
+            paddingLeft: customStyles.paddingLeft || '20px',
+            borderBottom: customStyles.borderBottom || '1px solid #e5e5e5',
+            transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
+        };
+
+        // Aplicar sticky solo en modo frontend
+        if (mode === 'frontend') {
+            if (stickyType === 'fixed') {
+                return {
+                    ...baseStyles,
+                    position: 'fixed',
+                    top: 0,
+                    zIndex: 1000,
+                };
+            } else if (stickyType === 'smart') {
+                return {
+                    ...baseStyles,
+                    position: 'fixed',
+                    top: 0,
+                    zIndex: 1000,
+                    transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+                };
+            }
+        }
+
+        // Modo builder o sin sticky
+        return {
+            ...baseStyles,
+            position: 'static',
+        };
     };
+
+    const containerStyles = getContainerStyles();
 
     // Clasificar los componentes hijos por tipo
     const classifyChildren = () => {

@@ -2,7 +2,9 @@ import React from 'react';
 import ProductImageComponent from './ProductImageComponent';
 import ProductNameComponent from './ProductNameComponent';
 import ProductPriceComponent from './ProductPriceComponent';
-import ComponentWithHover from './ComponentWithHover';
+import ComponentWithHover from '../ComponentWithHover';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const ProductCardComponent = ({
     comp,
@@ -18,6 +20,7 @@ const ProductCardComponent = ({
     mode = 'builder',
     companyId,
 }) => {
+    const { settings } = usePage().props;
     const cardConfig = comp.content || {};
     const children = cardConfig.children || [];
     const productData = cardConfig.productData;
@@ -175,15 +178,17 @@ const ProductCardComponent = ({
                 
                 {/* Precio */}
                 <div className="product-price" style={priceStyle}>
-                    {productData?.product_price_discount ? (
+                    {productData?.product_price_discount && settings?.currency ? (
                         <>
                             <span style={{ textDecoration: 'line-through', marginRight: '8px', opacity: 0.6 }}>
-                                ${parseFloat(productData.product_price || 0).toFixed(2)}
+                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(productData.product_price || 0)} />
                             </span>
                             <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
-                                ${parseFloat(productData.product_price_discount).toFixed(2)}
+                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(productData.product_price_discount)} />
                             </span>
                         </>
+                    ) : settings?.currency ? (
+                        <span><CurrencyDisplay currency={settings.currency} amount={parseFloat(productData?.product_price || 0)} /></span>
                     ) : (
                         <span>${parseFloat(productData?.product_price || 0).toFixed(2)}</span>
                     )}
@@ -328,7 +333,7 @@ const getChildContent = (type, productData, fallback) => {
         case 'productName':
             return productData.product_name || fallback;
         case 'productPrice':
-            return productData.product_price ? `$${parseFloat(productData.product_price).toFixed(2)}` : fallback;
+            return productData.product_price ? parseFloat(productData.product_price) : fallback;
         default:
             return fallback;
     }

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Currency;
 use App\Models\Setting;
 use App\Models\State;
 use App\Models\Store;
@@ -17,21 +18,16 @@ class SettingsSeeder extends Seeder
      */
     public function run(): void
     {
+        // Obtener la moneda USD como predeterminada
+        $usdCurrency = Currency::where('code', 'USD')->first();
+        
         $settings = [
             [
-                // 'app_name' => 'Mi empresa',
-                'default_currency' => "$",
-                // 'admin_email' => "joedoe@example.com",
-                // 'admin_phone' => "04125549950",
-                // 'shipping_base_price' => "2.00",
+                'currency_id' => $usdCurrency ? $usdCurrency->id : null,
                 'company_id' => 1,
             ],            
             [
-                // 'app_name' => 'Mi empresa',
-                'default_currency' => "$",
-                // 'admin_email' => "joedoe@example.com",
-                // 'admin_phone' => "04125549950",
-                // 'shipping_base_price' => "2.00",
+                'currency_id' => $usdCurrency ? $usdCurrency->id : null,
                 'company_id' => 2,
             ],            
         ];

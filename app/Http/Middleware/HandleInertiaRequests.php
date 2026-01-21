@@ -35,8 +35,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'settings' => function () {
-                return Setting::first(); // O tu consulta personalizada
+            'settings' => function () use ($request) {
+                if ($request->user() && $request->user()->company_id) {
+                    return Setting::with('currency')->where('company_id', $request->user()->company_id)->first();
+                }
+                return null;
             },
         //      'flash' => [
         //     'message' => fn () => $request->session()->get('message'),

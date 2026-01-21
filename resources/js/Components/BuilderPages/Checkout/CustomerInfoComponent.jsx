@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Button } from '@/Components/ui/button';
 import { UserCircleIcon, TruckIcon, MapPinIcon, CreditCardIcon, HomeIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { StoreIcon } from 'lucide-react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const CustomerInfoComponent = ({
     comp,
@@ -23,6 +25,7 @@ const CustomerInfoComponent = ({
     showAuthModal,
     mode = 'builder'
 }) => {
+    const { settings } = usePage().props;
     const styles = comp.styles || {};
     const content = comp.content || {};
 
@@ -386,7 +389,11 @@ const CustomerInfoComponent = ({
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className="font-semibold text-lg">
-                                            ${rate.price}
+                                            {settings?.currency ? (
+                                                <CurrencyDisplay currency={settings.currency} amount={rate.price} />
+                                            ) : (
+                                                `$${rate.price}`
+                                            )}
                                         </div>
                                         {selectedShippingRate?.id === rate.id && (
                                             <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">

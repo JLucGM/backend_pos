@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Currency;
 use App\Models\Setting;
 use App\Models\ShippingRate;
 use Illuminate\Http\Request;
@@ -16,15 +17,15 @@ class SettingController extends Controller
      */
     public function index()
     {
-        // $currencies = Currency::all();
+        $currencies = Currency::active()->orderBy('name')->get();
 
         $user = Auth::user();
-        $setting = Setting::with('media', 'company')->where('company_id', $user->company_id)->first();
+        $setting = Setting::with('media', 'company', 'currency')->where('company_id', $user->company_id)->first();
 
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
-        return Inertia::render('Settings/Edit', compact('setting', 'role', 'permission'));
+        return Inertia::render('Settings/Edit', compact('setting', 'currencies', 'role', 'permission'));
     }
 
     /**
@@ -67,8 +68,7 @@ class SettingController extends Controller
         // dd($request->all());
         // Validar los datos de entrada
         $request->validate([
-            'default_currency' => 'required|string|max:255',
-            // 'shipping_base_price' => 'required|numeric|min:0',
+            'currency_id' => 'required|exists:currencies,id',
             'name' => 'required|string|max:255', // Validación para el nombre de la compañía
             'email' => 'required|email|max:255', // Validación para el correo de la compañía
             'phone' => 'required|string|max:255', // Validación para el teléfono de la compañía
@@ -82,8 +82,7 @@ class SettingController extends Controller
 
         // Actualizar los ajustes
         $setting->update($request->only(
-            'default_currency',
-            // 'shipping_base_price',
+            'currency_id',
         ));
         // Actualizar los campos de la compañía
         $company = $setting->company; // Obtener la compañía asociada

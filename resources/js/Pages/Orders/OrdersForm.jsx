@@ -18,6 +18,7 @@ import { useOrderItems } from '@/hooks/useOrderItems';
 import { useOrderTotals } from '@/hooks/useOrderTotals';
 import { getBulkProductColumns } from './getBulkProductColumns';
 import BulkProductDialog from './BulkProductDialog';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
 import InputData from '@/Components/InputData';
 
@@ -237,13 +238,13 @@ export default function OrdersForm({
                         )}
                         {appliedGiftCardHook && (
                             <p className="text-sm text-green-600 mt-1">
-                                Gift Card aplicada: {appliedGiftCardHook.code} - Monto usado: {settings.default_currency} {appliedGiftCardHook.amount_used.toFixed(2)}
+                                Gift Card aplicada: {appliedGiftCardHook.code} - Monto usado: <CurrencyDisplay currency={settings.currency} amount={appliedGiftCardHook.amount_used} />
                             </p>
                         )}
                         {/* NUEVO: Si hay appliedGiftCard de edición, muestra info */}
                         {appliedGiftCard && !appliedGiftCardHook && (
                             <p className="text-sm text-blue-600 mt-1">
-                                Gift Card aplicada previamente: Código {appliedGiftCard.code} - Monto usado: {settings.default_currency} {appliedGiftCard.amount_used}
+                                Gift Card aplicada previamente: Código {appliedGiftCard.code} - Monto usado: <CurrencyDisplay currency={settings.currency} amount={appliedGiftCard.amount_used} />
                             </p>
                         )}
                     </div>
@@ -264,33 +265,33 @@ export default function OrdersForm({
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-medium">Subtotal (post-descuentos por ítem)</TableCell>
                                 <TableCell className="font-medium">
-                                    {settings.default_currency} {(parseFloat(data.subtotal) || 0).toFixed(2)}
+                                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.subtotal) || 0} />
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-medium">Total Descuentos</TableCell>
                                 <TableCell className="font-medium text-red-600">
-                                    -{settings.default_currency} {(parseFloat(data.totaldiscounts) || 0).toFixed(2)}
+                                    -<CurrencyDisplay currency={settings.currency} amount={parseFloat(data.totaldiscounts) || 0} />
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-medium">Costo de Envío</TableCell>
-                                <TableCell className="font-medium">{settings.default_currency} {(parseFloat(data.totalshipping) || 0).toFixed(2)}</TableCell>
+                                <TableCell className="font-medium"><CurrencyDisplay currency={settings.currency} amount={parseFloat(data.totalshipping) || 0} /></TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell colSpan="3" className="text-right font-medium">Impuestos</TableCell>
                                 <TableCell className="font-medium">
-                                    {settings.default_currency} {(parseFloat(data.tax_amount) || 0).toFixed(2)}
+                                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.tax_amount) || 0} />
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>
                             <TableRow className="bg-gray-50 dark:bg-gray-800">
                                 <TableCell colSpan="3" className="text-right font-bold text-lg">Total Final</TableCell>
                                 <TableCell className="font-bold text-lg">
-                                    {settings.default_currency} {(parseFloat(data.total) || 0).toFixed(2)}
+                                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.total) || 0} />
                                 </TableCell>
                                 <TableCell></TableCell>
                             </TableRow>

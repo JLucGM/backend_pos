@@ -1,6 +1,8 @@
 // CartItemsComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS
 import React from 'react';
 import { Trash2 } from 'lucide-react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const CartItemsComponent = ({
     comp,
@@ -12,6 +14,7 @@ const CartItemsComponent = ({
     onRemoveItem,
     themeSettings
 }) => {
+    const { settings } = usePage().props;
     const styles = comp.styles || {};
     const content = comp.content || {};
     
@@ -76,7 +79,9 @@ const CartItemsComponent = ({
         if (discount.discount_type === 'percentage') {
             discountValue = ` (${discount.value}%)`;
         } else if (discount.discount_type === 'fixed_amount') {
-            discountValue = ` ($${parseFloat(discount.value).toFixed(2)})`;
+            discountValue = settings?.currency ? 
+                ` (${settings.currency.symbol}${parseFloat(discount.value).toFixed(2)})` :
+                ` ($${parseFloat(discount.value).toFixed(2)})`;
         }
         
         const percentageOff = item.originalPrice > 0 ? 
@@ -176,20 +181,32 @@ const CartItemsComponent = ({
                                                     color: '#999',
                                                     fontFamily: themeSettings?.body_font
                                                 }}>
-                                                    ${(item.originalPrice * item.quantity).toFixed(2)}
+                                                    {settings?.currency ? (
+                                                        <CurrencyDisplay currency={settings.currency} amount={item.originalPrice * item.quantity} />
+                                                    ) : (
+                                                        `$${(item.originalPrice * item.quantity).toFixed(2)}`
+                                                    )}
                                                 </div>
                                                 <div className="font-semibold" style={{ 
                                                     color: themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#1d4ed8',
                                                     fontFamily: themeSettings?.heading_font
                                                 }}>
-                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                    {settings?.currency ? (
+                                                        <CurrencyDisplay currency={settings.currency} amount={item.price * item.quantity} />
+                                                    ) : (
+                                                        `$${(item.price * item.quantity).toFixed(2)}`
+                                                    )}
                                                 </div>
                                                 {/* Mostrar ahorro */}
                                                 <div className="text-xs mt-1" style={{ 
                                                     color: '#059669',
                                                     fontFamily: themeSettings?.body_font
                                                 }}>
-                                                    Ahorras: ${(item.discountAmount || 0).toFixed(2)}
+                                                    Ahorras: {settings?.currency ? (
+                                                        <CurrencyDisplay currency={settings.currency} amount={item.discountAmount || 0} />
+                                                    ) : (
+                                                        `$${(item.discountAmount || 0).toFixed(2)}`
+                                                    )}
                                                 </div>
                                             </div>
                                         ) : (
@@ -198,10 +215,18 @@ const CartItemsComponent = ({
                                                     color: themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#1d4ed8',
                                                     fontFamily: themeSettings?.heading_font
                                                 }}>
-                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                    {settings?.currency ? (
+                                                        <CurrencyDisplay currency={settings.currency} amount={item.price * item.quantity} />
+                                                    ) : (
+                                                        `$${(item.price * item.quantity).toFixed(2)}`
+                                                    )}
                                                 </div>
                                                 <div className="text-sm" style={{ color: '#6b7280' }}>
-                                                    ${item.price.toFixed(2)} c/u
+                                                    {settings?.currency ? (
+                                                        <><CurrencyDisplay currency={settings.currency} amount={item.price} /> c/u</>
+                                                    ) : (
+                                                        `$${item.price.toFixed(2)} c/u`
+                                                    )}
                                                 </div>
                                             </div>
                                         )}

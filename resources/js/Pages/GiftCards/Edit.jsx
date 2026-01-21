@@ -8,6 +8,7 @@ import { lazy, Suspense } from 'react';
 import Loader from '@/Components/ui/loader';
 import { Separator } from '@/Components/ui/separator';
 import { Badge } from '@/Components/ui/badge';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
 
 // Cargar el componente de forma diferida
 const GiftCardsForm = lazy(() => import('./GiftCardsForm'));
@@ -62,14 +63,14 @@ export default function Edit({ giftCard, users }) {
             <DivSection className="grid grid-cols-3 smd:grid-cols-3">
                 <div >
                     <h3>Saldo actual</h3>
-                    <p className='font-semibold text-lg'>{settings.default_currency}{giftCard.current_balance}</p>
+                    <p className='font-semibold text-lg'><CurrencyDisplay currency={settings.currency} amount={giftCard.current_balance} /></p>
                 </div>
                 <div >
                     <Separator orientation="vertical" className="h-full mx-auto" />
                 </div>
                 <div >
                     <h3>Saldo inicial</h3>
-                    <p className='font-semibold text-lg'>{settings.default_currency}{giftCard.initial_balance}</p>
+                    <p className='font-semibold text-lg'><CurrencyDisplay currency={settings.currency} amount={giftCard.initial_balance} /></p>
                 </div>
 
             </DivSection>

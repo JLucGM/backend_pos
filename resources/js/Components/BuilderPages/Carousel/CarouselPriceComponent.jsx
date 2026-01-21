@@ -1,4 +1,6 @@
 import React from 'react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const CarouselPriceComponent = ({
     comp,
@@ -8,6 +10,7 @@ const CarouselPriceComponent = ({
     onDelete,
     themeSettings
 }) => {
+    const { settings } = usePage().props;
     const styles = comp.styles || {};
     
     // Obtener configuración de fuente del tema
@@ -81,17 +84,26 @@ const CarouselPriceComponent = ({
         }
     };
 
+    // Mostrar precio con moneda si hay configuración disponible
+    const renderPrice = () => {
+        if (settings?.currency && comp.content && typeof comp.content === 'number') {
+            return <CurrencyDisplay currency={settings.currency} amount={comp.content} />;
+        }
+        
+        return comp.content || (
+            <span className="text-gray-400 italic">
+                Precio del producto (se obtiene de la base de datos)
+            </span>
+        );
+    };
+
     return (
         <div 
             style={componentStyles}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
-            {comp.content || (
-                <span className="text-gray-400 italic">
-                    Precio del producto (se obtiene de la base de datos)
-                </span>
-            )}
+            {renderPrice()}
         </div>
     );
 };

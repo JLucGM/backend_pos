@@ -383,7 +383,10 @@ const [orderError, setOrderError] = useState(null);
                 setGiftCardAmountUsed(amountToUse);
                 setGiftCardCode('');
 
-                alert(`¡Gift Card "${giftCardToApply.code}" aplicada! Se usarán $${amountToUse.toFixed(2)} de los $${availableBalance.toFixed(2)} disponibles`);
+                const { settings } = props;
+                const currencySymbol = settings?.currency?.symbol || '$';
+                
+                alert(`¡Gift Card "${giftCardToApply.code}" aplicada! Se usarán ${currencySymbol}${amountToUse.toFixed(2)} de los ${currencySymbol}${availableBalance.toFixed(2)} disponibles`);
 
             } catch (error) {
                 console.error('Error applying gift card:', error);

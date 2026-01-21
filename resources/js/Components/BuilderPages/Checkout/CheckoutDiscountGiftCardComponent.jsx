@@ -1,6 +1,8 @@
 // components/BuilderPages/Checkout/CheckoutDiscountGiftCardComponent.jsx
 import React, { useState } from 'react';
 import { Percent, Gift, X, Calendar, DollarSign } from 'lucide-react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const CheckoutDiscountGiftCardComponent = ({
     comp,
@@ -23,6 +25,7 @@ const CheckoutDiscountGiftCardComponent = ({
     userGiftCards = [],
     mode = 'builder'
 }) => {
+    const { settings } = usePage().props;
     const styles = comp.styles || {};
     const content = comp.content || {};
     const [activeTab, setActiveTab] = useState('discount');
@@ -189,7 +192,11 @@ const CheckoutDiscountGiftCardComponent = ({
                                             )}
                                             {discount.amount && (
                                                 <p className="text-xs text-gray-500 mt-1">
-                                                    Descuento: ${discount.amount.toFixed(2)}
+                                                    Descuento: {settings?.currency ? (
+                                                        <CurrencyDisplay currency={settings.currency} amount={discount.amount} />
+                                                    ) : (
+                                                        `$${discount.amount.toFixed(2)}`
+                                                    )}
                                                 </p>
                                             )}
                                         </div>
@@ -257,7 +264,13 @@ const CheckoutDiscountGiftCardComponent = ({
                                                 <div className="grid grid-cols-2 gap-2 text-xs">
                                                     <div className="flex items-center gap-1 text-gray-600">
                                                         <DollarSign size={12} />
-                                                        <span>Saldo: <strong className="text-green-600">${parseFloat(giftCard.current_balance).toFixed(2)}</strong></span>
+                                                        <span>Saldo: <strong className="text-green-600">
+                                                            {settings?.currency ? (
+                                                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(giftCard.current_balance)} />
+                                                            ) : (
+                                                                `$${parseFloat(giftCard.current_balance).toFixed(2)}`
+                                                            )}
+                                                        </strong></span>
                                                     </div>
                                                     
                                                     <div className="flex items-center gap-1 text-gray-600">
@@ -269,10 +282,20 @@ const CheckoutDiscountGiftCardComponent = ({
                                                 {appliedGiftCard?.id === giftCard.id && exampleGiftCardAmountUsed > 0 && (
                                                     <div className="mt-2 pt-2 border-t border-green-200">
                                                         <p className="text-xs text-green-700">
-                                                            Se usarán <strong>${exampleGiftCardAmountUsed.toFixed(2)}</strong> en esta orden
+                                                            Se usarán <strong>
+                                                                {settings?.currency ? (
+                                                                    <CurrencyDisplay currency={settings.currency} amount={exampleGiftCardAmountUsed} />
+                                                                ) : (
+                                                                    `$${exampleGiftCardAmountUsed.toFixed(2)}`
+                                                                )}
+                                                            </strong> en esta orden
                                                         </p>
                                                         <p className="text-xs text-gray-500 mt-1">
-                                                            Saldo restante: ${(parseFloat(giftCard.current_balance) - exampleGiftCardAmountUsed).toFixed(2)}
+                                                            Saldo restante: {settings?.currency ? (
+                                                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(giftCard.current_balance) - exampleGiftCardAmountUsed} />
+                                                            ) : (
+                                                                `$${(parseFloat(giftCard.current_balance) - exampleGiftCardAmountUsed).toFixed(2)}`
+                                                            )}
                                                         </p>
                                                     </div>
                                                 )}
@@ -300,14 +323,22 @@ const CheckoutDiscountGiftCardComponent = ({
                                         <div>
                                             <p className="text-gray-600">Saldo total:</p>
                                             <p className="font-medium text-green-600">
-                                                ${parseFloat(exampleAppliedGiftCard.current_balance).toFixed(2)}
+                                                {settings?.currency ? (
+                                                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(exampleAppliedGiftCard.current_balance)} />
+                                                ) : (
+                                                    `$${parseFloat(exampleAppliedGiftCard.current_balance).toFixed(2)}`
+                                                )}
                                             </p>
                                         </div>
                                         
                                         <div>
                                             <p className="text-gray-600">Se usará en esta orden:</p>
                                             <p className="font-medium text-green-600">
-                                                ${exampleGiftCardAmountUsed.toFixed(2)}
+                                                {settings?.currency ? (
+                                                    <CurrencyDisplay currency={settings.currency} amount={exampleGiftCardAmountUsed} />
+                                                ) : (
+                                                    `$${exampleGiftCardAmountUsed.toFixed(2)}`
+                                                )}
                                             </p>
                                         </div>
                                         
@@ -322,7 +353,11 @@ const CheckoutDiscountGiftCardComponent = ({
                                             <div className="col-span-2 mt-2 pt-2 border-t border-green-200">
                                                 <p className="text-xs text-green-700 font-medium">
                                                     Saldo restante después de la compra: 
-                                                    ${(parseFloat(exampleAppliedGiftCard.current_balance) - exampleGiftCardAmountUsed).toFixed(2)}
+                                                    {settings?.currency ? (
+                                                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(exampleAppliedGiftCard.current_balance) - exampleGiftCardAmountUsed} />
+                                                    ) : (
+                                                        `$${(parseFloat(exampleAppliedGiftCard.current_balance) - exampleGiftCardAmountUsed).toFixed(2)}`
+                                                    )}
                                                 </p>
                                             </div>
                                         )}

@@ -1,4 +1,6 @@
 import React from 'react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const ProductPriceComponent = ({
     comp,
@@ -8,6 +10,8 @@ const ProductPriceComponent = ({
     onDelete,
     themeSettings // Añadimos themeSettings
 }) => {
+    const { settings } = usePage().props;
+    
     const getTextStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
@@ -100,17 +104,26 @@ const ProductPriceComponent = ({
         }
     };
 
+    // Mostrar precio con moneda si hay configuración disponible
+    const renderPrice = () => {
+        if (settings?.currency && comp.content && typeof comp.content === 'number') {
+            return <CurrencyDisplay currency={settings.currency} amount={comp.content} />;
+        }
+        
+        return comp.content || (
+            <span className="text-gray-400 italic">
+                Precio del producto (se obtiene de la base de datos)
+            </span>
+        );
+    };
+
     return (
         <div 
             style={getTextStyles()}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
-            {comp.content || (
-                <span className="text-gray-400 italic">
-                    Precio del producto (se obtiene de la base de datos)
-                </span>
-            )}
+            {renderPrice()}
         </div>
     );
 };

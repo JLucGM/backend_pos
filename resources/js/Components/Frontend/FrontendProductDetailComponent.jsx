@@ -1,9 +1,12 @@
 import cartHelper from '@/Helper/cartHelper';
 import React, { useState, useEffect } from 'react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 // import { Alert } from '../ui/alert';
 
 const FrontendProductDetailComponent = ({ comp, product, themeSettings, companyId }) => {
     // console.log("🔵 Componente montado con producto:", product?.product_name);
+    const { settings } = usePage().props;
 
     const children = comp.content?.children || [];
     const componentStyles = comp.styles || {};
@@ -1205,19 +1208,31 @@ const handleAddToCart = () => {
                                     fontSize: childStyles.originalPriceSize || '0.8em',
                                     opacity: 0.7,
                                 }}>
-                                    {showCurrency ? (childStyles.currencySymbol || '$') : ''}{parseFloat(product.product_price).toFixed(2)}
+                                    {settings?.currency ? (
+                                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(product.product_price)} />
+                                    ) : (
+                                        `${showCurrency ? (childStyles.currencySymbol || '$') : ''}${parseFloat(product.product_price).toFixed(2)}`
+                                    )}
                                 </span>
                                 <span style={{
                                     color: childStyles.discountPriceColor || (themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#dc2626'),
                                     fontSize: childStyles.discountPriceSize || '1.2em',
                                     fontWeight: 'bold',
                                 }}>
-                                    {showCurrency ? (childStyles.currencySymbol || '$') : ''}{parseFloat(product.product_price_discount).toFixed(2)}
+                                    {settings?.currency ? (
+                                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(product.product_price_discount)} />
+                                    ) : (
+                                        `${showCurrency ? (childStyles.currencySymbol || '$') : ''}${parseFloat(product.product_price_discount).toFixed(2)}`
+                                    )}
                                 </span>
                             </>
                         ) : (
                             <span style={{ fontWeight: 'bold' }}>
-                                {showCurrency ? (childStyles.currencySymbol || '$') : ''}{parseFloat(price).toFixed(2)}
+                                {settings?.currency ? (
+                                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(price)} />
+                                ) : (
+                                    `${showCurrency ? (childStyles.currencySymbol || '$') : ''}${parseFloat(price).toFixed(2)}`
+                                )}
                             </span>
                         )}
                     </div>

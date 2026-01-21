@@ -13,6 +13,7 @@ import { Component } from 'react'; // Para ErrorBoundary
 import PaymentMethodsChart from "@/Components/Charts/PaymentMethodsChart";
 import SalesByCategoryChart from "@/Components/Charts/SalesByCategoryChart";
 import SummaryCard from "@/Components/SummaryCard";
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import DeliveryTypeChart from "@/Components/Charts/DeliveryTypeChart";
 import SalesByLocationChart from "@/Components/Charts/SalesByLocationChart";
 
@@ -59,7 +60,7 @@ export default function Index({
   ventasPorEstado = {},
   ventasPorCiudad = {},
 }) {
-  const settings = usePage().props.settings;
+  const { settings } = usePage().props;
 
   useEffect(() => {
     // console.log('Datos actualizados');
@@ -81,6 +82,13 @@ export default function Index({
       <Head title="Reporte" />
 
       <Suspense fallback={<Loader />}>
+        {/* Debug temporal - remover después */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="p-2 bg-yellow-100 border rounded text-xs mb-4">
+            <strong>Debug:</strong> totalVentas = {totalVentas}, 
+            currency = {settings?.currency?.symbol || 'null'}
+          </div>
+        )}
         <FilterDate desde={desde} hasta={hasta} />
         <div className="flex justify-between items-center">
           <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
@@ -90,7 +98,10 @@ export default function Index({
 
 
         <div className="grid grid-cols-3 gap-4">
-          <SummaryCard label="Total recaudado" value={totalVentas.toFixed(2)} prefix={settings.default_currency} />
+          <SummaryCard 
+            label="Total recaudado" 
+            value={<CurrencyDisplay currency={settings.currency} amount={totalVentas} />} 
+          />
           <SummaryCard label="Órdenes Completadas" value={totalCompletados} />
           <SummaryCard label="Total Pedidos Realizados" value={totalPedidos} />
         </div>
@@ -119,11 +130,11 @@ export default function Index({
               <li>
                 <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Desglose de Ventas</h3>
               </li>
-              <li className="flex justify-between"><strong>Descuentos:</strong>{settings.default_currency} {totalDiscounts.toFixed(2)}</li>
-              <li className="flex justify-between"><strong>Envíos:</strong>{settings.default_currency} {totalShipping.toFixed(2)}</li>
-              <li className="flex justify-between"><strong>Impuestos:</strong>{settings.default_currency} {taxAmount.toFixed(2)}</li>
-              <li className="flex justify-between"><strong>Reembolsos:</strong>{settings.default_currency} {Number(totalReembolsos || 0).toFixed(2)}</li>
-              <li className="flex justify-between"><strong>Total Recaudado:</strong>{settings.default_currency} {totalVentas.toFixed(2)}</li>
+              <li className="flex justify-between"><strong>Descuentos:</strong><CurrencyDisplay currency={settings.currency} amount={totalDiscounts} /></li>
+              <li className="flex justify-between"><strong>Envíos:</strong><CurrencyDisplay currency={settings.currency} amount={totalShipping} /></li>
+              <li className="flex justify-between"><strong>Impuestos:</strong><CurrencyDisplay currency={settings.currency} amount={taxAmount} /></li>
+              <li className="flex justify-between"><strong>Reembolsos:</strong><CurrencyDisplay currency={settings.currency} amount={Number(totalReembolsos || 0)} /></li>
+              <li className="flex justify-between"><strong>Total Recaudado:</strong><CurrencyDisplay currency={settings.currency} amount={totalVentas} /></li>
             </ul>
           </DivSection>
 

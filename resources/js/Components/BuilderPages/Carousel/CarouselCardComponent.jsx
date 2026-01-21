@@ -3,6 +3,8 @@ import CarouselImageComponent from './CarouselImageComponent';
 import CarouselNameComponent from './CarouselNameComponent';
 import CarouselPriceComponent from './CarouselPriceComponent';
 import ComponentWithHover from '../ComponentWithHover';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePage } from '@inertiajs/react';
 
 const CarouselCardComponent = ({
     comp,
@@ -14,13 +16,196 @@ const CarouselCardComponent = ({
     products,
     setComponents,
     hoveredComponentId,
-    setHoveredComponentId
+    setHoveredComponentId,
+    mode = 'builder' // Agregar mode prop
 }) => {
+    const { settings } = usePage().props;
     // Asegurarnos de que comp.content existe
     const cardConfig = comp.content || {};
     const children = cardConfig.children || [];
     const productData = cardConfig.productData;
 
+    // ==================== MANEJO DE NAVEGACIÓN ====================
+    const handleProductClick = (e) => {
+        // Solo navegar en modo frontend
+        if (mode === 'frontend' && productData?.slug) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = `/detalles-del-producto?product=${productData.slug}`;
+            return;
+        }
+        
+        // Modo builder: editar (si no está en preview)
+        if (mode === 'builder' && !isPreview && onEdit && e.target === e.currentTarget) {
+            e.preventDefault();
+            e.stopPropagation();
+            onEdit(comp);
+        }
+    };
+
+    // ==================== RENDERIZADO FRONTEND ====================
+    if (mode === 'frontend') {
+        // Extraer los componentes hijos específicos
+        const imageChild = children.find(child => child.type === 'carouselImage');
+        const nameChild = children.find(child => child.type === 'carouselName');
+        const priceChild = children.find(child => child.type === 'carouselPrice');
+
+        // Estilos para cada parte
+        const imageStyles = imageChild?.styles || {};
+        const nameStyles = nameChild?.styles || {};
+        const priceStyles = priceChild?.styles || {};
+
+        // Configuración de la tarjeta para frontend
+        const cardStyle = {
+            paddingTop: cardConfig.cardPaddingTop || '10px',
+            paddingRight: cardConfig.cardPaddingRight || '10px',
+            paddingBottom: cardConfig.cardPaddingBottom || '10px',
+            paddingLeft: cardConfig.cardPaddingLeft || '10px',
+            border: cardConfig.cardBorder === 'solid' 
+                ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})` 
+                : 'none',
+            borderRadius: cardConfig.cardBorderRadius || '0px',
+            backgroundColor: cardConfig.cardBackgroundColor || 'white',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            textDecoration: 'none',
+            color: 'inherit',
+        };
+
+        // Estilos del contenedor de imagen
+        const imageContainerStyle = {
+            aspectRatio: imageStyles.aspectRatio === 'portrait' ? '3/4' : 
+                        imageStyles.aspectRatio === 'landscape' ? '4/3' : '1/1',
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: imageStyles.imageBorderRadius || '0px',
+            marginBottom: '12px',
+            width: '100%',
+        };
+
+        // Estilos de la imagen
+        const imageStyle = {
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            border: imageStyles.imageBorder === 'solid' 
+                ? `${imageStyles.imageBorderThickness || '1px'} solid rgba(0, 0, 0, ${imageStyles.imageBorderOpacity || 1})` 
+                : imageStyles.imageBorder === 'none' ? 'none' : undefined,
+            borderRadius: imageStyles.imageBorderRadius || '0px',
+            display: 'block',
+            transition: 'transform 0.3s ease',
+        };
+
+        // Estilos del nombre del producto
+        const nameStyle = {
+            fontSize: nameStyles.fontSize || '14px',
+            fontWeight: nameStyles.fontWeight || '600',
+            color: nameStyles.color || '#000000',
+            textAlign: nameStyles.alignment || 'left',
+            marginBottom: '8px',
+            lineHeight: nameStyles.lineHeight || '1.4',
+            fontFamily: nameStyles.fontFamily || themeSettings?.body_font || 'inherit',
+            textTransform: nameStyles.textTransform || 'none',
+            flexGrow: 1,
+        };
+
+        // Estilos del precio
+        const priceStyle = {
+            fontSize: priceStyles.fontSize || '12px',
+            fontWeight: priceStyles.fontWeight || 'normal',
+            color: priceStyles.color || '#666666',
+            textAlign: priceStyles.alignment || 'left',
+            lineHeight: priceStyles.lineHeight || '1.4',
+            fontFamily: priceStyles.fontFamily || themeSettings?.body_font || 'inherit',
+            marginTop: 'auto',
+        };
+
+        // Efecto hover para frontend
+        const handleMouseEnter = (e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            const img = e.currentTarget.querySelector('img');
+            if (img) img.style.transform = 'scale(1.05)';
+        };
+
+        const handleMouseLeave = (e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            const img = e.currentTarget.querySelector('img');
+            if (img) img.style.transform = 'scale(1)';
+        };
+
+        return (
+            <div 
+                className="carousel-card"
+                onClick={handleProductClick}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                style={cardStyle}
+                role="button"
+                tabIndex={0}
+                onKeyPress={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        handleProductClick(e);
+                    }
+                }}
+            >
+                {/* Imagen del producto */}
+                <div className="carousel-image-container" style={imageContainerStyle}>
+                    <img 
+                        src={productData?.media?.[0]?.original_url || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
+                        alt={productData?.product_name || 'Producto'}
+                        style={imageStyle}
+                        onError={(e) => {
+                            e.target.src = 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+                        }}
+                    />
+                </div>
+                
+                {/* Nombre del producto */}
+                <h4 className="carousel-name" style={nameStyle}>
+                    {productData?.product_name || 'Nombre del producto'}
+                </h4>
+                
+                {/* Precio del producto */}
+                <div className="carousel-price" style={priceStyle}>
+                    {productData?.product_price_discount && settings?.currency ? (
+                        <>
+                            <span style={{ textDecoration: 'line-through', marginRight: '6px', opacity: 0.6, fontSize: '0.9em' }}>
+                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(productData.product_price || 0)} />
+                            </span>
+                            <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
+                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(productData.product_price_discount)} />
+                            </span>
+                        </>
+                    ) : settings?.currency ? (
+                        <span><CurrencyDisplay currency={settings.currency} amount={parseFloat(productData?.product_price || 0)} /></span>
+                    ) : (
+                        <>
+                            {productData?.product_price_discount ? (
+                                <>
+                                    <span style={{ textDecoration: 'line-through', marginRight: '6px', opacity: 0.6, fontSize: '0.9em' }}>
+                                        ${parseFloat(productData.product_price || 0).toFixed(2)}
+                                    </span>
+                                    <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
+                                        ${parseFloat(productData.product_price_discount).toFixed(2)}
+                                    </span>
+                                </>
+                            ) : (
+                                <span>${parseFloat(productData?.product_price || 0).toFixed(2)}</span>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    // ==================== RENDERIZADO BUILDER ====================
     // Función para obtener el nombre del tipo de componente
     const getComponentTypeName = (type) => {
         const typeNames = {
@@ -50,7 +235,7 @@ const CarouselCardComponent = ({
         return typeNames[type] || type;
     };
 
-    // Estilos de la carta
+    // Estilos de la carta para builder
     const cardStyles = {
         ...getStyles(comp),
         paddingTop: cardConfig.cardPaddingTop || '10px',
@@ -61,9 +246,10 @@ const CarouselCardComponent = ({
             ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || '1'})` 
             : 'none',
         borderRadius: cardConfig.cardBorderRadius || '0px',
-        backgroundColor: 'white',
+        backgroundColor: cardConfig.cardBackgroundColor || 'white',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         height: '100%',
+        cursor: !isPreview ? 'pointer' : 'default',
     };
 
     // Encontrar los componentes hijos
@@ -71,24 +257,33 @@ const CarouselCardComponent = ({
     const nameComponent = children.find(child => child.type === 'carouselName');
     const priceComponent = children.find(child => child.type === 'carouselPrice');
 
+    // Manejo de eventos de mouse para builder
     const handleMouseEnter = () => {
-        if (setHoveredComponentId && !isPreview) {
+        if (setHoveredComponentId && !isPreview && mode === 'builder') {
             setHoveredComponentId(comp.id);
         }
     };
 
     const handleMouseLeave = () => {
-        if (setHoveredComponentId && !isPreview) {
+        if (setHoveredComponentId && !isPreview && mode === 'builder') {
             setHoveredComponentId(null);
+        }
+    };
+
+    // Manejo de clic para builder
+    const handleClick = (e) => {
+        if (!isPreview && onEdit && e.target === e.currentTarget && mode === 'builder') {
+            onEdit(comp);
         }
     };
 
     return (
         <div 
             style={cardStyles}
-            className="flex flex-col h-full"
+            className="carousel-card flex flex-col h-full"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            onClick={handleClick}
         >
             {/* Imagen con ComponentWithHover */}
             {imageComponent && productData && (
@@ -161,7 +356,7 @@ const CarouselCardComponent = ({
                         comp={{
                             ...priceComponent,
                             content: productData.product_price 
-                                ? `$${parseFloat(productData.product_price).toFixed(2)}`
+                                ? parseFloat(productData.product_price)
                                 : priceComponent.content
                         }}
                         getStyles={getStyles}

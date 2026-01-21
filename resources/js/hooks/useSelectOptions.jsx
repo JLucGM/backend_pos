@@ -31,7 +31,7 @@ export const useSelectOptions = (categories = [], taxes = [], products = [], sta
             if (!product.combinations || product.combinations.length === 0) {
                 options.push({
                     value: `simple_${product.id}`,
-                    label: `${product.product_name} - ${settings.default_currency} ${parseFloat(product.product_price).toFixed(2)}`,
+                    label: `${product.product_name} - ${settings.currency?.symbol || '$'} ${parseFloat(product.product_price).toFixed(2)}`,
                     product_id: product.id,
                     combination_id: null,
                 });
@@ -45,7 +45,7 @@ export const useSelectOptions = (categories = [], taxes = [], products = [], sta
                         ).join(', ');
                         attributes = attributes ? ` - ${attributes}` : '';
                     }
-                    const price = comb.combination_price ? ` - ${settings.default_currency} ${parseFloat(comb.combination_price).toFixed(2)}` : '';
+                    const price = comb.combination_price ? ` - ${settings.currency?.symbol || '$'} ${parseFloat(comb.combination_price).toFixed(2)}` : '';
 
                     options.push({
                         value: `comb_${comb.id}`,

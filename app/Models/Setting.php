@@ -16,8 +16,11 @@ class Setting extends Model implements HasMedia
     use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
-        'default_currency',
+        'currency_id',
         'company_id',
+        'header_layout',
+        'footer_layout',
+        'theme_settings',
     ];
 
     protected static function booted()
@@ -47,6 +50,27 @@ class Setting extends Model implements HasMedia
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class);
+    }
+
+    /**
+     * Get formatted currency symbol
+     */
+    public function getCurrencySymbolAttribute()
+    {
+        return $this->currency ? $this->currency->symbol : '$';
+    }
+
+    /**
+     * Get currency code
+     */
+    public function getCurrencyCodeAttribute()
+    {
+        return $this->currency ? $this->currency->code : 'USD';
     }
     // public function getFaviconUrlAttribute()
     // {

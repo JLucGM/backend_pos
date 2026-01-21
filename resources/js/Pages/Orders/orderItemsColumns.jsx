@@ -2,6 +2,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Badge } from '@/Components/ui/badge';
 import { BadgePercent, Tag, Trash2 } from 'lucide-react';
+import CurrencyDisplay from '@/Components/CurrencyDisplay';
 
 export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, isDisabled, showDiscount = true, settings }) => [
     {
@@ -67,25 +68,25 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
                         {/* **CORRECCIÓN: Mostrar precio original tachado si hay descuento directo** */}
                         {directDiscountPerUnit > 0 && (
                             <span className="line-through text-gray-500 text-sm">
-                                {settings.default_currency} {item.original_price?.toFixed(2) || originalPrice.toFixed(2)}
+                                <CurrencyDisplay currency={settings.currency} amount={item.original_price || originalPrice} />
                             </span>
                         )}
                         
                         {/* **CORRECCIÓN: Mostrar precio con descuento directo si existe** */}
                         {directDiscountPerUnit > 0 ? (
                             <span className="text-gray-700 text-sm">
-                                {settings.default_currency} {item.product_price?.toFixed(2) || originalPrice.toFixed(2)}
+                                <CurrencyDisplay currency={settings.currency} amount={item.product_price || originalPrice} />
                             </span>
                         ) : (
                             <span className="text-gray-700 text-sm">
-                                {settings.default_currency} {originalPrice.toFixed(2)}
+                                <CurrencyDisplay currency={settings.currency} amount={originalPrice} />
                             </span>
                         )}
 
                         {/* Mostrar precio final si hay descuentos adicionales */}
                         {hasDiscount && discountedPrice < (item.product_price || originalPrice) && (
                             <span className="font-semibold text-green-600 text-sm">
-                                → {settings.default_currency} {discountedPrice.toFixed(2)}
+                                → <CurrencyDisplay currency={settings.currency} amount={discountedPrice} />
                             </span>
                         )}
                     </div>
@@ -98,7 +99,7 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
                                 <div className="flex items-center space-x-1">
                                     <Tag className='size-4 text-blue-500' />
                                     <span className="text-xs text-blue-600 font-medium">
-                                        Descuento directo: -{settings.default_currency} {directDiscountAmount.toFixed(2)}
+                                        Descuento directo: -<CurrencyDisplay currency={settings.currency} amount={directDiscountAmount} />
                                     </span>
                                 </div>
                             )}
@@ -109,9 +110,10 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
                                     <BadgePercent className='size-4 text-green-500' />
                                     <span className="text-xs text-green-600 font-medium">
                                         {item.discount_type === 'percentage' 
-                                            ? `Descuento ${item.discount_type}: -${settings.default_currency} ${otherDiscountAmount.toFixed(2)}` 
-                                            : `Descuento: -${settings.default_currency} ${otherDiscountAmount.toFixed(2)}`
+                                            ? `Descuento ${item.discount_type}: -` 
+                                            : `Descuento: -`
                                         }
+                                        <CurrencyDisplay currency={settings.currency} amount={otherDiscountAmount} />
                                     </span>
                                 </div>
                             )}
@@ -119,7 +121,7 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
                             {/* Mostrar total de descuento */}
                             <div className="flex items-center space-x-1 border-t border-gray-200 pt-1 mt-1">
                                 <span className="text-xs font-bold">
-                                    Descuento total: -{settings.default_currency} {discountAmount.toFixed(2)}
+                                    Descuento total: -<CurrencyDisplay currency={settings.currency} amount={discountAmount} />
                                 </span>
                             </div>
                         </div>
@@ -153,7 +155,7 @@ export const getOrderItemsColumns = ({ handleQuantityChange, handleRemoveItem, i
         size: 100,
         cell: ({ row, getValue }) => {
             const subtotal = parseFloat(getValue() || row.original.subtotal || 0); // Siempre post ($9)
-            return <span className="text-right font-bold">{settings.default_currency} {subtotal.toFixed(2)}</span>;
+            return <span className="text-right font-bold"><CurrencyDisplay currency={settings.currency} amount={subtotal} /></span>;
         },
     },
     {

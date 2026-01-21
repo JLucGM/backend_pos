@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Page;
 use App\Models\Scopes\CompanyScope;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -17,16 +18,19 @@ class FrontendController extends Controller
         $company = $request->attributes->get('company');
         $slug = $request->route('page_path');
 
+        // Obtener settings con currency
+        $setting = Setting::with('currency')->where('company_id', $company->id)->first();
+
         $logoUrl = null;
-    if ($company->setting && $company->setting->getFirstMedia('logo')) {
-        $logoUrl = $company->setting->getFirstMedia('logo')->getUrl();
-    }
-    
-    // Obtener también favicon si lo necesitas
-    $faviconUrl = null;
-    if ($company->setting && $company->setting->getFirstMedia('favicon')) {
-        $faviconUrl = $company->setting->getFirstMedia('favicon')->getUrl();
-    }
+        if ($company->setting && $company->setting->getFirstMedia('logo')) {
+            $logoUrl = $company->setting->getFirstMedia('logo')->getUrl();
+        }
+        
+        // Obtener también favicon si lo necesitas
+        $faviconUrl = null;
+        if ($company->setting && $company->setting->getFirstMedia('favicon')) {
+            $faviconUrl = $company->setting->getFirstMedia('favicon')->getUrl();
+        }
 
         $query = $company->pages()
             ->withoutGlobalScope(CompanyScope::class);
@@ -147,8 +151,9 @@ class FrontendController extends Controller
                 'availableMenus' => $availableMenus,
                 'products' => $products,
                 'companyId' => $company->id,
-                'companyLogo' => $logoUrl, // Agregar logo aquí
-            'companyFavicon' => $faviconUrl, // Opcional
+                'companyLogo' => $logoUrl,
+                'companyFavicon' => $faviconUrl,
+                'settings' => $setting, // Agregar settings con currency
             ],
             $userData,
             $checkoutData,
