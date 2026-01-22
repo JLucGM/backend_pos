@@ -52,6 +52,11 @@ class FrontendController extends Controller
         }]);
     }])->get()->toArray();
 
+        // Obtener países, estados y ciudades para el ProfileComponent
+        $countries = \App\Models\Country::all();
+        $states = \App\Models\State::all();
+        $cities = \App\Models\City::all();
+
         // Obtener productos activos con TODAS las relaciones necesarias
         $products = $company->products()
             ->where('is_active', true)
@@ -154,6 +159,9 @@ class FrontendController extends Controller
                 'companyLogo' => $logoUrl,
                 'companyFavicon' => $faviconUrl,
                 'settings' => $setting, // Agregar settings con currency
+                'countries' => $countries,
+                'states' => $states,
+                'cities' => $cities,
             ],
             $userData,
             $checkoutData,

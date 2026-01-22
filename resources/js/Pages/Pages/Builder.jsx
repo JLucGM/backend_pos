@@ -183,7 +183,7 @@ const EditDialogRenderer = ({
     return <DialogComponent {...baseProps} {...additionalProps} />;
 };
 
-export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo, dynamicPages }) {
+export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo, dynamicPages, countries, states, cities }) {
     const [components, setComponents] = useState([]);
     const [editingComponent, setEditingComponent] = useState(null);
     const [editContent, setEditContent] = useState('');
@@ -2284,6 +2284,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             pageContent={page.content}
                             availableMenus={availableMenus || []}
                             companyLogo={companyLogo}
+                            countries={countries}
+                            states={states}
+                            cities={cities}
                         />
                     </div>
                 </div>
@@ -2490,6 +2493,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 pageContent={page.content}
                                 availableMenus={availableMenus || []}
                                 companyLogo={companyLogo}
+                                countries={countries}
+                                states={states}
+                                cities={cities}
                             />
                         </div>
                     </div>

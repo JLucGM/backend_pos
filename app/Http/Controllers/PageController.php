@@ -181,6 +181,11 @@ class PageController extends RoutingController
             }])
             ->get()->toArray();
 
+        // Obtener países, estados y ciudades para el ProfileComponent
+        $countries = \App\Models\Country::all();
+        $states = \App\Models\State::all();
+        $cities = \App\Models\City::all();
+
         return Inertia::render('Pages/Builder', [
             'page' => $page,
             'products' => $products,
@@ -190,6 +195,9 @@ class PageController extends RoutingController
             'availableMenus' => $availableMenus,
             'companyLogo' => $logoUrl,
             'dynamicPages' => $dynamicPages,
+            'countries' => $countries,
+            'states' => $states,
+            'cities' => $cities,
         ]);
     }
 

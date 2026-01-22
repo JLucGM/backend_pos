@@ -86,7 +86,10 @@ function renderBlock(
     mode = 'frontend', 
     companyLogo, 
     companyFavicon,
-    currentUser = null
+    currentUser = null,
+    countries = [],
+    states = [],
+    cities = []
 ) {
     const Component = componentMap[block.type];
 
@@ -202,6 +205,9 @@ function renderBlock(
                     currentUser={currentUser}
                     userDeliveryLocations={userDeliveryLocations}
                     userGiftCards={userGiftCards}
+                    countries={countries}
+                    states={states}
+                    cities={cities}
                 />
             );
             
@@ -228,6 +234,9 @@ export default function Index({
     companyLogo,
     companyFavicon,
     currentUser = null,
+    countries = [],
+    states = [],
+    cities = [],
 }) {
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
@@ -311,7 +320,10 @@ export default function Index({
                     'frontend', // Modo frontend siempre
                     companyLogo,
                     companyFavicon,
-                    currentUser
+                    currentUser,
+                    countries,
+                    states,
+                    cities
                 )
             )}
 

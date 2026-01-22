@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { router } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -9,6 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/Components/ui/badge';
 import { toast } from 'sonner';
 import { User, MapPin, Plus, Edit, Trash2, Phone, Mail, CreditCard } from 'lucide-react';
+import Select from 'react-select';
+import { customStyles } from '@/hooks/custom-select';
+import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 
 export default function ProfileComponent({ 
     comp, 
@@ -17,7 +20,10 @@ export default function ProfileComponent({
     currentUser = null,
     userDeliveryLocations = [],
     userGiftCards = [],
-    mode = 'builder'
+    mode = 'builder',
+    countries = [],
+    states = [],
+    cities = []
 }) {
     const [profileData, setProfileData] = useState({
         name: currentUser?.name || '',
@@ -37,11 +43,51 @@ export default function ProfileComponent({
         postal_code: '',
         phone_number: '',
         notes: '',
-        is_default: false
+        is_default: false,
+        country_id: null,
+        state_id: null,
+        city_id: null
     });
+
+    const [filteredStates, setFilteredStates] = useState([]);
+    const [filteredCities, setFilteredCities] = useState([]);
+
+    // Opciones para los selects
+    const countryOptions = useMemo(() => mapToSelectOptions(countries, 'id', 'country_name'), [countries]);
+    const stateOptions = useMemo(() => mapToSelectOptions(filteredStates, 'id', 'state_name'), [filteredStates]);
+    const cityOptions = useMemo(() => mapToSelectOptions(filteredCities, 'id', 'city_name'), [filteredCities]);
 
     const styles = comp?.styles || {};
     const content = comp?.content || {};
+
+    // Efectos para filtrar estados y ciudades
+    useEffect(() => {
+        if (addressData.country_id) {
+            const statesForCountry = states.filter(state => state.country_id === addressData.country_id);
+            setFilteredStates(statesForCountry);
+
+            if (!statesForCountry.some(state => state.id === addressData.state_id)) {
+                setAddressData(prev => ({ ...prev, state_id: null, city_id: null }));
+            }
+        } else {
+            setFilteredStates([]);
+            setAddressData(prev => ({ ...prev, state_id: null, city_id: null }));
+        }
+    }, [addressData.country_id, states]);
+
+    useEffect(() => {
+        if (addressData.state_id) {
+            const citiesForState = cities.filter(city => city.state_id === addressData.state_id);
+            setFilteredCities(citiesForState);
+
+            if (!citiesForState.some(city => city.id === addressData.city_id)) {
+                setAddressData(prev => ({ ...prev, city_id: null }));
+            }
+        } else {
+            setFilteredCities([]);
+            setAddressData(prev => ({ ...prev, city_id: null }));
+        }
+    }, [addressData.state_id, cities]);
 
     // Aplicar estilos del tema
     const containerStyles = {
@@ -326,7 +372,10 @@ export default function ProfileComponent({
             postal_code: '',
             phone_number: '',
             notes: '',
-            is_default: false
+            is_default: false,
+            country_id: null,
+            state_id: null,
+            city_id: null
         });
     };
 
@@ -338,7 +387,10 @@ export default function ProfileComponent({
             postal_code: address.postal_code || '',
             phone_number: address.phone_number || '',
             notes: address.notes || '',
-            is_default: address.is_default || false
+            is_default: address.is_default || false,
+            country_id: address.country_id || null,
+            state_id: address.state_id || null,
+            city_id: address.city_id || null
         });
         setIsAddingAddress(true);
     };
@@ -489,24 +541,24 @@ export default function ProfileComponent({
                                     </DialogTitle>
                                 </DialogHeader>
                                 <form onSubmit={handleAddressSubmit} className="space-y-4">
-                                    <div>
-                                        <Label htmlFor="address_line_1">Dirección principal *</Label>
-                                        <Input
-                                            id="address_line_1"
-                                            value={addressData.address_line_1}
-                                            onChange={(e) => setAddressData(prev => ({...prev, address_line_1: e.target.value}))}
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="address_line_2">Dirección secundaria</Label>
-                                        <Input
-                                            id="address_line_2"
-                                            value={addressData.address_line_2}
-                                            onChange={(e) => setAddressData(prev => ({...prev, address_line_2: e.target.value}))}
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="address_line_1">Dirección principal *</Label>
+                                            <Input
+                                                id="address_line_1"
+                                                value={addressData.address_line_1}
+                                                onChange={(e) => setAddressData(prev => ({...prev, address_line_1: e.target.value}))}
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="address_line_2">Dirección secundaria</Label>
+                                            <Input
+                                                id="address_line_2"
+                                                value={addressData.address_line_2}
+                                                onChange={(e) => setAddressData(prev => ({...prev, address_line_2: e.target.value}))}
+                                            />
+                                        </div>
                                         <div>
                                             <Label htmlFor="postal_code">Código postal</Label>
                                             <Input
@@ -524,6 +576,52 @@ export default function ProfileComponent({
                                             />
                                         </div>
                                     </div>
+                                    
+                                    {/* País, Estado, Ciudad */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <Label htmlFor="country_id">País</Label>
+                                            <Select
+                                                name="country_id"
+                                                id="country_id"
+                                                options={countryOptions}
+                                                value={countryOptions.find(option => option.value === addressData.country_id)}
+                                                onChange={(selectedOption) => setAddressData(prev => ({...prev, country_id: selectedOption?.value || null}))}
+                                                styles={customStyles}
+                                                isClearable
+                                                placeholder="Seleccionar país"
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="state_id">Estado</Label>
+                                            <Select
+                                                name="state_id"
+                                                id="state_id"
+                                                options={stateOptions}
+                                                value={stateOptions.find(option => option.value === addressData.state_id)}
+                                                onChange={(selectedOption) => setAddressData(prev => ({...prev, state_id: selectedOption?.value || null}))}
+                                                styles={customStyles}
+                                                isClearable
+                                                placeholder="Seleccionar estado"
+                                                isDisabled={!addressData.country_id}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="city_id">Ciudad</Label>
+                                            <Select
+                                                name="city_id"
+                                                id="city_id"
+                                                options={cityOptions}
+                                                value={cityOptions.find(option => option.value === addressData.city_id)}
+                                                onChange={(selectedOption) => setAddressData(prev => ({...prev, city_id: selectedOption?.value || null}))}
+                                                styles={customStyles}
+                                                isClearable
+                                                placeholder="Seleccionar ciudad"
+                                                isDisabled={!addressData.state_id}
+                                            />
+                                        </div>
+                                    </div>
+                                    
                                     <div>
                                         <Label htmlFor="notes">Notas adicionales</Label>
                                         <Input

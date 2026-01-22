@@ -64,7 +64,10 @@ const CanvasItem = ({
     setHoveredComponentId,
     pageContent,
     availableMenus,
-    companyLogo 
+    companyLogo,
+    countries = [],
+    states = [],
+    cities = []
 }) => {
     const getStyles = (comp) => {
         const styles = comp.styles || {};
@@ -747,6 +750,9 @@ const CanvasItem = ({
                                 expiration_date: '2024-06-30'
                             }
                         ]}
+                        countries={countries}
+                        states={states}
+                        cities={cities}
                     />
                 );
             case 'pageContent':

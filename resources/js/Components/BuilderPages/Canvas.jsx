@@ -16,7 +16,10 @@ const Canvas = memo(({
     isPreview = false,
     pageContent,
     availableMenus,
-    companyLogo 
+    companyLogo,
+    countries = [],
+    states = [],
+    cities = []
 }) => {
     // Usar useMemo para memorizar los componentes renderizados
     const renderedComponents = useMemo(() => {
@@ -35,10 +38,13 @@ const Canvas = memo(({
                 setHoveredComponentId={setHoveredComponentId}
                 pageContent={pageContent}
                 availableMenus={availableMenus}
-                companyLogo ={companyLogo}
+                companyLogo={companyLogo}
+                countries={countries}
+                states={states}
+                cities={cities}
             />
         ));
-    }, [components, themeSettings, appliedTheme, isPreview, products, hoveredComponentId, pageContent, availableMenus, companyLogo]);
+    }, [components, themeSettings, appliedTheme, isPreview, products, hoveredComponentId, pageContent, availableMenus, companyLogo, countries, states, cities]);
 
     return (
         <div
