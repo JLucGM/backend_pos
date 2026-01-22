@@ -72,6 +72,7 @@ import CheckoutPaymentEditDialog from './partials/Checkout/CheckoutPaymentEditDi
 import LoginEditDialog from './partials/Auth/LoginEditDialog';
 import RegisterEditDialog from './partials/Auth/RegisterEditDialog';
 import CheckoutDiscountGiftCardEditDialog from './partials/Checkout/CheckoutDiscountGiftCardEditDialog';
+import ProfileEditDialog from './partials/Profile/ProfileEditDialog';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -127,6 +128,7 @@ const componentDialogMap = {
     checkoutDiscountGiftCard: CheckoutDiscountGiftCardEditDialog,
     login: LoginEditDialog,
     register: RegisterEditDialog,
+    profile: ProfileEditDialog,
 };
 
 // Componente para renderizar el diálogo apropiado
@@ -1745,6 +1747,53 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 return;
             }
 
+            if (selectedType === 'profile') {
+                const profileId = Date.now();
+
+                content = {
+                    title: 'Mi Perfil',
+                    personalInfoTitle: 'Información Personal',
+                    addressesTitle: 'Direcciones de Envío',
+                    giftCardsTitle: 'Mis Gift Cards',
+                    loginRequiredTitle: 'Inicia sesión para ver tu perfil',
+                    loginRequiredMessage: 'Necesitas iniciar sesión para acceder a tu perfil y gestionar tus datos.',
+                    loginButtonText: 'Iniciar Sesión'
+                };
+
+                const newItem = {
+                    id: profileId,
+                    type: selectedType,
+                    content,
+                    styles: {
+                        backgroundColor: '#ffffff',
+                        paddingTop: '40px',
+                        paddingRight: '20px',
+                        paddingBottom: '40px',
+                        paddingLeft: '20px',
+                        maxWidth: '1200px',
+                        borderRadius: '0px',
+                        titleColor: '#000000',
+                        titleSize: '32px',
+                        titleWeight: 'bold',
+                        titleAlignment: 'left',
+                        cardBackgroundColor: '#ffffff',
+                        cardBorderRadius: '12px',
+                        cardBorder: '1px solid #e5e7eb',
+                        cardPadding: '24px'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+
             if (selectedType === 'pageContent') {
                 content = null;
             }
@@ -2470,6 +2519,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <SelectItem value="checkout">Checkout / Finalizar Compra</SelectItem>
                                 <SelectItem value="login">Formulario de Login</SelectItem>
                                 <SelectItem value="register">Formulario de Registro</SelectItem>
+                                <SelectItem value="profile">Perfil de Usuario</SelectItem>
                                 <SelectItem value="marquee">Texto en Movimiento</SelectItem>
                                 <SelectItem value="pageContent">Contenido de Página</SelectItem>
                                 <SelectItem value="container">Contenedor</SelectItem>

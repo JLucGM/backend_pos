@@ -22,6 +22,10 @@ class DeliveryLocation extends Model
         'city_id',
     ];
 
+    protected $casts = [
+        'is_default' => 'boolean',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -49,6 +49,7 @@ import CheckoutSummaryComponent from './Checkout/CheckoutSummaryComponent';
 import CustomerInfoComponent from './Checkout/CustomerInfoComponent';
 import CheckoutDiscountGiftCardComponent from './Checkout/CheckoutDiscountGiftCardComponent';
 import ProductComponent from './Product/ProductComponent';
+import ProfileComponent from './Profile/ProfileComponent';
 
 const CanvasItem = ({
     comp,
@@ -688,6 +689,66 @@ const CanvasItem = ({
                         mode={isPreview ? 'frontend' : 'builder'}
                     />
                 );
+            case 'profile':
+                return (
+                    <ProfileComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                        // En el builder, mostrar datos de ejemplo
+                        currentUser={isPreview ? null : {
+                            id: 1,
+                            name: 'Usuario Ejemplo',
+                            email: 'usuario@ejemplo.com',
+                            phone: '+1 234 567 8900'
+                        }}
+                        userDeliveryLocations={isPreview ? [] : [
+                            {
+                                id: 1,
+                                address_line_1: 'Calle Principal 123',
+                                address_line_2: 'Apartamento 4B',
+                                postal_code: '12345',
+                                phone_number: '+1 234 567 8900',
+                                notes: 'Notas de ejemplo',
+                                is_default: true,
+                                country: 'México',
+                                state: 'Ciudad de México',
+                                city: 'CDMX',
+                                full_address: 'Calle Principal 123, Apartamento 4B, CDMX, Ciudad de México, México, 12345'
+                            },
+                            {
+                                id: 2,
+                                address_line_1: 'Avenida Secundaria 456',
+                                address_line_2: '',
+                                postal_code: '67890',
+                                phone_number: '+1 234 567 8901',
+                                notes: '',
+                                is_default: false,
+                                country: 'México',
+                                state: 'Jalisco',
+                                city: 'Guadalajara',
+                                full_address: 'Avenida Secundaria 456, Guadalajara, Jalisco, México, 67890'
+                            }
+                        ]}
+                        userGiftCards={isPreview ? [] : [
+                            {
+                                id: 1,
+                                code: 'GIFT-123456',
+                                initial_balance: 100.00,
+                                current_balance: 75.00,
+                                expiration_date: '2024-12-31'
+                            },
+                            {
+                                id: 2,
+                                code: 'GIFT-789012',
+                                initial_balance: 50.00,
+                                current_balance: 50.00,
+                                expiration_date: '2024-06-30'
+                            }
+                        ]}
+                    />
+                );
             case 'pageContent':
                 return (
                     <PageContentComponent
@@ -752,6 +813,7 @@ const CanvasItem = ({
             'cart': 'Carrito de Compras',
             'cartItems': 'Lista de Productos',
             'cartSummary': 'Resumen del Pedido',
+            'profile': 'Perfil de Usuario',
         };
         return typeNames[type] || type;
     };

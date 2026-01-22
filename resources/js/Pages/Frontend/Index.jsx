@@ -33,6 +33,7 @@ import CheckoutSummaryComponent from '@/Components/BuilderPages/Checkout/Checkou
 import CheckoutPaymentComponent from '@/Components/BuilderPages/Checkout/CheckoutPaymentComponent';
 import CustomerInfoComponent from '@/Components/BuilderPages/Checkout/CustomerInfoComponent';
 import CartComponent from '@/Components/BuilderPages/Cart/CartComponent';
+import ProfileComponent from '@/Components/BuilderPages/Profile/ProfileComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -65,6 +66,7 @@ const componentMap = {
     'checkoutPayment': CheckoutPaymentComponent,
     'customerInfo': CustomerInfoComponent,
     'button': ButtonComponent, // IMPORTANTE: Agregado
+    'profile': ProfileComponent, // ← Agregado ProfileComponent
 };
 
 // ==============================================================
@@ -83,7 +85,8 @@ function renderBlock(
     userGiftCards = [], 
     mode = 'frontend', 
     companyLogo, 
-    companyFavicon
+    companyFavicon,
+    currentUser = null
 ) {
     const Component = componentMap[block.type];
 
@@ -190,6 +193,17 @@ function renderBlock(
 
         case 'button':
             return <ButtonComponent key={block.id} {...baseProps} />;
+
+        case 'profile':
+            return (
+                <Component
+                    key={block.id}
+                    {...baseProps}
+                    currentUser={currentUser}
+                    userDeliveryLocations={userDeliveryLocations}
+                    userGiftCards={userGiftCards}
+                />
+            );
             
         default:
             return <Component key={block.id} {...baseProps} />;
@@ -213,6 +227,7 @@ export default function Index({
     userGiftCards = [],
     companyLogo,
     companyFavicon,
+    currentUser = null,
 }) {
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
@@ -295,7 +310,8 @@ export default function Index({
                     userGiftCards,
                     'frontend', // Modo frontend siempre
                     companyLogo,
-                    companyFavicon
+                    companyFavicon,
+                    currentUser
                 )
             )}
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\Frontend\Auth\LoginController;
 use App\Http\Controllers\Frontend\Auth\RegisterController;
 use App\Http\Controllers\Frontend\CheckoutController;
+use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\GiftCardController;
 use App\Http\Controllers\MenuController;
@@ -63,6 +64,20 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
         Route::post('/logout', [LoginController::class, 'destroy'])
             ->name('frontend.logout');
 
+        // Perfil de usuario
+        Route::get('/perfil', [FrontendProfileController::class, 'edit'])
+            ->name('frontend.profile.edit');
+        Route::put('/profile', [FrontendProfileController::class, 'update'])
+            ->name('frontend.profile.update');
+        
+        // Direcciones de entrega
+        Route::post('/profile/addresses', [FrontendProfileController::class, 'storeAddress'])
+            ->name('frontend.profile.addresses.store');
+        Route::put('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'updateAddress'])
+            ->name('frontend.profile.addresses.update');
+        Route::delete('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'destroyAddress'])
+            ->name('frontend.profile.addresses.destroy');
+
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
             ->name('frontend.checkout.process');
 
@@ -109,6 +124,20 @@ Route::group([
         // Logout
         Route::post('/logout', [LoginController::class, 'destroy'])
             ->name('frontend.logout.custom');
+
+        // Perfil de usuario
+        Route::get('/perfil', [FrontendProfileController::class, 'edit'])
+            ->name('frontend.profile.edit.custom');
+        Route::put('/profile', [FrontendProfileController::class, 'update'])
+            ->name('frontend.profile.update.custom');
+        
+        // Direcciones de entrega
+        Route::post('/profile/addresses', [FrontendProfileController::class, 'storeAddress'])
+            ->name('frontend.profile.addresses.store.custom');
+        Route::put('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'updateAddress'])
+            ->name('frontend.profile.addresses.update.custom');
+        Route::delete('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'destroyAddress'])
+            ->name('frontend.profile.addresses.destroy.custom');
 
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
             ->name('frontend.checkout.process');
