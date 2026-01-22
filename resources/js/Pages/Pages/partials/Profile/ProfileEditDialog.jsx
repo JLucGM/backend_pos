@@ -50,6 +50,22 @@ export default function ProfileEditDialog({
                         />
                     </div>
 
+                    <div>
+                        <Label htmlFor="layoutType">Tipo de Layout</Label>
+                        <select
+                            id="layoutType"
+                            value={content.layoutType || 'tabs'}
+                            onChange={(e) => updateContent('layoutType', e.target.value)}
+                            className="w-full p-2 border rounded"
+                        >
+                            <option value="tabs">Tabs (Pestañas)</option>
+                            <option value="grid">Grid (Cuadrícula)</option>
+                        </select>
+                        <p className="text-sm text-gray-500 mt-1">
+                            Tabs: Organiza el contenido en pestañas. Grid: Muestra todo en una cuadrícula.
+                        </p>
+                    </div>
+
                     <Separator />
 
                     <div>

@@ -1757,7 +1757,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     giftCardsTitle: 'Mis Gift Cards',
                     loginRequiredTitle: 'Inicia sesión para ver tu perfil',
                     loginRequiredMessage: 'Necesitas iniciar sesión para acceder a tu perfil y gestionar tus datos.',
-                    loginButtonText: 'Iniciar Sesión'
+                    loginButtonText: 'Iniciar Sesión',
+                    layoutType: 'tabs'
                 };
 
                 const newItem = {

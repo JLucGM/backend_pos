@@ -90,100 +90,174 @@ export default function ProfileComponent({
         );
     }
 
-    // Modo builder - mostrar vista de ejemplo
+    // Modo builder - mostrar vista de ejemplo respetando el layoutType
     if (mode === 'builder') {
+        const layoutType = content.layoutType || 'tabs';
+        
+        // Componentes de ejemplo para el builder
+        const exampleProfileSection = (
+            <Card style={cardStyles}>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <User className="h-5 w-5" />
+                        {content.personalInfoTitle || 'Información Personal'}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <Label>Nombre completo</Label>
+                            <Input value="Usuario Ejemplo" disabled />
+                        </div>
+                        <div>
+                            <Label>Email</Label>
+                            <Input value="usuario@ejemplo.com" disabled />
+                        </div>
+                        <div>
+                            <Label>Teléfono</Label>
+                            <Input value="+1 234 567 8900" disabled />
+                        </div>
+                    </div>
+                    <Button variant="outline" disabled>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar Información
+                    </Button>
+                </CardContent>
+            </Card>
+        );
+
+        const exampleAddressesSection = (
+            <Card style={cardStyles}>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5" />
+                        {content.addressesTitle || 'Direcciones de Envío'}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <Badge variant="secondary">Principal</Badge>
+                                <Button variant="ghost" size="sm" disabled>
+                                    <Edit className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <p className="text-sm font-medium">Calle Principal 123</p>
+                            <p className="text-sm text-gray-600">Apartamento 4B</p>
+                            <p className="text-sm text-gray-600">Ciudad, Estado 12345</p>
+                            <p className="text-sm text-gray-600">+1 234 567 8900</p>
+                        </div>
+                    </div>
+                    <Button variant="outline" className="mt-4" disabled>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Agregar Nueva Dirección
+                    </Button>
+                </CardContent>
+            </Card>
+        );
+
+        const exampleGiftCardsSection = (
+            <Card style={cardStyles}>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5" />
+                        {content.giftCardsTitle || 'Mis Gift Cards'}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+                            <div className="flex items-center justify-between mb-2">
+                                <Badge variant="outline">Gift Card</Badge>
+                                <CreditCard className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <p className="text-lg font-mono font-bold text-gray-800 mb-2">
+                                GIFT-123456
+                            </p>
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Saldo disponible:</span>
+                                    <span className="font-semibold text-green-600">$75.00</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Expira:</span>
+                                    <span className="text-gray-800">31/12/2024</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+
         return (
             <div style={containerStyles}>
                 <h1 style={titleStyles}>
                     {content.title || 'Mi Perfil'}
                 </h1>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Información Personal */}
-                    <div className="lg:col-span-2">
-                        <Card style={cardStyles}>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <User className="h-5 w-5" />
-                                    {content.personalInfoTitle || 'Información Personal'}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Nombre completo</Label>
-                                        <Input value="Usuario Ejemplo" disabled />
-                                    </div>
-                                    <div>
-                                        <Label>Email</Label>
-                                        <Input value="usuario@ejemplo.com" disabled />
-                                    </div>
-                                    <div>
-                                        <Label>Teléfono</Label>
-                                        <Input value="+1 234 567 8900" disabled />
-                                    </div>
-                                </div>
-                                <Button variant="outline" disabled>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Editar Información
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    </div>
+                {layoutType === 'grid' ? (
+                    // Grid Layout - Todo visible a la vez
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Información Personal - ocupa 2 columnas */}
+                            <div className="lg:col-span-2">
+                                {exampleProfileSection}
+                            </div>
 
-                    {/* Resumen */}
-                    <div>
-                        <Card style={cardStyles}>
-                            <CardHeader>
-                                <CardTitle>Resumen</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Direcciones</span>
-                                    <Badge>2</Badge>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Gift Cards</span>
-                                    <Badge>1</Badge>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Pedidos</span>
-                                    <Badge>5</Badge>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-
-                {/* Direcciones de Envío */}
-                <Card style={cardStyles} className="mt-6">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <MapPin className="h-5 w-5" />
-                            {content.addressesTitle || 'Direcciones de Envío'}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="border rounded-lg p-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <Badge variant="secondary">Principal</Badge>
-                                    <Button variant="ghost" size="sm" disabled>
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                <p className="text-sm font-medium">Calle Principal 123</p>
-                                <p className="text-sm text-gray-600">Apartamento 4B</p>
-                                <p className="text-sm text-gray-600">Ciudad, Estado 12345</p>
-                                <p className="text-sm text-gray-600">+1 234 567 8900</p>
+                            {/* Resumen - ocupa 1 columna */}
+                            <div>
+                                <Card style={cardStyles}>
+                                    <CardHeader>
+                                        <CardTitle>Resumen</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-gray-600">Direcciones</span>
+                                            <Badge>2</Badge>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-gray-600">Gift Cards</span>
+                                            <Badge>1</Badge>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-gray-600">Pedidos</span>
+                                            <Badge>5</Badge>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
                         </div>
-                        <Button variant="outline" className="mt-4" disabled>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Agregar Nueva Dirección
-                        </Button>
-                    </CardContent>
-                </Card>
+
+                        {/* Direcciones de Envío - ancho completo */}
+                        {exampleAddressesSection}
+
+                        {/* Gift Cards - ancho completo */}
+                        {exampleGiftCardsSection}
+                    </div>
+                ) : (
+                    // Tabs Layout - Contenido organizado en pestañas
+                    <Tabs defaultValue="profile" className="w-full">
+                        <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="profile">Perfil</TabsTrigger>
+                            <TabsTrigger value="addresses">Direcciones</TabsTrigger>
+                            <TabsTrigger value="giftcards">Gift Cards</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="profile" className="space-y-6">
+                            {exampleProfileSection}
+                        </TabsContent>
+
+                        <TabsContent value="addresses" className="space-y-6">
+                            {exampleAddressesSection}
+                        </TabsContent>
+
+                        <TabsContent value="giftcards" className="space-y-6">
+                            {exampleGiftCardsSection}
+                        </TabsContent>
+                    </Tabs>
+                )}
             </div>
         );
     }
@@ -269,335 +343,399 @@ export default function ProfileComponent({
         setIsAddingAddress(true);
     };
 
+    // Determinar el tipo de layout
+    const layoutType = content.layoutType || 'tabs';
+
+    // Renderizar contenido según el tipo de layout
+    const renderProfileContent = () => {
+        const profileSection = (
+            <Card style={cardStyles}>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <User className="h-5 w-5" />
+                        {content.personalInfoTitle || 'Información Personal'}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {isEditingProfile ? (
+                        <form onSubmit={handleProfileUpdate} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="name">Nombre completo</Label>
+                                    <Input
+                                        id="name"
+                                        value={profileData.name}
+                                        onChange={(e) => setProfileData(prev => ({...prev, name: e.target.value}))}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={profileData.email}
+                                        onChange={(e) => setProfileData(prev => ({...prev, email: e.target.value}))}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="phone">Teléfono</Label>
+                                    <Input
+                                        id="phone"
+                                        value={profileData.phone}
+                                        onChange={(e) => setProfileData(prev => ({...prev, phone: e.target.value}))}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="current_password">Contraseña actual</Label>
+                                    <Input
+                                        id="current_password"
+                                        type="password"
+                                        value={profileData.current_password}
+                                        onChange={(e) => setProfileData(prev => ({...prev, current_password: e.target.value}))}
+                                        placeholder="Solo si quieres cambiar contraseña"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="password">Nueva contraseña</Label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        value={profileData.password}
+                                        onChange={(e) => setProfileData(prev => ({...prev, password: e.target.value}))}
+                                        placeholder="Solo si quieres cambiar contraseña"
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="password_confirmation">Confirmar nueva contraseña</Label>
+                                    <Input
+                                        id="password_confirmation"
+                                        type="password"
+                                        value={profileData.password_confirmation}
+                                        onChange={(e) => setProfileData(prev => ({...prev, password_confirmation: e.target.value}))}
+                                        placeholder="Solo si quieres cambiar contraseña"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button type="submit">Guardar Cambios</Button>
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    onClick={() => setIsEditingProfile(false)}
+                                >
+                                    Cancelar
+                                </Button>
+                            </div>
+                        </form>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <Label>Nombre completo</Label>
+                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                        <User className="h-4 w-4 text-gray-500" />
+                                        <span>{currentUser?.name}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label>Email</Label>
+                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                        <Mail className="h-4 w-4 text-gray-500" />
+                                        <span>{currentUser?.email}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label>Teléfono</Label>
+                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                                        <Phone className="h-4 w-4 text-gray-500" />
+                                        <span>{currentUser?.phone || 'No especificado'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <Button onClick={() => setIsEditingProfile(true)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar Información
+                            </Button>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        );
+
+        const addressesSection = (
+            <Card style={cardStyles}>
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-2">
+                            <MapPin className="h-5 w-5" />
+                            {content.addressesTitle || 'Direcciones de Envío'}
+                        </CardTitle>
+                        <Dialog open={isAddingAddress} onOpenChange={setIsAddingAddress}>
+                            <DialogTrigger asChild>
+                                <Button onClick={() => {
+                                    setEditingAddress(null);
+                                    resetAddressForm();
+                                }}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Agregar Dirección
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        {editingAddress ? 'Editar Dirección' : 'Nueva Dirección'}
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={handleAddressSubmit} className="space-y-4">
+                                    <div>
+                                        <Label htmlFor="address_line_1">Dirección principal *</Label>
+                                        <Input
+                                            id="address_line_1"
+                                            value={addressData.address_line_1}
+                                            onChange={(e) => setAddressData(prev => ({...prev, address_line_1: e.target.value}))}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="address_line_2">Dirección secundaria</Label>
+                                        <Input
+                                            id="address_line_2"
+                                            value={addressData.address_line_2}
+                                            onChange={(e) => setAddressData(prev => ({...prev, address_line_2: e.target.value}))}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="postal_code">Código postal</Label>
+                                            <Input
+                                                id="postal_code"
+                                                value={addressData.postal_code}
+                                                onChange={(e) => setAddressData(prev => ({...prev, postal_code: e.target.value}))}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="phone_number">Teléfono</Label>
+                                            <Input
+                                                id="phone_number"
+                                                value={addressData.phone_number}
+                                                onChange={(e) => setAddressData(prev => ({...prev, phone_number: e.target.value}))}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="notes">Notas adicionales</Label>
+                                        <Input
+                                            id="notes"
+                                            value={addressData.notes}
+                                            onChange={(e) => setAddressData(prev => ({...prev, notes: e.target.value}))}
+                                        />
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            id="is_default"
+                                            checked={addressData.is_default}
+                                            onChange={(e) => setAddressData(prev => ({...prev, is_default: e.target.checked}))}
+                                        />
+                                        <Label htmlFor="is_default">Establecer como dirección principal</Label>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button type="submit">
+                                            {editingAddress ? 'Actualizar' : 'Agregar'}
+                                        </Button>
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            onClick={() => setIsAddingAddress(false)}
+                                        >
+                                            Cancelar
+                                        </Button>
+                                    </div>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {userDeliveryLocations.length === 0 ? (
+                        <div className="text-center py-8">
+                            <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                            <p className="text-gray-600">No tienes direcciones guardadas</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {userDeliveryLocations.map((address) => (
+                                <div key={address.id} className="border rounded-lg p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        {address.is_default && (
+                                            <Badge variant="secondary">Principal</Badge>
+                                        )}
+                                        <div className="flex gap-1">
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                onClick={() => startEditAddress(address)}
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                onClick={() => handleDeleteAddress(address.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm font-medium">{address.address_line_1}</p>
+                                    {address.address_line_2 && (
+                                        <p className="text-sm text-gray-600">{address.address_line_2}</p>
+                                    )}
+                                    <p className="text-sm text-gray-600">{address.full_address}</p>
+                                    {address.phone_number && (
+                                        <p className="text-sm text-gray-600">{address.phone_number}</p>
+                                    )}
+                                    {address.notes && (
+                                        <p className="text-sm text-gray-500 italic">{address.notes}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        );
+
+        const giftCardsSection = (
+            <Card style={cardStyles}>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5" />
+                        {content.giftCardsTitle || 'Mis Gift Cards'}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {userGiftCards.length === 0 ? (
+                        <div className="text-center py-8">
+                            <CreditCard className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                            <p className="text-gray-600">No tienes gift cards disponibles</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {userGiftCards.map((giftCard) => (
+                                <div key={giftCard.id} className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <Badge variant="outline">Gift Card</Badge>
+                                        <CreditCard className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <p className="text-lg font-mono font-bold text-gray-800 mb-2">
+                                        {giftCard.code}
+                                    </p>
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Saldo disponible:</span>
+                                            <span className="font-semibold text-green-600">
+                                                ${giftCard.current_balance}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Saldo inicial:</span>
+                                            <span className="text-gray-800">
+                                                ${giftCard.initial_balance}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Expira:</span>
+                                            <span className="text-gray-800">
+                                                {new Date(giftCard.expiration_date).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        );
+
+        // Renderizar según el tipo de layout
+        if (layoutType === 'grid') {
+            return (
+                <div className="space-y-6">
+                    {/* Grid Layout - Todo visible a la vez */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Información Personal - ocupa 2 columnas */}
+                        <div className="lg:col-span-2">
+                            {profileSection}
+                        </div>
+
+                        {/* Resumen - ocupa 1 columna */}
+                        <div>
+                            <Card style={cardStyles}>
+                                <CardHeader>
+                                    <CardTitle>Resumen</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-600">Direcciones</span>
+                                        <Badge>{userDeliveryLocations.length}</Badge>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-600">Gift Cards</span>
+                                        <Badge>{userGiftCards.length}</Badge>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-sm text-gray-600">Pedidos</span>
+                                        <Badge>0</Badge>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+
+                    {/* Direcciones de Envío - ancho completo */}
+                    {addressesSection}
+
+                    {/* Gift Cards - ancho completo */}
+                    {giftCardsSection}
+                </div>
+            );
+        } else {
+            // Tabs Layout - Contenido organizado en pestañas
+            return (
+                <Tabs defaultValue="profile" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="profile">Perfil</TabsTrigger>
+                        <TabsTrigger value="addresses">Direcciones</TabsTrigger>
+                        <TabsTrigger value="giftcards">Gift Cards</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="profile" className="space-y-6">
+                        {profileSection}
+                    </TabsContent>
+
+                    <TabsContent value="addresses" className="space-y-6">
+                        {addressesSection}
+                    </TabsContent>
+
+                    <TabsContent value="giftcards" className="space-y-6">
+                        {giftCardsSection}
+                    </TabsContent>
+                </Tabs>
+            );
+        }
+    };
+
     return (
         <div style={containerStyles}>
             <h1 style={titleStyles}>
                 {content.title || 'Mi Perfil'}
             </h1>
             
-            <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="profile">Perfil</TabsTrigger>
-                    <TabsTrigger value="addresses">Direcciones</TabsTrigger>
-                    <TabsTrigger value="giftcards">Gift Cards</TabsTrigger>
-                </TabsList>
-
-                {/* Tab de Perfil */}
-                <TabsContent value="profile" className="space-y-6">
-                    <Card style={cardStyles}>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <User className="h-5 w-5" />
-                                {content.personalInfoTitle || 'Información Personal'}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {isEditingProfile ? (
-                                <form onSubmit={handleProfileUpdate} className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="name">Nombre completo</Label>
-                                            <Input
-                                                id="name"
-                                                value={profileData.name}
-                                                onChange={(e) => setProfileData(prev => ({...prev, name: e.target.value}))}
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="email">Email</Label>
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                value={profileData.email}
-                                                onChange={(e) => setProfileData(prev => ({...prev, email: e.target.value}))}
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="phone">Teléfono</Label>
-                                            <Input
-                                                id="phone"
-                                                value={profileData.phone}
-                                                onChange={(e) => setProfileData(prev => ({...prev, phone: e.target.value}))}
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="current_password">Contraseña actual</Label>
-                                            <Input
-                                                id="current_password"
-                                                type="password"
-                                                value={profileData.current_password}
-                                                onChange={(e) => setProfileData(prev => ({...prev, current_password: e.target.value}))}
-                                                placeholder="Solo si quieres cambiar contraseña"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="password">Nueva contraseña</Label>
-                                            <Input
-                                                id="password"
-                                                type="password"
-                                                value={profileData.password}
-                                                onChange={(e) => setProfileData(prev => ({...prev, password: e.target.value}))}
-                                                placeholder="Solo si quieres cambiar contraseña"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="password_confirmation">Confirmar nueva contraseña</Label>
-                                            <Input
-                                                id="password_confirmation"
-                                                type="password"
-                                                value={profileData.password_confirmation}
-                                                onChange={(e) => setProfileData(prev => ({...prev, password_confirmation: e.target.value}))}
-                                                placeholder="Solo si quieres cambiar contraseña"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Button type="submit">Guardar Cambios</Button>
-                                        <Button 
-                                            type="button" 
-                                            variant="outline" 
-                                            onClick={() => setIsEditingProfile(false)}
-                                        >
-                                            Cancelar
-                                        </Button>
-                                    </div>
-                                </form>
-                            ) : (
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label>Nombre completo</Label>
-                                            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                                <User className="h-4 w-4 text-gray-500" />
-                                                <span>{currentUser?.name}</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <Label>Email</Label>
-                                            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                                <Mail className="h-4 w-4 text-gray-500" />
-                                                <span>{currentUser?.email}</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <Label>Teléfono</Label>
-                                            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                                <Phone className="h-4 w-4 text-gray-500" />
-                                                <span>{currentUser?.phone || 'No especificado'}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <Button onClick={() => setIsEditingProfile(true)}>
-                                        <Edit className="h-4 w-4 mr-2" />
-                                        Editar Información
-                                    </Button>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                {/* Tab de Direcciones */}
-                <TabsContent value="addresses" className="space-y-6">
-                    <Card style={cardStyles}>
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2">
-                                    <MapPin className="h-5 w-5" />
-                                    {content.addressesTitle || 'Direcciones de Envío'}
-                                </CardTitle>
-                                <Dialog open={isAddingAddress} onOpenChange={setIsAddingAddress}>
-                                    <DialogTrigger asChild>
-                                        <Button onClick={() => {
-                                            setEditingAddress(null);
-                                            resetAddressForm();
-                                        }}>
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Agregar Dirección
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>
-                                                {editingAddress ? 'Editar Dirección' : 'Nueva Dirección'}
-                                            </DialogTitle>
-                                        </DialogHeader>
-                                        <form onSubmit={handleAddressSubmit} className="space-y-4">
-                                            <div>
-                                                <Label htmlFor="address_line_1">Dirección principal *</Label>
-                                                <Input
-                                                    id="address_line_1"
-                                                    value={addressData.address_line_1}
-                                                    onChange={(e) => setAddressData(prev => ({...prev, address_line_1: e.target.value}))}
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="address_line_2">Dirección secundaria</Label>
-                                                <Input
-                                                    id="address_line_2"
-                                                    value={addressData.address_line_2}
-                                                    onChange={(e) => setAddressData(prev => ({...prev, address_line_2: e.target.value}))}
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <Label htmlFor="postal_code">Código postal</Label>
-                                                    <Input
-                                                        id="postal_code"
-                                                        value={addressData.postal_code}
-                                                        onChange={(e) => setAddressData(prev => ({...prev, postal_code: e.target.value}))}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <Label htmlFor="phone_number">Teléfono</Label>
-                                                    <Input
-                                                        id="phone_number"
-                                                        value={addressData.phone_number}
-                                                        onChange={(e) => setAddressData(prev => ({...prev, phone_number: e.target.value}))}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="notes">Notas adicionales</Label>
-                                                <Input
-                                                    id="notes"
-                                                    value={addressData.notes}
-                                                    onChange={(e) => setAddressData(prev => ({...prev, notes: e.target.value}))}
-                                                />
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <input
-                                                    type="checkbox"
-                                                    id="is_default"
-                                                    checked={addressData.is_default}
-                                                    onChange={(e) => setAddressData(prev => ({...prev, is_default: e.target.checked}))}
-                                                />
-                                                <Label htmlFor="is_default">Establecer como dirección principal</Label>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <Button type="submit">
-                                                    {editingAddress ? 'Actualizar' : 'Agregar'}
-                                                </Button>
-                                                <Button 
-                                                    type="button" 
-                                                    variant="outline" 
-                                                    onClick={() => setIsAddingAddress(false)}
-                                                >
-                                                    Cancelar
-                                                </Button>
-                                            </div>
-                                        </form>
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {userDeliveryLocations.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                                    <p className="text-gray-600">No tienes direcciones guardadas</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {userDeliveryLocations.map((address) => (
-                                        <div key={address.id} className="border rounded-lg p-4">
-                                            <div className="flex items-center justify-between mb-2">
-                                                {address.is_default && (
-                                                    <Badge variant="secondary">Principal</Badge>
-                                                )}
-                                                <div className="flex gap-1">
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="sm"
-                                                        onClick={() => startEditAddress(address)}
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="sm"
-                                                        onClick={() => handleDeleteAddress(address.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                            <p className="text-sm font-medium">{address.address_line_1}</p>
-                                            {address.address_line_2 && (
-                                                <p className="text-sm text-gray-600">{address.address_line_2}</p>
-                                            )}
-                                            <p className="text-sm text-gray-600">{address.full_address}</p>
-                                            {address.phone_number && (
-                                                <p className="text-sm text-gray-600">{address.phone_number}</p>
-                                            )}
-                                            {address.notes && (
-                                                <p className="text-sm text-gray-500 italic">{address.notes}</p>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                {/* Tab de Gift Cards */}
-                <TabsContent value="giftcards" className="space-y-6">
-                    <Card style={cardStyles}>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <CreditCard className="h-5 w-5" />
-                                {content.giftCardsTitle || 'Mis Gift Cards'}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {userGiftCards.length === 0 ? (
-                                <div className="text-center py-8">
-                                    <CreditCard className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                                    <p className="text-gray-600">No tienes gift cards disponibles</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {userGiftCards.map((giftCard) => (
-                                        <div key={giftCard.id} className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <Badge variant="outline">Gift Card</Badge>
-                                                <CreditCard className="h-5 w-5 text-blue-600" />
-                                            </div>
-                                            <p className="text-lg font-mono font-bold text-gray-800 mb-2">
-                                                {giftCard.code}
-                                            </p>
-                                            <div className="space-y-1">
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-gray-600">Saldo disponible:</span>
-                                                    <span className="font-semibold text-green-600">
-                                                        ${giftCard.current_balance}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-gray-600">Saldo inicial:</span>
-                                                    <span className="text-gray-800">
-                                                        ${giftCard.initial_balance}
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-gray-600">Expira:</span>
-                                                    <span className="text-gray-800">
-                                                        {new Date(giftCard.expiration_date).toLocaleDateString()}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
+            {renderProfileContent()}
         </div>
     );
 }
