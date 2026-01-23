@@ -36,7 +36,7 @@ const SuccessComponent = ({
         gift_card_amount: 0,
         delivery_type: 'delivery',
         created_at: new Date().toISOString(),
-        orderItems: [
+        order_items: [
             {
                 id: 1,
                 name_product: 'Producto Ejemplo 1',
@@ -62,14 +62,14 @@ const SuccessComponent = ({
                 })
             }
         ],
-        paymentMethod: {
+        payment_method: {
             name: 'Tarjeta de Crédito'
         },
         shippingRate: {
             name: 'Envío Estándar',
             price: 25.00
         },
-        deliveryLocation: {
+        delivery_location: {
             address_line_1: 'Calle Principal 123',
             address_line_2: 'Apartamento 4B',
             city: 'Ciudad Ejemplo',
@@ -192,7 +192,7 @@ const SuccessComponent = ({
                     <CardContent className="space-y-4">
                         <div className="flex justify-between items-center">
                             <span className="font-medium">Número de Orden:</span>
-                            <span className="font-mono text-lg">{displayOrder.order_number}</span>
+                            <span className="font-mono text-lg">{displayOrder.id}</span>
                         </div>
                         
                         <div className="flex justify-between items-center">
@@ -214,26 +214,27 @@ const SuccessComponent = ({
                             <span className="font-medium">Método de Pago:</span>
                             <span className="flex items-center gap-1">
                                 <CreditCard size={16} />
-                                {displayOrder.paymentMethod?.name || 'No especificado'}
+                                {displayOrder.payment_method?.payment_method_name || 'No especificado'}
+                                {console.log(displayOrder)}
                             </span>
                         </div>
                         
-                        {displayOrder.delivery_type === 'delivery' && displayOrder.deliveryLocation && (
+                        {displayOrder.delivery_type === 'delivery' && displayOrder.delivery_location && (
                             <div>
                                 <span className="font-medium flex items-center gap-1 mb-2">
                                     <MapPin size={16} />
                                     Dirección de Entrega:
                                 </span>
                                 <div className="text-sm text-gray-600 ml-5">
-                                    <div>{displayOrder.deliveryLocation.address_line_1}</div>
-                                    {displayOrder.deliveryLocation.address_line_2 && (
-                                        <div>{displayOrder.deliveryLocation.address_line_2}</div>
+                                    <div>{displayOrder.delivery_location.address_line_1}</div>
+                                    {displayOrder.delivery_location.address_line_2 && (
+                                        <div>{displayOrder.delivery_location.address_line_2}</div>
                                     )}
                                     <div>
-                                        {displayOrder.deliveryLocation.city}, {displayOrder.deliveryLocation.state}
+                                        {displayOrder.delivery_location.city.city_name}, {displayOrder.delivery_location.state.state_name}
                                     </div>
                                     <div>
-                                        {displayOrder.deliveryLocation.country} {displayOrder.deliveryLocation.postal_code}
+                                        {displayOrder.delivery_location.country.country_name} {displayOrder.delivery_location.postal_code}
                                     </div>
                                 </div>
                             </div>
@@ -313,7 +314,7 @@ const SuccessComponent = ({
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {displayOrder.orderItems?.map((item, index) => {
+                        {displayOrder.order_items?.map((item, index) => {
                             const details = parseProductDetails(item.product_details);
                             
                             return (

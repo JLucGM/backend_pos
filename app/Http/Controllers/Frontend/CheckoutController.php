@@ -530,7 +530,7 @@ class CheckoutController extends Controller
         ])
             ->where('company_id', $company->id)
             ->findOrFail($orderId);
-
+// dd($order);
         // Buscar la página de éxito configurada para esta empresa
         $successPage = \App\Models\Page::where('company_id', $order->company_id)
             ->where('title', 'Orden exitosa')
