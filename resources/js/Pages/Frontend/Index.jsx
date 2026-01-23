@@ -35,6 +35,7 @@ import CustomerInfoComponent from '@/Components/BuilderPages/Checkout/CustomerIn
 import CartComponent from '@/Components/BuilderPages/Cart/CartComponent';
 import ProfileComponent from '@/Components/BuilderPages/Profile/ProfileComponent';
 import OrdersComponent from '@/Components/BuilderPages/Orders/OrdersComponent';
+import SuccessComponent from '@/Components/BuilderPages/Success/SuccessComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -69,6 +70,7 @@ const componentMap = {
     'button': ButtonComponent, // IMPORTANTE: Agregado
     'profile': ProfileComponent, // ← Agregado ProfileComponent
     'orders': OrdersComponent, // ← Agregado OrdersComponent
+    'success': SuccessComponent, // ← Agregado SuccessComponent
 };
 
 // ==============================================================
@@ -214,6 +216,16 @@ function renderBlock(
 
         case 'button':
             return <ButtonComponent key={block.id} {...baseProps} />;
+
+        case 'success':
+            return (
+                <Component
+                    key={block.id}
+                    {...baseProps}
+                    order={currentProduct} // En el contexto de success, currentProduct será la orden
+                    companyId={companyId}
+                />
+            );
 
         case 'profile':
             return (

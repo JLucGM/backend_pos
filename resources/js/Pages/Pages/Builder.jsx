@@ -74,6 +74,7 @@ import RegisterEditDialog from './partials/Auth/RegisterEditDialog';
 import CheckoutDiscountGiftCardEditDialog from './partials/Checkout/CheckoutDiscountGiftCardEditDialog';
 import ProfileEditDialog from './partials/Profile/ProfileEditDialog';
 import OrdersEditDialog from './partials/Orders/OrdersEditDialog';
+import SuccessEditDialog from './partials/Success/SuccessEditDialog';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -131,6 +132,7 @@ const componentDialogMap = {
     register: RegisterEditDialog,
     profile: ProfileEditDialog,
     orders: OrdersEditDialog,
+    success: SuccessEditDialog,
 };
 
 // Componente para renderizar el diálogo apropiado
@@ -1841,6 +1843,58 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 return;
             }
 
+            if (selectedType === 'success') {
+                const successId = Date.now();
+
+                content = {
+                    title: '¡Orden Exitosa!',
+                    subtitle: 'Tu orden ha sido procesada correctamente',
+                    iconColor: '#10b981',
+                    titleColor: '#000000',
+                    titleSize: '32px',
+                    titleWeight: 'bold',
+                    subtitleColor: '#666666',
+                    subtitleSize: '18px',
+                    showContinueShoppingButton: true,
+                    continueButtonText: 'Continuar Comprando',
+                    continueButtonBg: 'transparent',
+                    continueButtonColor: '#000000',
+                    continueButtonBorder: '#d1d5db',
+                    showOrdersButton: true,
+                    ordersButtonText: 'Ver Mis Pedidos',
+                    ordersButtonBg: '#3b82f6',
+                    ordersButtonColor: '#ffffff',
+                    additionalMessage: '',
+                    messageBackgroundColor: '#f3f4f6',
+                    messageTextColor: '#374151'
+                };
+
+                const newItem = {
+                    id: successId,
+                    type: selectedType,
+                    content,
+                    styles: {
+                        backgroundColor: '#ffffff',
+                        paddingTop: '40px',
+                        paddingRight: '20px',
+                        paddingBottom: '40px',
+                        paddingLeft: '20px',
+                        maxWidth: '1200px',
+                        borderRadius: '0px'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+
             if (selectedType === 'pageContent') {
                 content = null;
             }
@@ -2569,7 +2623,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <SelectItem value="image">Imagen</SelectItem>
                                 <SelectItem value="productDetail">Detalle de Producto</SelectItem>
                                 <SelectItem value="cart">Carrito de Compras</SelectItem>
-                                <SelectItem value="orders">orders</SelectItem>
+                                <SelectItem value="orders">Mis Pedidos</SelectItem>
+                                <SelectItem value="success">Página de Éxito</SelectItem>
                                 <SelectItem value="checkout">Checkout / Finalizar Compra</SelectItem>
                                 <SelectItem value="login">Formulario de Login</SelectItem>
                                 <SelectItem value="register">Formulario de Registro</SelectItem>

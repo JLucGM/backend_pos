@@ -130,10 +130,40 @@ class PageSeeder extends Seeder
                 'company_id' => 1,
             ],
             [
-                'title' => 'Profile',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'title' => 'Orden exitosa',
+                'content' => '<p>Tu orden ha sido procesada exitosamente.</p>',
                 'is_default' => true,
                 'theme_id' => 1,
+                'uses_template' => false,
+                'template_id' => null,
+                'layout' => json_encode([
+                    [
+                        'id' => 1,
+                        'type' => 'success',
+                        'content' => [
+                            'title' => '¡Orden Exitosa!',
+                            'subtitle' => 'Tu orden ha sido procesada correctamente',
+                            'iconColor' => '#10b981',
+                            'titleColor' => '#000000',
+                            'titleSize' => '32px',
+                            'subtitleColor' => '#666666',
+                            'subtitleSize' => '18px',
+                            'showContinueShoppingButton' => true,
+                            'continueButtonText' => 'Continuar Comprando',
+                            'showOrdersButton' => true,
+                            'ordersButtonText' => 'Ver Mis Pedidos',
+                            'additionalMessage' => 'Recibirás un email de confirmación con los detalles de tu pedido.'
+                        ],
+                        'styles' => [
+                            'backgroundColor' => '#ffffff',
+                            'paddingTop' => '40px',
+                            'paddingRight' => '20px',
+                            'paddingBottom' => '40px',
+                            'paddingLeft' => '20px',
+                            'maxWidth' => '1200px'
+                        ]
+                    ]
+                ]),
                 'company_id' => 1,
             ],
             [
@@ -251,10 +281,40 @@ class PageSeeder extends Seeder
                 'company_id' => 2,
             ],
             [
-                'title' => 'Profile',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'title' => 'Orden exitosa',
+                'content' => '<p>Tu orden ha sido procesada exitosamente.</p>',
                 'is_default' => true,
                 'theme_id' => 1,
+                'uses_template' => false,
+                'template_id' => null,
+                'layout' => json_encode([
+                    [
+                        'id' => 1,
+                        'type' => 'success',
+                        'content' => [
+                            'title' => '¡Orden Exitosa!',
+                            'subtitle' => 'Tu orden ha sido procesada correctamente',
+                            'iconColor' => '#10b981',
+                            'titleColor' => '#000000',
+                            'titleSize' => '32px',
+                            'subtitleColor' => '#666666',
+                            'subtitleSize' => '18px',
+                            'showContinueShoppingButton' => true,
+                            'continueButtonText' => 'Continuar Comprando',
+                            'showOrdersButton' => true,
+                            'ordersButtonText' => 'Ver Mis Pedidos',
+                            'additionalMessage' => 'Recibirás un email de confirmación con los detalles de tu pedido.'
+                        ],
+                        'styles' => [
+                            'backgroundColor' => '#ffffff',
+                            'paddingTop' => '40px',
+                            'paddingRight' => '20px',
+                            'paddingBottom' => '40px',
+                            'paddingLeft' => '20px',
+                            'maxWidth' => '1200px'
+                        ]
+                    ]
+                ]),
                 'company_id' => 2,
             ],
         ];

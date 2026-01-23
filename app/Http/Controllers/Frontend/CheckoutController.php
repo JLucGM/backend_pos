@@ -363,8 +363,7 @@ class CheckoutController extends Controller
                     'total' => $order->total,
                     'created_at' => $order->created_at->format('d/m/Y H:i'),
                 ],
-                // Redirigir a página de éxito o detalle de orden
-                // 'redirect_url' => '/checkout/success/' . $order->id,
+                'redirect_url' => route('frontend.checkout.success', $order->id),
             ]);
 
         } catch (ValidationException $e) {
@@ -492,13 +491,91 @@ class CheckoutController extends Controller
      */
     public function checkoutSuccess($orderId)
     {
-        $order = Order::with(['orderItems.product', 'paymentMethod', 'shippingRate', 'user'])
+        $order = Order::with([
+            'orderItems.product', 
+            'paymentMethod', 
+            'shippingRate', 
+            'user',
+            'deliveryLocation.country',
+            'deliveryLocation.state', 
+            'deliveryLocation.city'
+        ])
             ->where('user_id', Auth::id())
             ->findOrFail($orderId);
 
-        return inertia('Frontend/Checkout/Success', [
-            'order' => $order,
-            'company_id' => $order->company_id,
+        // Buscar la página de éxito configurada para esta empresa
+        $successPage = \App\Models\Page::where('company_id', $order->company_id)
+            ->where('title', 'Orden exitosa')
+            ->first();
+
+        if (!$successPage) {
+            // Si no existe página personalizada, crear una básica
+            $successPage = (object) [
+                'title' => 'Orden Exitosa',
+                'layout' => json_encode([
+                    [
+                        'id' => 1,
+                        'type' => 'success',
+                        'content' => [
+                            'title' => '¡Orden Exitosa!',
+                            'subtitle' => 'Tu orden ha sido procesada correctamente',
+                            'iconColor' => '#10b981',
+                            'titleColor' => '#000000',
+                            'titleSize' => '32px',
+                            'subtitleColor' => '#666666',
+                            'subtitleSize' => '18px',
+                            'showContinueShoppingButton' => true,
+                            'continueButtonText' => 'Continuar Comprando',
+                            'showOrdersButton' => true,
+                            'ordersButtonText' => 'Ver Mis Pedidos',
+                            'additionalMessage' => 'Recibirás un email de confirmación con los detalles de tu pedido.'
+                        ],
+                        'styles' => [
+                            'backgroundColor' => '#ffffff',
+                            'paddingTop' => '40px',
+                            'paddingRight' => '20px',
+                            'paddingBottom' => '40px',
+                            'paddingLeft' => '20px',
+                            'maxWidth' => '1200px'
+                        ]
+                    ]
+                ]),
+                'theme_id' => 1,
+                'company_id' => $order->company_id,
+                'uses_template' => false,
+                'template_id' => null,
+                'theme_settings' => null
+            ];
+        }
+
+        // Obtener configuraciones del tema
+        $themeSettings = [];
+        if ($successPage->theme_id) {
+            $theme = \App\Models\Theme::find($successPage->theme_id);
+            if ($theme) {
+                $themeSettings = $theme->settings ?? [];
+            }
+        }
+
+        return inertia('Frontend/Index', [
+            'page' => $successPage,
+            'themeSettings' => $themeSettings,
+            'currentProduct' => $order, // Pasar la orden como currentProduct
+            'isProductDetailPage' => false,
+            'companyId' => $order->company_id,
+            'availableMenus' => [],
+            'products' => [],
+            'paymentMethods' => [],
+            'shippingRates' => [],
+            'userDeliveryLocations' => [],
+            'userGiftCards' => [],
+            'userOrders' => [],
+            'companyLogo' => null,
+            'companyFavicon' => null,
+            'currentUser' => Auth::user(),
+            'countries' => [],
+            'states' => [],
+            'cities' => [],
         ]);
     }
 }

@@ -121,7 +121,7 @@ const OrdersComponent = ({
     };
 
     const handleOrderClick = (order) => {
-        if (mode === 'frontend') {
+        if (mode === 'frontend' && content.allowExpandDetails !== false) {
             setSelectedOrder(selectedOrder?.id === order.id ? null : order);
             setIsExpanded(!isExpanded || selectedOrder?.id !== order.id);
         }
@@ -140,25 +140,33 @@ const OrdersComponent = ({
                     <h3 className="font-semibold text-lg">
                         Orden #{order.id}
                     </h3>
-                    <p className="text-sm text-gray-600">
-                        {formatDate(order.created_at)}
-                    </p>
+                    {content.showOrderDate !== false && (
+                        <p className="text-sm text-gray-600">
+                            {formatDate(order.created_at)}
+                        </p>
+                    )}
                 </div>
                 <div className="text-right">
-                    <div className="font-bold text-lg">
-                        <CurrencyDisplay currency={currency} amount={order.total} />
-                    </div>
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                        {getStatusText(order.status)}
-                    </span>
+                    {content.showOrderTotal !== false && (
+                        <div className="font-bold text-lg">
+                            <CurrencyDisplay currency={currency} amount={order.total} />
+                        </div>
+                    )}
+                    {content.showOrderStatus !== false && (
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                            {getStatusText(order.status)}
+                        </span>
+                    )}
                 </div>
             </div>
             
-            <div className="text-sm text-gray-600">
-                {order.items?.length || 0} producto(s)
-            </div>
+            {content.showItemCount !== false && (
+                <div className="text-sm text-gray-600">
+                    {order.items?.length || 0} producto(s)
+                </div>
+            )}
             
-            {mode === 'frontend' && (
+            {mode === 'frontend' && content.allowExpandDetails !== false && (
                 <div className="mt-2 flex items-center text-blue-600 text-sm">
                     {selectedOrder?.id === order.id ? (
                         <>
@@ -279,7 +287,14 @@ const OrdersComponent = ({
                 >
                     {/* Vista previa en builder */}
                     <div className="space-y-4">
-                        <h2 className="text-xl font-bold">Mis Pedidos</h2>
+                        <div>
+                            <h2 className="text-xl font-bold">
+                                {content.title || 'Mis Pedidos'}
+                            </h2>
+                            {content.subtitle && (
+                                <p className="text-gray-600 mt-2">{content.subtitle}</p>
+                            )}
+                        </div>
                         {exampleOrders.map(renderOrderCard)}
                     </div>
                 </div>
@@ -293,33 +308,44 @@ const OrdersComponent = ({
             {/* Contenido principal */}
             {!currentUser ? (
                 <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">Inicia sesión para ver tus pedidos</h2>
+                    <h2 className="text-2xl font-bold mb-4">
+                        {content.loginRequiredTitle || 'Inicia sesión para ver tus pedidos'}
+                    </h2>
                     <p className="text-gray-600 mb-6">
-                        Necesitas iniciar sesión para acceder a tu historial de pedidos.
+                        {content.loginRequiredMessage || 'Necesitas iniciar sesión para acceder a tu historial de pedidos.'}
                     </p>
                     <Button>
-                        Iniciar Sesión
+                        {content.loginButtonText || 'Iniciar Sesión'}
                     </Button>
                 </div>
             ) : exampleOrders.length === 0 ? (
                 <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">No tienes pedidos aún</h2>
+                    <h2 className="text-2xl font-bold mb-4">
+                        {content.emptyTitle || 'No tienes pedidos aún'}
+                    </h2>
                     <p className="text-gray-600 mb-6">
-                        Cuando realices tu primer pedido, aparecerá aquí.
+                        {content.emptyMessage || 'Cuando realices tu primer pedido, aparecerá aquí.'}
                     </p>
                     <Button>
-                        Explorar Productos
+                        {content.shopButtonText || 'Explorar Productos'}
                     </Button>
                 </div>
             ) : (
                 <div className="space-y-4">
-                    <h2 className="text-2xl font-bold">Mis Pedidos</h2>
+                    <div>
+                        <h2 className="text-2xl font-bold">
+                            {content.title || 'Mis Pedidos'}
+                        </h2>
+                        {content.subtitle && (
+                            <p className="text-gray-600 mt-2">{content.subtitle}</p>
+                        )}
+                    </div>
                     
                     <div className="space-y-4">
                         {exampleOrders.map((order) => (
                             <div key={order.id}>
                                 {renderOrderCard(order)}
-                                {selectedOrder?.id === order.id && renderOrderDetails(order)}
+                                {selectedOrder?.id === order.id && content.allowExpandDetails !== false && renderOrderDetails(order)}
                             </div>
                         ))}
                     </div>

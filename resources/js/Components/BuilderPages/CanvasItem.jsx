@@ -51,6 +51,7 @@ import CheckoutDiscountGiftCardComponent from './Checkout/CheckoutDiscountGiftCa
 import ProductComponent from './Product/ProductComponent';
 import ProfileComponent from './Profile/ProfileComponent';
 import OrdersComponent from './Orders/OrdersComponent';
+import SuccessComponent from './Success/SuccessComponent';
 
 const CanvasItem = ({
     comp,
@@ -820,6 +821,72 @@ const CanvasItem = ({
                         cities={cities}
                     />
                 );
+            case 'success':
+                return (
+                    <SuccessComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                        // En el builder, mostrar datos de ejemplo
+                        order={isPreview ? null : {
+                            id: 1,
+                            order_number: 'ORD-202401-0001',
+                            status: 'pending',
+                            payment_status: 'pending',
+                            total: 299.99,
+                            subtotal: 249.99,
+                            tax_amount: 25.00,
+                            totalshipping: 25.00,
+                            totaldiscounts: 0,
+                            gift_card_amount: 0,
+                            delivery_type: 'delivery',
+                            created_at: new Date().toISOString(),
+                            orderItems: [
+                                {
+                                    id: 1,
+                                    name_product: 'Producto Ejemplo 1',
+                                    quantity: 2,
+                                    price_product: 75.00,
+                                    discounted_price: 75.00,
+                                    subtotal: 150.00,
+                                    product_details: JSON.stringify({
+                                        image: 'https://picsum.photos/100/100',
+                                        combination_name: 'Talla M, Color Azul'
+                                    })
+                                },
+                                {
+                                    id: 2,
+                                    name_product: 'Producto Ejemplo 2',
+                                    quantity: 1,
+                                    price_product: 99.99,
+                                    discounted_price: 99.99,
+                                    subtotal: 99.99,
+                                    product_details: JSON.stringify({
+                                        image: 'https://picsum.photos/100/100',
+                                        combination_name: null
+                                    })
+                                }
+                            ],
+                            paymentMethod: {
+                                name: 'Tarjeta de Crédito'
+                            },
+                            shippingRate: {
+                                name: 'Envío Estándar',
+                                price: 25.00
+                            },
+                            deliveryLocation: {
+                                address_line_1: 'Calle Principal 123',
+                                address_line_2: 'Apartamento 4B',
+                                city: 'Ciudad Ejemplo',
+                                state: 'Estado Ejemplo',
+                                country: 'País Ejemplo',
+                                postal_code: '12345'
+                            }
+                        }}
+                        companyId={1}
+                    />
+                );
             case 'pageContent':
                 return (
                     <PageContentComponent
@@ -886,6 +953,7 @@ const CanvasItem = ({
             'cartSummary': 'Resumen del Pedido',
             'profile': 'Perfil de Usuario',
             'orders': 'Mis Pedidos',
+            'success': 'Página de Éxito',
         };
         return typeNames[type] || type;
     };
