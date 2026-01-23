@@ -11,6 +11,7 @@ use App\Http\Controllers\Frontend\Auth\LoginController;
 use App\Http\Controllers\Frontend\Auth\RegisterController;
 use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
+use App\Http\Controllers\Frontend\OrderController as FrontendOrderController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\GiftCardController;
 use App\Http\Controllers\MenuController;
@@ -78,6 +79,12 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
         Route::delete('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'destroyAddress'])
             ->name('frontend.profile.addresses.destroy');
 
+        // Pedidos del cliente
+        Route::get('/pedidos', [FrontendOrderController::class, 'index'])
+            ->name('frontend.orders.index');
+        Route::get('/pedidos/{order}', [FrontendOrderController::class, 'show'])
+            ->name('frontend.orders.show');
+
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
             ->name('frontend.checkout.process');
 
@@ -138,6 +145,12 @@ Route::group([
             ->name('frontend.profile.addresses.update.custom');
         Route::delete('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'destroyAddress'])
             ->name('frontend.profile.addresses.destroy.custom');
+
+        // Pedidos del cliente
+        Route::get('/pedidos', [FrontendOrderController::class, 'index'])
+            ->name('frontend.orders.index.custom');
+        Route::get('/pedidos/{order}', [FrontendOrderController::class, 'show'])
+            ->name('frontend.orders.show.custom');
 
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
             ->name('frontend.checkout.process');

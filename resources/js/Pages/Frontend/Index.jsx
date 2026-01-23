@@ -34,6 +34,7 @@ import CheckoutPaymentComponent from '@/Components/BuilderPages/Checkout/Checkou
 import CustomerInfoComponent from '@/Components/BuilderPages/Checkout/CustomerInfoComponent';
 import CartComponent from '@/Components/BuilderPages/Cart/CartComponent';
 import ProfileComponent from '@/Components/BuilderPages/Profile/ProfileComponent';
+import OrdersComponent from '@/Components/BuilderPages/Orders/OrdersComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -67,6 +68,7 @@ const componentMap = {
     'customerInfo': CustomerInfoComponent,
     'button': ButtonComponent, // IMPORTANTE: Agregado
     'profile': ProfileComponent, // ← Agregado ProfileComponent
+    'orders': OrdersComponent, // ← Agregado OrdersComponent
 };
 
 // ==============================================================
@@ -83,6 +85,7 @@ function renderBlock(
     shippingRates = [], 
     userDeliveryLocations = [], 
     userGiftCards = [], 
+    userOrders = [],
     mode = 'frontend', 
     companyLogo, 
     companyFavicon,
@@ -180,6 +183,21 @@ function renderBlock(
                 />
             );
 
+        case 'orders':
+            return (
+                <Component
+                    key={block.id}
+                    {...baseProps}
+                    currentUser={currentUser}
+                    userOrders={userOrders}
+                    companyId={companyId}
+                    currency={{
+                        symbol: '$',
+                        code: 'USD'
+                    }}
+                />
+            );
+
         case 'checkout':
             return (
                 <Component
@@ -231,6 +249,7 @@ export default function Index({
     shippingRates = [],
     userDeliveryLocations = [],
     userGiftCards = [],
+    userOrders = [],
     companyLogo,
     companyFavicon,
     currentUser = null,
@@ -317,6 +336,7 @@ export default function Index({
                     shippingRates,
                     userDeliveryLocations,
                     userGiftCards,
+                    userOrders,
                     'frontend', // Modo frontend siempre
                     companyLogo,
                     companyFavicon,

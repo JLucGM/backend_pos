@@ -431,6 +431,7 @@ class FrontendController extends Controller
                 'currentUser' => null,
                 'userDeliveryLocations' => [],
                 'userGiftCards' => [],
+                'userOrders' => [],
             ];
         }
 
@@ -446,6 +447,7 @@ class FrontendController extends Controller
             ],
             'userDeliveryLocations' => $this->getUserDeliveryLocations($user),
             'userGiftCards' => $this->getUserGiftCards($user),
+            'userOrders' => $this->getUserOrders($user),
         ];
     }
 
@@ -498,6 +500,43 @@ class FrontendController extends Controller
                     'initial_balance' => $giftCard->initial_balance,
                     'current_balance' => $giftCard->current_balance,
                     'expiration_date' => $giftCard->expiration_date,
+                ];
+            });
+    }
+
+    /**
+     * Obtiene las órdenes del usuario
+     */
+    private function getUserOrders($user)
+    {
+        return $user->orders()
+            ->with(['items.product', 'paymentMethod', 'shippingRate'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10) // Limitar a las últimas 10 órdenes para performance
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'status' => $order->status,
+                    'total' => $order->total,
+                    'subtotal' => $order->subtotal,
+                    'created_at' => $order->created_at->toISOString(),
+                    'items' => $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'name_product' => $item->name_product,
+                            'quantity' => $item->quantity,
+                            'price_product' => $item->price_product,
+                            'subtotal' => $item->subtotal,
+                        ];
+                    }),
+                    'paymentMethod' => $order->paymentMethod ? [
+                        'name' => $order->paymentMethod->name
+                    ] : null,
+                    'shippingRate' => $order->shippingRate ? [
+                        'name' => $order->shippingRate->name,
+                        'price' => $order->shippingRate->price
+                    ] : null,
                 ];
             });
     }

@@ -93,7 +93,6 @@ class PageSeeder extends Seeder
             ],
             [
                 'title' => 'Pedidos',
-                // 'slug' => 'login', // Agrega este campo si no lo tienes
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
                 'theme_id' => 1,
@@ -132,13 +131,6 @@ class PageSeeder extends Seeder
             ],
             [
                 'title' => 'Profile',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
-                'is_default' => true,
-                'theme_id' => 1,
-                'company_id' => 1,
-            ],
-            [
-                'title' => 'Orders',
                 'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
                 'is_default' => true,
                 'theme_id' => 1,
@@ -222,7 +214,6 @@ class PageSeeder extends Seeder
             ],
             [
                 'title' => 'Pedidos',
-                // 'slug' => 'login', // Agrega este campo si no lo tienes
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
                 'theme_id' => 1,
@@ -261,13 +252,6 @@ class PageSeeder extends Seeder
             ],
             [
                 'title' => 'Profile',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
-                'is_default' => true,
-                'theme_id' => 1,
-                'company_id' => 2,
-            ],
-            [
-                'title' => 'Orders',
                 'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
                 'is_default' => true,
                 'theme_id' => 1,

@@ -50,6 +50,7 @@ import CustomerInfoComponent from './Checkout/CustomerInfoComponent';
 import CheckoutDiscountGiftCardComponent from './Checkout/CheckoutDiscountGiftCardComponent';
 import ProductComponent from './Product/ProductComponent';
 import ProfileComponent from './Profile/ProfileComponent';
+import OrdersComponent from './Orders/OrdersComponent';
 
 const CanvasItem = ({
     comp,
@@ -692,6 +693,70 @@ const CanvasItem = ({
                         mode={isPreview ? 'frontend' : 'builder'}
                     />
                 );
+            case 'orders':
+                return (
+                    <OrdersComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                        // En el builder, mostrar datos de ejemplo
+                        currentUser={isPreview ? null : {
+                            id: 1,
+                            name: 'Usuario Ejemplo',
+                            email: 'usuario@ejemplo.com'
+                        }}
+                        userOrders={isPreview ? [] : [
+                            {
+                                id: 1,
+                                status: 'completed',
+                                total: 150.00,
+                                subtotal: 140.00,
+                                created_at: '2024-01-15T10:30:00Z',
+                                items: [
+                                    {
+                                        id: 1,
+                                        name_product: 'Producto Ejemplo 1',
+                                        quantity: 2,
+                                        price_product: 50.00,
+                                        subtotal: 100.00
+                                    },
+                                    {
+                                        id: 2,
+                                        name_product: 'Producto Ejemplo 2',
+                                        quantity: 1,
+                                        price_product: 40.00,
+                                        subtotal: 40.00
+                                    }
+                                ],
+                                paymentMethod: { name: 'Tarjeta de Crédito' },
+                                shippingRate: { name: 'Envío Estándar', price: 10.00 }
+                            },
+                            {
+                                id: 2,
+                                status: 'pending',
+                                total: 75.50,
+                                subtotal: 75.50,
+                                created_at: '2024-01-10T14:20:00Z',
+                                items: [
+                                    {
+                                        id: 3,
+                                        name_product: 'Producto Ejemplo 3',
+                                        quantity: 1,
+                                        price_product: 75.50,
+                                        subtotal: 75.50
+                                    }
+                                ],
+                                paymentMethod: { name: 'Efectivo' },
+                                shippingRate: null
+                            }
+                        ]}
+                        currency={{
+                            symbol: '$',
+                            code: 'USD'
+                        }}
+                    />
+                );
             case 'profile':
                 return (
                     <ProfileComponent
@@ -820,6 +885,7 @@ const CanvasItem = ({
             'cartItems': 'Lista de Productos',
             'cartSummary': 'Resumen del Pedido',
             'profile': 'Perfil de Usuario',
+            'orders': 'Mis Pedidos',
         };
         return typeNames[type] || type;
     };

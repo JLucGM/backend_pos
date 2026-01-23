@@ -73,6 +73,7 @@ import LoginEditDialog from './partials/Auth/LoginEditDialog';
 import RegisterEditDialog from './partials/Auth/RegisterEditDialog';
 import CheckoutDiscountGiftCardEditDialog from './partials/Checkout/CheckoutDiscountGiftCardEditDialog';
 import ProfileEditDialog from './partials/Profile/ProfileEditDialog';
+import OrdersEditDialog from './partials/Orders/OrdersEditDialog';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -129,6 +130,7 @@ const componentDialogMap = {
     login: LoginEditDialog,
     register: RegisterEditDialog,
     profile: ProfileEditDialog,
+    orders: OrdersEditDialog,
 };
 
 // Componente para renderizar el diálogo apropiado
@@ -1747,6 +1749,50 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 return;
             }
 
+            if (selectedType === 'orders') {
+                const ordersId = Date.now();
+
+                content = {
+                    title: 'Mis Pedidos',
+                    subtitle: '',
+                    emptyTitle: 'No tienes pedidos aún',
+                    emptyMessage: 'Cuando realices tu primer pedido, aparecerá aquí.',
+                    shopButtonText: 'Ir a la tienda',
+                    ordersPerPage: 10,
+                    sortOrder: 'desc',
+                    showOrderStatus: true,
+                    showOrderDate: true,
+                    showOrderTotal: true,
+                    showItemCount: true,
+                    allowExpandDetails: true
+                };
+
+                const newItem = {
+                    id: ordersId,
+                    type: selectedType,
+                    content,
+                    styles: {
+                        backgroundColor: '#ffffff',
+                        paddingTop: '40px',
+                        paddingRight: '20px',
+                        paddingBottom: '40px',
+                        paddingLeft: '20px',
+                        maxWidth: '1000px',
+                        borderRadius: '0px'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+
             if (selectedType === 'profile') {
                 const profileId = Date.now();
 
@@ -2523,6 +2569,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <SelectItem value="image">Imagen</SelectItem>
                                 <SelectItem value="productDetail">Detalle de Producto</SelectItem>
                                 <SelectItem value="cart">Carrito de Compras</SelectItem>
+                                <SelectItem value="orders">orders</SelectItem>
                                 <SelectItem value="checkout">Checkout / Finalizar Compra</SelectItem>
                                 <SelectItem value="login">Formulario de Login</SelectItem>
                                 <SelectItem value="register">Formulario de Registro</SelectItem>
