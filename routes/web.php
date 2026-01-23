@@ -88,14 +88,14 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
             ->name('frontend.checkout.process');
 
-        // Página de éxito del checkout
-        Route::get('/checkout/success/{order}', [CheckoutController::class, 'checkoutSuccess'])
-            ->name('frontend.checkout.success');
-
         // Confirmación de orden
         Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
             ->name('frontend.order.confirmation');
     });
+
+    // Página de éxito del checkout (fuera de autenticación para evitar problemas de sesión)
+    Route::get('/checkout/success/{order}', [CheckoutController::class, 'checkoutSuccess'])
+        ->name('frontend.checkout.success');
 });
 
 // ==============================================================
@@ -159,14 +159,14 @@ Route::group([
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
             ->name('frontend.checkout.process');
 
-        // Página de éxito del checkout
-        Route::get('/checkout/success/{order}', [CheckoutController::class, 'checkoutSuccess'])
-            ->name('frontend.checkout.success');
-
         // Confirmación de orden
         Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
             ->name('frontend.order.confirmation');
     });
+
+    // Página de éxito del checkout (fuera de autenticación para evitar problemas de sesión)
+    Route::get('/checkout/success/{order}', [CheckoutController::class, 'checkoutSuccess'])
+        ->name('frontend.checkout.success.custom');
 });
 
 

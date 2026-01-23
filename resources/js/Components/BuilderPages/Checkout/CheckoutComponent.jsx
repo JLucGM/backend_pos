@@ -564,25 +564,24 @@ const [orderError, setOrderError] = useState(null);
     const layoutType = customStyles.layoutType || 'compact';
 
     const submitOrder = async () => {
-    if (!selectedPaymentMethod) {
-        alert('Por favor selecciona un método de pago');
-        return;
-    }
+        if (!selectedPaymentMethod) {
+            alert('Por favor selecciona un método de pago');
+            return;
+        }
 
-    if (!acceptTerms) {
-        alert('Debes aceptar los términos y condiciones');
-        return;
-    }
+        if (!acceptTerms) {
+            alert('Debes aceptar los términos y condiciones');
+            return;
+        }
 
-    if (!displayUser || !displayUser.id) {
-        alert('Debes iniciar sesión para completar la orden');
-        return;
-    }
+        if (!displayUser || !displayUser.id) {
+            alert('Debes iniciar sesión para completar la orden');
+            return;
+        }
 
-    setIsSubmitting(true);
-    setOrderError(null);
+        setIsSubmitting(true);
+        setOrderError(null);
 
-    try {
         // Preparar datos del carrito
         const cartItemsData = displayCartItems.map(item => ({
             product_id: item.product_id,
@@ -643,9 +642,11 @@ const [orderError, setOrderError] = useState(null);
             manual_discounts: totals.manualDiscountsTotal,
             gift_card_amount: totals.giftCardAmount,
         };
-console.log({cartItemsData, userInfo, shippingInfo, paymentInfo, discountsData, giftCardData, totalsData});
-        // Enviar datos al backend
-        const response = router.post('/checkout/process', {
+
+        console.log({cartItemsData, userInfo, shippingInfo, paymentInfo, discountsData, giftCardData, totalsData});
+
+        // Enviar datos al backend usando Inertia.js
+        router.post('/checkout/process', {
             cart_items: cartItemsData,
             user_info: userInfo,
             shipping_info: shippingInfo,
@@ -656,32 +657,30 @@ console.log({cartItemsData, userInfo, shippingInfo, paymentInfo, discountsData, 
             company_id: companyId,
         }, {
             preserveScroll: true,
+            onSuccess: (page) => {
+                // Limpiar carrito cuando la redirección sea exitosa
+                cartHelper.clearCart(companyId);
+                window.dispatchEvent(new Event('cartUpdated'));
+                
+                console.log('Orden creada exitosamente, redirigiendo...');
+                // Inertia.js manejará automáticamente la redirección
+            },
+            onError: (errors) => {
+                console.error('Error al crear la orden:', errors);
+                if (errors.message) {
+                    setOrderError(errors.message);
+                } else if (typeof errors === 'object') {
+                    const errorMsg = Object.values(errors).flat().join(', ');
+                    setOrderError(errorMsg);
+                } else {
+                    setOrderError('Error al procesar la orden. Por favor intenta de nuevo.');
+                }
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
+            }
         });
-
-        if (response.data.success) {
-            // Limpiar carrito
-            cartHelper.clearCart(companyId);
-            window.dispatchEvent(new Event('cartUpdated'));
-            
-            // Redirigir a confirmación
-            window.location.href = response.data.redirect_url;
-        } else {
-            setOrderError(response.data.message || 'Error al procesar la orden');
-        }
-
-    } catch (error) {
-        console.error('Error al crear la orden:', error);
-        if (error.response?.data?.errors) {
-            const errors = error.response.data.errors;
-            const errorMsg = Object.values(errors).flat().join(', ');
-            setOrderError(errorMsg);
-        } else {
-            setOrderError(error.response?.data?.message || 'Error al procesar la orden. Por favor intenta de nuevo.');
-        }
-    } finally {
-        setIsSubmitting(false);
-    }
-};
+    };
 
     // Configuración por defecto para modo frontend
     const displayChildren = useMemo(() => {

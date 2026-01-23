@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
@@ -44,28 +45,28 @@ class CheckoutController extends Controller
                 'cart_items.*.discount_type' => 'nullable|string',
                 'cart_items.*.tax_rate' => 'required|numeric|min:0',
                 'cart_items.*.tax_amount' => 'required|numeric|min:0',
-                
+
                 'user_info' => 'required|array',
                 'user_info.user_id' => 'required|integer|exists:users,id',
                 'user_info.delivery_location_id' => 'nullable|integer|exists:delivery_locations,id',
-                
+
                 'shipping_info' => 'required|array',
                 'shipping_info.delivery_type' => 'required|in:delivery,pickup',
                 'shipping_info.shipping_rate_id' => 'nullable|integer|exists:shipping_rates,id',
-                
+
                 'payment_info' => 'required|array',
                 'payment_info.payment_method_id' => 'required|exists:payments_methods,id',
-                
+
                 'discounts' => 'nullable|array',
                 'discounts.*.code' => 'required|string',
                 'discounts.*.id' => 'nullable|integer',
                 'discounts.*.amount' => 'required|numeric|min:0',
-                
+
                 'gift_card' => 'nullable|array',
                 'gift_card.id' => 'nullable|integer|exists:gift_cards,id',
                 'gift_card.code' => 'nullable|string',
                 'gift_card.amount_used' => 'nullable|numeric|min:0',
-                
+
                 'totals' => 'required|array',
                 'totals.subtotal' => 'required|numeric|min:0',
                 'totals.shipping' => 'required|numeric|min:0',
@@ -74,7 +75,7 @@ class CheckoutController extends Controller
                 'totals.automatic_discounts' => 'required|numeric|min:0',
                 'totals.manual_discounts' => 'required|numeric|min:0',
                 'totals.gift_card_amount' => 'required|numeric|min:0',
-                
+
                 'company_id' => 'required|integer|exists:companies,id',
             ]);
 
@@ -115,7 +116,7 @@ class CheckoutController extends Controller
             $giftCardAmountUsed = 0;
             if (!empty($validated['gift_card']['id'])) {
                 $giftCard = GiftCard::find($validated['gift_card']['id']);
-                
+
                 if (!$giftCard) {
                     throw new \Exception('Gift Card no encontrada');
                 }
@@ -144,7 +145,7 @@ class CheckoutController extends Controller
             if (!empty($validated['discounts'])) {
                 foreach ($validated['discounts'] as $discountData) {
                     $discount = null;
-                    
+
                     if (isset($discountData['id'])) {
                         $discount = Discount::find($discountData['id']);
                     } elseif (isset($discountData['code'])) {
@@ -152,7 +153,7 @@ class CheckoutController extends Controller
                             ->where('company_id', $validated['company_id'])
                             ->first();
                     }
-                    
+
                     if (!$discount) {
                         throw new \Exception('Descuento no válido: ' . ($discountData['code'] ?? 'Desconocido'));
                     }
@@ -190,8 +191,10 @@ class CheckoutController extends Controller
             // 4. Obtener tarifa de envío
             $shippingRate = null;
             $shippingAmount = 0;
-            if ($validated['shipping_info']['delivery_type'] === 'delivery' && 
-                !empty($validated['shipping_info']['shipping_rate_id'])) {
+            if (
+                $validated['shipping_info']['delivery_type'] === 'delivery' &&
+                !empty($validated['shipping_info']['shipping_rate_id'])
+            ) {
                 $shippingRate = ShippingRate::find($validated['shipping_info']['shipping_rate_id']);
                 if ($shippingRate) {
                     $shippingAmount = $shippingRate->price;
@@ -201,8 +204,8 @@ class CheckoutController extends Controller
             // ==================== CREAR LA ORDEN ====================
 
             // Calcular total de descuentos
-            $totalDiscounts = $validated['totals']['automatic_discounts'] + 
-                             $validated['totals']['manual_discounts'];
+            $totalDiscounts = $validated['totals']['automatic_discounts'] +
+                $validated['totals']['manual_discounts'];
 
             // Preparar datos de la orden
             $orderData = [
@@ -214,7 +217,7 @@ class CheckoutController extends Controller
                 'total' => $validated['totals']['total'],
                 'totaldiscounts' => $totalDiscounts,
                 'manual_discount_amount' => $validated['totals']['manual_discounts'],
-                'manual_discount_code' => !empty($validated['discounts']) ? 
+                'manual_discount_code' => !empty($validated['discounts']) ?
                     implode(', ', array_column($validated['discounts'], 'code')) : null,
                 'delivery_location_id' => $validated['user_info']['delivery_location_id'] ?? null,
                 'payments_method_id' => $validated['payment_info']['payment_method_id'],
@@ -236,16 +239,18 @@ class CheckoutController extends Controller
 
             foreach ($validated['cart_items'] as $item) {
                 $product = Product::with('taxes')->find($item['product_id']);
-                
+
                 // Determinar precio unitario después de descuentos
                 $unitPrice = $item['price'];
                 $originalUnitPrice = $item['original_price'];
                 $itemDiscountAmount = $item['discount_amount'];
-                
+
                 // Buscar descuento aplicado a este producto (si es manual)
                 $itemDiscount = null;
-                if (!empty($appliedDiscounts) && isset($item['discount_type']) && 
-                    $item['discount_type'] === 'manual') {
+                if (
+                    !empty($appliedDiscounts) && isset($item['discount_type']) &&
+                    $item['discount_type'] === 'manual'
+                ) {
                     foreach ($appliedDiscounts as $appliedDiscount) {
                         // Verificar si este descuento aplica a este producto
                         if ($this->discountAppliesToProduct($appliedDiscount['discount'], $product, $item['combination_id'] ?? null)) {
@@ -323,7 +328,7 @@ class CheckoutController extends Controller
             foreach ($appliedDiscounts as $appliedDiscountData) {
                 $discount = $appliedDiscountData['discount'];
                 $amount = $appliedDiscountData['amount'];
-                
+
                 // Solo registrar si no es un descuento por producto (ya se registró por item)
                 if ($discount->applies_to !== 'product') {
                     DiscountUsage::create([
@@ -351,21 +356,30 @@ class CheckoutController extends Controller
 
             // ==================== RESPUESTA DE ÉXITO ====================
 
-            return response()->json([
-                'success' => true,
-                'order_id' => $order->id,
-                'order_number' => $order->order_number,
-                'message' => 'Orden creada exitosamente',
-                'order' => [
-                    'id' => $order->id,
-                    'number' => $order->order_number,
-                    'status' => $order->status,
-                    'total' => $order->total,
-                    'created_at' => $order->created_at->format('d/m/Y H:i'),
-                ],
-                'redirect_url' => route('frontend.checkout.success', $order->id),
-            ]);
+            // Limpiar carrito del usuario si se guarda en sesión
+            // session()->forget('cart');
 
+            // Redirigir directamente a la página de éxito
+            $request = request();
+            $host = $request->getHost();
+
+            // Si es un subdominio de pos.test, usar la ruta de subdominio
+            if (str_ends_with($host, '.pos.test')) {
+                // Extraer el subdomain del request
+                $subdomain = $request->route('subdomain');
+                return redirect()->route('frontend.checkout.success', [
+                    'subdomain' => $subdomain,
+                    'order' => $order->id
+                ]);
+            } else {
+                // Si es un dominio personalizado, usar la ruta personalizada
+                // Extraer el domain del request
+                $domain = $request->route('domain');
+                return redirect()->route('frontend.checkout.success.custom', [
+                    'domain' => $domain,
+                    'order' => $order->id
+                ]);
+            }
         } catch (ValidationException $e) {
             DB::rollBack();
             return response()->json([
@@ -375,9 +389,9 @@ class CheckoutController extends Controller
             ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error al procesar orden: ' . $e->getMessage());
-            \Log::error('Trace: ' . $e->getTraceAsString());
-            
+            Log::error('Error al procesar orden: ' . $e->getMessage());
+            Log::error('Trace: ' . $e->getTraceAsString());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al procesar la orden: ' . $e->getMessage(),
@@ -405,10 +419,10 @@ class CheckoutController extends Controller
             // Verificar categorías
             $productCategoryIds = $product->categories->pluck('id')->toArray();
             $discountCategoryIds = $discount->categories->pluck('id')->toArray();
-            
+
             return !empty(array_intersect($productCategoryIds, $discountCategoryIds));
         }
-        
+
         return false;
     }
 
@@ -465,15 +479,15 @@ class CheckoutController extends Controller
         $prefix = 'ORD';
         $year = date('Y');
         $month = date('m');
-        
+
         // Contar órdenes del mes actual
         $count = Order::where('company_id', $companyId)
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->count();
-        
+
         $sequential = str_pad($count + 1, 4, '0', STR_PAD_LEFT);
-        
+
         return "{$prefix}-{$year}{$month}-{$sequential}";
     }
 
@@ -489,18 +503,32 @@ class CheckoutController extends Controller
     /**
      * Página de éxito después del checkout
      */
-    public function checkoutSuccess($orderId)
+    public function checkoutSuccess($subdomain = null, $orderId = null)
     {
+        // dd($subdomain, $orderId);
+        // Si solo se pasa un parámetro, es el orderId (dominio personalizado)
+        if ($subdomain !== null && $orderId === null) {
+            $orderId = $subdomain;
+            $subdomain = null;
+        }
+        
+        // Obtener la compañía actual del middleware
+        $company = request()->attributes->get('company');
+        
+        if (!$company) {
+            abort(404, 'Compañía no encontrada');
+        }
+
         $order = Order::with([
-            'orderItems.product', 
-            'paymentMethod', 
-            'shippingRate', 
+            'orderItems.product',
+            'paymentMethod',
+            'shippingRate',
             'user',
             'deliveryLocation.country',
-            'deliveryLocation.state', 
+            'deliveryLocation.state',
             'deliveryLocation.city'
         ])
-            ->where('user_id', Auth::id())
+            ->where('company_id', $company->id)
             ->findOrFail($orderId);
 
         // Buscar la página de éxito configurada para esta empresa
