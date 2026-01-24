@@ -1,7 +1,7 @@
 // src/hooks/useOrderItems.js
 import { useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
-import { calculateDiscount, calculateDiscountedPrice, calculateDiscountedSubtotal } from '@/utils/discountUtils';
+import { calculateDiscount, calculateDiscountedPrice } from '@/utils/discountUtils';
 import { calculateStock } from '@/utils/stockUtils'; // FIX: Para stock dinámico siempre
 import { getOrderItemsColumns } from '@/Pages/Orders/orderItemsColumns';
 import { usePage } from '@inertiajs/react';
@@ -30,7 +30,7 @@ export const useOrderItems = (data, discounts, setData, isDisabled, findApplicab
         const item = data.order_items[index];
         if (!item) return;
 
-        const taxRate = item.tax_rate || 0;
+        const taxRate = item.tax_rate ? parseFloat(item.tax_rate) / 100 : 0;
         const originalPrice = item.original_price || item.product_price || 0;
 
         let discount = findApplicableDiscount(item.product_id, item.combination_id);
@@ -42,7 +42,7 @@ export const useOrderItems = (data, discounts, setData, isDisabled, findApplicab
         const itemSubtotalAfterDiscounts = originalSubtotal - newDiscountAmount;
 
         // **CORRECCIÓN: Calcular impuesto sobre el subtotal después de descuentos**
-        const newTaxAmount = itemSubtotalAfterDiscounts * (taxRate / 100);
+        const newTaxAmount = itemSubtotalAfterDiscounts * taxRate;
         const newDiscountedPrice = calculateDiscountedPrice(discount, originalPrice, quantity);
 
         // FIX: Stock SIEMPRE dinámico de products (no usa item.stock – valida contra real actual)

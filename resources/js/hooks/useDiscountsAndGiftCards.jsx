@@ -172,7 +172,8 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
                         const itemSubtotalAfterDiscounts = originalSubtotal - itemDiscountAmount;
                         
                         // **CORRECCIÓN: Calcular impuesto sobre el subtotal después de descuentos**
-                        const newTaxAmount = itemSubtotalAfterDiscounts * (item.tax_rate / 100);
+                        const taxRate = item.tax_rate ? parseFloat(item.tax_rate) / 100 : 0;
+                        const newTaxAmount = itemSubtotalAfterDiscounts * taxRate;
                         const discountedPrice = calculateDiscountedPrice(manualDiscount, originalPrice, item.quantity);
                         
                         appliedItems.push({ product_id: item.product_id, combination_id: item.combination_id });
@@ -236,7 +237,8 @@ export const useDiscountsAndGiftCards = (data, discounts, users, selectedUser, p
                         const itemSubtotalAfterDiscounts = originalSubtotal - itemDiscountAmount;
                         
                         // **CORRECCIÓN: Calcular impuesto sobre el subtotal después de descuentos**
-                        const newTaxAmount = itemSubtotalAfterDiscounts * (item.tax_rate / 100);
+                        const taxRate = item.tax_rate ? parseFloat(item.tax_rate) / 100 : 0;
+                        const newTaxAmount = itemSubtotalAfterDiscounts * taxRate;
                         const discountedPrice = calculateDiscountedPrice(manualDiscount, originalPrice, item.quantity);
                         
                         appliedItems.push({ product_id: item.product_id, combination_id: item.combination_id });

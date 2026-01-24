@@ -6,8 +6,7 @@ import { calculateStock } from '@/utils/stockUtils';
 import { formatAttributesDisplay, getBarcode, filterProductOptions } from '@/utils/productUtils';
 import {
     calculateDiscount,
-    calculateDiscountedPrice,
-    calculateDiscountedSubtotal
+    calculateDiscountedPrice
 } from '@/utils/discountUtils';
 
 /**
@@ -26,6 +25,9 @@ export const useProductOptions = (products, data, setData, findApplicableDiscoun
     const productOptions = useMemo(() => {
         const options = [];
         products.forEach(product => {
+            // **CORRECCIÓN: Asegurar que cada producto incluya su tasa de impuesto**
+            const productTaxRate = product.taxes ? parseFloat(product.taxes.tax_rate) : 0;
+            
             // Simple (sin combinations)
             if (!product.combinations || product.combinations.length === 0) {
                 // MODIFICADO: Usar product_price_discount si existe, de lo contrario product_price
@@ -49,7 +51,7 @@ export const useProductOptions = (products, data, setData, findApplicableDiscoun
                         discount,
                         is_combination: false,
                         stock: productStock,
-                        tax_rate: product.taxes ? parseFloat(product.taxes.tax_rate) : 0,
+                        tax_rate: productTaxRate, // ← CORRECCIÓN: Usar productTaxRate
                         product_name: product.product_name,
                         attributes_display: null,
                         barcode,
@@ -79,7 +81,7 @@ export const useProductOptions = (products, data, setData, findApplicableDiscoun
                             discount,
                             is_combination: true,
                             stock: combinationStock,
-                            tax_rate: product.taxes ? parseFloat(product.taxes.tax_rate) : 0,
+                            tax_rate: productTaxRate, // ← CORRECCIÓN: Usar productTaxRate
                             product_name: product.product_name,
                             attributes_display: attributesDisplay,
                             attributes,
