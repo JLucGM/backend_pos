@@ -496,6 +496,12 @@ class OrderController extends Controller
 // dd($request['delivery_location_id']);
         // Crear orden
         $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping, $appliedOrderDiscount, $appliedManualDiscount, $orderTotalDiscount, $appliedGiftCard, $giftCardAmount, $giftCardId) {
+            
+            // Solo asignar delivery_location_id si es delivery
+        $deliveryLocationId = $request['delivery_type'] === 'delivery' 
+            ? $request['delivery_location_id'] 
+            : null;
+
             $order = Order::create([
                 'status' => $request['status'],
                 'payment_status' => $request['payments_method_id'] ? 'paid' : 'pending',
@@ -506,7 +512,7 @@ class OrderController extends Controller
                 'totaldiscounts' => $grandTotalDiscounts,
                 'manual_discount_code' => $manualDiscountCode,
                 'manual_discount_amount' => $manualDiscountAmount,
-                'delivery_location_id' => $request['delivery_location_id'],
+                 'delivery_location_id' => $deliveryLocationId,
                 'payments_method_id' => $request['payments_method_id'],
                 'order_origin' => $request['order_origin'],
                 'user_id' => $request['user_id'],
@@ -1385,6 +1391,11 @@ class OrderController extends Controller
         // Update con transacción – FIX: Agrega $existingItems y $sentIds en use()
         $orders = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $shippingRateId, $totalShipping, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $orders, $stockChanges, $sentIds, $existingItems, $manualDiscountCode, $manualDiscountAmount, $appliedGiftCard, $giftCardAmount, $giftCardId, $orderTotalDiscount, $appliedOrderDiscount) {
             try {
+
+                $deliveryLocationId = $request['delivery_type'] === 'delivery' 
+                ? $request['delivery_location_id'] 
+                : null;
+
                 // Update orden principal
                 $orders->update([
                     'status' => $request['status'],
@@ -1398,7 +1409,7 @@ class OrderController extends Controller
                     'manual_discount_amount' => $manualDiscountAmount,
                     'payments_method_id' => $request['payments_method_id'],
                     'user_id' => $request['user_id'] ?? $orders->user_id,
-                    'delivery_location_id' => $request['delivery_location_id'],
+                    'delivery_location_id' => $deliveryLocationId,
                     'shipping_rate_id' => $shippingRateId,
                     'totalshipping' => $totalShipping,
                     'gift_card_id' => $giftCardId,

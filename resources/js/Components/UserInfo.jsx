@@ -18,12 +18,13 @@ export default function UserInfo({
 }) {
   // Estado local para manejar el checkbox seleccionado
   const [selectedLocationId, setSelectedLocationId] = useState(data.delivery_location_id);
-  
+  const showDeliveryLocations = data.delivery_type === 'delivery';
+
   // Sincroniza cuando cambia data.delivery_location_id
   useEffect(() => {
     setSelectedLocationId(data.delivery_location_id);
   }, [data.delivery_location_id]);
-  
+
   // También sincroniza si orders tiene un delivery_location_id pero data no
   useEffect(() => {
     if (orders?.delivery_location_id && !data.delivery_location_id) {
@@ -31,16 +32,16 @@ export default function UserInfo({
       setSelectedLocationId(orders.delivery_location_id);
     }
   }, [orders, data.delivery_location_id, setData]);
-  
+
   const handleLocationChange = (locationId) => {
     setSelectedLocationId(locationId);
     setData('delivery_location_id', locationId);
   };
-  
+
   return (
     <div>
       <h2 className="font-semibold text-lg">Cliente</h2>
-      
+
       <div className="mt-2">
         <InputLabel htmlFor="user_id" value="Seleccionar Usuario" />
         <Select
@@ -57,7 +58,7 @@ export default function UserInfo({
         <InputError message={errors.user_id} className="mt-2" />
       </div>
 
-      {data.delivery_type === 'delivery' && (
+      {showDeliveryLocations && (
         <div className="mt-4">
           <InputLabel htmlFor="delivery_location_id" value="Direcciones de Entrega" />
           {deliveryLocations.length > 0 ? (
@@ -66,9 +67,9 @@ export default function UserInfo({
                 <div key={location.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={`location-${location.id}`}
-                    checked={selectedLocationId === location.id}
+                    checked={data.delivery_location_id === location.id}
                     onCheckedChange={(checked) => {
-                      handleLocationChange(checked ? location.id : null);
+                      setData('delivery_location_id', checked ? location.id : null);
                     }}
                     disabled={isDisabled}
                   />
@@ -102,6 +103,16 @@ export default function UserInfo({
             </p>
           )}
           <InputError message={errors.delivery_location_id} className="mt-2" />
+        </div>
+      )}
+
+      {/* Mostrar mensaje cuando sea pickup */}
+      {!showDeliveryLocations && (
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <p className="text-sm text-blue-700">
+            <strong>Pickup seleccionado:</strong> El cliente recogerá el pedido en tienda.
+            No se requiere dirección de entrega.
+          </p>
         </div>
       )}
     </div>

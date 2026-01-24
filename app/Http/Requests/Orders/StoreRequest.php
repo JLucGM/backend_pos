@@ -24,12 +24,12 @@ class StoreRequest extends FormRequest
         return [
             'status' => 'required|in:pending,processing,shipped,delivered,completed,cancelled,refunded|max:255', // Cambia 'enum' por 'in'
             'payment_status' => 'required|in:pending,paid',
-        'delivery_type' => 'required|in:pickup,delivery',
+            'delivery_type' => 'required|in:pickup,delivery',
             'total' => 'required|numeric|min:0', // Asegura que el total sea no negativo
             'subtotal' => 'required|numeric|min:0', // Valida el subtotal
             'tax_amount' => 'required|numeric|min:0', // AÑADIDO: Validación para el tax_amount total del pedido
             'totaldiscounts' => 'nullable|numeric|min:0', // Valida los descuentos
-            'delivery_location_id' => 'nullable|exists:delivery_locations,id', // Validación para delivery_location_id
+            'delivery_location_id' => 'nullable|required_if:delivery_type,delivery|exists:delivery_locations,id', // Validación para delivery_location_id
             'payments_method_id' => 'nullable|exists:payments_methods,id',
             'order_origin' => 'required|string|max:255',
             'user_id' => 'required|exists:users,id', // Añade la validación para el usuario
@@ -49,10 +49,10 @@ class StoreRequest extends FormRequest
             'order_items.*.attributes_display' => 'nullable|string', // Opcional: Para display (no guardado en DB)
             'manual_discount_code' => 'nullable|string|max:50', // AÑADIDO
             'manual_discount_amount' => 'nullable|numeric|min:0|max:999999',
-            'shipping_rate_id' => 'nullable|exists:shipping_rates,id',  // Valida que exista en la tabla shipping_rates
+            'shipping_rate_id' => 'nullable|required_if:delivery_type,delivery|exists:shipping_rates,id',  // Valida que exista en la tabla shipping_rates
             'totalshipping' => 'nullable|numeric',  // Valida que exista en la tabla shipping_rates
             'gift_card_code' => 'nullable|string|exists:gift_cards,code',
-'gift_card_amount' => 'nullable|numeric|min:0',
+            'gift_card_amount' => 'nullable|numeric|min:0',
         ];
     }
 

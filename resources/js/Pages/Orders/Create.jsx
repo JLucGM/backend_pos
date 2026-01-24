@@ -30,7 +30,13 @@ export default function Create({ paymentMethods, products, users, discounts, shi
     // Función para manejar el envío del formulario
     const submit = (e) => {
         e.preventDefault();
-console.log(data)
+        // Si es pickup, asegurarse de no enviar delivery_location_id
+        const formData = { ...data };
+        if (formData.delivery_type === 'pickup') {
+            formData.delivery_location_id = null;
+        }
+
+// console.log(data)
         post(route('orders.store'), {
             onSuccess: () => {
                 toast.success("Pedido creado con éxito.");

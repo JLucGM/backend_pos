@@ -23,10 +23,13 @@ class UpdateRequest extends FormRequest
     {
         return [
             'status' => 'required|in:pending,processing,shipped,delivered,completed,cancelled,refunded|max:255',
+            'payment_status' => 'required|in:pending,paid',
+            'delivery_type' => 'required|in:pickup,delivery',
             'total' => 'required|numeric|min:0',
             'subtotal' => 'required|numeric|min:0',
+            'tax_amount' => 'required|numeric|min:0',
             'totaldiscounts' => 'nullable|numeric|min:0',
-            'direction_delivery' => 'nullable|string|max:255',
+            'delivery_location_id' => 'nullable|required_if:delivery_type,delivery|exists:delivery_locations,id', // Validación para delivery_location_id
             'payments_method_id' => 'nullable|exists:payments_methods,id',
             'user_id' => 'nullable|exists:users,id',
             'order_items' => 'required|array|min:1',
@@ -45,7 +48,7 @@ class UpdateRequest extends FormRequest
             'order_items.*.discount_type' => 'nullable|string|in:percentage,fixed_amount', // Opcional
             'order_items.*.tax_rate' => 'required|numeric|min:0', // Required (calculado)
             'order_items.*.tax_amount' => 'required|numeric|min:0', // Required (calculado)
-            'shipping_rate_id' => 'nullable|exists:shipping_rates,id',  // Valida que exista en la tabla shipping_rates
+            'shipping_rate_id' => 'nullable|required_if:delivery_type,delivery|exists:shipping_rates,id',  // Valida que exista en la tabla shipping_rates
             'totalshipping' => 'nullable|numeric',
         ];
     }

@@ -12,7 +12,7 @@ import OrderStatusButtons from '@/Components/Orders/OrderStatusButtons';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
 export default function Edit({ orders, paymentMethods, products, users, discounts, shippingRates, appliedGiftCard }) {
-    console.log(orders)
+    // console.log(orders)
     const { flash } = usePage().props;
     if (flash?.success) toast.success(flash.success);
     if (flash?.error) toast.error(flash.error);
@@ -30,7 +30,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
         payments_method_id: orders.payments_method_id || null,
         manual_discount_code: orders.manual_discount_code || null,
         manual_discount_amount: parseFloat(orders.manual_discount_amount) || 0,
-        delivery_location_id: orders.delivery_location_id || null,
+            delivery_location_id: orders.delivery_type === 'delivery' ? orders.delivery_location_id : null,
         gift_card_id: appliedGiftCard?.id || null, // NUEVO: Desde appliedGiftCard
         gift_card_amount: parseFloat(appliedGiftCard?.amount_used) || 0, // NUEVO: Desde appliedGiftCard
         shipping_rate_id: orders.shipping_rate_id || null,
@@ -83,11 +83,21 @@ export default function Edit({ orders, paymentMethods, products, users, discount
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
-        // console.log(data)
         e.preventDefault();
+
+        // Preparar datos para enviar
+        const formData = { ...data };
+
+        // Si es pickup, no enviar delivery_location_id
+        if (formData.delivery_type === 'pickup') {
+            delete formData.delivery_location_id;
+        }
+
+        // console.log('Enviando datos:', formData); // Para depuración
 
         post(route('orders.update', orders), {
             _method: 'put',
+            data: formData,
             onSuccess: () => {
                 toast.success('Pedido actualizado con éxito.');
             },
