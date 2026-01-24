@@ -2,6 +2,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import InputError from "./InputError";
 import InputLabel from "./InputLabel";
 import Select from 'react-select';
+import { useEffect, useState } from 'react'; // Importa useEffect y useState
 
 export default function UserInfo({
   orders,
@@ -9,53 +10,37 @@ export default function UserInfo({
   selectedUser,
   handleUserChange,
   customStyles,
-  deliveryLocations = [], // Default a []
+  deliveryLocations = [],
   data,
   setData,
   errors,
   isDisabled,
 }) {
-  const isEdit = !!orders;
-
+  // Estado local para manejar el checkbox seleccionado
+  const [selectedLocationId, setSelectedLocationId] = useState(data.delivery_location_id);
+  
+  // Sincroniza cuando cambia data.delivery_location_id
+  useEffect(() => {
+    setSelectedLocationId(data.delivery_location_id);
+  }, [data.delivery_location_id]);
+  
+  // También sincroniza si orders tiene un delivery_location_id pero data no
+  useEffect(() => {
+    if (orders?.delivery_location_id && !data.delivery_location_id) {
+      setData('delivery_location_id', orders.delivery_location_id);
+      setSelectedLocationId(orders.delivery_location_id);
+    }
+  }, [orders, data.delivery_location_id, setData]);
+  
+  const handleLocationChange = (locationId) => {
+    setSelectedLocationId(locationId);
+    setData('delivery_location_id', locationId);
+  };
+  
   return (
     <div>
       <h2 className="font-semibold text-lg">Cliente</h2>
-      {/* 
-        <div className="mt-2">
-          <p className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre:</p>
-          <span className="text-gray-900 dark:text-gray-100">{orders.user?.name || 'N/A'}</span>
-
-          {orders.user?.email && (
-            <>
-              <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Email:</p>
-              <span className="text-gray-900 dark:text-gray-100">{orders.user.email}</span>
-            </>
-          )}
-
-          {orders.user?.phone && (
-            <>
-              <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Teléfono:</p>
-              <span className="text-gray-900 dark:text-gray-100">{orders.user.phone}</span>
-            </>
-          )}
-
-          {orders.user?.identification && (
-            <>
-              <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Identificación:</p>
-              <span className="text-gray-900 dark:text-gray-100">{orders.user.identification}</span>
-            </>
-          )}
-
-          {orders.delivery_location ? (
-            <>
-              <p className="block text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Dirección:</p>
-              <span className="text-gray-900 dark:text-gray-100">{orders.delivery_location.address_line_1}</span>
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground mt-1">No hay dirección de entrega disponible.</p>
-          )}
-        </div>
-       */}
+      
       <div className="mt-2">
         <InputLabel htmlFor="user_id" value="Seleccionar Usuario" />
         <Select
@@ -81,9 +66,9 @@ export default function UserInfo({
                 <div key={location.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={`location-${location.id}`}
-                    checked={data.delivery_location_id === location.id}
+                    checked={selectedLocationId === location.id}
                     onCheckedChange={(checked) => {
-                      setData('delivery_location_id', checked ? location.id : null);
+                      handleLocationChange(checked ? location.id : null);
                     }}
                     disabled={isDisabled}
                   />

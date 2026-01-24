@@ -48,7 +48,7 @@ export default function OrdersForm({
         if (newDeliveryType === 'pickup') {
             setData('shipping_rate_id', null);
             setData('totalshipping', 0);
-            setData('delivery_location_id', null); // Agrega esto
+            setData('delivery_location_id', null); // Limpia la dirección de entrega
         }
     };
 
@@ -193,111 +193,111 @@ export default function OrdersForm({
                             </div>
                         )}
                     </DivSection>
-                <DivSection className='col-span-full'>
-                    <h3 className='font-semibold text-lg mb-4'>Productos del Pedido</h3>
+                    <DivSection className='col-span-full'>
+                        <h3 className='font-semibold text-lg mb-4'>Productos del Pedido</h3>
 
-                    <div className="flex items-center gap-2 mb-4">
-                        <BulkProductDialog
-                            productOptions={productOptions}
-                            selectedProductsBulk={selectedProductsBulk}
-                            bulkProductColumns={bulkProductColumns}
-                            handleAddBulkProducts={handleAddBulkProducts}
-                            selectAllBulk={selectAllBulk}
-                            clearBulkSelection={clearBulkSelection}
-                            isDisabled={isDisabled}
-                        />
-
-                    </div>
-
-                    {/* NUEVO: Input unificado para Código de Descuento o Gift Card */}
-                    <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                        <InputLabel value="Código de Descuento o Gift Card (Opcional)" className="mb-2" />
-                        <div className="flex gap-2">
-                            <Input
-                                type="text"
-                                placeholder="Ingresa código de cupón o gift card"
-                                value={code}
-                                onChange={(e) => setCode(e.target.value)}
-                                disabled={isDisabled}
+                        <div className="flex items-center gap-2 mb-4">
+                            <BulkProductDialog
+                                productOptions={productOptions}
+                                selectedProductsBulk={selectedProductsBulk}
+                                bulkProductColumns={bulkProductColumns}
+                                handleAddBulkProducts={handleAddBulkProducts}
+                                selectAllBulk={selectAllBulk}
+                                clearBulkSelection={clearBulkSelection}
+                                isDisabled={isDisabled}
                             />
-                            <Button
-                                type="button"
-                                onClick={handleApply}
-                                disabled={!code.trim() || isDisabled}
-                                variant="outline"
-                                size="sm"
-                            >
-                                Aplicar
-                            </Button>
+
                         </div>
-                        <InputError message={errors.manual_discount_code || errors.gift_card_id || error} className="mt-2" />
-                        {appliedDiscount && (
-                            <p className="text-sm text-green-600 mt-1">
-                                Descuento aplicado: {appliedDiscount.name} - Tipo: {appliedDiscount.applies_to}
-                            </p>
-                        )}
-                        {appliedGiftCardHook && (
-                            <p className="text-sm text-green-600 mt-1">
-                                Gift Card aplicada: {appliedGiftCardHook.code} - Monto usado: <CurrencyDisplay currency={settings.currency} amount={appliedGiftCardHook.amount_used} />
-                            </p>
-                        )}
-                        {/* NUEVO: Si hay appliedGiftCard de edición, muestra info */}
-                        {appliedGiftCard && !appliedGiftCardHook && (
-                            <p className="text-sm text-blue-600 mt-1">
-                                Gift Card aplicada previamente: Código {appliedGiftCard.code} - Monto usado: <CurrencyDisplay currency={settings.currency} amount={appliedGiftCard.amount_used} />
-                            </p>
-                        )}
-                    </div>
 
-                    {/* DataTable: Muestra order_items con columnas para discounted_price, discount_amount (intacto) */}
-                    {data.order_items && data.order_items.length > 0 ? (
-                        <DataTable
-                            columns={orderItemsColumns}
-                            data={data.order_items}
-                        />
-                    ) : (
-                        <p className="text-gray-500 text-center py-8">No hay productos en el pedido. Agrega algunos para continuar.</p>
-                    )}
+                        {/* NUEVO: Input unificado para Código de Descuento o Gift Card */}
+                        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                            <InputLabel value="Código de Descuento o Gift Card (Opcional)" className="mb-2" />
+                            <div className="flex gap-2">
+                                <Input
+                                    type="text"
+                                    placeholder="Ingresa código de cupón o gift card"
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    disabled={isDisabled}
+                                />
+                                <Button
+                                    type="button"
+                                    onClick={handleApply}
+                                    disabled={!code.trim() || isDisabled}
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    Aplicar
+                                </Button>
+                            </div>
+                            <InputError message={errors.manual_discount_code || errors.gift_card_id || error} className="mt-2" />
+                            {appliedDiscount && (
+                                <p className="text-sm text-green-600 mt-1">
+                                    Descuento aplicado: {appliedDiscount.name} - Tipo: {appliedDiscount.applies_to}
+                                </p>
+                            )}
+                            {appliedGiftCardHook && (
+                                <p className="text-sm text-green-600 mt-1">
+                                    Gift Card aplicada: {appliedGiftCardHook.code} - Monto usado: <CurrencyDisplay currency={settings.currency} amount={appliedGiftCardHook.amount_used} />
+                                </p>
+                            )}
+                            {/* NUEVO: Si hay appliedGiftCard de edición, muestra info */}
+                            {appliedGiftCard && !appliedGiftCardHook && (
+                                <p className="text-sm text-blue-600 mt-1">
+                                    Gift Card aplicada previamente: Código {appliedGiftCard.code} - Monto usado: <CurrencyDisplay currency={settings.currency} amount={appliedGiftCard.amount_used} />
+                                </p>
+                            )}
+                        </div>
 
-                    {/* Tabla de Totales: Subtotal post-descuentos por ítem, total final (intacto) */}
-                    <Table className="mt-6">
-                        <TableBody>
-                            <TableRow>
-                                <TableCell colSpan="3" className="text-right font-medium">Subtotal (post-descuentos por ítem)</TableCell>
-                                <TableCell className="font-medium">
-                                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.subtotal) || 0} />
-                                </TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell colSpan="3" className="text-right font-medium">Total Descuentos</TableCell>
-                                <TableCell className="font-medium text-red-600">
-                                    -<CurrencyDisplay currency={settings.currency} amount={parseFloat(data.totaldiscounts) || 0} />
-                                </TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell colSpan="3" className="text-right font-medium">Costo de Envío</TableCell>
-                                <TableCell className="font-medium"><CurrencyDisplay currency={settings.currency} amount={parseFloat(data.totalshipping) || 0} /></TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell colSpan="3" className="text-right font-medium">Impuestos</TableCell>
-                                <TableCell className="font-medium">
-                                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.tax_amount) || 0} />
-                                </TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                            <TableRow className="bg-gray-50 dark:bg-gray-800">
-                                <TableCell colSpan="3" className="text-right font-bold text-lg">Total Final</TableCell>
-                                <TableCell className="font-bold text-lg">
-                                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.total) || 0} />
-                                </TableCell>
-                                <TableCell></TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </DivSection>
+                        {/* DataTable: Muestra order_items con columnas para discounted_price, discount_amount (intacto) */}
+                        {data.order_items && data.order_items.length > 0 ? (
+                            <DataTable
+                                columns={orderItemsColumns}
+                                data={data.order_items}
+                            />
+                        ) : (
+                            <p className="text-gray-500 text-center py-8">No hay productos en el pedido. Agrega algunos para continuar.</p>
+                        )}
+
+                        {/* Tabla de Totales: Subtotal post-descuentos por ítem, total final (intacto) */}
+                        <Table className="mt-6">
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell colSpan="3" className="text-right font-medium">Subtotal (post-descuentos por ítem)</TableCell>
+                                    <TableCell className="font-medium">
+                                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.subtotal) || 0} />
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell colSpan="3" className="text-right font-medium">Total Descuentos</TableCell>
+                                    <TableCell className="font-medium text-red-600">
+                                        -<CurrencyDisplay currency={settings.currency} amount={parseFloat(data.totaldiscounts) || 0} />
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell colSpan="3" className="text-right font-medium">Costo de Envío</TableCell>
+                                    <TableCell className="font-medium"><CurrencyDisplay currency={settings.currency} amount={parseFloat(data.totalshipping) || 0} /></TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell colSpan="3" className="text-right font-medium">Impuestos</TableCell>
+                                    <TableCell className="font-medium">
+                                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.tax_amount) || 0} />
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                                <TableRow className="bg-gray-50 dark:bg-gray-800">
+                                    <TableCell colSpan="3" className="text-right font-bold text-lg">Total Final</TableCell>
+                                    <TableCell className="font-bold text-lg">
+                                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.total) || 0} />
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </DivSection>
                 </div>
 
                 <div className="col-span-full md:col-span-1">

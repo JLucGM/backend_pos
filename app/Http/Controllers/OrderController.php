@@ -91,6 +91,7 @@ class OrderController extends Controller
 
     public function store(StoreRequest $request)
     {
+        // dd($request->all());
         $userAuth = Auth::user();
 
         if ($userAuth->company_id !== $request->input('company_id', $userAuth->company_id)) {
@@ -492,7 +493,7 @@ class OrderController extends Controller
                 'order' => "Los cálculos no coinciden. Frontend: Subtotal=$$frontendSubtotal, Tax=$$frontendTax, Total=$$frontendTotal. Backend: Subtotal=$$backendSubtotal, Tax=$$backendTax, Total=$$backendTotal."
             ]);
         }
-
+// dd($request['delivery_location_id']);
         // Crear orden
         $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping, $appliedOrderDiscount, $appliedManualDiscount, $orderTotalDiscount, $appliedGiftCard, $giftCardAmount, $giftCardId) {
             $order = Order::create([
@@ -1144,9 +1145,17 @@ class OrderController extends Controller
             $combinationId = $itemData['combination_id'] ?? null;
             $quantity = $itemData['quantity'];
 
-            $product = Product::with('categories', 'discounts:id,name,discount_type,value,applies_to', 'taxes', 'stocks')
+            // CORRECCIÓN: Cargar combinaciones como en store
+            $product = Product::with([
+                'categories',
+                'discounts:id,name,discount_type,value,applies_to',
+                'taxes',
+                'stocks',
+                'combinations' // Añadido para manejar combinaciones
+            ])
                 ->where('company_id', $userAuth->company_id)
                 ->find($productId);
+
             if (!$product) {
                 throw ValidationException::withMessages(['order_items' => 'Producto no encontrado: ' . $productId]);
             }
@@ -1161,31 +1170,43 @@ class OrderController extends Controller
             }
 
             // **CORRECCIÓN IMPORTANTE: Determinar el precio base correcto (igual que en store)**
-            // Precio original del producto (sin ningún descuento)
             $productOriginalPrice = (float) $product->product_price;
-
-            // Precio con descuento directo (si aplica)
             $productDiscountedPrice = $product->product_price_discount && $product->product_price_discount > 0
                 ? (float) $product->product_price_discount
                 : $productOriginalPrice;
 
-            // Si es producto simple (sin combinación) y tiene product_price_discount
             $hasDirectDiscount = false;
             $directDiscountAmount = 0;
 
-            if (is_null($combinationId) && $product->product_price_discount && $product->product_price_discount > 0) {
+            // CORRECCIÓN: Para productos CON combinación, usar el precio de la combinación
+            if ($combinationId && $product->combinations) {
+                $combination = $product->combinations->firstWhere('id', $combinationId);
+                if ($combination) {
+                    $productOriginalPrice = (float) $combination->combination_price;
+                    $productDiscountedPrice = $productOriginalPrice; // Las combinaciones no tienen descuento directo
+
+                    Log::info('Usando precio de combinación en update:', [
+                        'combination_id' => $combinationId,
+                        'price' => $productOriginalPrice
+                    ]);
+                }
+            } elseif (is_null($combinationId) && $product->product_price_discount && $product->product_price_discount > 0) {
+                // Solo productos simples sin combinación pueden tener descuento directo
                 $hasDirectDiscount = true;
                 $directDiscountAmount = ($productOriginalPrice - $productDiscountedPrice) * $quantity;
+
+                Log::info('Descuento directo aplicado en update:', [
+                    'original' => $productOriginalPrice,
+                    'discounted' => $productDiscountedPrice,
+                    'amount' => $directDiscountAmount
+                ]);
             }
 
-            // **CORRECCIÓN: Usar precio original como base para price_product**
             $basePrice = $productOriginalPrice;
-
-            // **CORRECCIÓN: El precio que realmente se usa para cálculos es el con descuento directo (si aplica)**
             $effectivePrice = $productDiscountedPrice;
 
             // **IMPORTANTE: Actualizar el price_product con el precio original**
-            $itemData['price_product'] = $basePrice; // Guarda el precio original (15)
+            $itemData['price_product'] = $basePrice; // Guarda el precio original
 
             $originalSubtotal = $effectivePrice * $quantity; // Usa el precio con descuento directo para cálculos
             $subtotalPreDiscount += $originalSubtotal;

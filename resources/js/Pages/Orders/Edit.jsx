@@ -11,8 +11,8 @@ import OrderStatusButtons from '@/Components/Orders/OrderStatusButtons';
 
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
-export default function Edit({ orders, paymentMethods, products, users, discounts, shippingRates, appliedGiftCard  }) {
-console.log(orders)
+export default function Edit({ orders, paymentMethods, products, users, discounts, shippingRates, appliedGiftCard }) {
+    console.log(orders)
     const { flash } = usePage().props;
     if (flash?.success) toast.success(flash.success);
     if (flash?.error) toast.error(flash.error);
@@ -30,7 +30,8 @@ console.log(orders)
         payments_method_id: orders.payments_method_id || null,
         manual_discount_code: orders.manual_discount_code || null,
         manual_discount_amount: parseFloat(orders.manual_discount_amount) || 0,
-         gift_card_id: appliedGiftCard?.id || null, // NUEVO: Desde appliedGiftCard
+        delivery_location_id: orders.delivery_location_id || null,
+        gift_card_id: appliedGiftCard?.id || null, // NUEVO: Desde appliedGiftCard
         gift_card_amount: parseFloat(appliedGiftCard?.amount_used) || 0, // NUEVO: Desde appliedGiftCard
         shipping_rate_id: orders.shipping_rate_id || null,
         order_items: orders.order_items ? orders.order_items.map((item, index) => {
@@ -82,6 +83,7 @@ console.log(orders)
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
+        // console.log(data)
         e.preventDefault();
 
         post(route('orders.update', orders), {
