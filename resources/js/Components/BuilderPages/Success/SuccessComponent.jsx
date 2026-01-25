@@ -128,16 +128,31 @@ const SuccessComponent = ({
         });
     };
 
-    const parseProductDetails = (detailsString) => {
+    // Versión simplificada
+    const parseProductDetails = (productDetails) => {
+        if (!productDetails) return {};
+
         try {
-            return JSON.parse(detailsString || '{}');
-        } catch {
+            const parsed = typeof productDetails === 'string'
+                ? JSON.parse(productDetails)
+                : productDetails;
+
+            // Manejar ambos formatos
+            return {
+                combination_name: parsed.attributes || parsed.combination_name || null,
+                image: parsed.image || null,
+                sku: parsed.sku || null,
+                weight: parsed.weight || null,
+                dimensions: parsed.dimensions || null
+            };
+        } catch (error) {
+            console.error('Error parsing product details:', error);
             return {};
         }
     };
 
     return (
-        <div 
+        <div
             className="w-full"
             style={{
                 backgroundColor: styles.backgroundColor || 'transparent',
@@ -150,14 +165,14 @@ const SuccessComponent = ({
             {/* Header de éxito */}
             <div className="text-center mb-8">
                 <div className="flex justify-center mb-4">
-                    <CheckCircle 
-                        size={64} 
+                    <CheckCircle
+                        size={64}
                         className="text-green-500"
                         style={{ color: content.iconColor || '#10b981' }}
                     />
                 </div>
-                
-                <h1 
+
+                <h1
                     className="text-3xl font-bold mb-2"
                     style={{
                         color: content.titleColor || styles.titleColor || '#000000',
@@ -167,8 +182,8 @@ const SuccessComponent = ({
                 >
                     {content.title || '¡Orden Exitosa!'}
                 </h1>
-                
-                <p 
+
+                <p
                     className="text-lg"
                     style={{
                         color: content.subtitleColor || styles.subtitleColor || '#666666',
@@ -194,14 +209,14 @@ const SuccessComponent = ({
                             <span className="font-medium">Número de Orden:</span>
                             <span className="font-mono text-lg">{displayOrder.id}</span>
                         </div>
-                        
+
                         <div className="flex justify-between items-center">
                             <span className="font-medium">Estado:</span>
                             <Badge className={getStatusColor(displayOrder.status)}>
                                 {getStatusText(displayOrder.status)}
                             </Badge>
                         </div>
-                        
+
                         <div className="flex justify-between items-center">
                             <span className="font-medium">Fecha:</span>
                             <span className="flex items-center gap-1">
@@ -209,7 +224,7 @@ const SuccessComponent = ({
                                 {formatDate(displayOrder.created_at)}
                             </span>
                         </div>
-                        
+
                         <div className="flex justify-between items-center">
                             <span className="font-medium">Método de Pago:</span>
                             <span className="flex items-center gap-1">
@@ -218,7 +233,7 @@ const SuccessComponent = ({
                                 {console.log(displayOrder)}
                             </span>
                         </div>
-                        
+
                         {displayOrder.delivery_type === 'delivery' && displayOrder.delivery_location && (
                             <div>
                                 <span className="font-medium flex items-center gap-1 mb-2">
@@ -239,7 +254,7 @@ const SuccessComponent = ({
                                 </div>
                             </div>
                         )}
-                        
+
                         {displayOrder.shippingRate && (
                             <div className="flex justify-between items-center">
                                 <span className="font-medium flex items-center gap-1">
@@ -262,21 +277,21 @@ const SuccessComponent = ({
                             <span>Subtotal:</span>
                             <CurrencyDisplay amount={displayOrder.subtotal} />
                         </div>
-                        
+
                         {displayOrder.totalshipping > 0 && (
                             <div className="flex justify-between">
                                 <span>Envío:</span>
                                 <CurrencyDisplay amount={displayOrder.totalshipping} />
                             </div>
                         )}
-                        
+
                         {displayOrder.tax_amount > 0 && (
                             <div className="flex justify-between">
                                 <span>Impuestos:</span>
                                 <CurrencyDisplay amount={displayOrder.tax_amount} />
                             </div>
                         )}
-                        
+
                         {displayOrder.totaldiscounts > 0 && (
                             <div className="flex justify-between text-green-600">
                                 <span className="flex items-center gap-1">
@@ -286,7 +301,7 @@ const SuccessComponent = ({
                                 <CurrencyDisplay amount={-displayOrder.totaldiscounts} />
                             </div>
                         )}
-                        
+
                         {displayOrder.gift_card_amount > 0 && (
                             <div className="flex justify-between text-purple-600">
                                 <span className="flex items-center gap-1">
@@ -296,9 +311,9 @@ const SuccessComponent = ({
                                 <CurrencyDisplay amount={-displayOrder.gift_card_amount} />
                             </div>
                         )}
-                        
+
                         <Separator />
-                        
+
                         <div className="flex justify-between text-lg font-bold">
                             <span>Total:</span>
                             <CurrencyDisplay amount={displayOrder.total} />
@@ -316,17 +331,17 @@ const SuccessComponent = ({
                     <div className="space-y-4">
                         {displayOrder.order_items?.map((item, index) => {
                             const details = parseProductDetails(item.product_details);
-                            
+                            // console.log(details)
                             return (
                                 <div key={item.id || index} className="flex items-center gap-4 p-4 border rounded-lg">
-                                    {details.image && (
+                                    {/* {details.image && (
                                         <img 
                                             src={details.image} 
                                             alt={item.name_product}
                                             className="w-16 h-16 object-cover rounded"
                                         />
-                                    )}
-                                    
+                                    )} */}
+
                                     <div className="flex-1">
                                         <h4 className="font-medium">{item.name_product}</h4>
                                         {details.combination_name && (
@@ -336,7 +351,7 @@ const SuccessComponent = ({
                                             Cantidad: {item.quantity} × <CurrencyDisplay amount={item.discounted_price} />
                                         </p>
                                     </div>
-                                    
+
                                     <div className="text-right">
                                         <div className="font-medium">
                                             <CurrencyDisplay amount={item.subtotal} />
@@ -352,8 +367,8 @@ const SuccessComponent = ({
             {/* Acciones */}
             <div className="text-center space-y-4">
                 {content.showContinueShoppingButton !== false && (
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         size="lg"
                         className="mr-4"
                         style={{
@@ -370,9 +385,9 @@ const SuccessComponent = ({
                         {content.continueButtonText || 'Continuar Comprando'}
                     </Button>
                 )}
-                
+
                 {content.showOrdersButton !== false && (
-                    <Button 
+                    <Button
                         size="lg"
                         style={{
                             backgroundColor: content.ordersButtonBg || '#3b82f6',
@@ -391,7 +406,7 @@ const SuccessComponent = ({
 
             {/* Mensaje adicional */}
             {content.additionalMessage && (
-                <div 
+                <div
                     className="mt-8 p-4 rounded-lg text-center"
                     style={{
                         backgroundColor: content.messageBackgroundColor || '#f3f4f6',

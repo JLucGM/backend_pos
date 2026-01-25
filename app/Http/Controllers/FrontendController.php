@@ -25,7 +25,7 @@ class FrontendController extends Controller
         if ($company->setting && $company->setting->getFirstMedia('logo')) {
             $logoUrl = $company->setting->getFirstMedia('logo')->getUrl();
         }
-        
+
         // Obtener también favicon si lo necesitas
         $faviconUrl = null;
         if ($company->setting && $company->setting->getFirstMedia('favicon')) {
@@ -45,12 +45,12 @@ class FrontendController extends Controller
 
         // Cargar los menús
         $availableMenus = $company->menus()->with(['items' => function ($query) {
-        $query->whereNull('parent_id')->orderBy('order')->with(['children' => function ($q) {
-            $q->orderBy('order')->with(['children' => function ($subQ) {
-                $subQ->orderBy('order');
+            $query->whereNull('parent_id')->orderBy('order')->with(['children' => function ($q) {
+                $q->orderBy('order')->with(['children' => function ($subQ) {
+                    $subQ->orderBy('order');
+                }]);
             }]);
-        }]);
-    }])->get()->toArray();
+        }])->get()->toArray();
 
         // Obtener países, estados y ciudades para el ProfileComponent
         $countries = \App\Models\Country::all();
@@ -510,16 +510,22 @@ class FrontendController extends Controller
     private function getUserOrders($user)
     {
         return $user->orders()
-            ->with(['items.product', 'paymentMethod', 'shippingRate'])
+            ->with(['items.product', 'paymentMethod', 'shippingRate', 'deliveryLocation',
+            // 'giftCardUsages'
+            ])
             ->orderBy('created_at', 'desc')
-            ->limit(10) // Limitar a las últimas 10 órdenes para performance
+            ->limit(10) // Limitar a las últimas 10 órdenes para performances
             ->get()
             ->map(function ($order) {
                 return [
                     'id' => $order->id,
                     'status' => $order->status,
+                    'delivery_type' => $order->delivery_type,
+                    'payment_status' => $order->payment_status,
+                    'totaldiscounts' => $order->totaldiscounts,
                     'total' => $order->total,
                     'subtotal' => $order->subtotal,
+                    'tax_amount' => $order->tax_amount,
                     'created_at' => $order->created_at->toISOString(),
                     'items' => $order->items->map(function ($item) {
                         return [
@@ -528,14 +534,34 @@ class FrontendController extends Controller
                             'quantity' => $item->quantity,
                             'price_product' => $item->price_product,
                             'subtotal' => $item->subtotal,
+                            
+                            'tax_amount' => $item->tax_amount,
+                            'discount_amount' => $item->discount_amount,
+                            'discounted_price' => $item->discounted_price,
+                            'discounted_subtotal' => $item->discounted_subtotal,
+                            'product_details' => $item->product_details,
                         ];
                     }),
                     'paymentMethod' => $order->paymentMethod ? [
-                        'name' => $order->paymentMethod->name
+                        'name' => $order->paymentMethod->payment_method_name
                     ] : null,
+                    // 'giftCardUsages' => $order->giftCardUsages ? [
+                    //     'amount_used' => $order->giftCardUsages->amount_used
+                    // ] : null,
                     'shippingRate' => $order->shippingRate ? [
                         'name' => $order->shippingRate->name,
                         'price' => $order->shippingRate->price
+                    ] : null,
+                    'deliveryLocation' => $order->deliveryLocation ? [
+                        'address_line_1'  => $order->deliveryLocation->address_line_1,
+                        'address_line_2' => $order->deliveryLocation->address_line_2,
+                        'postal_code' => $order->deliveryLocation->postal_code,
+                        'phone_number' => $order->deliveryLocation->phone_number,
+                        'notes' => $order->deliveryLocation->notes,
+                        'is_default' => $order->deliveryLocation->is_default,
+                        'country_id' => $order->deliveryLocation->country->country_name,
+                        'state_id' => $order->deliveryLocation->state->state_name,
+                        'city_id' => $order->deliveryLocation->city->city_name,
                     ] : null,
                 ];
             });

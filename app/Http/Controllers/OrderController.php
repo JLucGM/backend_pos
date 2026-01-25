@@ -91,7 +91,7 @@ class OrderController extends Controller
 
     public function store(StoreRequest $request)
     {
-        // dd($request->all());
+        dd($request->all());
         $userAuth = Auth::user();
 
         if ($userAuth->company_id !== $request->input('company_id', $userAuth->company_id)) {
@@ -493,14 +493,14 @@ class OrderController extends Controller
                 'order' => "Los cálculos no coinciden. Frontend: Subtotal=$$frontendSubtotal, Tax=$$frontendTax, Total=$$frontendTotal. Backend: Subtotal=$$backendSubtotal, Tax=$$backendTax, Total=$$backendTotal."
             ]);
         }
-// dd($request['delivery_location_id']);
+        // dd($request['delivery_location_id']);
         // Crear orden
         $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping, $appliedOrderDiscount, $appliedManualDiscount, $orderTotalDiscount, $appliedGiftCard, $giftCardAmount, $giftCardId) {
-            
+
             // Solo asignar delivery_location_id si es delivery
-        $deliveryLocationId = $request['delivery_type'] === 'delivery' 
-            ? $request['delivery_location_id'] 
-            : null;
+            $deliveryLocationId = $request['delivery_type'] === 'delivery'
+                ? $request['delivery_location_id']
+                : null;
 
             $order = Order::create([
                 'status' => $request['status'],
@@ -512,7 +512,7 @@ class OrderController extends Controller
                 'totaldiscounts' => $grandTotalDiscounts,
                 'manual_discount_code' => $manualDiscountCode,
                 'manual_discount_amount' => $manualDiscountAmount,
-                 'delivery_location_id' => $deliveryLocationId,
+                'delivery_location_id' => $deliveryLocationId,
                 'payments_method_id' => $request['payments_method_id'],
                 'order_origin' => $request['order_origin'],
                 'user_id' => $request['user_id'],
@@ -800,317 +800,6 @@ class OrderController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    // public function update(UpdateRequest $request, Order $orders)
-    // {
-    //     $userAuth = Auth::user();
-    //     if ($orders->company_id !== $userAuth->company_id) {
-    //         abort(403, 'No tienes permiso para esta operación.');
-    //     }
-
-    //     // FIX: Carga descuentos (como en store)
-    //     $discounts = Discount::where('is_active', true)
-    //         ->where(function ($query) use ($userAuth) {
-    //             $query->whereNull('company_id')
-    //                 ->orWhere('company_id', $userAuth->company_id);
-    //         })
-    //         ->with(['products:id,product_name', 'categories:id,category_name'])
-    //         ->get();
-
-    //     // Pre-calcular como en store
-    //     $orderItemsData = $request['order_items'] ?? [];
-    //     $totalDiscounts = 0;
-    //     $subtotalPostDiscount = 0;
-    //     $taxAmount = 0;
-    //     $subtotalPreDiscount = 0;
-
-    //     // FIX: Track stock changes y IDs para delete
-    //     $existingItems = $orders->orderItems->keyBy('id'); // <-- Definida aquí
-    //     $stockChanges = []; // [item_id => delta_quantity]
-    //     $sentIds = collect(); // Para delete no enviados
-
-    //     // Validar y recalcular descuentos por ítem (igual que store)
-    //     foreach ($orderItemsData as &$itemData) {
-    //         // FIX: Mapeo consistente (siempre, como store)
-    //         if (isset($itemData['product_price'])) {
-    //             $itemData['price_product'] = $itemData['product_price'];
-    //             unset($itemData['product_price']);
-    //         }
-
-    //         $productId = $itemData['product_id'];
-    //         $combinationId = $itemData['combination_id'] ?? null;
-    //         $quantity = $itemData['quantity'];
-
-    //         $product = Product::with('categories', 'discounts:id,name,discount_type,value,applies_to', 'taxes', 'stocks')
-    //             ->where('company_id', $userAuth->company_id)
-    //             ->find($productId);
-    //         if (!$product) {
-    //             throw ValidationException::withMessages(['order_items' => 'Producto no encontrado: ' . $productId]);
-    //         }
-
-    //         // FIX: Track stock change (solo si item existente)
-    //         $itemId = $itemData['id'] ?? null;
-    //         if ($itemId && is_numeric($itemId) && $existingItems->has($itemId)) { // <-- Usa $existingItems aquí (fuera de closure)
-    //             $existingItem = $existingItems[$itemId];
-    //             $deltaQuantity = $quantity - $existingItem->quantity;
-    //             $stockChanges[$itemId] = $deltaQuantity; // >0: decrementa, <0: incrementa
-    //             $sentIds->push($itemId);
-    //         }
-
-    //         // Validar stock actual (después de change)
-    //         $currentStock = $this->getProductStock($product, $combinationId);
-    //         if ($currentStock < $quantity) {
-    //             $varName = $combinationId ? ' (variación ID: ' . $combinationId . ')' : '';
-    //             throw ValidationException::withMessages(['order_items' => 'Stock insuficiente para: ' . $product->product_name . $varName]);
-    //         }
-
-    //         $originalPrice = $itemData['price_product'] ?? $product->product_price; // Fallback a DB si no envía
-    //         $originalSubtotal = $originalPrice * $quantity;
-    //         $subtotalPreDiscount += $originalSubtotal;
-
-    //         // Encontrar descuento (preserva si discount_id ya set, sino recalcula auto)
-    //         $applicableDiscount = null;
-    //         if (empty($itemData['discount_id'])) { // Solo recalcula si no preservado
-    //             $applicableDiscount = $this->findApplicableDiscount($product, $combinationId, $quantity, $subtotalPreDiscount, $discounts);
-    //         } else {
-    //             // Preserva guardado (busca por ID)
-    //             $applicableDiscount = $discounts->find($itemData['discount_id']);
-    //         }
-
-    //         if ($applicableDiscount) {
-    //             $discountAmountPerItem = $this->calculateDiscount($applicableDiscount, $originalPrice, $quantity);
-    //             $discountedPrice = max(0, $originalPrice - ($discountAmountPerItem / $quantity));
-    //             $discountedSubtotal = $originalSubtotal - $discountAmountPerItem;
-
-    //             $itemData['discount_id'] = $applicableDiscount->id;
-    //             $itemData['discount_type'] = $applicableDiscount->discount_type;
-    //             $itemData['discount_amount'] = $discountAmountPerItem;
-    //             $itemData['discounted_price'] = $discountedPrice;
-    //             $itemData['subtotal'] = $discountedSubtotal;
-    //         } else {
-    //             // Respeta frontend/DB si no auto
-    //             $itemData['discount_id'] = $itemData['discount_id'] ?? null;
-    //             $itemData['discount_type'] = $itemData['discount_type'] ?? null;
-    //             $itemData['discount_amount'] = $itemData['discount_amount'] ?? 0;
-    //             $itemData['discounted_price'] = $originalPrice - (($itemData['discount_amount'] ?? 0) / $quantity);
-    //             $itemData['subtotal'] = $originalSubtotal - ($itemData['discount_amount'] ?? 0);
-    //         }
-
-    //         $totalDiscounts += $itemData['discount_amount'] ?? 0;
-    //         $subtotalPostDiscount += $itemData['subtotal'];
-
-    //         // Tax post-descuento
-    //         $taxRate = $product->taxes ? $product->taxes->tax_rate / 100 : 0;
-    //         $itemData['tax_rate'] = $taxRate * 100;
-    //         $itemData['tax_amount'] = $itemData['subtotal'] * $taxRate;
-    //         $taxAmount += $itemData['tax_amount'];
-
-    //         // FIX: Para nuevos, setea order_id (crucial para create)
-    //         if (!$itemId || !is_numeric($itemId)) {
-    //             $itemData['order_id'] = $orders->id; // Setea relación
-    //         }
-    //     }
-
-    //     // Order total auto + manual (igual que store)
-    //     $orderTotalDiscount = $this->calculateOrderTotalDiscount($subtotalPreDiscount, $discounts);
-    //     $totalDiscounts += $orderTotalDiscount;
-
-    //     $manualDiscountCode = $request['manual_discount_code'] ?? null;
-    //     $manualDiscountAmount = $request['manual_discount_amount'] ?? 0;
-    //     $manualError = null;
-    //     if ($manualDiscountCode) {
-    //         $manualDiscount = $discounts->firstWhere('code', $manualDiscountCode);
-    //         if ($manualDiscount && !$manualDiscount->automatic && $manualDiscount->applies_to === 'order_total') {
-    //             if ($this->isDiscountValid($manualDiscount, $subtotalPreDiscount)) {
-    //                 $manualDiscountAmount = $this->calculateDiscount($manualDiscount, $subtotalPreDiscount, 1);
-    //             } else {
-    //                 $manualError = 'Código inválido (fechas/mínimo).';
-    //             }
-    //         } else {
-    //             $manualError = 'Código no válido.';
-    //         }
-    //     }
-
-    //     // Si manual es por 'product' o 'category', aplica a items (igual que store)
-    //     if ($manualDiscountCode && isset($manualDiscount) && $manualDiscount && in_array($manualDiscount->applies_to, ['product', 'category'])) {
-    //         foreach ($orderItemsData as &$itemData) {
-    //             $product = Product::find($itemData['product_id']);
-    //             $combinationId = $itemData['combination_id'] ?? null;
-    //             if ($this->isManualApplicableToItem($manualDiscount, $itemData, $product, $combinationId)) {
-    //                 $itemDiscountAmount = $this->calculateDiscount($manualDiscount, $itemData['price_product'], $itemData['quantity']);
-    //                 $itemData['discount_amount'] += $itemDiscountAmount;
-    //                 $itemData['subtotal'] -= $itemDiscountAmount;
-    //                 $itemData['discounted_price'] = max(0, $itemData['discounted_price'] - ($itemDiscountAmount / $itemData['quantity']));
-    //                 $totalDiscounts += $itemDiscountAmount;
-    //                 $subtotalPostDiscount -= $itemDiscountAmount;
-    //                 $itemData['tax_amount'] = $itemData['subtotal'] * ($product->taxes ? $product->taxes->tax_rate / 100 : 0);
-    //             }
-    //         }
-    //         $manualDiscountAmount = 0;
-    //         $taxAmount = collect($orderItemsData)->sum(fn($i) => $i['tax_amount']);
-    //     }
-
-    //     // NUEVO: Lógica para gift cards (similar a store)
-    //     $giftCardId = $request->input('gift_card_id');
-    //     $giftCardAmount = $request->input('gift_card_amount', 0);
-    //     $appliedGiftCard = null;
-    //     if ($giftCardId && $giftCardAmount > 0) {
-    //         $giftCard = GiftCard::find($giftCardId);
-    //         if (!$giftCard || !$giftCard->is_active || $giftCard->user_id !== $request->user_id || $giftCard->current_balance < $giftCardAmount || now() > $giftCard->expiration_date) {
-    //             throw ValidationException::withMessages(['gift_card' => 'Giftcard inválida o insuficiente.']);
-    //         }
-    //         $appliedGiftCard = $giftCard;
-    //     }
-
-    //     $shippingRateId = $request->input('shipping_rate_id');
-    //     $totalShipping = 0;
-    //     if ($shippingRateId) {
-    //         $shippingRate = ShippingRate::find($shippingRateId);
-    //         if ($shippingRate) {
-    //             $totalShipping = $shippingRate->price;
-    //         }
-    //     }
-
-    //     $finalSubtotal = $subtotalPostDiscount;
-    //     $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount - $giftCardAmount + $totalShipping;  // NUEVO: Resta giftCardAmount
-    //     $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount + $giftCardAmount;  // NUEVO: Incluye giftCardAmount en totaldiscounts
-
-    //     // Update con transacción – FIX: Agrega $existingItems y $sentIds en use()
-    //     $orders = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $shippingRateId, $totalShipping, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $orders, $stockChanges, $sentIds, $existingItems, $manualDiscountCode, $manualDiscountAmount, $appliedGiftCard, $giftCardAmount, $giftCardId) { // NUEVO: Agrega appliedGiftCard, giftCardAmount, giftCardId
-    //         try {
-    //             // Update orden principal
-    //             $orders->update([
-    //                 'status' => $request['status'],
-    //                 'payment_status' => $request['payments_method_id'] ? 'paid' : 'pending',
-    //                 'delivery_type' => $request['delivery_type'],
-    //                 'tax_amount' => $taxAmount,
-    //                 'total' => $finalTotal,
-    //                 'subtotal' => $finalSubtotal,
-    //                 'totaldiscounts' => $grandTotalDiscounts,
-    //                 'manual_discount_code' => $manualDiscountCode,
-    //                 'manual_discount_amount' => $manualDiscountAmount,
-    //                 'payments_method_id' => $request['payments_method_id'],
-    //                 'user_id' => $request['user_id'] ?? $orders->user_id,
-    //                 'delivery_location_id' => $request['delivery_location_id'],
-    //                 'shipping_rate_id' => $shippingRateId,
-    //                 'totalshipping' => $totalShipping,
-    //             ]);
-    //             Log::info('Order updated: ID=' . $orders->id . ', total=' . $finalTotal); // Debug
-
-    //             // FIX: Lógica separada para update vs create (resuelve no guardar nuevos)
-    //             foreach ($orderItemsData as $itemData) {
-    //                 $itemId = $itemData['id'] ?? null;
-    //                 if ($itemId && is_numeric($itemId) && $existingItems->has($itemId)) { // <-- Ahora $existingItems disponible
-    //                     // Update existente
-    //                     $orderItem = $orders->orderItems()->find($itemId);
-    //                     if ($orderItem) {
-    //                         $orderItem->update($itemData); // Usa recalculado
-    //                         Log::info("Updated item ID {$itemId}: quantity={$itemData['quantity']}, subtotal={$itemData['subtotal']}"); // Debug
-    //                     }
-    //                 } else {
-    //                     // Create nuevo (sin ID)
-    //                     $newItem = $orders->orderItems()->create($itemData); // order_id ya seteado arriba
-    //                     Log::info("Created new item ID {$newItem->id}: product_id={$itemData['product_id']}, subtotal={$itemData['subtotal']}"); // Debug
-    //                 }
-    //             }
-
-    //             // FIX: Delete items no enviados (si frontend quita rows) – Usa $sentIds y $existingItems
-    //             $dbIds = $existingItems->keys(); // IDs de DB
-    //             $toDelete = $dbIds->diff($sentIds); // Diferencia: no enviados
-    //             if ($toDelete->isNotEmpty()) {
-    //                 $orders->orderItems()->whereIn('id', $toDelete)->delete();
-    //                 Log::info('Deleted items: ' . $toDelete->implode(', ')); // Debug
-    //                 // Opcional: Incrementa stock para deleted
-    //                 // $deleted = OrderItem::whereIn('id', $toDelete)->get();
-    //                 // foreach ($deleted as $del) { $this->incrementStock($del->product, $del->quantity, $del->combination_id); }
-    //             }
-
-    //             // FIX: Manejo stock changes (después de updates/creates) – Usa $stockChanges y $existingItems
-    //             foreach ($stockChanges as $itemId => $delta) {
-    //                 if ($delta !== 0) {
-    //                     $item = $existingItems->get($itemId); // Usa $existingItems (disponible ahora)
-    //                     if ($item) {
-    //                         $product = $item->product;
-    //                         $combinationId = $item->combination_id;
-    //                         if ($delta > 0) {
-    //                             // Quantity subió: decrementa diferencia
-    //                             $this->decrementStock($product, $delta, $combinationId);
-    //                         } else {
-    //                             // Quantity bajó: incrementa diferencia (libera stock)
-    //                             $stock = $product->stocks->firstWhere('combination_id', $combinationId);
-    //                             if ($stock) {
-    //                                 $stock->increment('quantity', abs($delta));
-    //                             }
-    //                         }
-    //                         Log::info("Stock adjusted for item {$itemId}: delta={$delta}"); // Debug
-    //                     }
-    //                 }
-    //             }
-
-    //             // Para nuevos: Decrementa stock full quantity
-    //             foreach ($orderItemsData as $itemData) {
-    //                 if (!($itemData['id'] ?? null) || !is_numeric($itemData['id'])) { // Nuevo
-    //                     $product = Product::find($itemData['product_id']);
-    //                     if ($product) {
-    //                         $this->decrementStock($product, $itemData['quantity'], $itemData['combination_id'] ?? null);
-    //                         Log::info("Stock decremented for new item: product_id={$itemData['product_id']}, quantity={$itemData['quantity']}"); // Debug
-    //                     }
-    //                 }
-    //             }
-
-    //             // NUEVO: Manejo de gift card
-    //             if ($appliedGiftCard) {
-    //                 // Si había una gift card anterior, revierte su balance
-    //                 $previousUsage = $orders->giftCardUsages->first();
-    //                 if ($previousUsage && $previousUsage->gift_card_id !== $giftCardId) {
-    //                     $previousGiftCard = $previousUsage->giftCard;
-    //                     $previousGiftCard->update([
-    //                         'current_balance' => $previousGiftCard->current_balance + $previousUsage->amount_used,
-    //                     ]);
-    //                     $previousUsage->delete(); // Elimina uso anterior
-    //                 }
-
-    //                 // Aplica nueva gift card
-    //                 $appliedGiftCard->update([
-    //                     'current_balance' => $appliedGiftCard->current_balance - $giftCardAmount,
-    //                 ]);
-
-    //                 // Crea o actualiza GiftCardUsage
-    //                 GiftCardUsage::updateOrCreate(
-    //                     ['order_id' => $orders->id],
-    //                     [
-    //                         'gift_card_id' => $giftCardId,
-    //                         'amount_used' => $giftCardAmount,
-    //                     ]
-    //                 );
-    //             } else {
-    //                 // Si no hay gift card nueva, revierte cualquier anterior
-    //                 $previousUsage = $orders->giftCardUsages->first();
-    //                 if ($previousUsage) {
-    //                     $previousGiftCard = $previousUsage->giftCard;
-    //                     $previousGiftCard->update([
-    //                         'current_balance' => $previousGiftCard->current_balance + $previousUsage->amount_used,
-    //                     ]);
-    //                     $previousUsage->delete();
-    //                 }
-    //             }
-
-    //             return $orders->fresh(['orderItems.product', 'giftCardUsages']); // NUEVO: Recarga con giftCardUsages
-    //         } catch (\Exception $e) {
-    //             Log::error('Error in update transaction: ' . $e->getMessage()); // Debug error
-    //             throw $e; // Re-throw para rollback
-    //         }
-    //     });
-
-    //     // $redirect = redirect()->route('orders.edit', $orders)->with('success', 'Orden actualizada con éxito.');
-    //     // if ($manualError) {
-    //     //     $redirect = $redirect->with('error', $manualError);
-    //     // }
-    //     return redirect()->route('orders.edit', $orders)->with('success', 'Orden actualizada con éxito.');
-    // }
-
     public function update(UpdateRequest $request, Order $orders)
     {
         $userAuth = Auth::user();
@@ -1392,9 +1081,9 @@ class OrderController extends Controller
         $orders = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $shippingRateId, $totalShipping, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $orders, $stockChanges, $sentIds, $existingItems, $manualDiscountCode, $manualDiscountAmount, $appliedGiftCard, $giftCardAmount, $giftCardId, $orderTotalDiscount, $appliedOrderDiscount) {
             try {
 
-                $deliveryLocationId = $request['delivery_type'] === 'delivery' 
-                ? $request['delivery_location_id'] 
-                : null;
+                $deliveryLocationId = $request['delivery_type'] === 'delivery'
+                    ? $request['delivery_location_id']
+                    : null;
 
                 // Update orden principal
                 $orders->update([

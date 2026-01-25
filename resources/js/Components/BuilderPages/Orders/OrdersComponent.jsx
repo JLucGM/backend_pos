@@ -25,7 +25,7 @@ const OrdersComponent = ({
 }) => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isExpanded, setIsExpanded] = useState(false);
-
+    console.log(selectedOrder)
     const {
         attributes,
         listeners,
@@ -51,6 +51,10 @@ const OrdersComponent = ({
             id: 1,
             status: 'completed',
             total: 150.00,
+            delivery_type: 'delivery',
+            totaldiscounts: 2.00,
+            payment_status: 'completed',
+            tax_amount: 16.00,
             created_at: '2024-01-15T10:30:00Z',
             items: [
                 {
@@ -69,7 +73,19 @@ const OrdersComponent = ({
                 }
             ],
             paymentMethod: { name: 'Tarjeta de Crédito' },
-            shippingRate: { name: 'Envío Estándar', price: 10.00 }
+            shippingRate: { name: 'Envío Estándar', price: 10.00 },
+            deliveryLocation: {
+                address_line_1: '',
+                address_line_2: '',
+                postal_code: '',
+                phone_number: '',
+                notes: '',
+                is_default: '',
+                country_id: '',
+                state_id: '',
+                city_id: '',
+                notes: '',
+            }
         },
         {
             id: 2,
@@ -130,9 +146,8 @@ const OrdersComponent = ({
     const renderOrderCard = (order) => (
         <div
             key={order.id}
-            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${
-                selectedOrder?.id === order.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-            }`}
+            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${selectedOrder?.id === order.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
             onClick={() => handleOrderClick(order)}
         >
             <div className="flex justify-between items-start mb-2">
@@ -159,13 +174,13 @@ const OrdersComponent = ({
                     )}
                 </div>
             </div>
-            
+
             {content.showItemCount !== false && (
                 <div className="text-sm text-gray-600">
                     {order.items?.length || 0} producto(s)
                 </div>
             )}
-            
+
             {mode === 'frontend' && content.allowExpandDetails !== false && (
                 <div className="mt-2 flex items-center text-blue-600 text-sm">
                     {selectedOrder?.id === order.id ? (
@@ -187,29 +202,54 @@ const OrdersComponent = ({
     const renderOrderDetails = (order) => (
         <div className="mt-4 border-t pt-4">
             <h4 className="font-semibold mb-3">Detalles del Pedido</h4>
-            
+
             {/* Información del pedido */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <h5 className="font-medium mb-2">Información General</h5>
+                    {/* <h5 className="font-medium mb-2">Información General</h5> */}
                     <div className="space-y-1 text-sm">
-                        <div><span className="font-medium">Estado:</span> {getStatusText(order.status)}</div>
-                        <div><span className="font-medium">Fecha:</span> {formatDate(order.created_at)}</div>
+                        <div><span className="font-medium">Tipo de entrega:</span> {getStatusText(order.delivery_type)}</div>
+                        {/* <div><span className="font-medium">Estado:</span> {getStatusText(order.status)}</div> */}
+                        {/* <div><span className="font-medium">Fecha:</span> {formatDate(order.created_at)}</div> */}
+                        {order.payment_status && (
+                            <div><span className="font-medium">Estado de págo:</span> {order.payment_status === 'paid' ? 'Pagado' : 'Pendiente'}</div>
+                        )}
                         {order.paymentMethod && (
                             <div><span className="font-medium">Método de pago:</span> {order.paymentMethod.name}</div>
                         )}
                         {order.shippingRate && (
                             <div><span className="font-medium">Envío:</span> {order.shippingRate.name}</div>
                         )}
+                        {order.deliveryLocation && (
+                            <div><span className="font-medium">Dirección de envio:</span>
+                                {order.deliveryLocation.address_line_1},
+                                {order.deliveryLocation.address_line_2},
+                                {order.deliveryLocation.country_id},
+                                {order.deliveryLocation.state_id},
+                                {order.deliveryLocation.city_id}, <br />
+                                <span className="font-medium">Código postal:</span> {order.deliveryLocation.postal_code}, <br />
+                                <span className="font-medium">Télefono:</span> {order.deliveryLocation.phone_number}, <br />
+                                <span className="font-medium">Nota:</span> {order.deliveryLocation.notes},
+
+                            </div>
+                        )}
                     </div>
                 </div>
-                
+
                 <div>
                     <h5 className="font-medium mb-2">Resumen</h5>
                     <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
+                            <span>Descuento:</span>
+                            <CurrencyDisplay currency={currency} amount={order.totaldiscounts || 0} />
+                        </div>
+                        <div className="flex justify-between">
                             <span>Subtotal:</span>
                             <CurrencyDisplay currency={currency} amount={order.subtotal || 0} />
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Impuesto:</span>
+                            <CurrencyDisplay currency={currency} amount={order.tax_amount || 0} />
                         </div>
                         {order.shippingRate && (
                             <div className="flex justify-between">
@@ -233,9 +273,40 @@ const OrdersComponent = ({
                         <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
                             <div>
                                 <div className="font-medium">{item.name_product}</div>
+                                <div className="font-medium text-sm">
+                                    {(() => {
+                                        if (!item.product_details) return '';
+
+                                        try {
+                                            const details = typeof item.product_details === 'string'
+                                                ? JSON.parse(item.product_details)
+                                                : item.product_details;
+
+                                            const attributes = details.attributes;
+                                            if (!attributes) return '';
+
+                                            // Limpia el formato " - "
+                                            return attributes.replace(/^\s*-\s*/, '');
+                                        } catch (error) {
+                                            console.error('Error parsing product_details:', error);
+                                            return 'Error al cargar variación';
+                                        }
+                                    })()}
+                                </div>
                                 <div className="text-sm text-gray-600">
                                     Cantidad: {item.quantity} × <CurrencyDisplay currency={currency} amount={item.price_product} />
                                 </div>
+
+                                {item.discount_amount && (
+                                    <div className="text-sm text-green-600">
+                                        Ahorro: {item.quantity} × <CurrencyDisplay currency={currency} amount={item.discount_amount} />
+                                    </div>
+                                )}
+                                {item.tax_amount && (
+                                    <div className="text-sm text-gray-600">
+                                        Impuesto: {item.quantity} × <CurrencyDisplay currency={currency} amount={item.tax_amount} />
+                                    </div>
+                                )}
                             </div>
                             <div className="font-medium">
                                 <CurrencyDisplay currency={currency} amount={item.subtotal} />
@@ -255,34 +326,9 @@ const OrdersComponent = ({
                 className="relative group"
                 {...attributes}
             >
-                {/* Controles del builder */}
-                <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-6 w-6 bg-white border-gray-300"
-                        onClick={() => onEdit(comp)}
-                    >
-                        <Edit size={12} />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-6 w-6 bg-white border-gray-300"
-                        onClick={() => onDelete(comp.id)}
-                    >
-                        <Trash2 size={12} />
-                    </Button>
-                    <div
-                        className="h-6 w-6 bg-white border border-gray-300 rounded flex items-center justify-center cursor-grab"
-                        {...listeners}
-                    >
-                        <GripVertical size={12} />
-                    </div>
-                </div>
 
                 <div
-                    className="min-h-[200px] p-4 border-2 border-dashed border-gray-300 rounded-lg"
+                    className="min-h-[200px] mx-auto"
                     style={componentStyles}
                 >
                     {/* Vista previa en builder */}
@@ -304,7 +350,7 @@ const OrdersComponent = ({
 
     // Vista frontend
     return (
-        <div style={componentStyles} className="space-y-6">
+        <div style={componentStyles} className="space-y-6 mx-auto">
             {/* Contenido principal */}
             {!currentUser ? (
                 <div className="text-center py-12">
@@ -340,7 +386,7 @@ const OrdersComponent = ({
                             <p className="text-gray-600 mt-2">{content.subtitle}</p>
                         )}
                     </div>
-                    
+
                     <div className="space-y-4">
                         {exampleOrders.map((order) => (
                             <div key={order.id}>

@@ -32,6 +32,7 @@ class CheckoutController extends Controller
         DB::beginTransaction();
 
         try {
+            // dd($request->cart_items);
             // Validar datos básicos
             $validator = Validator::make($request->all(), [
                 'cart_items' => 'required|array|min:1',
@@ -41,6 +42,7 @@ class CheckoutController extends Controller
                 'cart_items.*.price' => 'required|numeric|min:0',
                 'cart_items.*.original_price' => 'required|numeric|min:0',
                 'cart_items.*.combination_id' => 'nullable|integer',
+                'cart_items.*.combination_name' => 'nullable|string',
                 'cart_items.*.discount_amount' => 'required|numeric|min:0',
                 'cart_items.*.discount_type' => 'nullable|string',
                 'cart_items.*.tax_rate' => 'required|numeric|min:0',
@@ -275,14 +277,9 @@ class CheckoutController extends Controller
                     'tax_amount' => $item['tax_amount'] ?? ($unitPrice * $item['quantity'] * ($item['tax_rate'] / 100)),
                     'tax_rate' => $item['tax_rate'],
                     'name_product' => $item['product_name'],
-                    'product_details' => json_encode([
-                        'product_name' => $item['product_name'],
-                        'combination_name' => $item['combination_name'] ?? null,
-                        'image' => $item['image'] ?? null,
-                        'sku' => $product->sku ?? null,
-                        'weight' => $product->weight ?? null,
-                        'dimensions' => $product->dimensions ?? null,
-                    ]),
+                    'product_details' => isset($item['combination_name']) && $item['combination_name']
+                        ? '{"attributes":" - ' . $item['combination_name'] . '"}'
+                        : null,
                 ];
 
                 $orderItem = $order->orderItems()->create($orderItemData);
@@ -511,10 +508,10 @@ class CheckoutController extends Controller
             $orderId = $subdomain;
             $subdomain = null;
         }
-        
+
         // Obtener la compañía actual del middleware
         $company = request()->attributes->get('company');
-        
+
         if (!$company) {
             abort(404, 'Compañía no encontrada');
         }
@@ -530,7 +527,7 @@ class CheckoutController extends Controller
         ])
             ->where('company_id', $company->id)
             ->findOrFail($orderId);
-// dd($order);
+        // dd($order);
         // Buscar la página de éxito configurada para esta empresa
         $successPage = \App\Models\Page::where('company_id', $order->company_id)
             ->where('title', 'Orden exitosa')
