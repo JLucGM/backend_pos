@@ -10,7 +10,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
     const [selectedProduct, setSelectedProduct] = useState('');
     const [customUrl, setCustomUrl] = useState('');
     const [isInitialized, setIsInitialized] = useState(false);
-    
+
     const prevEditStylesRef = useRef(editStyles);
     const prevEditContentRef = useRef(editContent);
 
@@ -18,21 +18,23 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
     useEffect(() => {
         // Solo inicializar una vez
         if (isInitialized) return;
-        
+
+        // Asegurarse de que currentUrl sea una cadena
         const currentUrl = editStyles?.buttonUrl || editContent || '';
-        
+        const currentUrlString = String(currentUrl); // Convertir a string seguro
+
         // Inicializar el tipo de enlace
-        if (currentUrl) {
-            if (currentUrl.startsWith('/')) {
+        if (currentUrlString && currentUrlString.trim() !== '') {
+            if (typeof currentUrlString === 'string' && currentUrlString.startsWith('/')) {
                 // Verificar si es una página dinámica
-                const pageSlug = currentUrl.replace('/', '');
+                const pageSlug = currentUrlString.replace('/', '');
                 const page = dynamicPages.find(p => p.slug === pageSlug);
                 if (page) {
                     setLinkType('page');
                     setSelectedPage(page.slug);
                 } else {
                     // Verificar si es un producto
-                    const productMatch = currentUrl.match(/\/detalles-del-producto\?product=(.+)/);
+                    const productMatch = currentUrlString.match(/\/detalles-del-producto\?product=(.+)/);
                     if (productMatch) {
                         const productSlug = productMatch[1];
                         const product = products.find(p => p.slug === productSlug);
@@ -41,23 +43,25 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             setSelectedProduct(product.slug);
                         } else {
                             setLinkType('custom');
-                            setCustomUrl(currentUrl);
+                            setCustomUrl(currentUrlString);
                         }
                     } else {
                         setLinkType('custom');
-                        setCustomUrl(currentUrl);
+                        setCustomUrl(currentUrlString);
                     }
                 }
-            } else if (currentUrl.startsWith('http')) {
+            } else if (typeof currentUrlString === 'string' && currentUrlString.startsWith('http')) {
                 setLinkType('custom');
-                setCustomUrl(currentUrl);
+                setCustomUrl(currentUrlString);
+            } else {
+                setLinkType('none');
             }
         } else {
             setLinkType('none');
         }
-        
+
         setIsInitialized(true);
-        
+
         // Guardar valores iniciales
         prevEditStylesRef.current = editStyles;
         prevEditContentRef.current = editContent;
@@ -68,8 +72,12 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         // Solo actualizar si realmente cambió la URL
         const currentUrl = editStyles?.buttonUrl || editContent || '';
         const prevUrl = prevEditStylesRef.current?.buttonUrl || prevEditContentRef.current || '';
-        
-        if (currentUrl !== prevUrl && currentUrl) {
+
+        // Convertir ambos a strings para comparación
+        const currentUrlString = String(currentUrl);
+        const prevUrlString = String(prevUrl);
+
+        if (currentUrlString !== prevUrlString && currentUrlString.trim() !== '') {
             // Reinicializar con la nueva URL
             setIsInitialized(false);
             setLinkType('none');
@@ -77,7 +85,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             setSelectedProduct('');
             setCustomUrl('');
         }
-        
+
         // Actualizar referencias
         prevEditStylesRef.current = editStyles;
         prevEditContentRef.current = editContent;
@@ -86,9 +94,9 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
     // 3. ACTUALIZAR LA URL cuando cambian los controles
     useEffect(() => {
         if (!isInitialized) return;
-        
+
         let newUrl = '';
-        
+
         switch (linkType) {
             case 'page':
                 if (selectedPage) {
@@ -101,19 +109,21 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                 }
                 break;
             case 'custom':
-                newUrl = customUrl;
+                newUrl = customUrl || '';
                 break;
             case 'none':
                 newUrl = '';
                 break;
         }
-        
+
         // Solo actualizar si realmente cambió
         const currentUrl = editStyles?.buttonUrl || editContent || '';
-        if (newUrl !== currentUrl) {
+        const currentUrlString = String(currentUrl);
+
+        if (newUrl !== currentUrlString) {
             // Guardar la URL en buttonUrl de los estilos
             setEditStyles(prev => ({ ...prev, buttonUrl: newUrl }));
-            
+
             // Si el contenido actual era la misma URL, limpiarlo para mantener solo el texto
             if (editContent === currentUrl) {
                 setEditContent(editStyles?.buttonText || '');
@@ -129,7 +139,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
     const handleTextChange = (value) => {
         // Guardar en buttonText de los estilos
         updateStyle('buttonText', value);
-        
+
         // También actualizar el contenido principal si no es una URL
         const currentUrl = editStyles?.buttonUrl || editContent || '';
         if (editContent && !currentUrl.startsWith('/') && !currentUrl.startsWith('http')) {
@@ -170,7 +180,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             {/* Configuración de enlace */}
             <div className="space-y-4">
                 <h3 className="font-medium">Enlace del Botón</h3>
-                
+
                 <div>
                     <Label htmlFor="linkType">Tipo de Enlace</Label>
                     <Select
@@ -272,21 +282,21 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             className="mt-1"
                         />
                         <p className="text-xs text-gray-500 mt-1">
-                            Ejemplos:<br/>
-                            • Enlace interno: /contacto<br/>
-                            • Enlace externo: https://google.com<br/>
+                            Ejemplos:<br />
+                            • Enlace interno: /contacto<br />
+                            • Enlace externo: https://google.com<br />
                             • Página estática: /inicio
                         </p>
                     </div>
                 )}
 
-                {linkType === 'none' && (
+                {/* {linkType === 'none' && (
                     <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                         <p className="text-sm text-yellow-800">
                             El botón no tendrá enlace. Se usará para acciones como "Agregar al carrito".
                         </p>
                     </div>
-                )}
+                )} */}
             </div>
 
             <Separator className="my-4" />
@@ -294,7 +304,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             {/* Configuración de ancho */}
             <div className="space-y-4">
                 <h3 className="font-medium">Ancho del Botón</h3>
-                
+
                 <div>
                     <Label htmlFor="layout">Tipo de Ancho</Label>
                     <Select
@@ -310,7 +320,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         </SelectContent>
                     </Select>
                     <p className="text-xs text-gray-500 mt-1">
-                        {editStyles.layout === 'fill' 
+                        {editStyles.layout === 'fill'
                             ? 'El botón ocupará todo el ancho disponible'
                             : 'El botón tendrá el ancho según su contenido'}
                     </p>
@@ -322,7 +332,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             {/* Configuración de posición */}
             <div className="space-y-4">
                 <h3 className="font-medium">Posición del Botón</h3>
-                
+
                 <div>
                     <Label htmlFor="align">Alineación</Label>
                     <Select
@@ -339,7 +349,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         </SelectContent>
                     </Select>
                     <p className="text-xs text-gray-500 mt-1">
-                        {editStyles.layout === 'fill' 
+                        {editStyles.layout === 'fill'
                             ? 'La posición afecta la alineación del texto dentro del botón'
                             : 'La posición afecta la alineación del botón dentro de su contenedor'}
                     </p>
