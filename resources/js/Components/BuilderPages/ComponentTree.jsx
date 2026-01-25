@@ -22,10 +22,10 @@ const INDENTATION_WIDTH = 40;
 // Lista de componentes que pueden tener hijos y ser colapsados
 const COLLAPSIBLE_TYPES = [
     'container', 'product', 'carousel', 'banner', 'footer', 'header',
-    'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail','cart', 'checkout','checkoutDiscountGiftCard'
+    'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail','cart', 'checkout','checkoutDiscountGiftCard', 'announcementBar'
 ];
 
-const NO_ADD_BUTTON_TYPES = ['header',  'bentoFeature', 'productCard', 'carouselCard','productDetail'];
+const NO_ADD_BUTTON_TYPES = ['header',  'bentoFeature', 'productCard', 'carouselCard','productDetail', 'announcement'];
 
 // Función para determinar si un componente puede tener hijos
 const canHaveChildren = (type) => {
@@ -72,6 +72,8 @@ const getComponentTypeName = (type) => {
         'footerText': 'Texto Footer',
         'footerMenu': 'Menú Footer',
         'checkoutDiscountGiftCard': 'Descuentos y Gift Cards',
+        'announcementBar': 'Barra de Anuncios',
+        'announcement': 'Anuncio',
     };
     return typeNames[type] || type;
 };
@@ -285,6 +287,11 @@ export default function ComponentTree({
                 return { text: 'Texto en movimiento' }; // Objeto
             case 'divider':
                 return {}; // Objeto vacío
+            case 'announcement':
+                return {
+                    text: 'Nuevo anuncio',
+                    navigationUrl: ''
+                };
             case 'container':
                 // Contenedor con un componente de texto por defecto
                 return [

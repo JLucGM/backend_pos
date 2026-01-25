@@ -75,6 +75,8 @@ import CheckoutDiscountGiftCardEditDialog from './partials/Checkout/CheckoutDisc
 import ProfileEditDialog from './partials/Profile/ProfileEditDialog';
 import OrdersEditDialog from './partials/Orders/OrdersEditDialog';
 import SuccessEditDialog from './partials/Success/SuccessEditDialog';
+import AnnouncementBarEditDialog from './partials/AnnouncementBar/AnnouncementBarEditDialog';
+import AnnouncementEditDialog from './partials/AnnouncementBar/AnnouncementEditDialog';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -133,6 +135,8 @@ const componentDialogMap = {
     profile: ProfileEditDialog,
     orders: OrdersEditDialog,
     success: SuccessEditDialog,
+    announcementBar: AnnouncementBarEditDialog,
+    announcement: AnnouncementEditDialog,
 };
 
 // Componente para renderizar el diálogo apropiado
@@ -145,7 +149,7 @@ const EditDialogRenderer = ({
     themeSettings,
     availableMenus,
     products,
-        dynamicPages, // Agregar esto
+    dynamicPages, // Agregar esto
 }) => {
     if (!editingComponent?.type) return null;
 
@@ -180,6 +184,11 @@ const EditDialogRenderer = ({
     }
 
     if (editingComponent.type === 'button') {
+        additionalProps.dynamicPages = dynamicPages;
+        additionalProps.products = products;
+    }
+
+    if (editingComponent.type === 'announcement') {
         additionalProps.dynamicPages = dynamicPages;
         additionalProps.products = products;
     }
@@ -348,6 +357,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     const found = findComponentType(item.content.children, targetId);
                     if (found) return found;
                 }
+                // Buscar en announcementBar con hijos
+                if (item.type === 'announcementBar' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
             }
             return null;
         };
@@ -375,7 +389,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const typesWithChildren = [
                     'banner', 'product', 'productCard', 'carousel',
                     'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                    'productDetail', 'checkout', 'cart'
+                    'productDetail', 'checkout', 'cart', 'announcementBar'
                 ];
 
                 if (typesWithChildren.includes(item.type) &&
@@ -459,7 +473,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         const typesWithChildren = [
                             'banner', 'product', 'productCard', 'carousel',
                             'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                            'productDetail', 'cart', 'checkout', 'login', 'register'
+                            'productDetail', 'cart', 'checkout', 'login', 'register', 'announcementBar'
                         ];
 
                         if (typesWithChildren.includes(component.type) &&
@@ -673,7 +687,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const footerId = Date.now();
                 const column1Id = footerId + 1;
                 const column2Id = footerId + 2;
-              
+
                 content = {
                     showCopyright: true,
                     copyrightText: '© 2023 Mi Empresa. Todos los derechos reservados.',
@@ -689,7 +703,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         linkedin: ''
                     },
                     children: [
-                                                {
+                        {
                             id: column1Id,
                             type: 'text',
                             content: 'Dirección: Calle Principal 123\nTeléfono: (123) 456-7890\nEmail: info@empresa.com',
@@ -836,6 +850,53 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 content = '¡Texto en movimiento! Personaliza este texto.';
             }
 
+            if (selectedType === 'announcementBar') {
+                const announcementBarId = Date.now();
+                const announcement1Id = announcementBarId + 1;
+
+                content = {
+                    autoplayTime: 5, // 5 segundos por defecto
+                    children: [
+                        {
+                            id: announcement1Id,
+                            type: 'announcement',
+                            content: {
+                                text: 'Nuevo anuncio - Haz clic para editar',
+                                navigationUrl: ''
+                            },
+                            styles: {
+                                fontSize: '14px',
+                                fontWeight: 'normal',
+                                color: '#ffffff',
+                                textTransform: 'none',
+                                fontType: 'default'
+                            }
+                        }
+                    ]
+                };
+
+                const newItem = {
+                    id: announcementBarId,
+                    type: selectedType,
+                    content,
+                    styles: {
+                        backgroundColor: '#000000',
+                        paddingTop: '15px',
+                        paddingBottom: '15px'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+
             if (selectedType === 'carousel') {
                 const carouselId = Date.now();
                 const titleId = carouselId + 1;
@@ -849,7 +910,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     slidesToShow: 3,
                     gapX: '10px',
                     gapY: '10px',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: 'none',
                     children: [
                         {
                             id: titleId,
@@ -2616,6 +2677,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             <SelectContent>
                                 <SelectItem value="header">Header</SelectItem>
                                 <SelectItem value="footer">Footer</SelectItem>
+                                <SelectItem value="announcementBar">Barra de Anuncios</SelectItem>
                                 <SelectItem value="banner">Banner</SelectItem>
                                 <SelectItem value="bento">Bento</SelectItem>
                                 <SelectItem value="product">Productos</SelectItem>

@@ -70,6 +70,12 @@ const ALL_COMPONENT_OPTIONS = [
         label: 'Menú Footer',
         icon: <CubeIcon className="size-4" />,
         description: 'Agregar un menú al footer'
+    },
+    {
+        type: 'announcement',
+        label: 'Anuncio',
+        icon: <TextIcon className="size-4" />,
+        description: 'Agregar un anuncio individual'
     }
 ];
 
@@ -89,6 +95,9 @@ const ALLOWED_CHILD_TYPES = {
     
     // Bento: solo permite bentoFeature
     bento: ['bentoFeature','text'],
+
+    // AnnouncementBar: solo permite announcement
+    announcementBar: ['announcement'],
 
     cart: ['cartItems', 'cartSummary', ],
     

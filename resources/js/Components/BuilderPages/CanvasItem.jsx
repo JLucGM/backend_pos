@@ -52,6 +52,8 @@ import ProductComponent from './Product/ProductComponent';
 import ProfileComponent from './Profile/ProfileComponent';
 import OrdersComponent from './Orders/OrdersComponent';
 import SuccessComponent from './Success/SuccessComponent';
+import AnnouncementBarComponent from './AnnouncementBar/AnnouncementBarComponent';
+import AnnouncementComponent from './AnnouncementBar/AnnouncementComponent';
 
 const CanvasItem = ({
     comp,
@@ -896,6 +898,28 @@ const CanvasItem = ({
                         pageContent={pageContent}
                     />
                 );
+            case 'announcementBar':
+                return (
+                    <AnnouncementBarComponent
+                        {...commonProps}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                    />
+                );
+            case 'announcement':
+                return (
+                    <AnnouncementComponent
+                        {...commonProps}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                    />
+                );
             default:
                 return (
                     <div
@@ -954,6 +978,8 @@ const CanvasItem = ({
             'profile': 'Perfil de Usuario',
             'orders': 'Mis Pedidos',
             'success': 'Página de Éxito',
+            'announcementBar': 'Barra de Anuncios',
+            'announcement': 'Anuncio',
         };
         return typeNames[type] || type;
     };

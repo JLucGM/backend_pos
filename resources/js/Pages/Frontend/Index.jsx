@@ -36,6 +36,7 @@ import CartComponent from '@/Components/BuilderPages/Cart/CartComponent';
 import ProfileComponent from '@/Components/BuilderPages/Profile/ProfileComponent';
 import OrdersComponent from '@/Components/BuilderPages/Orders/OrdersComponent';
 import SuccessComponent from '@/Components/BuilderPages/Success/SuccessComponent';
+import AnnouncementBarComponent from '@/Components/BuilderPages/AnnouncementBar/AnnouncementBarComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -71,6 +72,7 @@ const componentMap = {
     'profile': ProfileComponent, // ← Agregado ProfileComponent
     'orders': OrdersComponent, // ← Agregado OrdersComponent
     'success': SuccessComponent, // ← Agregado SuccessComponent
+'announcementBar': AnnouncementBarComponent,
 };
 
 // ==============================================================
