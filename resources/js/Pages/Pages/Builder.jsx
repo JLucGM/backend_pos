@@ -77,6 +77,7 @@ import OrdersEditDialog from './partials/Orders/OrdersEditDialog';
 import SuccessEditDialog from './partials/Success/SuccessEditDialog';
 import AnnouncementBarEditDialog from './partials/AnnouncementBar/AnnouncementBarEditDialog';
 import AnnouncementEditDialog from './partials/AnnouncementBar/AnnouncementEditDialog';
+import AddComponentDropdown from '@/Components/BuilderPages/AddComponentDropdown';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -502,7 +503,12 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         }
     }, [editContent, editStyles, editingComponent]);
 
-    const handleAddComponent = () => {
+    const handleAddComponent = (selectedType) => {
+        if (!selectedType) {
+            toast.error("Por favor selecciona un tipo de componente");
+            return;
+        }
+
         if (selectedType) {
             let content = 'Nuevo ' + selectedType;
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
@@ -2631,10 +2637,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                             ) : null}
                                         </DragOverlay>
                                     </DndContext>
-                                    <Button onClick={() => setIsAddDialogOpen(true)} className="w-full mt-4" variant="outline">
-                                        <Plus size={16} className="mr-2" />
-                                        Agregar Componente
-                                    </Button>
+                                    <AddComponentDropdown
+                                        onSelect={(selectedType) => {
+                                            handleAddComponent(selectedType);
+                                        }}
+                                    />
                                 </>
                             )}
                         </div>
@@ -2663,7 +2670,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 </>
             )}
 
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            {/* <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
                         <DialogTitle>Agregar Nuevo Componente</DialogTitle>
@@ -2703,7 +2710,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         <Button onClick={handleAddComponent} disabled={!selectedType}>Agregar</Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog>
+            </Dialog> */}
 
             <ThemeCustomizerDialog
                 open={isThemeDialogOpen}

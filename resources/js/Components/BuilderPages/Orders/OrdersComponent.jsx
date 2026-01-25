@@ -84,7 +84,6 @@ const OrdersComponent = ({
                 country_id: '',
                 state_id: '',
                 city_id: '',
-                notes: '',
             }
         },
         {

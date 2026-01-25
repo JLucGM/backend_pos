@@ -155,7 +155,7 @@ export default function ChildComponentOptions({
                     >
                         <span className="flex items-center gap-2">
                             <PlusCircleIcon className="size-4" />
-                            <span>Agregar bloque</span>
+                            <span>Agregar componente</span>
                         </span>
                     </Button>
                 </DropdownMenuTrigger>
