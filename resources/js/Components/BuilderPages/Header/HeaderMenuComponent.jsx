@@ -79,7 +79,7 @@ const HeaderMenuComponent = ({
     // En modo preview, si no hay items, mostrar un placeholder simple
     if (isPreview && menuItems.length === 0) {
         return (
-            <nav style={{ display: 'flex', gap: '20px', padding: '10px' }}>
+            <nav style={{ display: 'flex', gap: '20px', padding: '5px' }}>
                 <span style={{ opacity: 0.5 }}>[Menú]</span>
             </nav>
         );

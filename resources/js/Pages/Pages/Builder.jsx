@@ -4,9 +4,6 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { Head, router } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/Components/ui/dialog';
-import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { toast } from 'sonner';
 import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical, Palette, Dot } from 'lucide-react';
@@ -290,13 +287,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         setEditingComponent(comp);
         setEditContent(comp.content);
         setEditStyles(comp.styles || {});
-    };
-
-    const saveEdit = () => {
-        setEditingComponent(null);
-        setEditContent('');
-        setEditStyles({});
-        toast.success("Cambios aplicados");
     };
 
     const cancelEdit = () => {
@@ -652,6 +642,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 fontType: 'default',
                                 color: '#000000',
                                 buttonBackgroundColor: 'transparent',
+                                backgroundColor: 'transparent',
                                 borderWidth: '0px',
                                 borderColor: '#000000',
                                 borderRadius: '0px',
@@ -2571,7 +2562,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         </Button>
                                     </div>
 
-                                    <ScrollArea className="flex-1">
+                                    <ScrollArea className="flex-1 px-4">
                                         <EditDialogRenderer
                                             editingComponent={editingComponent}
                                             editContent={editContent}

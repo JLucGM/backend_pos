@@ -9,6 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
 
+// Importar los componentes de botones
+import CartButtonEditor from './CartButtonEditor';
+import SearchButtonEditor from './SearchButtonEditor';
+import ProfileButtonEditor from './ProfileButtonEditor';
+
 const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
@@ -40,14 +45,16 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         });
     };
 
-    const updateButtonStyle = (buttonName, styleKey, value) => {
+    const updateButtonConfig = (buttonName, newConfig) => {
         setEditContent(prev => {
             const newContent = { ...prev };
             if (!newContent.buttons) newContent.buttons = {};
             if (!newContent.buttons[buttonName]) newContent.buttons[buttonName] = {};
-            if (!newContent.buttons[buttonName].styles) newContent.buttons[buttonName].styles = {};
-
-            newContent.buttons[buttonName].styles[styleKey] = value;
+            
+            newContent.buttons[buttonName] = {
+                ...newContent.buttons[buttonName],
+                ...newConfig
+            };
             return newContent;
         });
     };
@@ -69,181 +76,11 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         return "";
     };
 
-    // Componente para editar estilos de un botón específico
-    const ButtonStyleEditor = ({ buttonName, buttonLabel }) => {
-        const buttonConfig = editContent?.buttons?.[buttonName] || {};
-        const buttonStyles = buttonConfig.styles || {};
-
-        return (
-            <div className="space-y-2 p-4 border rounded-lg">
-                <h4 className="font-medium text-sm">{buttonLabel}</h4>
-
-                {/* Color del icono */}
-                <div>
-                    <Label htmlFor={`${buttonName}-iconColor`} className="text-xs">Color del icono</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id={`${buttonName}-iconColor`}
-                            value={buttonStyles.iconColor || '#000000'}
-                            onChange={(e) => updateButtonStyle(buttonName, 'iconColor', e.target.value)}
-                            className="flex-1 h-8 text-xs"
-                        />
-                        <Input
-                            type="color"
-                            value={buttonStyles.iconColor || '#000000'}
-                            onChange={(e) => updateButtonStyle(buttonName, 'iconColor', e.target.value)}
-                            className="w-8 h-8"
-                        />
-                    </div>
-                </div>
-
-                {/* Color de fondo */}
-                <div>
-                    <Label htmlFor={`${buttonName}-backgroundColor`} className="text-xs">Color de fondo</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id={`${buttonName}-backgroundColor`}
-                            value={buttonStyles.backgroundColor || '#000000'}
-                            onChange={(e) => updateButtonStyle(buttonName, 'backgroundColor', e.target.value)}
-                            className="flex-1 h-8 text-xs"
-                        />
-                        <Input
-                            type="color"
-                            value={buttonStyles.backgroundColor || '#000000'}
-                            onChange={(e) => updateButtonStyle(buttonName, 'backgroundColor', e.target.value)}
-                            className="w-8 h-8"
-                        />
-                    </div>
-                </div>
-
-                {/* Opacidad del fondo */}
-                <div>
-                    <Label htmlFor={`${buttonName}-backgroundOpacity`} className="text-xs">Opacidad del fondo (0-1)</Label>
-                    <Input
-                        id={`${buttonName}-backgroundOpacity`}
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="1"
-                        value={buttonStyles.backgroundOpacity || '1'}
-                        onChange={(e) => updateButtonStyle(buttonName, 'backgroundOpacity', e.target.value)}
-                        className="h-8 text-xs"
-                    />
-                </div>
-
-                <Separator />
-
-                {/* Configuración del borde */}
-                <div className="grid grid-cols-1 gap-2">
-                    <div>
-                        <Label htmlFor={`${buttonName}-borderWidth`} className="text-xs">Ancho borde</Label>
-                        <Input
-                            id={`${buttonName}-borderWidth`}
-                            type="number"
-                            value={parseInt(buttonStyles.borderWidth) || 0}
-                            onChange={(e) => updateButtonStyle(buttonName, 'borderWidth', `${e.target.value}px`)}
-                            className="h-8 text-xs"
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor={`${buttonName}-borderColor`} className="text-xs">Color borde</Label>
-                        <Input
-                            type="color"
-                            value={buttonStyles.borderColor || '#000000'}
-                            onChange={(e) => updateButtonStyle(buttonName, 'borderColor', e.target.value)}
-                            className="h-8 w-full"
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor={`${buttonName}-borderOpacity`} className="text-xs">Opac. borde</Label>
-                        <Input
-                            id={`${buttonName}-borderOpacity`}
-                            type="number"
-                            step="0.1"
-                            min="0"
-                            max="1"
-                            value={buttonStyles.borderOpacity || '1'}
-                            onChange={(e) => updateButtonStyle(buttonName, 'borderOpacity', e.target.value)}
-                            className="h-8 text-xs"
-                        />
-                    </div>
-                </div>
-
-                {/* Radio de borde */}
-                <div>
-                    <Label htmlFor={`${buttonName}-borderRadius`} className="text-xs">Radio de borde (px)</Label>
-                    <Input
-                        id={`${buttonName}-borderRadius`}
-                        type="number"
-                        value={parseInt(buttonStyles.borderRadius) || 50}
-                        onChange={(e) => updateButtonStyle(buttonName, 'borderRadius', `${e.target.value}px`)}
-                        className="h-8 text-xs"
-                    />
-                </div>
-
-                <Separator />
-
-                {/* Tamaño */}
-                <div className="grid grid-cols-3 gap-2">
-                    <div>
-                        <Label htmlFor={`${buttonName}-width`} className="text-xs">Ancho (px)</Label>
-                        <Input
-                            id={`${buttonName}-width`}
-                            type="number"
-                            value={parseInt(buttonStyles.width) || 36}
-                            onChange={(e) => updateButtonStyle(buttonName, 'width', `${e.target.value}px`)}
-                            className="h-8 text-xs"
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor={`${buttonName}-height`} className="text-xs">Alto (px)</Label>
-                        <Input
-                            id={`${buttonName}-height`}
-                            type="number"
-                            value={parseInt(buttonStyles.height) || 36}
-                            onChange={(e) => updateButtonStyle(buttonName, 'height', `${e.target.value}px`)}
-                            className="h-8 text-xs"
-                        />
-                    </div>
-
-                    <div>
-                        <Label htmlFor={`${buttonName}-padding`} className="text-xs">Padding (px)</Label>
-                        <Input
-                            id={`${buttonName}-padding`}
-                            type="number"
-                            value={parseInt(buttonStyles.padding) || 8}
-                            onChange={(e) => updateButtonStyle(buttonName, 'padding', `${e.target.value}px`)}
-                            className="h-8 text-xs"
-                        />
-                    </div>
-                </div>
-
-                {/* Para el carrito, mostrar contador */}
-                {buttonName === 'cart' && (
-                    <div>
-                        <Label htmlFor="cartCount" className="text-xs">Contador del carrito</Label>
-                        <Input
-                            id="cartCount"
-                            value={editContent?.buttons?.cart?.count || '0'}
-                            onChange={(e) => updateNestedContent(['buttons', 'cart'], 'count', e.target.value)}
-                            className="h-8 text-xs"
-                            placeholder="Dejar vacío para ocultar"
-                        />
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     return (
         <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid grid-cols-3 mb-4">
+            <TabsList className="grid grid-cols-2 mb-4">
                 <TabsTrigger value="general">General</TabsTrigger>
                 <TabsTrigger value="buttons">Botones</TabsTrigger>
-                <TabsTrigger value="styles">Estilos</TabsTrigger>
             </TabsList>
 
             <TabsContent value="general" className="space-y-4">
@@ -304,43 +141,6 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         onChange={(e) => updateContent('height', `${e.target.value}px`)}
                     />
                 </div>
-            </TabsContent>
-
-            <TabsContent value="buttons" className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <Label htmlFor="showSearch">Mostrar botón de búsqueda</Label>
-                    <Switch
-                        id="showSearch"
-                        checked={editContent?.buttons?.showSearch !== false}
-                        onCheckedChange={(checked) => updateNestedContent(['buttons'], 'showSearch', checked)}
-                    />
-                </div>
-
-                <div>
-                    <Label htmlFor="buttonsGap">Espaciado entre botones (px)</Label>
-                    <Input
-                        id="buttonsGap"
-                        type="number"
-                        value={parseInt(editContent?.buttons?.buttonsGap) || 10}
-                        onChange={(e) => updateNestedContent(['buttons'], 'buttonsGap', `${e.target.value}px`)}
-                    />
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                    <h4 className="font-medium">Personalización de botones</h4>
-
-                    <div className="grid grid-cols-1 gap-4">
-                        <ButtonStyleEditor buttonName="cart" buttonLabel="Carrito" />
-                        <ButtonStyleEditor buttonName="search" buttonLabel="Buscador" />
-                        <ButtonStyleEditor buttonName="profile" buttonLabel="Perfil" />
-                    </div>
-                </div>
-            </TabsContent>
-
-            <TabsContent value="styles" className="space-y-4">
-                <h4 className="font-medium mb-3">Estilos del Header</h4>
 
                 <div>
                     <Label htmlFor="backgroundColor">Color de Fondo</Label>
@@ -388,6 +188,53 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         value={editStyles.borderBottom || '1px solid #e5e7eb'}
                         onChange={(e) => updateStyle('borderBottom', e.target.value)}
                     />
+                </div>
+            </TabsContent>
+
+            <TabsContent value="buttons" className="space-y-6">
+                {/* <div className="flex items-center justify-between">
+                    <Label htmlFor="showSearch">Mostrar botón de búsqueda</Label>
+                    <Switch
+                        id="showSearch"
+                        checked={editContent?.buttons?.showSearch !== false}
+                        onCheckedChange={(checked) => updateNestedContent(['buttons'], 'showSearch', checked)}
+                    />
+                </div> */}
+
+                <div>
+                    <Label htmlFor="buttonsGap">Espaciado entre botones (px)</Label>
+                    <Input
+                        id="buttonsGap"
+                        type="number"
+                        value={parseInt(editContent?.buttons?.buttonsGap) || 10}
+                        onChange={(e) => updateNestedContent(['buttons'], 'buttonsGap', `${e.target.value}px`)}
+                    />
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                    <h4 className="font-medium">Personalización de botones</h4>
+
+                    <div className="grid grid-cols-1 gap-4">
+                        <CartButtonEditor
+                            buttonConfig={editContent?.buttons?.cart || {}}
+                            onUpdate={(newConfig) => updateButtonConfig('cart', newConfig)}
+                        />
+                        <Separator className='my-4' />
+                        <SearchButtonEditor
+                            buttonConfig={editContent?.buttons?.search || {}}
+                            showSearch={editContent?.buttons?.showSearch}
+                            onUpdate={(newConfig) => updateButtonConfig('search', newConfig)}
+                            onUpdateShowSearch={(value) => updateNestedContent(['buttons'], 'showSearch', value)}
+                        />
+                        
+                        <Separator className='my-4' />
+                        <ProfileButtonEditor
+                            buttonConfig={editContent?.buttons?.profile || {}}
+                            onUpdate={(newConfig) => updateButtonConfig('profile', newConfig)}
+                        />
+                    </div>
                 </div>
             </TabsContent>
         </Tabs>
