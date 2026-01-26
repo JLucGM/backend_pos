@@ -2,11 +2,18 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Input } from '@/Components/ui/input'; // Asumo que esto es para el input de tipo 'file'
+import { Input } from '@/Components/ui/input';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import SubscriptionPlanCard from '@/Components/SubscriptionPlanCard';
+import BillingCycleSelector from '@/Components/BillingCycleSelector';
 
-export default function Register() {
+export default function Register({ subscriptionPlans = [] }) {
+    const [selectedPlan, setSelectedPlan] = useState(null);
+    const [showPlans, setShowPlans] = useState(false);
     // 1. Añadir los campos de la empresa al estado de useForm
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '', // Nombre del usuario
@@ -18,8 +25,16 @@ export default function Register() {
         company_name: '',
         company_phone: '',
         company_address: '',
+        // Campo de suscripción
+        selected_plan_id: null,
+        billing_cycle: 'monthly',
         // company_slug: '', // Opcional, si lo vas a usar para subdominios
     });
+
+    const handlePlanSelection = (plan) => {
+        setSelectedPlan(plan);
+        setData('selected_plan_id', plan.id);
+    };
 
     const submit = (e) => {
         e.preventDefault();
@@ -178,7 +193,82 @@ export default function Register() {
                     <InputError message={errors.company_address} className="mt-2" />
                 </div>
 
-                {/* Opcional: Slug de la Empresa (si se va a ingresar manualmente) */}
+                {/* Sección de Selección de Plan */}
+                <div className="mt-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-semibold">Selecciona tu Plan</h2>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowPlans(!showPlans)}
+                        >
+                            {showPlans ? 'Ocultar Planes' : 'Ver Planes'}
+                        </Button>
+                    </div>
+
+                    {!selectedPlan && (
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                            <p className="text-sm text-blue-800">
+                                Puedes registrarte sin seleccionar un plan y comenzar con una prueba gratuita de 14 días.
+                                También puedes elegir un plan ahora y pagar directamente.
+                            </p>
+                        </div>
+                    )}
+
+                    {selectedPlan && (
+                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="font-semibold text-green-800">Plan Seleccionado: {selectedPlan.name}</h3>
+                                    <p className="text-sm text-green-600">
+                                        {selectedPlan.is_trial ? 'Gratis' : 
+                                         new Intl.NumberFormat('en-US', {
+                                            style: 'currency',
+                                            currency: selectedPlan.currency,
+                                         }).format(data.billing_cycle === 'yearly' && selectedPlan.yearly_price ? selectedPlan.yearly_price : selectedPlan.price)
+                                        } {!selectedPlan.is_trial && `/ ${data.billing_cycle === 'yearly' ? 'año' : 'mes'}`}
+                                    </p>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        setSelectedPlan(null);
+                                        setData('selected_plan_id', null);
+                                    }}
+                                >
+                                    Cambiar
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showPlans && subscriptionPlans.length > 0 && (
+                        <div className="space-y-4 mb-6">
+                            {/* Selector de ciclo de facturación */}
+                            <BillingCycleSelector 
+                                billingCycle={data.billing_cycle}
+                                onCycleChange={(cycle) => setData('billing_cycle', cycle)}
+                            />
+
+                            {/* Planes */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {subscriptionPlans.filter(plan => plan.is_active).map((plan) => (
+                                    <SubscriptionPlanCard
+                                        key={plan.id}
+                                        plan={plan}
+                                        billingCycle={data.billing_cycle}
+                                        isSelected={selectedPlan?.id === plan.id}
+                                        onSelect={handlePlanSelection}
+                                        showSelectButton={false}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
                 {/* Si generas el slug automáticamente en el backend, no necesitas este campo aquí */}
                 {/* <div className="mt-4">
                     <InputLabel htmlFor="company_slug" value="URL de la Empresa (ej. mi-empresa)" />

@@ -64,6 +64,9 @@ class DashboardController extends Controller
             return $product->stocks->sum('quantity') < "5"; // Cambia 'quantity' por el nombre del campo que almacena la cantidad en stock
         })->values(); // Asegúrate de que sea un array
 
+        // Obtener información de suscripción
+        $company = $userAuth->company;
+        $currentSubscription = $company->currentSubscription ? $company->currentSubscription->load('plan') : null;
 
         // dd($lowStockProducts);
         return Inertia::render(
@@ -79,6 +82,8 @@ class DashboardController extends Controller
                 'totalTodayOrdersAmount' => $totalTodayOrdersAmount,
                 'role' => $role,
                 'permission' => $permission,
+                'company' => $company,
+                'currentSubscription' => $currentSubscription,
             ]
         );
     }

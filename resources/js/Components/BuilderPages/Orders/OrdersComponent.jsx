@@ -371,9 +371,26 @@ const OrdersComponent = ({
                     <p className="text-gray-600 mb-6">
                         {content.emptyMessage || 'Cuando realices tu primer pedido, aparecerá aquí.'}
                     </p>
-                    <Button>
-                        {content.shopButtonText || 'Explorar Productos'}
-                    </Button>
+                    {/* Verificar si puede crear órdenes */}
+                    {companyId && !window.canCreateOrders ? (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
+                            <h3 className="text-lg font-semibold text-yellow-900 mb-2">
+                                Funcionalidad Limitada
+                            </h3>
+                            <p className="text-yellow-800 mb-4">
+                                Estás en período de prueba. Para crear pedidos necesitas una suscripción activa.
+                            </p>
+                            <Button asChild>
+                                <a href="/dashboard/subscriptions">
+                                    Ver Planes de Suscripción
+                                </a>
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button>
+                            {content.shopButtonText || 'Explorar Productos'}
+                        </Button>
+                    )}
                 </div>
             ) : (
                 <div className="space-y-4">

@@ -17,6 +17,16 @@ class Company extends Model
         'phone', 
         'address',
         'email',
+        'current_subscription_id',
+        'is_trial',
+        'trial_ends_at',
+        'subscription_limits',
+    ];
+
+    protected $casts = [
+        'is_trial' => 'boolean',
+        'trial_ends_at' => 'datetime',
+        'subscription_limits' => 'array',
     ];
 
     public function getRouteKeyName()
@@ -75,5 +85,68 @@ class Company extends Model
     public function discounts()
     {
         return $this->hasMany(Discount::class);
+    }
+
+    // Relaciones de suscripción
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function currentSubscription()
+    {
+        return $this->belongsTo(Subscription::class, 'current_subscription_id');
+    }
+
+    public function subscriptionPayments()
+    {
+        return $this->hasMany(SubscriptionPayment::class);
+    }
+
+    // Métodos de suscripción
+    public function hasActiveSubscription()
+    {
+        return $this->currentSubscription && $this->currentSubscription->isActive();
+    }
+
+    public function onTrial()
+    {
+        return $this->is_trial && $this->trial_ends_at && $this->trial_ends_at > now();
+    }
+
+    public function trialExpired()
+    {
+        return $this->is_trial && $this->trial_ends_at && $this->trial_ends_at < now();
+    }
+
+    public function canCreateOrders()
+    {
+        // Si tiene suscripción activa, puede crear órdenes
+        if ($this->hasActiveSubscription()) {
+            return true;
+        }
+
+        // Si está en período de prueba, no puede crear órdenes
+        if ($this->onTrial()) {
+            return false;
+        }
+
+        return false;
+    }
+
+    public function getSubscriptionLimit($key)
+    {
+        if ($this->hasActiveSubscription()) {
+            return $this->currentSubscription->plan->getLimit($key);
+        }
+
+        // Límites para período de prueba
+        $trialLimits = [
+            'orders' => 0,
+            'products' => 10,
+            'users' => 1,
+        ];
+
+        return $trialLimits[$key] ?? null;
     }
 }

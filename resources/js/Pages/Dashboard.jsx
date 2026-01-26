@@ -7,8 +7,9 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Badge } from "@/Components/ui/badge"
 import SummaryCard from '@/Components/SummaryCard';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import SubscriptionStatus from '@/Components/SubscriptionStatus';
 
-export default function Dashboard({ user, usersCount, orders, ordersCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod }) {
+export default function Dashboard({ user, usersCount, orders, ordersCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod, company, currentSubscription }) {
     const userAuth = usePage().props.auth.user;
     const settings = usePage().props.settings;
 
@@ -50,6 +51,9 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
             <Head title="Dashboard" />
 
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+                {/* Estado de Suscripción */}
+                <SubscriptionStatus company={company} currentSubscription={currentSubscription} />
+
                 {/* Debug temporal - remover después */}
                 {process.env.NODE_ENV === 'development' && (
                     <div className="p-2 bg-yellow-100 border rounded text-xs">

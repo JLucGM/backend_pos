@@ -7,6 +7,8 @@ import {
   ChartColumnBigIcon,
   Cog,
   Command,
+  CreditCard,
+  Crown,
   Frame,
   GalleryVerticalEnd,
   HomeIcon,
@@ -39,6 +41,9 @@ export function AppSidebar({
   ...props
 }) {
   const user = usePage().props.auth.user;
+  const userRoles = user.roles || [];
+  const isSuperAdmin = userRoles.some(role => role.name === 'super admin');
+  
   // This is sample data.d
   const data = {
     user: {
@@ -157,6 +162,21 @@ export function AppSidebar({
           },
         ],
       },
+      {
+        title: "Suscripciones",
+        url: "#",
+        icon: CreditCard,
+        items: [
+          {
+            title: "Mi Suscripción",
+            url: "subscriptions.index",
+          },
+          {
+            title: "Historial de Pagos",
+            url: "subscriptions.payments",
+          },
+        ],
+      },
       // {
       //   title: "Settings",
       //   url: "#",
@@ -199,6 +219,30 @@ export function AppSidebar({
       },
     ],
   }
+
+  // Agregar sección de administración solo para super admins
+  if (isSuperAdmin) {
+    data.navMain.push({
+      title: "Administración",
+      url: "#",
+      icon: Crown,
+      items: [
+        {
+          title: "Dashboard Suscripciones",
+          url: "admin.subscriptions.index",
+        },
+        {
+          title: "Crear Suscripción",
+          url: "admin.subscriptions.create",
+        },
+        {
+          title: "Analytics",
+          url: "admin.subscriptions.analytics",
+        },
+      ],
+    });
+  }
+
   const datasingle = {
     navMain: [
       {

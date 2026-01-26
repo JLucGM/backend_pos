@@ -22,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'backend.company' => \App\Http\Middleware\SetBackendCompany::class,
             'client' => \App\Http\Middleware\EnsureUserIsClient::class,
             'frontend.guest' => \App\Http\Middleware\RedirectIfFrontendAuthenticated::class,
+            'subscription' => \App\Http\Middleware\CheckSubscription::class,
+            'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middlewares\RoleOrPermissionMiddleware::class,
+            'super.admin' => \App\Http\Middleware\CheckSuperAdmin::class,
         ]);
         //
     })

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
         $this->call(CompaniesSeeder::class);
         $this->call(RolesSeeder::class);
+        $this->call(SubscriptionPlanSeeder::class);
         $this->call(CurrencySeeder::class);
         $this->call(CategorySeeder::class);
         $this->call(TaxesSeeder::class);

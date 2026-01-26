@@ -26,10 +26,9 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingRateController;
 use App\Http\Controllers\StatesController;
 use App\Http\Controllers\StockController;
-use App\Http\Controllers\StoreController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UserController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -250,25 +249,25 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     // Route::delete('stores/{store}', [StoreController::class, 'destroy'])->name('stores.destroy');
 
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('products/create', [ProductController::class, 'create'])->middleware('subscription:products.create')->name('products.create');
+    Route::post('products', [ProductController::class, 'store'])->middleware('subscription:products.create')->name('products.store');
     Route::get('products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::post('products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::delete('/dashboard/products/{product}/images/{imageId}', [ProductController::class, 'destroyImage'])->name('products.images.destroy');
-    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
+    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->middleware('subscription:products.create')->name('products.duplicate');
 
     Route::get('stocks', [StockController::class, 'index'])->name('stocks.index');
     Route::get('stocks/create', [StockController::class, 'create'])->name('stocks.create');
     Route::post('stocks', [StockController::class, 'store'])->name('stocks.store');
     Route::put('stocks/{stock}', [StockController::class, 'update'])->name('stocks.update');
 
-    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
-    Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('orders/{orders}/edit', [OrderController::class, 'edit'])->name('orders.edit');
-    Route::post('orders/{orders}', [OrderController::class, 'update'])->name('orders.update');
-    Route::delete('orders/{orders}', [OrderController::class, 'destroy'])->name('orders.destroy');
+    Route::get('orders', [OrderController::class, 'index'])->middleware('subscription:orders.view')->name('orders.index');
+    Route::get('orders/create', [OrderController::class, 'create'])->middleware('subscription:orders.create')->name('orders.create');
+    Route::post('orders', [OrderController::class, 'store'])->middleware('subscription:orders.create')->name('orders.store');
+    Route::get('orders/{orders}/edit', [OrderController::class, 'edit'])->middleware('subscription:orders.edit')->name('orders.edit');
+    Route::post('orders/{orders}', [OrderController::class, 'update'])->middleware('subscription:orders.edit')->name('orders.update');
+    Route::delete('orders/{orders}', [OrderController::class, 'destroy'])->middleware('subscription:orders.delete')->name('orders.destroy');
 
     Route::get('discounts', [DiscountController::class, 'index'])->name('discounts.index');
     Route::get('discounts/create', [DiscountController::class, 'create'])->name('discounts.create');
@@ -325,7 +324,32 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
 
     Route::post('/refunds', [RefundController::class, 'store'])->name('refunds.store');
     Route::post('/orders/{order}/status', [OrderController::class, 'changeStatus'])->name('orders.changeStatus');
+
+    // Rutas de suscripciones
+    Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+        Route::get('/', [SubscriptionController::class, 'index'])->name('index');
+        Route::post('/select-plan/{plan}', [SubscriptionController::class, 'selectPlan'])->name('select-plan');
+        Route::get('/payment/{subscription}', [SubscriptionController::class, 'payment'])->name('payment');
+        Route::post('/payment/{subscription}', [SubscriptionController::class, 'processPayment'])->name('process-payment');
+        Route::get('/payment/{payment}/success', [SubscriptionController::class, 'paymentSuccess'])->name('payment.success');
+        Route::get('/payment/{payment}/pending', [SubscriptionController::class, 'paymentPending'])->name('payment.pending');
+        Route::get('/payments', [SubscriptionController::class, 'payments'])->name('payments');
+        Route::post('/cancel/{subscription}', [SubscriptionController::class, 'cancel'])->name('cancel');
+    });
+
+    // Rutas de administración de suscripciones (solo super admin)
+    Route::prefix('admin/subscriptions')->name('admin.subscriptions.')->middleware('super.admin')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'store'])->name('store');
+        Route::get('/analytics', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'analytics'])->name('analytics');
+        Route::get('/{subscription}', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'show'])->name('show');
+        Route::post('/{subscription}/update-status', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'updateStatus'])->name('update-status');
+        Route::post('/payment/{payment}/approve', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'approvePayment'])->name('approve-payment');
+        Route::post('/payment/{payment}/reject', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'rejectPayment'])->name('reject-payment');
+    });
 });
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
