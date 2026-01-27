@@ -18,7 +18,7 @@ export default function Edit({ menu, menuItems, dynamicPages }) {
         // Enviamos el array plano (con id, parent_id, order) a MenusForm para que buildTree lo procese
         items: menuItems || [], 
     };
-
+console.log(menu, menuItems)
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {

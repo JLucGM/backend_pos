@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
-use App\Models\Role;
 use App\Models\Setting;
 use App\Models\SubscriptionPlan;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Services\DefaultMenuService; // <-- Agregar esta línea
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +18,7 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class RegisteredUserController extends Controller
 {
@@ -56,48 +57,59 @@ class RegisteredUserController extends Controller
             'billing_cycle' => 'nullable|in:monthly,yearly',
         ]);
 
-        // Creación del usuario
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'is_active' => 1,
-        ]);
+        // Usar transacción para asegurar consistencia
+        DB::transaction(function () use ($request) {
+            // Creación del usuario
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'is_active' => 1,
+            ]);
 
-        // Guardar avatar si se ha subido
-        if ($request->hasFile('avatar')) {
-            $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
-        }
+            // Guardar avatar si se ha subido
+            if ($request->hasFile('avatar')) {
+                $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
+            }
 
-        // Crear la empresa con configuración de prueba por defecto
-        $company = Company::create([
-            'name' => $request->company_name,
-            'phone' => $request->company_phone,
-            'address' => $request->company_address,
-            'email' => $request->email,
-            'is_trial' => true,
-            'trial_ends_at' => Carbon::now()->addDays(14), // 14 días de prueba
-        ]);
+            // Crear la empresa con configuración de prueba por defecto
+            $company = Company::create([
+                'name' => $request->company_name,
+                'phone' => $request->company_phone,
+                'address' => $request->company_address,
+                'email' => $request->email,
+                'is_trial' => true,
+                'trial_ends_at' => Carbon::now()->addDays(14), // 14 días de prueba
+            ]);
 
-        // Crear configuración por defecto
-        Setting::create([
-            'company_id' => $company->id,
-            'default_currency' => 'USD',
-        ]);
+            // Crear configuración por defecto
+            Setting::create([
+                'company_id' => $company->id,
+                'default_currency' => 'USD',
+            ]);
 
-        // Asociar la empresa al usuario
-        $user->company()->associate($company);
-        $user->save();
+            // Crear menú por defecto (exactamente como tu ejemplo)
+            DefaultMenuService::createForCompany($company);
 
-        // Asignar rol de admin
-        $user->assignRole('admin');
+            // Asociar la empresa al usuario
+            $user->company()->associate($company);
+            $user->save();
+
+            // Asignar rol de admin
+            $user->assignRole('admin');
+        });
+
+        // Obtener el usuario creado para login y eventos
+        $user = User::where('email', $request->email)->first();
 
         // Manejar suscripción si se seleccionó un plan
         if ($request->selected_plan_id) {
             $plan = SubscriptionPlan::find($request->selected_plan_id);
             $billingCycle = $request->billing_cycle ?? 'monthly';
-            
+
             if ($plan) {
+                $company = $user->company;
+
                 // Si es un plan de prueba, activarlo inmediatamente
                 if ($plan->is_trial) {
                     $subscription = Subscription::create([
@@ -119,7 +131,7 @@ class RegisteredUserController extends Controller
                 } else {
                     // Para planes de pago, crear suscripción inactiva y redirigir a pago
                     $amount = $plan->getPriceForCycle($billingCycle);
-                    
+
                     $subscription = Subscription::create([
                         'company_id' => $company->id,
                         'subscription_plan_id' => $plan->id,

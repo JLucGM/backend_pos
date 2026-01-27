@@ -57,9 +57,9 @@ class MenuController extends RoutingController
         // Asumiendo que el modelo es App\Models\Page
         // Solo necesitamos el slug (para la URL) y el título/nombre (para el select).
         return Page::select('title', 'slug')
-                   ->where('is_published', true) // Solo páginas publicadas
-                   ->orderBy('title')
-                   ->get();
+            ->where('is_published', true) // Solo páginas publicadas
+            ->orderBy('title')
+            ->get();
     }
 
     /**
@@ -70,11 +70,11 @@ class MenuController extends RoutingController
         // $pages = Page::all();
         // dd($pages);
 
-return Inertia::render('Menus/Create', [
+        return Inertia::render('Menus/Create', [
             // Añadimos la lista de páginas dinámicas
             'dynamicPages' => $this->getDynamicPages(),
         ]);
-        }
+    }
 
     /**
      * Almacena un nuevo recurso de menú.
@@ -85,15 +85,15 @@ return Inertia::render('Menus/Create', [
         $request->validate([
             'name' => 'required|string|max:255',
             'items' => 'nullable|array',
-            'items.*.id' => 'nullable', 
-            'items.*.title' => 'required_with:items|string|max:255', 
-            'items.*.url' => 'required_with:items|string|max:255', 
-            'items.*.children' => 'nullable|array', 
+            'items.*.id' => 'nullable',
+            'items.*.title' => 'required_with:items|string|max:255',
+            'items.*.url' => 'required_with:items|string|max:255',
+            'items.*.children' => 'nullable|array',
         ]);
 
         try {
             DB::transaction(function () use ($request) {
-                
+
                 // 2. CREAR EL MENÚ PRINCIPAL
                 $menu = Menu::create([
                     'name' => $request->input('name'),
@@ -108,7 +108,6 @@ return Inertia::render('Menus/Create', [
 
             session()->flash('success', 'Menú creado exitosamente.');
             return to_route('menus.index');
-
         } catch (\Exception $e) {
             \Log::error("Error al crear el menú: " . $e->getMessage());
             return back()->withErrors(['error' => 'Error interno del servidor al guardar el menú.']);
@@ -118,7 +117,7 @@ return Inertia::render('Menus/Create', [
     private function saveMenuItemsRecursively(array $items, int $menuId, $parentId = null): void
     {
         foreach ($items as $index => $itemData) {
-            
+
             // 1. Crear el ítem actual
             $item = MenuItem::create([
                 'menu_id'   => $menuId,
@@ -151,17 +150,17 @@ return Inertia::render('Menus/Create', [
         // 2. Cargar TODOS los ítems de forma PLANA.
         // Incluir 'id', 'parent_id' y 'order' es CRUCIAL para que React reconstruya el árbol.
         $menuItems = MenuItem::where('menu_id', $menu->id)
-                             ->get()
-                             ->map(function ($item) {
-                                 return [
-                                     'id' => $item->id,
-                                     'title' => $item->title,
-                                     'url' => $item->url,
-                                     'parent_id' => $item->parent_id, // 🚨 CLAVE AÑADIDA
-                                     'order' => $item->order,         // 🚨 CLAVE AÑADIDA
-                                 ];
-                             })->toArray(); 
-
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'title' => $item->title,
+                    'url' => $item->url,
+                    'parent_id' => $item->parent_id, // 🚨 CLAVE AÑADIDA
+                    'order' => $item->order,         // 🚨 CLAVE AÑADIDA
+                ];
+            })->toArray();
+// dd($menu);
         return Inertia::render('Menus/Edit', [
             'menu' => $menu->only('id', 'name'),
             'menuItems' => $menuItems, // Array plano enviado a React
@@ -174,35 +173,34 @@ return Inertia::render('Menus/Create', [
         if ($menu->company_id !== Auth::user()->company_id) {
             abort(403, 'Acceso no autorizado.');
         }
-        
+
         // 1. VALIDACIÓN
         $request->validate([
             'name' => 'required|string|max:255',
             'items' => 'nullable|array',
             'items.*.id' => 'nullable|integer', // Permite IDs de DB (integer) o null (nuevo)
-            'items.*.title' => 'required_with:items|string|max:255', 
-            'items.*.url' => 'required_with:items|string|max:255', 
-            'items.*.children' => 'nullable|array', 
+            'items.*.title' => 'required_with:items|string|max:255',
+            'items.*.url' => 'required_with:items|string|max:255',
+            'items.*.children' => 'nullable|array',
         ]);
 
         try {
             DB::transaction(function () use ($request, $menu) {
-                
+
                 // 2. Actualizar el nombre del menú
                 $menu->update(['name' => $request->input('name')]);
 
                 // 3. Sincronizar (Crear/Actualizar) los ítems y obtener los IDs reales enviados
                 $submittedItemIds = $this->syncMenuItemsRecursively($request->input('items', []), $menu->id);
-                
+
                 // 4. Eliminar ítems que NO fueron incluidos en el request (fueron borrados en el frontend)
                 MenuItem::where('menu_id', $menu->id)
-                        ->whereNotIn('id', $submittedItemIds)
-                        ->delete();
+                    ->whereNotIn('id', $submittedItemIds)
+                    ->delete();
             });
 
             session()->flash('success', 'Menú actualizado exitosamente.');
             return to_route('menus.index');
-
         } catch (\Exception $e) {
             \Log::error("Error al actualizar el menú: " . $e->getMessage());
             return back()->withErrors(['error' => 'Error interno del servidor al guardar el menú.']);
@@ -221,9 +219,9 @@ return Inertia::render('Menus/Create', [
     private function syncMenuItemsRecursively(array $items, int $menuId, $parentId = null, array &$submittedIds = []): array
     {
         foreach ($items as $index => $itemData) {
-            
+
             $itemId = $itemData['id'] ?? null;
-            
+
             $attributes = [
                 'menu_id'   => $menuId,
                 'parent_id' => $parentId, // Clave para la jerarquía
@@ -246,7 +244,7 @@ return Inertia::render('Menus/Create', [
                 // 🚨 Esta es la parte que asegura la creación de "hijo4.1"
                 $item = MenuItem::create($attributes);
             }
-            
+
             // Recolectamos el ID real para saber qué ítems NO borrar
             $submittedIds[] = $item->id;
 
@@ -256,7 +254,7 @@ return Inertia::render('Menus/Create', [
                 $this->syncMenuItemsRecursively($itemData['children'], $menuId, $item->id, $submittedIds);
             }
         }
-        
+
         return $submittedIds;
     }
 

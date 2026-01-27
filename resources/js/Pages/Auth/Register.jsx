@@ -80,10 +80,10 @@ export default function Register({ subscriptionPlans = [] }) {
         switch (currentStep) {
             case 0: // Datos del usuario
                 return (
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <h2 className="text-xl font-semibold mb-4">Datos del Usuario</h2>
                         
-                        <div>
+                        {/* <div>
                             <InputLabel htmlFor="avatar" value="Avatar (Opcional)" />
                             <Input
                                 id="avatar"
@@ -93,7 +93,7 @@ export default function Register({ subscriptionPlans = [] }) {
                                 type="file"
                             />
                             <InputError className="mt-2" message={errors.avatar} />
-                        </div>
+                        </div> */}
 
                         <div>
                             <InputLabel htmlFor="name" value="Tu Nombre *" />

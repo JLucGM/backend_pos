@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ThemeSeeder::class);
         $this->call(TemplateSeeder::class);
         $this->call(PageSeeder::class);
+        $this->call(MenuSeeder::class);
 
         DB::table('shipping_rates')->insert([
             'name' => 'Estandar',
@@ -49,7 +50,6 @@ class DatabaseSeeder extends Seeder
             'phone' => '04121234567',
             'is_active' => '1',
             'company_id' => 1,
-            // 'avatar' => asset('img/profile/default.jpg'),
         ])->assignRole('super admin');
         User::create([
             'name' => 'Edduar Villegas',
@@ -58,8 +58,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '04121234567',
             'is_active' => '1',
             'company_id' => 2,
-            // 'avatar' => asset('img/profile/default.jpg'),
-        ])->assignRole('super admin');
+        ])->assignRole('admin');
         User::create([
             'name' => 'Cliente',
             'email' => 'cliente@example.com',
@@ -67,7 +66,6 @@ class DatabaseSeeder extends Seeder
             'phone' => '04121234567',
             'is_active' => '1',
             'company_id' => 1,
-            // 'avatar' => asset('img/profile/default.jpg'),
         ])->assignRole('client');
     }
 }
