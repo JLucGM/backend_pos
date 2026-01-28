@@ -51,27 +51,23 @@ export default function Edit({ page }) {
         >
             <Head className="capitalize" title="Actualizar página" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className=" overflow-hidden">
-                    <div className=" text-gray-900 dark:text-gray-100">
-                        <form onSubmit={submit} className='space-y-4'>
-                            <Suspense fallback={<Loader />}>
-                                <PagesForm
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                />
-                            </Suspense>
-                            <div className="flex justify-end p-2.5">
-                                <Button
-                                    variant="default"
-                                >
-                                    Guardar
-                                </Button>
-                            </div>
-                        </form>
+            <div className=" text-gray-900 dark:text-gray-100">
+                <form onSubmit={submit} className='space-y-4'>
+                    <Suspense fallback={<Loader />}>
+                        <PagesForm
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                        />
+                    </Suspense>
+                    <div className="flex justify-end p-2.5">
+                        <Button
+                            variant="default"
+                        >
+                            Guardar
+                        </Button>
                     </div>
-                </div>
+                </form>
             </div>
         </AuthenticatedLayout>
     );

@@ -37,6 +37,15 @@ class PageController extends RoutingController
         return Inertia::render('Pages/Index', compact('pages', 'role', 'permission'));
     }
 
+    public function themes()
+    {
+        $user = Auth::user();
+        $themes = Theme::all();
+        $currentThemeId = Page::where('company_id', $user->company_id)->first()?->theme_id;
+
+        return Inertia::render('Pages/Themes', compact('themes', 'currentThemeId'));
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -422,4 +431,17 @@ public function copyImage(Request $request, Page $page)
         ], 500);
     }
 }
+    public function updateCompanyTheme(Request $request)
+    {
+        $request->validate([
+            'theme_id' => 'required|exists:themes,id'
+        ]);
+
+        $user = Auth::user();
+
+        Page::where('company_id', $user->company_id)
+            ->update(['theme_id' => $request->theme_id]);
+
+        return back()->with('success', 'Tema actualizado para todas las páginas');
+    }
 }

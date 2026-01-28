@@ -298,8 +298,10 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::post('shipping-rates/{shippingRate}', [ShippingRateController::class, 'update'])->name('shippingrate.update');
     Route::delete('shipping-rates/{shippingRate}', [ShippingRateController::class, 'destroy'])->name('shippingrate.destroy');
 
+    Route::patch('/pages/update-company-theme', [PageController::class, 'updateCompanyTheme'])->name('pages.update-company-theme');
     Route::get('pages', [PageController::class, 'index'])->name('pages.index');
     Route::get('pages/create', [PageController::class, 'create'])->name('pages.create');
+    Route::get('pages/themes', [PageController::class, 'themes'])->name('pages.themes');
     Route::get('pages/{page}', [PageController::class, 'show'])->name('pages.show');
     Route::post('pages', [PageController::class, 'store'])->name('pages.store');
     Route::get('pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');

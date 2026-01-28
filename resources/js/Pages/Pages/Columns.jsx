@@ -4,10 +4,10 @@ import { Ellipsis, Eye, Palette, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
 
 export const pagesColumns = [
-    {
-        header: "id",
-        accessorKey: "id",
-    },
+    // {
+    //     header: "id",
+    //     accessorKey: "id",
+    // },
     {
         header: "Nombre",
         accessorKey: "title",

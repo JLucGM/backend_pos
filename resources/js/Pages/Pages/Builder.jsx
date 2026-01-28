@@ -12,7 +12,6 @@ import Canvas from '@/Components/BuilderPages/Canvas';
 import { addToHistory } from '@/utils/Builder/builderUtils';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import ApplyTemplate from '@/Components/ApplyTemplate';
-import ThemeSelector from '@/Components/ThemeSelector';
 import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
 import { Badge } from '@/Components/ui/badge';
 
@@ -2581,7 +2580,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <>
                                     {!isPreviewMode && (
                                         <>
-                                            <ThemeSelector page={page} themes={themes} />
                                             <ApplyTemplate
                                                 page={page}
                                                 templates={availableTemplates}

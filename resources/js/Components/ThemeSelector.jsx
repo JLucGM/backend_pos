@@ -1,38 +1,27 @@
 import React, { useState } from 'react';
-import { useForm, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { Label } from '@/Components/ui/label';
 import { toast } from 'sonner';
 import Select from 'react-select';
-import { customStyles } from '@/hooks/custom-select'; // Importar los estilos personalizados
+import { customStyles } from '@/hooks/custom-select';
 
-export default function ThemeSelector({ page, themes }) {
-    const [selectedTheme, setSelectedTheme] = useState(() => {
-        if (page.theme_id) {
-            const theme = themes.find(t => t.id === page.theme_id);
-            return theme ? { value: theme.id, label: theme.name } : null;
-        }
-        return { value: null, label: 'Heredar de la plantilla' };
-    });
+export default function ThemeSelector({ themes }) {
+    const [selectedTheme, setSelectedTheme] = useState(null);
 
-    const themeOptions = [
-        { value: null, label: 'Heredar de la plantilla' },
-        ...themes.map(theme => ({
-            value: theme.id,
-            label: theme.name
-        }))
-    ];
+    const themeOptions = themes.map(theme => ({
+        value: theme.id,
+        label: theme.name
+    }));
 
     const handleThemeChange = (selectedOption) => {
         setSelectedTheme(selectedOption);
-        
-        // Usar router.patch directamente
-        router.patch(route('pages.update-theme', page), {
+
+        router.patch(route('pages.update-company-theme'), {
             theme_id: selectedOption.value
         }, {
             preserveScroll: true,
             onSuccess: () => {
-                toast.success('Tema actualizado');
-                // No necesitas router.reload aquí, Inertia ya actualiza la página
+                toast.success('Tema de todas las páginas actualizado');
             },
             onError: () => {
                 toast.error('Error al actualizar tema');
@@ -41,10 +30,12 @@ export default function ThemeSelector({ page, themes }) {
     };
 
     return (
-        <div className="p-4 bg-white rounded-lg shadow mb-4">            
+        <div className="p-4 bg-white rounded-lg shadow mb-4">
             <div className="space-y-3">
                 <div>
-                    <Label htmlFor="theme-selector">Seleccionar Tema</Label>
+                    <Label htmlFor="theme-selector">
+                        Tema para todas las páginas
+                    </Label>
                     <Select
                         name="theme-selector"
                         id="theme-selector"
@@ -52,9 +43,12 @@ export default function ThemeSelector({ page, themes }) {
                         onChange={handleThemeChange}
                         options={themeOptions}
                         styles={customStyles}
-                        placeholder="Selecciona un tema..."
+                        placeholder="Selecciona un tema para aplicar a todo..."
                         className="mt-1"
                     />
+                    <p className="text-sm text-gray-500 mt-2">
+                        Este tema se aplicará a todas las páginas existentes.
+                    </p>
                 </div>
             </div>
         </div>
