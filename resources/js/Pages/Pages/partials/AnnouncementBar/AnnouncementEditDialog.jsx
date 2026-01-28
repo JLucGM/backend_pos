@@ -3,13 +3,14 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Separator } from '@/Components/ui/separator';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const AnnouncementEditDialog = ({ 
-    editContent, 
-    setEditContent, 
-    editStyles, 
-    setEditStyles, 
-    themeSettings, 
+const AnnouncementEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
     isLiveEdit = true,
     dynamicPages = [],
     products = []
@@ -19,6 +20,16 @@ const AnnouncementEditDialog = ({
     const [selectedProduct, setSelectedProduct] = useState('');
     const [customUrl, setCustomUrl] = useState('');
     const [isInitialized, setIsInitialized] = useState(false);
+
+    // Debounce for live updates
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
     const prevEditContentRef = useRef(editContent);
 
@@ -142,7 +153,7 @@ const AnnouncementEditDialog = ({
     return (
         <div className="space-y-4">
             <h3 className="font-medium text-lg">Configuración del Anuncio</h3>
-            
+
             {/* Texto del anuncio */}
             <div>
                 <Label htmlFor="announcementText">Texto del Anuncio</Label>

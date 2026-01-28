@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Separator } from '@/Components/ui/separator';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const AnnouncementBarEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
-    setEditStyles
+    setEditStyles,
+    isLiveEdit = true
 }) => {
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
     const updateContent = (key, value) => {
         setEditContent(prev => ({
             ...prev,
@@ -74,29 +85,53 @@ const AnnouncementBarEditDialog = ({
                 </div>
 
                 <div>
-                    <Label htmlFor="paddingTop">Padding Superior (px)</Label>
-                    <Input
-                        id="paddingTop"
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={parseInt(editStyles.paddingTop) || 15}
-                        onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
-                        className="mt-1"
-                    />
-                </div>
-
-                <div>
-                    <Label htmlFor="paddingBottom">Padding Inferior (px)</Label>
-                    <Input
-                        id="paddingBottom"
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={parseInt(editStyles.paddingBottom) || 15}
-                        onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
-                        className="mt-1"
-                    />
+                    <Label>Padding (px)</Label>
+                    <div className="grid grid-cols-2 gap-4 mt-1">
+                        <div>
+                            <Label htmlFor="paddingTop" className="text-xs text-gray-600">Superior</Label>
+                            <Input
+                                id="paddingTop"
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={parseInt(editStyles.paddingTop) || 15}
+                                onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="paddingBottom" className="text-xs text-gray-600">Inferior</Label>
+                            <Input
+                                id="paddingBottom"
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={parseInt(editStyles.paddingBottom) || 15}
+                                onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="paddingLeft" className="text-xs text-gray-600">Izquierda</Label>
+                            <Input
+                                id="paddingLeft"
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={parseInt(editStyles.paddingLeft) || 20}
+                                onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="paddingRight" className="text-xs text-gray-600">Derecha</Label>
+                            <Input
+                                id="paddingRight"
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={parseInt(editStyles.paddingRight) || 20}
+                                onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 

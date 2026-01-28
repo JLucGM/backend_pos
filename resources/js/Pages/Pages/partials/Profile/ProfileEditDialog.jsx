@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 export default function ProfileEditDialog({
     editContent,
@@ -12,10 +13,19 @@ export default function ProfileEditDialog({
     editStyles,
     setEditStyles,
     themeSettings,
-    isLiveEdit = false
+    isLiveEdit = true
 }) {
     const content = editContent || {};
     const styles = editStyles || {};
+
+    const debouncedContent = useDebounce(editContent, 300);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
     const updateContent = (key, value) => {
         setEditContent(prev => ({

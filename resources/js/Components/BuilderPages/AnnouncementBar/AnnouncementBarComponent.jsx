@@ -41,7 +41,7 @@ const AnnouncementBarComponent = ({
     useEffect(() => {
         if (mode === 'frontend' && isPlaying && children.length > 1) {
             intervalRef.current = setInterval(() => {
-                setCurrentIndex((prevIndex) => 
+                setCurrentIndex((prevIndex) =>
                     prevIndex === children.length - 1 ? 0 : prevIndex + 1
                 );
             }, autoplayTime);
@@ -82,8 +82,8 @@ const AnnouncementBarComponent = ({
         backgroundColor: customStyles.backgroundColor || '#000000',
         paddingTop: customStyles.paddingTop || '15px',
         paddingBottom: customStyles.paddingBottom || '15px',
-        paddingLeft: '20px',
-        paddingRight: '20px',
+        paddingLeft: customStyles.paddingLeft || '20px',
+        paddingRight: customStyles.paddingRight || '20px',
         position: 'relative',
         overflow: 'hidden',
         minHeight: '50px',
@@ -137,8 +137,8 @@ const AnnouncementBarComponent = ({
             comp: child,
             getStyles,
             isPreview: mode === 'frontend' ? true : isPreview,
-            onEdit: mode === 'frontend' ? () => {} : onEdit,
-            onDelete: mode === 'frontend' ? () => {} : onDelete,
+            onEdit: mode === 'frontend' ? () => { } : onEdit,
+            onDelete: mode === 'frontend' ? () => { } : onDelete,
             hoveredComponentId,
             setHoveredComponentId,
             themeSettings,
@@ -187,7 +187,7 @@ const AnnouncementBarComponent = ({
     }
 
     return (
-        <div 
+        <div
             style={containerStyles}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
