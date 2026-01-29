@@ -1,6 +1,7 @@
 import React from 'react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss, getComponentStyles } from '@/utils/themeUtils';
 
 const ProductDetailPriceComponent = ({
     comp,
@@ -14,38 +15,36 @@ const ProductDetailPriceComponent = ({
 }) => {
     const { settings } = usePage().props;
     
+    // Obtener themeWithDefaults una sola vez para usar en todo el componente
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
     // Función para obtener los estilos del precio
-    const getTextStyles = () => {
+    const getPriceStyles = () => {  // ✅ Nombre diferente
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading3';
 
+        // Obtener estilos del tema para el tipo de texto
+        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Ahora usa la importada
+        
+        // Obtener estilos específicos del componente product-price
+        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-price');
+
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
             const fontType = customStyles.fontType || 'default';
             
             if (fontType === 'default' || !fontType) {
-                return themeSettings?.body_font || "'Inter', sans-serif";
+                return getResolvedFont(themeWithDefaults, 'body_font');
             }
             
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
             
-            switch(fontType) {
-                case 'body_font':
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-                case 'heading_font':
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
-                case 'subheading_font':
-                    return themeSettings?.subheading_font || "'Inter', sans-serif";
-                case 'accent_font':
-                    return themeSettings?.accent_font || "'Inter', sans-serif";
-                default:
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-            }
+            return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
         };
 
         // Obtener configuración según el estilo seleccionado
@@ -141,7 +140,7 @@ const ProductDetailPriceComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color: customStyles.color || (themeSettings?.text ? `hsl(${themeSettings.text})` : '#000000'),
+            color: customStyles.color || themeComponentStyles.color || hslToCss(themeWithDefaults.text),
             margin: customStyles.margin || '0 0 1rem 0',
             paddingTop,
             paddingRight,
@@ -179,7 +178,7 @@ const ProductDetailPriceComponent = ({
                     <span 
                         className="line-through mr-2"
                         style={{
-                            color: customStyles.originalPriceColor || (themeSettings?.text ? `hsl(${themeSettings.text})` : '#999999'),
+                            color: customStyles.originalPriceColor || hslToCss(themeWithDefaults.text),
                             fontSize: customStyles.originalPriceSize || '0.8em',
                             opacity: 0.7,
                         }}
@@ -188,7 +187,7 @@ const ProductDetailPriceComponent = ({
                     </span>
                     <span 
                         style={{
-                            color: customStyles.discountPriceColor || (themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#dc2626'),
+                            color: customStyles.discountPriceColor || hslToCss(themeWithDefaults.links),
                             fontSize: customStyles.discountPriceSize || '1.2em',
                             fontWeight: 'bold',
                         }}
@@ -217,7 +216,7 @@ const ProductDetailPriceComponent = ({
 
     return (
         <div 
-            style={getTextStyles()}
+            style={getPriceStyles()}  // ✅ Usar nuevo nombre
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
@@ -225,7 +224,8 @@ const ProductDetailPriceComponent = ({
             
             {selectedCombination && product?.combinations?.length > 0 && (
                 <div className="text-sm mt-1" style={{
-                    color: themeSettings?.text ? `hsl(${themeSettings.text}, 0.7)` : '#6b7280',
+                    color: hslToCss(themeWithDefaults.text),
+                    opacity: '0.7',
                     fontSize: '0.8em',
                 }}>
                     Precio para esta combinación

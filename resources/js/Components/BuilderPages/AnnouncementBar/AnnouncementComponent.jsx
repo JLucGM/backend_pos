@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const AnnouncementComponent = ({
     comp,
@@ -12,6 +13,8 @@ const AnnouncementComponent = ({
 }) => {
     const customStyles = comp.styles || {};
     const announcementConfig = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeAnnouncementStyles = getComponentStyles(themeWithDefaults, 'announcement-bar');
 
     // Obtener el texto del anuncio
     const getText = () => {
@@ -62,26 +65,15 @@ const AnnouncementComponent = ({
                 return customStyles.customFont;
             }
 
-            switch (fontType) {
-                case 'body_font':
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-                case 'heading_font':
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
-                case 'subheading_font':
-                    return themeSettings?.subheading_font || "'Inter', sans-serif";
-                case 'accent_font':
-                    return themeSettings?.accent_font || "'Inter', sans-serif";
-                default:
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-            }
+            return getResolvedFont(themeWithDefaults, fontType || 'body_font');
         };
 
         return {
             ...baseStyles,
             fontFamily: getFontFamily(),
-            fontSize: customStyles.fontSize || '14px',
+            fontSize: customStyles.fontSize || themeAnnouncementStyles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
             fontWeight: customStyles.fontWeight || 'normal',
-            color: customStyles.color || '#ffffff',
+            color: customStyles.color || themeAnnouncementStyles.color || hslToCss(themeWithDefaults.text),
             textTransform: customStyles.textTransform || 'none',
             lineHeight: customStyles.lineHeight || '1.4',
             textDecoration: hasNavigation() ? 'underline' : 'none',

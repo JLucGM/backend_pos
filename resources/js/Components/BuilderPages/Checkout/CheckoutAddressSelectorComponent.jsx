@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
 const CheckoutAddressSelectorComponent = ({
     userDeliveryLocations,
@@ -8,14 +9,21 @@ const CheckoutAddressSelectorComponent = ({
     onAddNewAddress,
     themeSettings,
 }) => {
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
     if (!userDeliveryLocations || userDeliveryLocations.length === 0) {
         return (
             <div className="mb-4">
                 <button
                     onClick={onAddNewAddress}
-                    className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg w-full hover:border-blue-500"
+                    className="flex items-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg w-full hover:opacity-80"
+                    style={{
+                        borderColor: hslToCss(themeWithDefaults.borders),
+                        color: hslToCss(themeWithDefaults.text),
+                        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                    }}
                 >
-                    <PlusIcon className="h-5 w-5 text-gray-400" />
+                    <PlusIcon className="h-5 w-5" />
                     <span>Agregar dirección de entrega</span>
                 </button>
             </div>
@@ -24,37 +32,63 @@ const CheckoutAddressSelectorComponent = ({
 
     return (
         <div className="mb-6">
-            <h3 className="font-medium text-gray-700 mb-3">Selecciona una dirección de entrega</h3>
+            <h3 className="font-medium mb-3" style={{ 
+                color: hslToCss(themeWithDefaults.heading),
+                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
+            }}>
+                Selecciona una dirección de entrega
+            </h3>
             <div className="space-y-3">
                 {userDeliveryLocations.map(address => (
                     <div
                         key={address.id}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                            selectedAddressId === address.id
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-200 hover:border-gray-300'
-                        }`}
+                        className="p-4 border rounded-lg cursor-pointer transition-all"
+                        style={{
+                            borderColor: selectedAddressId === address.id 
+                                ? hslToCss(themeWithDefaults.links) 
+                                : hslToCss(themeWithDefaults.borders),
+                            backgroundColor: selectedAddressId === address.id 
+                                ? hslToCss(themeWithDefaults.background) 
+                                : 'transparent',
+                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                        }}
                         onClick={() => onSelectAddress(address.id)}
                     >
                         <div className="flex items-start justify-between">
                             <div>
-                                <p className="font-medium">{address.address_line_1}</p>
+                                <p className="font-medium" style={{ color: hslToCss(themeWithDefaults.heading) }}>
+                                    {address.address_line_1}
+                                </p>
                                 {address.address_line_2 && (
-                                    <p className="text-gray-600">{address.address_line_2}</p>
+                                    <p style={{ color: hslToCss(themeWithDefaults.text) }}>
+                                        {address.address_line_2}
+                                    </p>
                                 )}
-                                <p className="text-gray-600">
+                                <p style={{ color: hslToCss(themeWithDefaults.text) }}>
                                     {address.city}, {address.state}, {address.country}
                                 </p>
-                                <p className="text-gray-600">Código Postal: {address.postal_code}</p>
+                                <p style={{ color: hslToCss(themeWithDefaults.text) }}>
+                                    Código Postal: {address.postal_code}
+                                </p>
                                 {address.phone_number && (
-                                    <p className="text-gray-600">Tel: {address.phone_number}</p>
+                                    <p style={{ color: hslToCss(themeWithDefaults.text) }}>
+                                        Tel: {address.phone_number}
+                                    </p>
                                 )}
                                 {address.notes && (
-                                    <p className="text-sm text-gray-500 mt-1">Notas: {address.notes}</p>
+                                    <p className="text-sm mt-1" style={{ 
+                                        color: hslToCss(themeWithDefaults.text),
+                                        opacity: '0.7'
+                                    }}>
+                                        Notas: {address.notes}
+                                    </p>
                                 )}
                             </div>
                             {address.is_default && (
-                                <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                <span className="px-2 py-1 text-xs font-medium rounded-full" style={{
+                                    backgroundColor: hslToCss(themeWithDefaults.links),
+                                    color: hslToCss(themeWithDefaults.primary_button_text),
+                                }}>
                                     Principal
                                 </span>
                             )}
@@ -63,7 +97,11 @@ const CheckoutAddressSelectorComponent = ({
                 ))}
                 <button
                     onClick={onAddNewAddress}
-                    className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                    className="flex items-center gap-2 hover:opacity-80"
+                    style={{
+                        color: hslToCss(themeWithDefaults.links),
+                        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                    }}
                 >
                     <PlusIcon className="h-4 w-4" />
                     <span>Agregar nueva dirección</span>

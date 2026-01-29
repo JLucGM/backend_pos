@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
 const ProductDetailAttributesComponent = ({ 
     comp, 
@@ -6,6 +7,8 @@ const ProductDetailAttributesComponent = ({
     themeSettings, 
     onCombinationChange 
 }) => {
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
     const [selectedValues, setSelectedValues] = useState({});
     const [availableCombinations, setAvailableCombinations] = useState([]);
     const [currentCombination, setCurrentCombination] = useState(null);
@@ -217,7 +220,7 @@ const getFontStyles = (type = 'title') => {
             fontFamily,
             fontSize,
             fontWeight,
-            color: styles.titleColor || (theme?.heading ? `hsl(${theme.heading})` : '#000000'),
+            color: styles.titleColor || hslToCss(themeWithDefaults.heading),
             marginBottom: theme?.spacing_medium || '1rem',
         };
     } else {
@@ -268,9 +271,9 @@ const getFontStyles = (type = 'title') => {
         } else {
             return {
                 ...baseStyles,
-                backgroundColor: styles.buttonBgColor || (theme?.secondary_button_background ? `hsl(${theme.secondary_button_background})` : '#ffffff'),
-                color: styles.buttonColor || (theme?.secondary_button_text ? `hsl(${theme.secondary_button_text})` : '#374151'),
-                borderColor: styles.buttonBorderColor || (theme?.borders ? `hsl(${theme.borders})` : '#d1d5db'),
+                backgroundColor: styles.buttonBgColor || hslToCss(themeWithDefaults.secondary_button_background),
+                color: styles.buttonColor || hslToCss(themeWithDefaults.secondary_button_text),
+                borderColor: styles.buttonBorderColor || hslToCss(themeWithDefaults.borders),
             };
         }
     };
@@ -361,8 +364,8 @@ const getFontStyles = (type = 'title') => {
             {/* Información de la combinación actual */}
             {currentCombination && (
                 <div className="mt-4 p-3 rounded-md" style={{
-                    backgroundColor: themeSettings?.secondary ? `hsl(${themeSettings.secondary})` : '#f9fafb',
-                    borderColor: themeSettings?.borders ? `hsl(${themeSettings.borders})` : '#e5e7eb',
+                    backgroundColor: hslToCss(themeWithDefaults.background),
+                    borderColor: hslToCss(themeWithDefaults.borders),
                     borderWidth: '1px',
                     borderStyle: 'solid',
                     borderRadius: themeSettings?.border_radius || '0.5rem',
@@ -375,8 +378,8 @@ const getFontStyles = (type = 'title') => {
                             Combinación seleccionada
                         </span>
                         <span className="text-sm font-medium" style={{
-                            color: themeSettings?.foreground ? `hsl(${themeSettings.foreground})` : '#000000',
-                            fontFamily: themeSettings?.body_font || 'inherit',
+                            color: hslToCss(themeWithDefaults.heading),
+                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
                         }}>
                             {currentCombination.attribute_values.map(attr => attr.value_name).join(' / ')}
                         </span>

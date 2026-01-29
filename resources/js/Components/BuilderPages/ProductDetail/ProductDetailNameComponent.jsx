@@ -1,4 +1,5 @@
 import React from 'react';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss, getComponentStyles } from '@/utils/themeUtils';
 
 const ProductDetailNameComponent = ({
     comp,
@@ -8,24 +9,30 @@ const ProductDetailNameComponent = ({
     themeSettings,
     product
 }) => {
-    // console.log(themeSettings)
-    const getTextStyles = () => {
+    const getComponentStyles2 = () => {  // Nombre diferente
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
+        const themeWithDefaults = getThemeWithDefaults(themeSettings);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'paragraph';
+
+        // Obtener estilos del tema para el tipo de texto
+        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Usa la función importada
+        
+        // Obtener estilos específicos del componente product-title
+        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-title');
 
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
             
-            // Si el usuario seleccionó "default" o no especificó nada
+            // Si el usuario seleccionó "default" o no especificó nada, usar el tema
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'heading_font');
                 } else {
-                    return themeSettings?.body_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'body_font');
                 }
             }
             
@@ -33,18 +40,8 @@ const ProductDetailNameComponent = ({
                 return customStyles.customFont;
             }
             
-            switch(fontType) {
-                case 'body_font':
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-                case 'heading_font':
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
-                case 'subheading_font':
-                    return themeSettings?.subheading_font || "'Inter', sans-serif";
-                case 'accent_font':
-                    return themeSettings?.accent_font || "'Inter', sans-serif";
-                default:
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-            }
+            // Usar getResolvedFont para resolver referencias de fuentes
+            return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
         };
 
         // Obtener configuración según el estilo seleccionado
@@ -117,7 +114,8 @@ const ProductDetailNameComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color: customStyles.color || '#000000',
+            // Usar color del tema como fallback
+            color: customStyles.color || themeComponentStyles.color || hslToCss(themeWithDefaults.heading),
         };
     };
 
@@ -136,7 +134,7 @@ const ProductDetailNameComponent = ({
 
     return (
         <div 
-            style={getTextStyles()}
+            style={getComponentStyles2()}  // ✅ Nombre diferente
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >

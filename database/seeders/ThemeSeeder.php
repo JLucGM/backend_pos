@@ -72,74 +72,122 @@ class ThemeSeeder extends Seeder
                 'input_background' => '0 0% 100%',    // Blanco
                 'input_text' => '0 0% 3.9%',         // Negro
                 'input_border' => '0 0% 96.1%',      // Gris claro
+                'input_border_thickness' => '1px',   // Grosor del borde
+                'input_corner_radius' => '0.375rem', // Radio de esquinas
                 'input_hover_background' => '0 0% 100%', // Blanco
                 'input_focus_background' => '0 0% 100%', // Blanco
                 'input_focus_border' => '209 100% 92%', // Azul claro
 
                 // Tipografía - Fonts
-                'body_font' => 'Arial, Helvetica, sans-serif',
-                'heading_font' => 'Arial, Helvetica, sans-serif',
-                'subheading_font' => 'Arial, Helvetica, sans-serif',
-                'accent_font' => 'Georgia, Times New Roman, serif',
+                'body_font' => "'Arial', 'Helvetica', sans-serif",
+                'heading_font' => "'Arial', 'Helvetica', sans-serif",
+                'subheading_font' => "'Arial', 'Helvetica', sans-serif",
+                'accent_font' => "'Georgia', 'Times New Roman', serif",
 
-                // Paragraph
-                'paragraph_size' => '1rem',          // 16px
-                'paragraph_line_height' => '1.6',    // 160%
+                // Párrafo
+                'paragraph_font' => 'body_font',
+                'paragraph_fontSize' => '16px',          // 16px
+                'paragraph_fontWeight' => 'normal',
+                'paragraph_lineHeight' => '1.6',    // 160%
+                'paragraph_textTransform' => 'none',
 
                 // Heading 1
-                'heading1_font' => 'Arial, Helvetica, sans-serif',
-                'heading1_size' => '2.5rem',         // 40px
-                'heading1_line_height' => '1.2',
-                'heading1_case' => 'normal',         // normal, uppercase, lowercase, capitalize
+                'heading1_font' => 'heading_font',
+                'heading1_fontSize' => '2.5rem',         // 40px
+                'heading1_fontWeight' => 'bold',
+                'heading1_lineHeight' => '1.2',
+                'heading1_textTransform' => 'none',         // normal, uppercase, lowercase, capitalize
 
                 // Heading 2
-                'heading2_font' => 'Arial, Helvetica, sans-serif',
-                'heading2_size' => '2rem',           // 32px
-                'heading2_line_height' => '1.3',
-                'heading2_case' => 'normal',
+                'heading2_font' => 'heading_font',
+                'heading2_fontSize' => '2rem',           // 32px
+                'heading2_fontWeight' => 'bold',
+                'heading2_lineHeight' => '1.3',
+                'heading2_textTransform' => 'none',
 
                 // Heading 3
-                'heading3_font' => 'Arial, Helvetica, sans-serif',
-                'heading3_size' => '1.75rem',        // 28px
-                'heading3_line_height' => '1.3',
-                'heading3_case' => 'normal',
+                'heading3_font' => 'heading_font',
+                'heading3_fontSize' => '1.75rem',        // 28px
+                'heading3_fontWeight' => 'bold',
+                'heading3_lineHeight' => '1.3',
+                'heading3_textTransform' => 'none',
 
                 // Heading 4
-                'heading4_font' => 'Arial, Helvetica, sans-serif',
-                'heading4_size' => '1.5rem',         // 24px
-                'heading4_line_height' => '1.4',
-                'heading4_case' => 'normal',
+                'heading4_font' => 'heading_font',
+                'heading4_fontSize' => '1.5rem',         // 24px
+                'heading4_fontWeight' => 'bold',
+                'heading4_lineHeight' => '1.4',
+                'heading4_textTransform' => 'none',
 
                 // Heading 5
-                'heading5_font' => 'Arial, Helvetica, sans-serif',
-                'heading5_size' => '1.25rem',        // 20px
-                'heading5_line_height' => '1.4',
-                'heading5_case' => 'normal',
+                'heading5_font' => 'heading_font',
+                'heading5_fontSize' => '1.25rem',        // 20px
+                'heading5_fontWeight' => 'bold',
+                'heading5_lineHeight' => '1.4',
+                'heading5_textTransform' => 'none',
 
                 // Heading 6
-                'heading6_font' => 'Arial, Helvetica, sans-serif',
-                'heading6_size' => '1rem',           // 16px
-                'heading6_line_height' => '1.5',
-                'heading6_case' => 'normal',
-
-                // Bordes globales (para compatibilidad)
-                'border_radius' => '0.5rem',
-                'button_border_radius' => '0.5rem',
-                'input_border_radius' => '0.375rem',
-
-                // Espaciado
-                'spacing_small' => '0.5rem',
-                'spacing_medium' => '1rem',
-                'spacing_large' => '2rem',
+                'heading6_font' => 'heading_font',
+                'heading6_fontSize' => '1rem',           // 16px
+                'heading6_fontWeight' => 'bold',
+                'heading6_lineHeight' => '1.5',
+                'heading6_textTransform' => 'none',
 
                 // Para compatibilidad
                 'primary_color' => '209 100% 92%', // Azul claro
                 'foreground' => '0 0% 3.9%',       // Negro
                 'secondary_color' => '0 0% 96.1%', // Gris claro
-                'font_family' => 'Arial, sans-serif',
-                'heading_font_family' => 'Arial, sans-serif',
-                'button_font_family' => 'Arial, sans-serif',
-                'input_font_family' => 'Arial, sans-serif',
+                'font_family' => "'Arial', sans-serif",
+                'heading_font_family' => "'Arial', sans-serif",
+                'button_font_family' => "'Arial', sans-serif",
+                'input_font_family' => "'Arial', sans-serif",
+
+                // Carousel Component
+                'carousel_backgroundColor' => '#ffffff',
+                'carousel_gapX' => '10px',
+                'carousel_gapY' => '10px',
+
+                // Banner Component
+                'banner_containerHeight' => '400px',
+                'banner_paddingTop' => '20px',
+                'banner_paddingRight' => '20px',
+                'banner_paddingBottom' => '20px',
+                'banner_paddingLeft' => '20px',
+                'banner_backgroundColor' => 'transparent',
+                'banner_innerContainerBackgroundColor' => 'transparent',
+                'banner_innerContainerBackgroundOpacity' => '1',
+                'banner_innerContainerPaddingTop' => '20px',
+                'banner_innerContainerPaddingRight' => '20px',
+                'banner_innerContainerPaddingBottom' => '20px',
+                'banner_innerContainerPaddingLeft' => '20px',
+                'banner_innerContainerBorderRadius' => '0px',
+
+                // Bento Component
+                'bento_backgroundColor' => '#ffffff',
+                'bento_containerBorderRadius' => '0px',
+                'bento_gridGap' => '20px',
+
+                // Container Component
+                'container_backgroundColor' => 'transparent',
+                'container_borderRadius' => '0px',
+                'container_gap' => '0px',
+
+                // Marquee Component
+                'marquee_paddingTop' => '10px',
+                'marquee_paddingBottom' => '10px',
+                'marquee_fontSize' => '16px',
+                'marquee_fontWeight' => 'normal',
+                'marquee_color' => '#000000',
+                'marquee_backgroundColor' => 'transparent',
+                'marquee_borderRadius' => '0px',
+
+                // Divider Component
+                'divider_paddingTop' => '20px',
+                'divider_paddingBottom' => '20px',
+                'divider_lineWidth' => '1px',
+                'divider_lineLength' => '100%',
+                'divider_lineColor' => '#000000',
+                'divider_opacity' => '1',
             ],
         ]);
 
@@ -196,71 +244,121 @@ class ThemeSeeder extends Seeder
                 'input_background' => '0 0% 10%',
                 'input_text' => '0 0% 90%',
                 'input_border' => '0 0% 25%',
+                'input_border_thickness' => '1px',
+                'input_corner_radius' => '0.375rem',
                 'input_hover_background' => '0 0% 12%',
                 'input_focus_background' => '0 0% 15%',
                 'input_focus_border' => '209 100% 50%',
 
                 // Tipografía - Fonts
-                'body_font' => 'Segoe UI, Roboto, sans-serif',
-                'heading_font' => 'Segoe UI, Roboto, sans-serif',
-                'subheading_font' => 'Segoe UI, Roboto, sans-serif',
-                'accent_font' => 'Consolas, monospace',
+                'body_font' => "'Segoe UI', 'Roboto', sans-serif",
+                'heading_font' => "'Segoe UI', 'Roboto', sans-serif",
+                'subheading_font' => "'Segoe UI', 'Roboto', sans-serif",
+                'accent_font' => "'Consolas', monospace",
 
-                // Paragraph
-                'paragraph_size' => '1rem',
-                'paragraph_line_height' => '1.7',
+                // Párrafo
+                'paragraph_font' => 'body_font',
+                'paragraph_fontSize' => '16px',
+                'paragraph_fontWeight' => 'normal',
+                'paragraph_lineHeight' => '1.7',
+                'paragraph_textTransform' => 'none',
 
                 // Heading 1
-                'heading1_font' => 'Segoe UI, Roboto, sans-serif',
-                'heading1_size' => '2.75rem',
-                'heading1_line_height' => '1.1',
-                'heading1_case' => 'uppercase',
+                'heading1_font' => 'heading_font',
+                'heading1_fontSize' => '2.75rem',
+                'heading1_fontWeight' => 'bold',
+                'heading1_lineHeight' => '1.1',
+                'heading1_textTransform' => 'uppercase',
 
                 // Heading 2
-                'heading2_font' => 'Segoe UI, Roboto, sans-serif',
-                'heading2_size' => '2.25rem',
-                'heading2_line_height' => '1.2',
-                'heading2_case' => 'uppercase',
+                'heading2_font' => 'heading_font',
+                'heading2_fontSize' => '2.25rem',
+                'heading2_fontWeight' => 'bold',
+                'heading2_lineHeight' => '1.2',
+                'heading2_textTransform' => 'uppercase',
 
                 // Heading 3
-                'heading3_font' => 'Segoe UI, Roboto, sans-serif',
-                'heading3_size' => '1.875rem',
-                'heading3_line_height' => '1.3',
-                'heading3_case' => 'normal',
+                'heading3_font' => 'heading_font',
+                'heading3_fontSize' => '1.875rem',
+                'heading3_fontWeight' => 'bold',
+                'heading3_lineHeight' => '1.3',
+                'heading3_textTransform' => 'none',
 
                 // Heading 4
-                'heading4_font' => 'Segoe UI, Roboto, sans-serif',
-                'heading4_size' => '1.625rem',
-                'heading4_line_height' => '1.4',
-                'heading4_case' => 'normal',
+                'heading4_font' => 'heading_font',
+                'heading4_fontSize' => '1.625rem',
+                'heading4_fontWeight' => 'bold',
+                'heading4_lineHeight' => '1.4',
+                'heading4_textTransform' => 'none',
 
                 // Heading 5
-                'heading5_font' => 'Segoe UI, Roboto, sans-serif',
-                'heading5_size' => '1.375rem',
-                'heading5_line_height' => '1.4',
-                'heading5_case' => 'normal',
+                'heading5_font' => 'heading_font',
+                'heading5_fontSize' => '1.375rem',
+                'heading5_fontWeight' => 'bold',
+                'heading5_lineHeight' => '1.4',
+                'heading5_textTransform' => 'none',
 
                 // Heading 6
-                'heading6_font' => 'Segoe UI, Roboto, sans-serif',
-                'heading6_size' => '1.125rem',
-                'heading6_line_height' => '1.5',
-                'heading6_case' => 'normal',
-
-                'border_radius' => '0.5rem',
-                'button_border_radius' => '0.5rem',
-                'input_border_radius' => '0.375rem',
-
-                'spacing_small' => '0.5rem',
-                'spacing_medium' => '1rem',
-                'spacing_large' => '2rem',
+                'heading6_font' => 'heading_font',
+                'heading6_fontSize' => '1.125rem',
+                'heading6_fontWeight' => 'bold',
+                'heading6_lineHeight' => '1.5',
+                'heading6_textTransform' => 'none',
 
                 'primary_color' => '209 100% 30%',
                 'foreground' => '0 0% 98%',
                 'secondary_color' => '0 0% 20%',
-                'font_family' => 'Segoe UI, system-ui, sans-serif',
-                'heading_font_family' => 'Segoe UI, system-ui, sans-serif',
-                'button_font_family' => 'Segoe UI, system-ui, sans-serif',
-                'input_font_family' => 'Segoe UI, system-ui, sans-serif',
+                'font_family' => "'Segoe UI', system-ui, sans-serif",
+                'heading_font_family' => "'Segoe UI', system-ui, sans-serif",
+                'button_font_family' => "'Segoe UI', system-ui, sans-serif",
+                'input_font_family' => "'Segoe UI', system-ui, sans-serif",
+
+                // Carousel Component
+                'carousel_backgroundColor' => '#1a1a1a',
+                'carousel_gapX' => '10px',
+                'carousel_gapY' => '10px',
+
+                // Banner Component
+                'banner_containerHeight' => '400px',
+                'banner_paddingTop' => '20px',
+                'banner_paddingRight' => '20px',
+                'banner_paddingBottom' => '20px',
+                'banner_paddingLeft' => '20px',
+                'banner_backgroundColor' => 'transparent',
+                'banner_innerContainerBackgroundColor' => 'transparent',
+                'banner_innerContainerBackgroundOpacity' => '1',
+                'banner_innerContainerPaddingTop' => '20px',
+                'banner_innerContainerPaddingRight' => '20px',
+                'banner_innerContainerPaddingBottom' => '20px',
+                'banner_innerContainerPaddingLeft' => '20px',
+                'banner_innerContainerBorderRadius' => '0px',
+
+                // Bento Component
+                'bento_backgroundColor' => '#1a1a1a',
+                'bento_containerBorderRadius' => '0px',
+                'bento_gridGap' => '20px',
+
+                // Container Component
+                'container_backgroundColor' => 'transparent',
+                'container_borderRadius' => '0px',
+                'container_gap' => '0px',
+
+                // Marquee Component
+                'marquee_paddingTop' => '10px',
+                'marquee_paddingBottom' => '10px',
+                'marquee_fontSize' => '16px',
+                'marquee_fontWeight' => 'normal',
+                'marquee_color' => '#e6e6e6',
+                'marquee_backgroundColor' => 'transparent',
+                'marquee_borderRadius' => '0px',
+
+                // Divider Component
+                'divider_paddingTop' => '20px',
+                'divider_paddingBottom' => '20px',
+                'divider_lineWidth' => '1px',
+                'divider_lineLength' => '100%',
+                'divider_lineColor' => '#333333',
+                'divider_opacity' => '1',
             ],
         ]);
 
@@ -317,71 +415,121 @@ class ThemeSeeder extends Seeder
                 'input_background' => '0 0% 100%',
                 'input_text' => '131 30% 20%',
                 'input_border' => '131 20% 85%',
+                'input_border_thickness' => '1px',
+                'input_corner_radius' => '0.5rem',
                 'input_hover_background' => '0 0% 98%',
                 'input_focus_background' => '0 0% 100%',
                 'input_focus_border' => '131 98% 60%',
 
                 // Tipografía - Fonts
-                'body_font' => 'Georgia, Times New Roman, serif',
-                'heading_font' => 'Georgia, Times New Roman, serif',
-                'subheading_font' => 'Georgia, Times New Roman, serif',
-                'accent_font' => 'Arial, sans-serif',
+                'body_font' => "'Georgia', 'Times New Roman', serif",
+                'heading_font' => "'Georgia', 'Times New Roman', serif",
+                'subheading_font' => "'Georgia', 'Times New Roman', serif",
+                'accent_font' => "'Arial', sans-serif",
 
-                // Paragraph
-                'paragraph_size' => '1.125rem',      // 18px
-                'paragraph_line_height' => '1.8',
+                // Párrafo
+                'paragraph_font' => 'body_font',
+                'paragraph_fontSize' => '18px',      // 18px
+                'paragraph_fontWeight' => 'normal',
+                'paragraph_lineHeight' => '1.8',
+                'paragraph_textTransform' => 'none',
 
                 // Heading 1
-                'heading1_font' => 'Georgia, Times New Roman, serif',
-                'heading1_size' => '3rem',
-                'heading1_line_height' => '1.1',
-                'heading1_case' => 'normal',
+                'heading1_font' => 'heading_font',
+                'heading1_fontSize' => '3rem',
+                'heading1_fontWeight' => 'bold',
+                'heading1_lineHeight' => '1.1',
+                'heading1_textTransform' => 'none',
 
                 // Heading 2
-                'heading2_font' => 'Georgia, Times New Roman, serif',
-                'heading2_size' => '2.5rem',
-                'heading2_line_height' => '1.2',
-                'heading2_case' => 'normal',
+                'heading2_font' => 'heading_font',
+                'heading2_fontSize' => '2.5rem',
+                'heading2_fontWeight' => 'bold',
+                'heading2_lineHeight' => '1.2',
+                'heading2_textTransform' => 'none',
 
                 // Heading 3
-                'heading3_font' => 'Georgia, Times New Roman, serif',
-                'heading3_size' => '2rem',
-                'heading3_line_height' => '1.3',
-                'heading3_case' => 'italic',
+                'heading3_font' => 'heading_font',
+                'heading3_fontSize' => '2rem',
+                'heading3_fontWeight' => 'bold',
+                'heading3_lineHeight' => '1.3',
+                'heading3_textTransform' => 'none',
 
                 // Heading 4
-                'heading4_font' => 'Georgia, Times New Roman, serif',
-                'heading4_size' => '1.75rem',
-                'heading4_line_height' => '1.3',
-                'heading4_case' => 'normal',
+                'heading4_font' => 'heading_font',
+                'heading4_fontSize' => '1.75rem',
+                'heading4_fontWeight' => 'bold',
+                'heading4_lineHeight' => '1.3',
+                'heading4_textTransform' => 'none',
 
                 // Heading 5
-                'heading5_font' => 'Georgia, Times New Roman, serif',
-                'heading5_size' => '1.5rem',
-                'heading5_line_height' => '1.4',
-                'heading5_case' => 'normal',
+                'heading5_font' => 'heading_font',
+                'heading5_fontSize' => '1.5rem',
+                'heading5_fontWeight' => 'bold',
+                'heading5_lineHeight' => '1.4',
+                'heading5_textTransform' => 'none',
 
                 // Heading 6
-                'heading6_font' => 'Georgia, Times New Roman, serif',
-                'heading6_size' => '1.25rem',
-                'heading6_line_height' => '1.4',
-                'heading6_case' => 'normal',
-
-                'border_radius' => '0.75rem',
-                'button_border_radius' => '0.75rem',
-                'input_border_radius' => '0.5rem',
-
-                'spacing_small' => '0.5rem',
-                'spacing_medium' => '1rem',
-                'spacing_large' => '2rem',
+                'heading6_font' => 'heading_font',
+                'heading6_fontSize' => '1.25rem',
+                'heading6_fontWeight' => 'bold',
+                'heading6_lineHeight' => '1.4',
+                'heading6_textTransform' => 'none',
 
                 'primary_color' => '131 98% 84%',
                 'foreground' => '131 30% 20%',
                 'secondary_color' => '131 20% 95%',
-                'font_family' => 'Georgia, serif',
-                'heading_font_family' => 'Georgia, serif',
-                'button_font_family' => 'Georgia, serif',
-                'input_font_family' => 'Georgia, serif',
+                'font_family' => "'Georgia', serif",
+                'heading_font_family' => "'Georgia', serif",
+                'button_font_family' => "'Georgia', serif",
+                'input_font_family' => "'Georgia', serif",
+
+                // Carousel Component
+                'carousel_backgroundColor' => '#ffffff',
+                'carousel_gapX' => '10px',
+                'carousel_gapY' => '10px',
+
+                // Banner Component
+                'banner_containerHeight' => '400px',
+                'banner_paddingTop' => '20px',
+                'banner_paddingRight' => '20px',
+                'banner_paddingBottom' => '20px',
+                'banner_paddingLeft' => '20px',
+                'banner_backgroundColor' => 'transparent',
+                'banner_innerContainerBackgroundColor' => 'transparent',
+                'banner_innerContainerBackgroundOpacity' => '1',
+                'banner_innerContainerPaddingTop' => '20px',
+                'banner_innerContainerPaddingRight' => '20px',
+                'banner_innerContainerPaddingBottom' => '20px',
+                'banner_innerContainerPaddingLeft' => '20px',
+                'banner_innerContainerBorderRadius' => '0px',
+
+                // Bento Component
+                'bento_backgroundColor' => '#ffffff',
+                'bento_containerBorderRadius' => '0px',
+                'bento_gridGap' => '20px',
+
+                // Container Component
+                'container_backgroundColor' => 'transparent',
+                'container_borderRadius' => '0px',
+                'container_gap' => '0px',
+
+                // Marquee Component
+                'marquee_paddingTop' => '10px',
+                'marquee_paddingBottom' => '10px',
+                'marquee_fontSize' => '18px',
+                'marquee_fontWeight' => 'normal',
+                'marquee_color' => '#1e5a2e',
+                'marquee_backgroundColor' => 'transparent',
+                'marquee_borderRadius' => '0px',
+
+                // Divider Component
+                'divider_paddingTop' => '20px',
+                'divider_paddingBottom' => '20px',
+                'divider_lineWidth' => '1px',
+                'divider_lineLength' => '100%',
+                'divider_lineColor' => '#84cc96',
+                'divider_opacity' => '1',
             ],
         ]);
     }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getThemeWithDefaults, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const QuantitySelectorComponent = ({ 
     comp, 
@@ -7,6 +8,7 @@ const QuantitySelectorComponent = ({
     themeSettings // Añadir themeSettings como prop
 }) => {
     const [quantity, setQuantity] = useState(1);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
 
     // Función para obtener valores por defecto del tema
     const getThemeValue = (key, defaultValue) => {
@@ -15,7 +17,7 @@ const QuantitySelectorComponent = ({
             'labelColor': themeSettings?.quantity_labelColor || themeSettings?.text_color || '#666666',
             'borderColor': themeSettings?.quantity_borderColor || themeSettings?.border_color || '#d1d5db',
             'buttonColor': themeSettings?.quantity_buttonColor || themeSettings?.primary_color || '#374151',
-            'inputColor': themeSettings?.quantity_inputColor || themeSettings?.text_color || '#000000',
+            'inputColor': hslToCss(themeWithDefaults.text),
             'borderRadius': themeSettings?.quantity_borderRadius || themeSettings?.border_radius || '6px',
             'buttonSize': themeSettings?.quantity_buttonSize || themeSettings?.button_font_size || '16px',
             'inputSize': themeSettings?.quantity_inputSize || themeSettings?.input_font_size || '16px',
@@ -88,7 +90,7 @@ const QuantitySelectorComponent = ({
                     className="w-16 text-center border-0 focus:ring-0 focus:outline-none"
                     style={{
                         fontSize: getThemeValue('inputSize', '16px'),
-                        color: getThemeValue('inputColor', '#000000'),
+                        color: getThemeValue('inputColor', hslToCss(themeWithDefaults.text)),
                         backgroundColor: 'transparent',
                     }}
                 />

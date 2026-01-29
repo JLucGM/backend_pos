@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Badge } from '@/Components/ui/badge';
 import { toast } from 'sonner';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 import { User, MapPin, Plus, Edit, Trash2, Phone, Mail, CreditCard } from 'lucide-react';
 import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
@@ -90,8 +91,12 @@ export default function ProfileComponent({
     }, [addressData.state_id, cities]);
 
     // Aplicar estilos del tema
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeProfileStyles = getComponentStyles(themeWithDefaults, 'profile');
+    const themeProfileCardStyles = getComponentStyles(themeWithDefaults, 'profile-card');
+    
     const containerStyles = {
-        backgroundColor: styles.backgroundColor || themeSettings?.background || '#ffffff',
+        backgroundColor: styles.backgroundColor || themeProfileStyles.backgroundColor || hslToCss(themeWithDefaults.background),
         padding: `${styles.paddingTop || '40px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '40px'} ${styles.paddingLeft || '20px'}`,
         maxWidth: styles.maxWidth || '1200px',
         margin: '0 auto',
@@ -99,7 +104,7 @@ export default function ProfileComponent({
     };
 
     const titleStyles = {
-        color: styles.titleColor || themeSettings?.foreground || '#000000',
+        color: styles.titleColor || hslToCss(themeWithDefaults.heading),
         fontSize: styles.titleSize || '32px',
         fontWeight: styles.titleWeight || 'bold',
         marginBottom: '24px',
@@ -107,7 +112,7 @@ export default function ProfileComponent({
     };
 
     const cardStyles = {
-        backgroundColor: styles.cardBackgroundColor || '#ffffff',
+        backgroundColor: styles.cardBackgroundColor || themeProfileCardStyles.backgroundColor || hslToCss(themeWithDefaults.background),
         borderRadius: styles.cardBorderRadius || '12px',
         border: styles.cardBorder || '1px solid #e5e7eb',
         padding: styles.cardPadding || '24px'

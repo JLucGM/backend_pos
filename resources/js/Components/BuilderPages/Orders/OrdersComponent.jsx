@@ -1,420 +1,327 @@
 import React, { useState } from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import CanvasItem from '../CanvasItem';
-import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { Separator } from '@/Components/ui/separator';
+import { 
+    Package, 
+    Calendar, 
+    MapPin, 
+    CreditCard, 
+    Eye, 
+    ChevronDown, 
+    ChevronUp, 
+    Clock, 
+    Truck, 
+    CheckCircle, 
+    XCircle 
+} from 'lucide-react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
-const OrdersComponent = ({
-    comp,
-    getStyles,
-    onEdit,
-    onDelete,
-    themeSettings,
-    appliedTheme,
-    isPreview,
-    setComponents,
-    hoveredComponentId,
-    setHoveredComponentId,
+function OrdersComponent({ 
+    comp, 
+    themeSettings, 
+    isPreview = false, 
     mode = 'builder',
-    currentUser = null,
-    userOrders = [],
-    companyId = null,
-    currency = null
-}) => {
-    const [selectedOrder, setSelectedOrder] = useState(null);
-    const [isExpanded, setIsExpanded] = useState(false);
-    console.log(selectedOrder)
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({ id: comp.id });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-    };
-
-    const componentStyles = getStyles(comp);
-    const content = comp.content || {};
-    const children = content.children || [];
+    companyId,
+    orders = null
+}) {
+    const [expandedOrder, setExpandedOrder] = useState(null);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeProfileStyles = getComponentStyles(themeWithDefaults, 'profile');
 
     // Datos de ejemplo para el builder
-    const exampleOrders = mode === 'builder' ? [
+    const exampleOrders = [
         {
             id: 1,
-            status: 'completed',
-            total: 150.00,
-            delivery_type: 'delivery',
-            totaldiscounts: 2.00,
-            payment_status: 'completed',
-            tax_amount: 16.00,
+            order_number: 'ORD-2024-001',
+            status: 'delivered',
+            total: 125.50,
             created_at: '2024-01-15T10:30:00Z',
+            delivery_address: 'Calle Principal 123, Ciudad',
+            payment_method: 'Tarjeta de Crédito',
             items: [
                 {
                     id: 1,
-                    name_product: 'Producto Ejemplo 1',
+                    product_name: 'Producto A',
                     quantity: 2,
-                    price_product: 50.00,
-                    subtotal: 100.00
+                    price: 50.00,
+                    image: 'https://picsum.photos/80/80?random=1'
                 },
                 {
                     id: 2,
-                    name_product: 'Producto Ejemplo 2',
+                    product_name: 'Producto B',
                     quantity: 1,
-                    price_product: 50.00,
-                    subtotal: 50.00
+                    price: 25.50,
+                    image: 'https://picsum.photos/80/80?random=2'
                 }
-            ],
-            paymentMethod: { name: 'Tarjeta de Crédito' },
-            shippingRate: { name: 'Envío Estándar', price: 10.00 },
-            deliveryLocation: {
-                address_line_1: '',
-                address_line_2: '',
-                postal_code: '',
-                phone_number: '',
-                notes: '',
-                is_default: '',
-                country_id: '',
-                state_id: '',
-                city_id: '',
-            }
+            ]
         },
         {
             id: 2,
-            status: 'pending',
-            total: 75.50,
-            created_at: '2024-01-10T14:20:00Z',
+            order_number: 'ORD-2024-002',
+            status: 'processing',
+            total: 89.99,
+            created_at: '2024-01-20T14:15:00Z',
+            delivery_address: 'Avenida Central 456, Ciudad',
+            payment_method: 'Efectivo',
             items: [
                 {
                     id: 3,
-                    name_product: 'Producto Ejemplo 3',
-                    quantity: 1,
-                    price_product: 75.50,
-                    subtotal: 75.50
+                    product_name: 'Producto C',
+                    quantity: 3,
+                    price: 29.99,
+                    image: 'https://picsum.photos/80/80?random=3'
                 }
-            ],
-            paymentMethod: { name: 'Efectivo' },
-            shippingRate: null
+            ]
+        },
+        {
+            id: 3,
+            order_number: 'ORD-2024-003',
+            status: 'pending',
+            total: 199.99,
+            created_at: '2024-01-22T09:45:00Z',
+            delivery_address: 'Plaza Mayor 789, Ciudad',
+            payment_method: 'Transferencia',
+            items: [
+                {
+                    id: 4,
+                    product_name: 'Producto Premium',
+                    quantity: 1,
+                    price: 199.99,
+                    image: 'https://picsum.photos/80/80?random=4'
+                }
+            ]
         }
-    ] : userOrders;
+    ];
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
+    const currentOrders = mode === 'frontend' ? orders : exampleOrders;
 
-    const getStatusColor = (status) => {
-        const colors = {
-            pending: 'bg-yellow-100 text-yellow-800',
-            processing: 'bg-blue-100 text-blue-800',
-            completed: 'bg-green-100 text-green-800',
-            cancelled: 'bg-red-100 text-red-800'
+    const getStatusInfo = (status) => {
+        const statusMap = {
+            pending: {
+                label: 'Pendiente',
+                color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                icon: Clock
+            },
+            processing: {
+                label: 'Procesando',
+                color: 'bg-blue-100 text-blue-800 border-blue-200',
+                icon: Package
+            },
+            shipped: {
+                label: 'Enviado',
+                color: 'bg-purple-100 text-purple-800 border-purple-200',
+                icon: Truck
+            },
+            delivered: {
+                label: 'Entregado',
+                color: 'bg-green-100 text-green-800 border-green-200',
+                icon: CheckCircle
+            },
+            cancelled: {
+                label: 'Cancelado',
+                color: 'bg-red-100 text-red-800 border-red-200',
+                icon: XCircle
+            }
         };
-        return colors[status] || 'bg-gray-100 text-gray-800';
+        return statusMap[status] || statusMap.pending;
     };
 
-    const getStatusText = (status) => {
-        const texts = {
-            pending: 'Pendiente',
-            processing: 'Procesando',
-            completed: 'Completado',
-            cancelled: 'Cancelado'
-        };
-        return texts[status] || status;
+    const toggleOrderExpansion = (orderId) => {
+        setExpandedOrder(expandedOrder === orderId ? null : orderId);
     };
 
-    const handleOrderClick = (order) => {
-        if (mode === 'frontend' && content.allowExpandDetails !== false) {
-            setSelectedOrder(selectedOrder?.id === order.id ? null : order);
-            setIsExpanded(!isExpanded || selectedOrder?.id !== order.id);
-        }
+    const content = comp.content || {};
+    const styles = comp.styles || {};
+
+    // Aplicar estilos del tema
+    const containerStyles = {
+        backgroundColor: styles.backgroundColor || themeProfileStyles.backgroundColor || hslToCss(themeWithDefaults.background),
+        padding: `${styles.paddingTop || '40'}px ${styles.paddingRight || '20'}px ${styles.paddingBottom || '40'}px ${styles.paddingLeft || '20'}px`,
+        maxWidth: styles.maxWidth || '1000px',
+        margin: '0 auto',
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+        ...styles
     };
 
-    const renderOrderCard = (order) => (
-        <div
-            key={order.id}
-            className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${selectedOrder?.id === order.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                }`}
-            onClick={() => handleOrderClick(order)}
-        >
-            <div className="flex justify-between items-start mb-2">
-                <div>
-                    <h3 className="font-semibold text-lg">
-                        Orden #{order.id}
-                    </h3>
-                    {content.showOrderDate !== false && (
-                        <p className="text-sm text-gray-600">
-                            {formatDate(order.created_at)}
-                        </p>
-                    )}
-                </div>
-                <div className="text-right">
-                    {content.showOrderTotal !== false && (
-                        <div className="font-bold text-lg">
-                            <CurrencyDisplay currency={currency} amount={order.total} />
-                        </div>
-                    )}
-                    {content.showOrderStatus !== false && (
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                            {getStatusText(order.status)}
-                        </span>
-                    )}
-                </div>
-            </div>
+    const titleStyles = {
+        color: styles.titleColor || hslToCss(themeWithDefaults.heading),
+        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
+    };
 
-            {content.showItemCount !== false && (
-                <div className="text-sm text-gray-600">
-                    {order.items?.length || 0} producto(s)
-                </div>
-            )}
-
-            {mode === 'frontend' && content.allowExpandDetails !== false && (
-                <div className="mt-2 flex items-center text-blue-600 text-sm">
-                    {selectedOrder?.id === order.id ? (
-                        <>
-                            <EyeOff size={16} className="mr-1" />
-                            Ocultar detalles
-                        </>
-                    ) : (
-                        <>
-                            <Eye size={16} className="mr-1" />
-                            Ver detalles
-                        </>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-
-    const renderOrderDetails = (order) => (
-        <div className="mt-4 border-t pt-4">
-            <h4 className="font-semibold mb-3">Detalles del Pedido</h4>
-
-            {/* Información del pedido */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    {/* <h5 className="font-medium mb-2">Información General</h5> */}
-                    <div className="space-y-1 text-sm">
-                        <div><span className="font-medium">Tipo de entrega:</span> {getStatusText(order.delivery_type)}</div>
-                        {/* <div><span className="font-medium">Estado:</span> {getStatusText(order.status)}</div> */}
-                        {/* <div><span className="font-medium">Fecha:</span> {formatDate(order.created_at)}</div> */}
-                        {order.payment_status && (
-                            <div><span className="font-medium">Estado de págo:</span> {order.payment_status === 'paid' ? 'Pagado' : 'Pendiente'}</div>
-                        )}
-                        {order.paymentMethod && (
-                            <div><span className="font-medium">Método de pago:</span> {order.paymentMethod.name}</div>
-                        )}
-                        {order.shippingRate && (
-                            <div><span className="font-medium">Envío:</span> {order.shippingRate.name}</div>
-                        )}
-                        {order.deliveryLocation && (
-                            <div><span className="font-medium">Dirección de envio:</span>
-                                {order.deliveryLocation.address_line_1},
-                                {order.deliveryLocation.address_line_2},
-                                {order.deliveryLocation.country_id},
-                                {order.deliveryLocation.state_id},
-                                {order.deliveryLocation.city_id}, <br />
-                                <span className="font-medium">Código postal:</span> {order.deliveryLocation.postal_code}, <br />
-                                <span className="font-medium">Télefono:</span> {order.deliveryLocation.phone_number}, <br />
-                                <span className="font-medium">Nota:</span> {order.deliveryLocation.notes},
-
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div>
-                    <h5 className="font-medium mb-2">Resumen</h5>
-                    <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                            <span>Descuento:</span>
-                            <CurrencyDisplay currency={currency} amount={order.totaldiscounts || 0} />
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Subtotal:</span>
-                            <CurrencyDisplay currency={currency} amount={order.subtotal || 0} />
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Impuesto:</span>
-                            <CurrencyDisplay currency={currency} amount={order.tax_amount || 0} />
-                        </div>
-                        {order.shippingRate && (
-                            <div className="flex justify-between">
-                                <span>Envío:</span>
-                                <CurrencyDisplay currency={currency} amount={order.shippingRate.price} />
-                            </div>
-                        )}
-                        <div className="flex justify-between font-bold border-t pt-1">
-                            <span>Total:</span>
-                            <CurrencyDisplay currency={currency} amount={order.total} />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Productos */}
-            <div>
-                <h5 className="font-medium mb-2">Productos</h5>
-                <div className="space-y-2">
-                    {order.items?.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                            <div>
-                                <div className="font-medium">{item.name_product}</div>
-                                <div className="font-medium text-sm">
-                                    {(() => {
-                                        if (!item.product_details) return '';
-
-                                        try {
-                                            const details = typeof item.product_details === 'string'
-                                                ? JSON.parse(item.product_details)
-                                                : item.product_details;
-
-                                            const attributes = details.attributes;
-                                            if (!attributes) return '';
-
-                                            // Limpia el formato " - "
-                                            return attributes.replace(/^\s*-\s*/, '');
-                                        } catch (error) {
-                                            console.error('Error parsing product_details:', error);
-                                            return 'Error al cargar variación';
-                                        }
-                                    })()}
-                                </div>
-                                <div className="text-sm text-gray-600">
-                                    Cantidad: {item.quantity} × <CurrencyDisplay currency={currency} amount={item.price_product} />
-                                </div>
-
-                                {item.discount_amount && (
-                                    <div className="text-sm text-green-600">
-                                        Ahorro: {item.quantity} × <CurrencyDisplay currency={currency} amount={item.discount_amount} />
-                                    </div>
-                                )}
-                                {item.tax_amount && (
-                                    <div className="text-sm text-gray-600">
-                                        Impuesto: {item.quantity} × <CurrencyDisplay currency={currency} amount={item.tax_amount} />
-                                    </div>
-                                )}
-                            </div>
-                            <div className="font-medium">
-                                <CurrencyDisplay currency={currency} amount={item.subtotal} />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-
-    if (!isPreview) {
+    if (!currentOrders || currentOrders.length === 0) {
         return (
-            <div
-                ref={setNodeRef}
-                style={style}
-                className="relative group"
-                {...attributes}
-            >
-
-                <div
-                    className="min-h-[200px] mx-auto"
-                    style={componentStyles}
-                >
-                    {/* Vista previa en builder */}
-                    <div className="space-y-4">
-                        <div>
-                            <h2 className="text-xl font-bold">
-                                {content.title || 'Mis Pedidos'}
-                            </h2>
-                            {content.subtitle && (
-                                <p className="text-gray-600 mt-2">{content.subtitle}</p>
-                            )}
-                        </div>
-                        {exampleOrders.map(renderOrderCard)}
-                    </div>
-                </div>
+            <div style={containerStyles}>
+                <Card>
+                    <CardContent className="p-8 text-center">
+                        <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold mb-2" style={titleStyles}>
+                            {content.emptyTitle || 'No tienes pedidos aún'}
+                        </h3>
+                        <p className="mb-4" style={{ color: hslToCss(themeWithDefaults.text) }}>
+                            {content.emptyMessage || 'Cuando realices tu primer pedido, aparecerá aquí.'}
+                        </p>
+                        <Button style={{
+                            ...getButtonStyles(themeWithDefaults, 'primary'),
+                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                        }}>
+                            {content.shopButtonText || 'Ir a la tienda'}
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
-    // Vista frontend
     return (
-        <div style={componentStyles} className="space-y-6 mx-auto">
-            {/* Contenido principal */}
-            {!currentUser ? (
-                <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">
-                        {content.loginRequiredTitle || 'Inicia sesión para ver tus pedidos'}
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        {content.loginRequiredMessage || 'Necesitas iniciar sesión para acceder a tu historial de pedidos.'}
+        <div style={containerStyles}>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2" style={titleStyles}>
+                        <Package className="h-6 w-6" />
+                        {content.title || 'Mis Pedidos'}
+                    </CardTitle>
+                    <p style={{ color: hslToCss(themeWithDefaults.text) }}>
+                        {content.subtitle || `Tienes ${currentOrders.length} pedido${currentOrders.length !== 1 ? 's' : ''}`}
                     </p>
-                    <Button>
-                        {content.loginButtonText || 'Iniciar Sesión'}
-                    </Button>
-                </div>
-            ) : exampleOrders.length === 0 ? (
-                <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">
-                        {content.emptyTitle || 'No tienes pedidos aún'}
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        {content.emptyMessage || 'Cuando realices tu primer pedido, aparecerá aquí.'}
-                    </p>
-                    {/* Verificar si puede crear órdenes */}
-                    {companyId && !window.canCreateOrders ? (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-                            <h3 className="text-lg font-semibold text-yellow-900 mb-2">
-                                Funcionalidad Limitada
-                            </h3>
-                            <p className="text-yellow-800 mb-4">
-                                Estás en período de prueba. Para crear pedidos necesitas una suscripción activa.
-                            </p>
-                            <Button asChild>
-                                <a href="/dashboard/subscriptions">
-                                    Ver Planes de Suscripción
-                                </a>
-                            </Button>
-                        </div>
-                    ) : (
-                        <Button>
-                            {content.shopButtonText || 'Explorar Productos'}
-                        </Button>
-                    )}
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    <div>
-                        <h2 className="text-2xl font-bold">
-                            {content.title || 'Mis Pedidos'}
-                        </h2>
-                        {content.subtitle && (
-                            <p className="text-gray-600 mt-2">{content.subtitle}</p>
-                        )}
-                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {currentOrders.map((order) => {
+                        const statusInfo = getStatusInfo(order.status);
+                        const StatusIcon = statusInfo.icon;
+                        const isExpanded = expandedOrder === order.id;
 
-                    <div className="space-y-4">
-                        {exampleOrders.map((order) => (
-                            <div key={order.id}>
-                                {renderOrderCard(order)}
-                                {selectedOrder?.id === order.id && content.allowExpandDetails !== false && renderOrderDetails(order)}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+                        return (
+                            <Card key={order.id} className="border">
+                                <CardContent className="p-4">
+                                    {/* Header del pedido */}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-4">
+                                            <div>
+                                                <h3 className="font-semibold text-lg" style={titleStyles}>
+                                                    {order.order_number}
+                                                </h3>
+                                                <div className="flex items-center gap-2 text-sm" style={{ color: hslToCss(themeWithDefaults.text) }}>
+                                                    <Calendar className="h-4 w-4" />
+                                                    {new Date(order.created_at).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-3">
+                                            <Badge className={statusInfo.color}>
+                                                <StatusIcon className="h-3 w-3 mr-1" />
+                                                {statusInfo.label}
+                                            </Badge>
+                                            <div className="text-right">
+                                                <p className="font-semibold text-lg" style={{ color: hslToCss(themeWithDefaults.links) }}>
+                                                    ${order.total.toFixed(2)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Información básica */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <MapPin className="h-4 w-4 text-gray-500" />
+                                            <span style={{ color: hslToCss(themeWithDefaults.text) }}>
+                                                {order.delivery_address}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <CreditCard className="h-4 w-4 text-gray-500" />
+                                            <span style={{ color: hslToCss(themeWithDefaults.text) }}>
+                                                {order.payment_method}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Botón para expandir/contraer */}
+                                    <div className="flex items-center justify-between">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => toggleOrderExpansion(order.id)}
+                                            className="flex items-center gap-2"
+                                            style={{
+                                                color: hslToCss(themeWithDefaults.links),
+                                                fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                                            }}
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                            {isExpanded ? 'Ocultar detalles' : 'Ver detalles'}
+                                            {isExpanded ? (
+                                                <ChevronUp className="h-4 w-4" />
+                                            ) : (
+                                                <ChevronDown className="h-4 w-4" />
+                                            )}
+                                        </Button>
+                                    </div>
+
+                                    {/* Detalles expandidos */}
+                                    {isExpanded && (
+                                        <>
+                                            <Separator className="my-4" />
+                                            <div className="space-y-4">
+                                                <h4 className="font-semibold" style={titleStyles}>Productos</h4>
+                                                <div className="space-y-3">
+                                                    {order.items.map((item) => (
+                                                        <div key={item.id} className="flex items-center gap-4 p-3 rounded-lg" style={{
+                                                            backgroundColor: hslToCss(themeWithDefaults.background),
+                                                            border: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
+                                                        }}>
+                                                            <img
+                                                                src={item.image}
+                                                                alt={item.product_name}
+                                                                className="w-16 h-16 object-cover rounded"
+                                                            />
+                                                            <div className="flex-1">
+                                                                <h5 className="font-medium" style={{ color: hslToCss(themeWithDefaults.heading) }}>
+                                                                    {item.product_name}
+                                                                </h5>
+                                                                <p className="text-sm" style={{ color: hslToCss(themeWithDefaults.text) }}>
+                                                                    Cantidad: {item.quantity}
+                                                                </p>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="font-semibold" style={{ color: hslToCss(themeWithDefaults.links) }}>
+                                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                                </p>
+                                                                <p className="text-sm" style={{ color: hslToCss(themeWithDefaults.text) }}>
+                                                                    ${item.price.toFixed(2)} c/u
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {/* Resumen del pedido */}
+                                                <div className="p-4 rounded-lg" style={{
+                                                    backgroundColor: hslToCss(themeWithDefaults.background),
+                                                    border: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
+                                                }}>
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="font-semibold" style={{ color: hslToCss(themeWithDefaults.heading) }}>
+                                                            Total del pedido:
+                                                        </span>
+                                                        <span className="font-bold text-lg" style={{ color: hslToCss(themeWithDefaults.links) }}>
+                                                            ${order.total.toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </CardContent>
+            </Card>
         </div>
     );
-};
+}
 
 export default OrdersComponent;

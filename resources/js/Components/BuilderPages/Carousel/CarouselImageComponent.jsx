@@ -1,13 +1,17 @@
 import React from 'react';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const CarouselImageComponent = ({
     comp,
     getStyles,
     isPreview,
     onEdit,
-    onDelete
+    onDelete,
+    themeSettings
 }) => {
     const styles = comp.styles || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeImageStyles = getComponentStyles(themeWithDefaults, 'image');
     
     const getAspectRatioStyles = () => {
         switch (styles.aspectRatio) {
@@ -38,6 +42,7 @@ const CarouselImageComponent = ({
 
     const containerStyles = getAspectRatioStyles();
     
+    // Estilos de imagen con valores del tema
     const imageStyles = {
         position: 'absolute',
         top: 0,
@@ -45,10 +50,10 @@ const CarouselImageComponent = ({
         width: '100%',
         height: '100%',
         border: styles.imageBorder === 'solid' 
-            ? `${styles.imageBorderThickness} solid rgba(0, 0, 0, ${styles.imageBorderOpacity})` 
+            ? `${styles.imageBorderThickness || themeImageStyles.borderWidth} solid ${styles.imageBorderColor || themeImageStyles.borderColor}` 
             : 'none',
-        borderRadius: styles.imageBorderRadius || '0px',
-        objectFit: 'cover',
+        borderRadius: styles.imageBorderRadius || themeImageStyles.borderRadius,
+        objectFit: styles.objectFit || themeImageStyles.objectFit,
     };
 
     const handleClick = () => {

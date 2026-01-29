@@ -1,6 +1,7 @@
 // components/BuilderPages/components/ContainerComponent.jsx
 import React from 'react';
 import CanvasItem from './CanvasItem';
+import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
 
 const ContainerComponent = ({
     comp,
@@ -14,6 +15,12 @@ const ContainerComponent = ({
     hoveredComponentId,
     setHoveredComponentId
 }) => {
+    // Obtener configuración del tema con valores por defecto
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    // Obtener estilos específicos del componente container del tema
+    const themeContainerStyles = getComponentStyles(themeWithDefaults, 'container');
+    
     // Extraer estilos personalizados
     const customStyles = comp.styles || {};
 
@@ -29,12 +36,12 @@ const ContainerComponent = ({
     // Dirección (flex direction)
     const direction = customStyles.direction || 'row';
 
-    // Gap entre elementos hijos
-    const gap = customStyles.gap || '0px';
+    // Gap entre elementos hijos usando valor del tema
+    const gap = customStyles.gap || themeContainerStyles.gap || '0px';
 
-    // Background y border radius
-    const backgroundColor = customStyles.backgroundColor || 'transparent';
-    const borderRadius = customStyles.borderRadius || '0px';
+    // Background y border radius usando valores del tema
+    const backgroundColor = customStyles.backgroundColor || themeContainerStyles.backgroundColor || 'transparent';
+    const borderRadius = customStyles.borderRadius || themeContainerStyles.borderRadius || '0px';
 
     // Determinar alineación basada en dirección
     const getFlexAlignment = () => {
@@ -68,7 +75,7 @@ const ContainerComponent = ({
         paddingRight,
         paddingBottom,
         paddingLeft,
-        // Background y borde
+        // Background y borde usando valores del tema
         backgroundColor,
         borderRadius,
         // Flexbox para organizar hijos
@@ -80,8 +87,8 @@ const ContainerComponent = ({
         alignItems: direction === 'row' ? 'flex-start' : flexAlignment,
         // Permitir que los hijos se envuelvan si no caben
         flexWrap: 'wrap',
-        // Estilos de borde para modo edición
-        border: isPreview ? 'none' : '2px dashed #ccc',
+        // Estilos de borde para modo edición usando colores del tema
+        border: isPreview ? 'none' : `2px dashed ${hslToCss(themeWithDefaults.borders)}`,
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',

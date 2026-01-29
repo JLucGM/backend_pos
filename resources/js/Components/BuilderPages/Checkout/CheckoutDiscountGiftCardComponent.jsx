@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Percent, Gift, X, Calendar, DollarSign } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getInputStyles } from '@/utils/themeUtils';
 
 const CheckoutDiscountGiftCardComponent = ({
     comp,
@@ -31,6 +32,10 @@ const CheckoutDiscountGiftCardComponent = ({
     const [activeTab, setActiveTab] = useState('discount');
     const [isApplying, setIsApplying] = useState(false);
     const [isApplyingGiftCard, setIsApplyingGiftCard] = useState(false);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    // Obtener estilos del tema
+    const themeInputStyles = getInputStyles(themeWithDefaults);
 
     // Datos de ejemplo para modo builder
     const exampleAppliedDiscounts = mode === 'builder' ? [{
@@ -56,18 +61,18 @@ const CheckoutDiscountGiftCardComponent = ({
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || '#f8fafc',
+        backgroundColor: styles.backgroundColor || hslToCss(themeWithDefaults.background),
         padding: styles.padding || '16px',
         borderRadius: styles.borderRadius || '8px',
-        border: '1px solid #e5e7eb',
+        border: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
     };
 
     const titleStyles = {
-        fontSize: styles.titleSize || '16px',
-        color: styles.titleColor || '#374151',
-        fontFamily: themeSettings?.heading_font,
+        fontSize: styles.titleSize || themeWithDefaults.heading4_fontSize || '16px',
+        color: styles.titleColor || hslToCss(themeWithDefaults.heading),
+        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
         marginBottom: '12px',
-        fontWeight: '600',
+        fontWeight: themeWithDefaults.heading4_fontWeight || '600',
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
@@ -151,7 +156,11 @@ const CheckoutDiscountGiftCardComponent = ({
                             value={discountCode}
                             onChange={(e) => setDiscountCode(e.target.value)}
                             placeholder="Código de descuento (ej: AA11)"
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                            style={{
+                                ...themeInputStyles,
+                                fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                            }}
                             disabled={mode === 'builder' || isApplying}
                         />
                         <button
@@ -164,7 +173,13 @@ const CheckoutDiscountGiftCardComponent = ({
                                 }
                             }}
                             disabled={mode === 'builder' || isApplying || !discountCode.trim()}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                            className="px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                            style={{
+                                backgroundColor: hslToCss(themeWithDefaults.primary_button_background),
+                                color: hslToCss(themeWithDefaults.primary_button_text),
+                                border: `1px solid ${hslToCss(themeWithDefaults.primary_button_border)}`,
+                                fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                            }}
                         >
                             {isApplying ? 'Aplicando...' : 'Aplicar'}
                         </button>
@@ -222,13 +237,23 @@ const CheckoutDiscountGiftCardComponent = ({
                             value={giftCardCode}
                             onChange={(e) => setGiftCardCode(e.target.value)}
                             placeholder="Código de gift card (ej: 407279)"
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                            className="flex-1 px-3 py-2 border rounded-md text-sm"
+                            style={{
+                                ...themeInputStyles,
+                                fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                            }}
                             disabled={mode === 'builder' || isApplyingGiftCard || appliedGiftCard}
                         />
                         <button
                             onClick={handleApplyGiftCard}
                             disabled={mode === 'builder' || isApplyingGiftCard || !giftCardCode.trim() || appliedGiftCard}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                            className="px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                            style={{
+                                backgroundColor: '#059669', // Verde para gift cards
+                                color: '#ffffff',
+                                border: '1px solid #059669',
+                                fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                            }}
                         >
                             {isApplyingGiftCard ? 'Aplicando...' : 'Aplicar'}
                         </button>

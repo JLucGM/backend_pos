@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ComponentWithHover from '../ComponentWithHover';
 import AnnouncementComponent from './AnnouncementComponent';
+import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
 
 const AnnouncementBarComponent = ({
     comp,
@@ -19,6 +20,8 @@ const AnnouncementBarComponent = ({
     const customStyles = comp.styles || {};
     const announcementConfig = comp.content || {};
     const children = announcementConfig.children || [];
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeAnnouncementStyles = getComponentStyles(themeWithDefaults, 'announcement-bar');
 
     // Estados para el carrusel
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -76,12 +79,12 @@ const AnnouncementBarComponent = ({
         }
     };
 
-    // Estilos del contenedor principal
+    // Estilos del contenedor principal con valores del tema
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: customStyles.backgroundColor || '#000000',
-        paddingTop: customStyles.paddingTop || '15px',
-        paddingBottom: customStyles.paddingBottom || '15px',
+        backgroundColor: customStyles.backgroundColor || themeAnnouncementStyles.backgroundColor,
+        paddingTop: customStyles.paddingTop || themeAnnouncementStyles.paddingTop,
+        paddingBottom: customStyles.paddingBottom || themeAnnouncementStyles.paddingBottom,
         paddingLeft: customStyles.paddingLeft || '20px',
         paddingRight: customStyles.paddingRight || '20px',
         position: 'relative',
@@ -90,6 +93,8 @@ const AnnouncementBarComponent = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        color: themeAnnouncementStyles.color,
+        fontSize: themeAnnouncementStyles.fontSize,
     };
 
     // Estilos del contenido del carrusel
@@ -170,7 +175,7 @@ const AnnouncementBarComponent = ({
         return (
             <div style={containerStyles}>
                 <div style={{
-                    color: customStyles.backgroundColor === '#000000' ? '#ffffff' : '#666666',
+                    color: customStyles.backgroundColor === themeAnnouncementStyles.backgroundColor ? themeAnnouncementStyles.color : '#666666',
                     textAlign: 'center',
                     opacity: 0.7,
                     fontSize: '14px'

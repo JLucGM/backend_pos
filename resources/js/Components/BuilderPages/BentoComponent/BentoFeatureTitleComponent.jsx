@@ -1,4 +1,5 @@
 import React from 'react';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
 
 const BentoFeatureTitleComponent = ({
     comp,
@@ -10,81 +11,51 @@ const BentoFeatureTitleComponent = ({
     hoveredComponentId,
     setHoveredComponentId
 }) => {
-    const getTextStyles = () => {
+    const getComponentStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
+        const themeWithDefaults = getThemeWithDefaults(themeSettings);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading4'; // Por defecto heading4 para títulos de características
 
-        // Función para obtener la fuente según el tipo seleccionado
+        // Función para obtener la fuente usando utilidades del tema
         const getFontFamily = () => {
-            const customStyles = comp.styles || {};
             const fontType = customStyles.fontType;
-
-            // Si themeSettings no está disponible, usar valores por defecto SIN errores
-            if (!themeSettings) {
-                // Valores por defecto basados en tu themeSettings
-                const defaultFonts = {
-                    'body_font': "'Roboto', sans-serif",
-                    'heading_font': "'Roboto', sans-serif",
-                    'subheading_font': "'Open Sans', sans-serif",
-                    'accent_font': "'Playfair Display', serif",
-                    'default': "'Inter', sans-serif"
-                };
-
-                if (fontType === 'custom' && customStyles.customFont) {
-                    return customStyles.customFont;
-                }
-
-                return defaultFonts[fontType] || defaultFonts.default;
-            }
-
+            
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return themeSettings.heading_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`);
                 } else {
-                    return themeSettings.body_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'paragraph_font');
                 }
             }
-
+            
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-
-            // Mapeo de fontType a las claves de themeSettings
-            const fontTypeMapping = {
-                'body_font': 'body_font',
-                'heading_font': 'heading_font',
-                'subheading_font': 'subheading_font',
-                'accent_font': 'accent_font'
-            };
-
-            const themeKey = fontTypeMapping[fontType];
-            if (themeKey && themeSettings[themeKey]) {
-                return themeSettings[themeKey];
-            }
-
-            // Fallback final
-            return "'Inter', sans-serif";
+            
+            return getResolvedFont(themeWithDefaults, fontType);
         };
 
-        // Obtener configuración según el estilo seleccionado
-        let fontSize, fontWeight, lineHeight, textTransform;
+        // Obtener configuración según el estilo seleccionado usando utilidades del tema
+        let fontSize, fontWeight, lineHeight, textTransform, color;
         
-        if (textStyle.startsWith('heading')) {
-            const level = textStyle.replace('heading', '');
-            fontSize = customStyles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
-            fontWeight = customStyles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || '600';
-            lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.3';
-            textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
+        if (textStyle === 'custom') {
+            fontSize = customStyles.fontSize || themeWithDefaults.heading4_fontSize;
+            fontWeight = customStyles.fontWeight || themeWithDefaults.heading4_fontWeight;
+            lineHeight = customStyles.lineHeight || themeWithDefaults.heading4_lineHeight;
+            textTransform = customStyles.textTransform || themeWithDefaults.heading4_textTransform;
+            color = customStyles.color || hslToCss(themeWithDefaults.heading);
         } else {
-            // Si no es heading, asumimos paragraph
-            fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
-            fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || '600';
-            lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
-            textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
+            // Usar utilidades del tema para obtener estilos consistentes
+            const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+            fontSize = customStyles.fontSize || themeTextStyles.fontSize;
+            fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
+            lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
+            textTransform = customStyles.textTransform || themeTextStyles.textTransform;
+            color = customStyles.color || themeTextStyles.color;
         }
 
         // Calcular line-height si es personalizado
@@ -115,7 +86,7 @@ const BentoFeatureTitleComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color: customStyles.color || '#1f2937',
+            color,
         };
     };
 
@@ -139,7 +110,7 @@ const BentoFeatureTitleComponent = ({
 
     return (
         <h3 
-            style={getTextStyles()}
+            style={getComponentStyles()}
             onClick={handleClick}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}

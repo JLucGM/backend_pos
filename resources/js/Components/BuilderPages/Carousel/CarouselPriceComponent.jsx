@@ -1,6 +1,7 @@
 import React from 'react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
 
 const CarouselPriceComponent = ({
     comp,
@@ -12,48 +13,41 @@ const CarouselPriceComponent = ({
 }) => {
     const { settings } = usePage().props;
     const styles = comp.styles || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
     
-    // Obtener configuración de fuente del tema
+    // Obtener configuración de fuente del tema usando utilidades
     const getFontFamily = () => {
         const fontType = styles.fontType;
         
         if (fontType === 'default' || !fontType) {
-            return themeSettings?.body_font || "'Inter', sans-serif";
+            return getResolvedFont(themeWithDefaults, 'body_font');
         }
         
         if (fontType === 'custom' && styles.customFont) {
             return styles.customFont;
         }
         
-        switch(fontType) {
-            case 'body_font':
-                return themeSettings?.body_font || "'Inter', sans-serif";
-            case 'heading_font':
-                return themeSettings?.heading_font || "'Inter', sans-serif";
-            case 'subheading_font':
-                return themeSettings?.subheading_font || "'Inter', sans-serif";
-            case 'accent_font':
-                return themeSettings?.accent_font || "'Inter', sans-serif";
-            default:
-                return themeSettings?.body_font || "'Inter', sans-serif";
-        }
+        return getResolvedFont(themeWithDefaults, fontType);
     };
 
-    // Usar estilo de párrafo por defecto para precios
+    // Usar estilo de párrafo por defecto para precios con utilidades del tema
     const textStyle = styles.textStyle || 'paragraph';
-    let fontSize, fontWeight, lineHeight, textTransform;
+    let fontSize, fontWeight, lineHeight, textTransform, color;
     
-    if (textStyle.startsWith('heading')) {
-        const level = textStyle.replace('heading', '');
-        fontSize = styles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
-        fontWeight = styles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || 'bold';
-        lineHeight = styles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.2';
-        textTransform = styles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
+    if (textStyle === 'custom') {
+        fontSize = styles.fontSize || themeWithDefaults.paragraph_fontSize;
+        fontWeight = styles.fontWeight || themeWithDefaults.paragraph_fontWeight;
+        lineHeight = styles.lineHeight || themeWithDefaults.paragraph_lineHeight;
+        textTransform = styles.textTransform || themeWithDefaults.paragraph_textTransform;
+        color = styles.color || hslToCss(themeWithDefaults.text);
     } else {
-        fontSize = styles.fontSize || themeSettings?.paragraph_fontSize || '14px';
-        fontWeight = styles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
-        lineHeight = styles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
-        textTransform = styles.textTransform || themeSettings?.paragraph_textTransform || 'none';
+        // Usar utilidades del tema para obtener estilos consistentes
+        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+        fontSize = styles.fontSize || themeTextStyles.fontSize;
+        fontWeight = styles.fontWeight || themeTextStyles.fontWeight;
+        lineHeight = styles.lineHeight || themeTextStyles.lineHeight;
+        textTransform = styles.textTransform || themeTextStyles.textTransform;
+        color = styles.color || themeTextStyles.color;
     }
 
     // Calcular line-height si es personalizado
@@ -66,7 +60,7 @@ const CarouselPriceComponent = ({
     }
 
     const componentStyles = {
-        color: styles.color || '#666666',
+        color,
         fontSize,
         fontWeight,
         textAlign: styles.alignment || 'left',

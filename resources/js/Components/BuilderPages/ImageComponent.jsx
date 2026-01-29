@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
+import { getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
 
 const ImageComponent = ({
   comp,
@@ -9,6 +10,9 @@ const ImageComponent = ({
   themeSettings,
   mode = 'builder' // 'builder' o 'frontend'
 }) => {
+  // Obtener configuración del tema con valores por defecto
+  const themeWithDefaults = getThemeWithDefaults(themeSettings);
+
   // Obtener la URL de la imagen
   const getImageUrl = () => {
     if (!comp.content) return '';
@@ -83,18 +87,18 @@ const ImageComponent = ({
 
   const containerStyles = getAspectRatioStyles();
   
-  // Estilos para la imagen que llena el contenedor
+  // Estilos para la imagen que llena el contenedor usando valores del tema
   const imageStyles = {
     position: 'absolute',
     top: 0,
     left: 0,
     width: '100%',
     height: '100%',
-    // Estilos de borde personalizados
+    // Estilos de borde usando valores del tema
     borderRadius: comp.styles?.borderRadius || baseStyles.borderRadius || '0px',
     borderWidth: comp.styles?.borderWidth || baseStyles.borderWidth || '0px',
     borderStyle: comp.styles?.borderStyle || baseStyles.borderStyle || 'solid',
-    borderColor: comp.styles?.borderColor || baseStyles.borderColor || 'transparent',
+    borderColor: comp.styles?.borderColor || baseStyles.borderColor || hslToCss(themeWithDefaults.borders),
     // Ajuste de imagen
     objectFit: comp.styles?.objectFit || baseStyles.objectFit || 'cover',
     // Márgenes personalizados (para el contenedor, no la imagen)
@@ -134,8 +138,8 @@ const ImageComponent = ({
         onClick={handleClick}
         style={{
           ...containerStyles,
-          border: isPreview ? 'none' : '2px dashed #ccc',
-          backgroundColor: '#f5f5f5',
+          border: isPreview ? 'none' : `2px dashed ${hslToCss(themeWithDefaults.borders)}`,
+          backgroundColor: hslToCss(themeWithDefaults.background),
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -208,10 +212,10 @@ const ImageComponent = ({
           marginLeft: 0,
         }}
         onError={(e) => {
-          // Manejar error de carga de imagen
+          // Manejar error de carga de imagen usando colores del tema
           e.target.style.display = 'none';
-          e.target.parentNode.style.border = isPreview ? 'none' : '2px dashed #f00';
-          e.target.parentNode.style.backgroundColor = '#ffe6e6';
+          e.target.parentNode.style.border = isPreview ? 'none' : `2px dashed ${hslToCss(themeWithDefaults.borders)}`;
+          e.target.parentNode.style.backgroundColor = hslToCss(themeWithDefaults.background);
         }}
       />
     </div>

@@ -5,6 +5,7 @@ import ProductPriceComponent from './ProductPriceComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
+import { getThemeWithDefaults, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const ProductCardComponent = ({
     comp,
@@ -24,6 +25,7 @@ const ProductCardComponent = ({
     const cardConfig = comp.content || {};
     const children = cardConfig.children || [];
     const productData = cardConfig.productData;
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
 
     // ==================== MANEJO DE NAVEGACIÓN ====================
     const handleProductClick = (e) => {
@@ -50,12 +52,12 @@ const ProductCardComponent = ({
         const nameChild = children.find(child => child.type === 'productName');
         const priceChild = children.find(child => child.type === 'productPrice');
 
-        // Estilos para cada parte
+        // Estilos para cada parte con valores del tema
         const imageStyles = imageChild?.styles || {};
         const nameStyles = nameChild?.styles || {};
         const priceStyles = priceChild?.styles || {};
 
-        // Configuración de la tarjeta
+        // Configuración de la tarjeta con valores del tema
         const cardStyle = {
             // Estilos del contenedor de la tarjeta
             paddingTop: cardConfig.cardPaddingTop || '0px',
@@ -66,13 +68,13 @@ const ProductCardComponent = ({
                 ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})` 
                 : 'none',
             borderRadius: cardConfig.cardBorderRadius || '0px',
-            backgroundColor: cardConfig.cardBackgroundColor || 'transparent',
+            backgroundColor: cardConfig.cardBackgroundColor || hslToCss(themeWithDefaults.background),
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            boxShadow: `0 2px 8px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`,
             textDecoration: 'none',
             color: 'inherit',
         };
@@ -101,27 +103,27 @@ const ProductCardComponent = ({
             transition: 'transform 0.3s ease',
         };
 
-        // Estilos del nombre del producto
+        // Estilos del nombre del producto con valores del tema
         const nameStyle = {
             fontSize: nameStyles.fontSize || '16px',
             fontWeight: nameStyles.fontWeight || '600',
-            color: nameStyles.color || '#000000',
+            color: nameStyles.color || hslToCss(themeWithDefaults.text),
             textAlign: nameStyles.alignment || 'left',
             marginBottom: '8px',
             lineHeight: nameStyles.lineHeight || '1.4',
-            fontFamily: nameStyles.fontFamily || 'inherit',
+            fontFamily: nameStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font'),
             textTransform: nameStyles.textTransform || 'none',
             flexGrow: 1,
         };
 
-        // Estilos del precio
+        // Estilos del precio con valores del tema
         const priceStyle = {
             fontSize: priceStyles.fontSize || '14px',
             fontWeight: priceStyles.fontWeight || 'normal',
-            color: priceStyles.color || '#666666',
+            color: priceStyles.color || hslToCss(themeWithDefaults.text),
             textAlign: priceStyles.alignment || 'left',
             lineHeight: priceStyles.lineHeight || '1.4',
-            fontFamily: priceStyles.fontFamily || 'inherit',
+            fontFamily: priceStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font'),
             marginTop: 'auto',
         };
 
@@ -137,7 +139,7 @@ const ProductCardComponent = ({
 
         const handleMouseLeave = (e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            e.currentTarget.style.boxShadow = `0 2px 8px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`;
             if (imageStyle) {
                 const img = e.currentTarget.querySelector('img');
                 if (img) img.style.transform = 'scale(1)';
@@ -198,7 +200,7 @@ const ProductCardComponent = ({
     }
 
     // ==================== RENDERIZADO BUILDER ====================
-    // Estilos de la carta para builder
+    // Estilos de la carta para builder con valores del tema
     const cardStyles = {
         paddingTop: cardConfig.cardPaddingTop || '0px',
         paddingRight: cardConfig.cardPaddingRight || '0px',
@@ -208,8 +210,8 @@ const ProductCardComponent = ({
             ? `${cardConfig.cardBorderThickness} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity})` 
             : 'none',
         borderRadius: cardConfig.cardBorderRadius || '0px',
-        backgroundColor: cardConfig.cardBackgroundColor || 'white',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        backgroundColor: cardConfig.cardBackgroundColor || hslToCss(themeWithDefaults.background),
+        boxShadow: `0 2px 4px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`,
     };
 
     // Manejo de eventos de mouse para builder

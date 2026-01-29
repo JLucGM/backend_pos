@@ -9,6 +9,7 @@ import ComponentWithHover from '../ComponentWithHover';
 import { usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
+import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
 
 const CheckoutComponent = ({
     comp,
@@ -34,6 +35,10 @@ const CheckoutComponent = ({
     const customStyles = comp.styles || {};
     const checkoutConfig = comp.content || {};
     const children = checkoutConfig.children || [];
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    // Obtener estilos del tema para checkout
+    const themeCheckoutStyles = getComponentStyles(themeWithDefaults, 'checkout');
 
     // Estados
     const [cartItems, setCartItems] = useState([]);
@@ -551,13 +556,14 @@ const [orderError, setOrderError] = useState(null);
         ...getStyles(comp),
         width: '100%',
         padding: customStyles.padding || '40px 20px',
-        backgroundColor: customStyles.backgroundColor || '#ffffff',
+        backgroundColor: customStyles.backgroundColor || themeCheckoutStyles.backgroundColor || hslToCss(themeWithDefaults.background),
         maxWidth: customStyles.maxWidth || '1200px',
         margin: '0 auto',
         border: isPreview ? 'none' : '1px none #ccc',
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
+        borderRadius: customStyles.borderRadius || themeCheckoutStyles.borderRadius || '0px',
     };
 
     // Determinar layout type
@@ -691,7 +697,7 @@ const [orderError, setOrderError] = useState(null);
                     type: 'checkoutDiscountGiftCard',
                     content: { title: 'Descuentos y Gift Cards' },
                     styles: {
-                        backgroundColor: '#f8f9fa',
+                        backgroundColor: hslToCss(themeWithDefaults.background),
                         padding: '16px',
                         borderRadius: '8px'
                     }
@@ -706,11 +712,11 @@ const [orderError, setOrderError] = useState(null);
                         showPaymentMethodsPreview: true
                     },
                     styles: {
-                        backgroundColor: '#ffffff',
+                        backgroundColor: hslToCss(themeWithDefaults.background),
                         padding: '24px',
                         borderRadius: '12px',
-                        titleSize: '20px',
-                        titleColor: '#000000',
+                        titleSize: themeWithDefaults.heading3_fontSize || '20px',
+                        titleColor: hslToCss(themeWithDefaults.heading),
                     }
                 },
                 {
@@ -725,12 +731,12 @@ const [orderError, setOrderError] = useState(null);
                         showOrderTotal: true
                     },
                     styles: {
-                        backgroundColor: '#f9fafb',
+                        backgroundColor: hslToCss(themeWithDefaults.background),
                         padding: '24px',
                         borderRadius: '12px',
-                        borderColor: '#e5e7eb',
-                        titleSize: '20px',
-                        totalFontSize: '24px',
+                        borderColor: hslToCss(themeWithDefaults.borders),
+                        titleSize: themeWithDefaults.heading3_fontSize || '20px',
+                        totalFontSize: themeWithDefaults.heading2_fontSize || '24px',
                     }
                 },
                 {
@@ -743,13 +749,13 @@ const [orderError, setOrderError] = useState(null);
                         buttonText: 'Realizar Pedido'
                     },
                     styles: {
-                        backgroundColor: '#ffffff',
+                        backgroundColor: hslToCss(themeWithDefaults.background),
                         padding: '24px',
                         borderRadius: '12px',
-                        titleSize: '20px',
-                        buttonBackgroundColor: '#3b82f6',
-                        buttonColor: '#ffffff',
-                        buttonBorderRadius: '8px'
+                        titleSize: themeWithDefaults.heading3_fontSize || '20px',
+                        buttonBackgroundColor: hslToCss(themeWithDefaults.primary_button_background),
+                        buttonColor: hslToCss(themeWithDefaults.primary_button_text),
+                        buttonBorderRadius: themeWithDefaults.primary_button_corner_radius || '8px'
                     }
                 }
             ];

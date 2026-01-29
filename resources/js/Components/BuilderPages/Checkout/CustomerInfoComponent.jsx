@@ -5,6 +5,7 @@ import { UserCircleIcon, TruckIcon, MapPinIcon, CreditCardIcon, HomeIcon, CheckI
 import { StoreIcon } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
 const CustomerInfoComponent = ({
     comp,

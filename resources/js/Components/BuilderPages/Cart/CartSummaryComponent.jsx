@@ -3,6 +3,7 @@ import React from 'react';
 import cartHelper from '@/Helper/cartHelper';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
 const CartSummaryComponent = ({
     comp,
@@ -19,13 +20,17 @@ const CartSummaryComponent = ({
     const { settings } = usePage().props;
     const styles = comp.styles || {};
     const content = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    // Obtener estilos del tema para cart
+    const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart');
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || '#f9fafb',
+        backgroundColor: styles.backgroundColor || themeCartStyles.backgroundColor || hslToCss(themeWithDefaults.background),
         padding: `${styles.paddingTop || '20px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '20px'} ${styles.paddingLeft || '20px'}`,
-        borderRadius: styles.borderRadius || '12px',
-        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || '#000000'}`,
+        borderRadius: styles.borderRadius || themeCartStyles.borderRadius || '12px',
+        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || hslToCss(themeWithDefaults.borders)}`,
     };
 
     const handleClick = () => {
@@ -84,39 +89,38 @@ const CartSummaryComponent = ({
 
     // Estilos de fuente del tema
     const getFontStyles = (type = 'normal') => {
-        const theme = themeSettings || {};
-
         if (type === 'title') {
+            const themeCartTitleStyles = getComponentStyles(themeWithDefaults, 'cart-title');
             return {
-                fontFamily: theme?.heading_font || "'Inter', sans-serif",
-                fontSize: styles.titleSize || '20px',
-                fontWeight: styles.titleWeight || 'bold',
-                color: styles.titleColor || (theme?.foreground ? `hsl(${theme.foreground})` : '#000000'),
+                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
+                fontSize: styles.titleSize || themeCartTitleStyles.fontSize || themeWithDefaults.heading3_fontSize || '20px',
+                fontWeight: styles.titleWeight || themeWithDefaults.heading3_fontWeight || 'bold',
+                color: styles.titleColor || themeCartTitleStyles.color || hslToCss(themeWithDefaults.heading),
             };
         }
 
         if (type === 'total') {
             return {
-                fontFamily: theme?.heading_font || "'Inter', sans-serif",
+                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
                 fontSize: styles.totalFontSize || '24px',
                 fontWeight: 'bold',
-                color: styles.totalColor || (theme?.primary ? `hsl(${theme.primary})` : '#1d4ed8'),
+                color: styles.totalColor || hslToCss(themeWithDefaults.links),
             };
         }
 
         if (type === 'discount') {
             return {
-                fontFamily: theme?.body_font || "'Inter', sans-serif",
-                fontSize: styles.fontSize || '14px',
+                fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                fontSize: styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
                 color: '#059669',
                 fontWeight: '500'
             };
         }
 
         return {
-            fontFamily: theme?.body_font || "'Inter', sans-serif",
-            fontSize: styles.fontSize || '14px',
-            color: styles.color || (theme?.text ? `hsl(${theme.text})` : '#374151'),
+            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+            fontSize: styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
+            color: styles.color || hslToCss(themeWithDefaults.text),
         };
     };
 
@@ -223,7 +227,7 @@ const CartSummaryComponent = ({
 
                 {/* Línea divisoria */}
                 {(content.showDivider !== false) && (
-                    <hr className="my-4" style={{ borderColor: styles.dividerColor || '#e5e7eb' }} />
+                    <hr className="my-4" style={{ borderColor: styles.dividerColor || hslToCss(themeWithDefaults.borders) }} />
                 )}
 
                 {/* Total */}
@@ -242,9 +246,8 @@ const CartSummaryComponent = ({
                 <button
                     className="w-full mt-6 py-3 rounded-md font-medium transition-colors"
                     style={{
-                        backgroundColor: themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#3b82f6',
-                        color: '#ffffff',
-                        fontFamily: themeSettings?.button_font_family || 'inherit',
+                        ...getButtonStyles(themeWithDefaults, 'primary'),
+                        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
                     }}
                     onClick={(e) => {
                         e.stopPropagation();

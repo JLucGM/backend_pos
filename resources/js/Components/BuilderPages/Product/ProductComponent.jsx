@@ -1,6 +1,7 @@
 import React from 'react';
 import ProductCardComponent from './ProductCardComponent';
 import ComponentWithHover from '../ComponentWithHover';
+import { getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
 
 const ProductComponent = ({
     comp,
@@ -18,25 +19,32 @@ const ProductComponent = ({
 }) => {
     const productConfig = comp.content || {};
     const children = productConfig.children || [];
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
     
     // Determinar si estamos en modo frontend
     const isFrontend = mode === 'frontend';
     
-    // Configuración del grid
+    // Configuración del grid con valores del tema
     const columns = productConfig.columns || 3;
     const gapX = productConfig.gapX || '10px';
     const gapY = productConfig.gapY || '10px';
     const limit = productConfig.limit || 8;
-    const backgroundColor = productConfig.backgroundColor || '#ffffff';
-    
     // Encontrar los componentes hijos
     const titleComponent = children.find(child => child.type === 'productTitle');
     const cardComponent = children.find(child => child.type === 'productCard');
     
-    // Estilos del contenedor
+    // Estilos del contenedor con valores del tema
+    const baseStyles = getStyles(comp);
+    
+    // Asegurar que el backgroundColor del tema tenga prioridad
+    const finalBackgroundColor = productConfig.backgroundColor || 
+                                comp.styles?.backgroundColor || 
+                                hslToCss(themeWithDefaults.background) || 
+                                '#ffffff';
+    
     const containerStyles = {
-        ...getStyles(comp),
-        backgroundColor: backgroundColor,
+        ...baseStyles,
+        backgroundColor: finalBackgroundColor, // Aplicar el backgroundColor final
         padding: '20px 0',
         width: '100%',
         display: 'flex',
@@ -45,6 +53,9 @@ const ProductComponent = ({
         position: 'relative',
         boxSizing: 'border-box',
     };
+    
+    console.log('Final backgroundColor:', finalBackgroundColor);
+    console.log('Container styles:', containerStyles);
     
     // Grid styles
     const gridStyles = {

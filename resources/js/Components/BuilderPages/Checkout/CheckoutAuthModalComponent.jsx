@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { router } from '@inertiajs/react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles, getInputStyles } from '@/utils/themeUtils';
 
-const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
+const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess, themeSettings }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeAuthStyles = getComponentStyles(themeWithDefaults, 'auth');
+    const themeInputStyles = getInputStyles(themeWithDefaults);
 
     // Función para obtener la URL de login basada en el hostname actual
     const getLoginUrl = () => {
@@ -137,14 +141,21 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-auto max-h-[90vh] overflow-y-auto">
+            <div className="rounded-lg p-6 max-w-md w-full mx-auto max-h-[90vh] overflow-y-auto" style={{
+                backgroundColor: themeAuthStyles.backgroundColor || hslToCss(themeWithDefaults.background),
+                fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+            }}>
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-xl font-semibold" style={{ 
+                        color: hslToCss(themeWithDefaults.heading),
+                        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
+                    }}>
                         {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                        className="hover:opacity-70 transition-colors"
+                        style={{ color: hslToCss(themeWithDefaults.text) }}
                         disabled={isLoading}
                     >
                         <XMarkIcon className="h-6 w-6" />
@@ -161,14 +172,18 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess }) => {
                 {isLogin ? (
                     <form onSubmit={handleLoginSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium mb-1" style={{ color: hslToCss(themeWithDefaults.text) }}>
                                 Email *
                             </label>
                             <input
                                 type="email"
                                 value={loginForm.data.email}
                                 onChange={(e) => loginForm.setData('email', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2"
+                                style={{
+                                    ...themeInputStyles,
+                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                                }}
                                 required
                                 disabled={isLoading}
                             />

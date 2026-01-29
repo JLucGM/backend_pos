@@ -10,6 +10,7 @@ import ContainerComponent from '../ContainerComponent';
 import MarqueeTextComponent from '../MarqueeComponent/MarqueeTextComponent';
 import LinkComponent from '../LinkComponent';
 import DividerComponent from '../DividerComponent/DividerComponent';
+import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
 
 const BannerComponent = ({
     comp,
@@ -22,24 +23,31 @@ const BannerComponent = ({
     hoveredComponentId,
     setHoveredComponentId
 }) => {
+    // Obtener configuración del tema con valores por defecto
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    // Obtener estilos específicos del componente banner del tema
+    const themeBannerStyles = getComponentStyles(themeWithDefaults, 'banner');
+    const themeBannerInnerStyles = getComponentStyles(themeWithDefaults, 'banner-inner');
+    
     const customStyles = comp.styles || {};
     const bannerConfig = comp.content || {};
 
     // Obtener los componentes hijos
     const children = bannerConfig.children || [];
 
-    // Configuración del contenedor principal
-    const containerHeight = bannerConfig.containerHeight || '400px';
+    // Configuración del contenedor principal usando valores del tema como fallback
+    const containerHeight = bannerConfig.containerHeight || themeWithDefaults.banner_containerHeight || '400px';
     const containerWidth = bannerConfig.containerWidth || '100%';
     const marginTop = bannerConfig.marginTop || '0px';
     const marginRight = bannerConfig.marginRight || '0px';
     const marginBottom = bannerConfig.marginBottom || '0px';
     const marginLeft = bannerConfig.marginLeft || '0px';
-    const paddingTop = bannerConfig.paddingTop || '20px';
-    const paddingRight = bannerConfig.paddingRight || '20px';
-    const paddingBottom = bannerConfig.paddingBottom || '20px';
-    const paddingLeft = bannerConfig.paddingLeft || '20px';
-    const backgroundColor = bannerConfig.backgroundColor || 'transparent';
+    const paddingTop = bannerConfig.paddingTop || themeWithDefaults.banner_paddingTop || '20px';
+    const paddingRight = bannerConfig.paddingRight || themeWithDefaults.banner_paddingRight || '20px';
+    const paddingBottom = bannerConfig.paddingBottom || themeWithDefaults.banner_paddingBottom || '20px';
+    const paddingLeft = bannerConfig.paddingLeft || themeWithDefaults.banner_paddingLeft || '20px';
+    const backgroundColor = bannerConfig.backgroundColor || themeWithDefaults.banner_backgroundColor || 'transparent';
     const backgroundImage = bannerConfig.backgroundImage || null;
     const backgroundVideo = bannerConfig.backgroundVideo || null;
     const backgroundSize = bannerConfig.backgroundSize || 'cover';
@@ -48,14 +56,14 @@ const BannerComponent = ({
     const containerHorizontalPosition = bannerConfig.containerHorizontalPosition || 'center';
     const contentDirection = bannerConfig.contentDirection || 'vertical';
 
-    // NUEVO: Configuración del contenedor interno
-    const innerContainerBackgroundColor = bannerConfig.innerContainerBackgroundColor || 'transparent';
-    const innerContainerBackgroundOpacity = bannerConfig.innerContainerBackgroundOpacity || 1;
-    const innerContainerPaddingTop = bannerConfig.innerContainerPaddingTop || '20px';
-    const innerContainerPaddingRight = bannerConfig.innerContainerPaddingRight || '20px';
-    const innerContainerPaddingBottom = bannerConfig.innerContainerPaddingBottom || '20px';
-    const innerContainerPaddingLeft = bannerConfig.innerContainerPaddingLeft || '20px';
-    const innerContainerBorderRadius = bannerConfig.innerContainerBorderRadius || '0px';
+    // NUEVO: Configuración del contenedor interno usando valores del tema
+    const innerContainerBackgroundColor = bannerConfig.innerContainerBackgroundColor || themeWithDefaults.banner_innerContainerBackgroundColor || 'transparent';
+    const innerContainerBackgroundOpacity = bannerConfig.innerContainerBackgroundOpacity || themeWithDefaults.banner_innerContainerBackgroundOpacity || 1;
+    const innerContainerPaddingTop = bannerConfig.innerContainerPaddingTop || themeWithDefaults.banner_innerContainerPaddingTop || '20px';
+    const innerContainerPaddingRight = bannerConfig.innerContainerPaddingRight || themeWithDefaults.banner_innerContainerPaddingRight || '20px';
+    const innerContainerPaddingBottom = bannerConfig.innerContainerPaddingBottom || themeWithDefaults.banner_innerContainerPaddingBottom || '20px';
+    const innerContainerPaddingLeft = bannerConfig.innerContainerPaddingLeft || themeWithDefaults.banner_innerContainerPaddingLeft || '20px';
+    const innerContainerBorderRadius = bannerConfig.innerContainerBorderRadius || themeWithDefaults.banner_innerContainerBorderRadius || '0px';
     const innerContainerWidth = bannerConfig.innerContainerWidth || 'auto';
     const innerContainerMaxWidth = bannerConfig.innerContainerMaxWidth || '800px';
     const innerContainerShow = bannerConfig.innerContainerShow !== false; // Por defecto true

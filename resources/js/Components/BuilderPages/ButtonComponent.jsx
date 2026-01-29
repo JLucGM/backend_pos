@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
+import { getButtonStyles, hslToCss, getThemeWithDefaults } from '@/utils/themeUtils';
 
 const ButtonComponent = ({
     comp: originalComp,
@@ -31,6 +32,9 @@ const ButtonComponent = ({
             styles: normalizedStyles
         };
     }, [originalComp]);
+
+    // Obtener configuración del tema con valores por defecto
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
 
     // ===========================================
     // 2. DETERMINAR SI ES UNA URL
@@ -92,14 +96,14 @@ const ButtonComponent = ({
     // ===========================================
     // 4. OBTENER ESTILOS DEL BOTÓN
     // ===========================================
-    const getButtonStyles = () => {
+    const getButtonStylesCustom = () => {
         const baseStyles = getStyles ? getStyles(comp) : {};
         const customStyles = comp.styles || {};
 
         // Estilos base
         let styles = {
             ...baseStyles,
-            fontFamily: themeSettings?.body_font || 'inherit',
+            fontFamily: themeWithDefaults?.body_font || 'inherit',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             textDecoration: 'none',
@@ -115,44 +119,36 @@ const ButtonComponent = ({
         if (buttonType === 'custom') {
             styles = {
                 ...styles,
-                backgroundColor: customStyles.backgroundColor || '#007bff',
-                color: customStyles.color || '#ffffff',
-                borderColor: customStyles.borderColor || customStyles.backgroundColor || '#007bff',
-                borderWidth: customStyles.borderWidth || '1px',
+                backgroundColor: customStyles.backgroundColor || hslToCss(themeWithDefaults.primary_button_background),
+                color: customStyles.color || hslToCss(themeWithDefaults.primary_button_text),
+                borderColor: customStyles.borderColor || customStyles.backgroundColor || hslToCss(themeWithDefaults.primary_button_border),
+                borderWidth: customStyles.borderWidth || themeWithDefaults.primary_button_border_thickness,
                 borderStyle: customStyles.borderStyle || 'solid',
-                borderRadius: customStyles.borderRadius || '4px',
+                borderRadius: customStyles.borderRadius || themeWithDefaults.primary_button_corner_radius,
                 paddingTop: customStyles.paddingTop || '10px',
                 paddingRight: customStyles.paddingRight || '10px',
                 paddingBottom: customStyles.paddingBottom || '10px',
                 paddingLeft: customStyles.paddingLeft || '10px',
                 fontSize: customStyles.fontSize || '16px',
-                textTransform: customStyles.textTransform || 'none',
+                textTransform: customStyles.textTransform || themeWithDefaults.primary_button_text_case === 'default' ? 'none' : themeWithDefaults.primary_button_text_case,
                 fontWeight: customStyles.fontWeight || 'normal',
             };
         }
         // ===== ESTILOS PARA TIPO "primary" =====
         else if (buttonType === 'primary') {
-            // Usar estilos del tema si están disponibles
-            const primaryBg = themeSettings?.primary_button_background
-                ? `hsl(${themeSettings.primary_button_background})`
-                : (customStyles.backgroundColor || '#007bff');
-
-            const primaryColor = themeSettings?.primary_button_text
-                ? `hsl(${themeSettings.primary_button_text})`
-                : (customStyles.color || '#ffffff');
-
+            // Usar utilidades del tema
+            const themeButtonStyles = getButtonStyles(themeWithDefaults, 'primary');
+            
             styles = {
                 ...styles,
-                backgroundColor: primaryBg,
-                color: primaryColor,
-                borderColor: themeSettings?.primary_button_border
-                    ? `hsl(${themeSettings.primary_button_border})`
-                    : primaryBg,
-                borderWidth: customStyles.borderWidth || themeSettings?.primary_button_border_thickness || '1px',
+                backgroundColor: themeButtonStyles.backgroundColor || customStyles.backgroundColor,
+                color: themeButtonStyles.color || customStyles.color,
+                borderColor: themeButtonStyles.borderColor || themeButtonStyles.backgroundColor,
+                borderWidth: themeButtonStyles.borderWidth || customStyles.borderWidth,
                 borderStyle: 'solid',
-                borderRadius: customStyles.borderRadius || themeSettings?.primary_button_corner_radius || '4px',
+                borderRadius: themeButtonStyles.borderRadius || customStyles.borderRadius,
                 fontSize: customStyles.fontSize || '16px',
-                textTransform: customStyles.textTransform || themeSettings?.primary_button_text_case || 'none',
+                textTransform: themeButtonStyles.textTransform || customStyles.textTransform,
                 fontWeight: customStyles.fontWeight || 'normal',
                 paddingTop: customStyles.paddingTop || '10px',
                 paddingRight: customStyles.paddingRight || '10px',
@@ -162,27 +158,19 @@ const ButtonComponent = ({
         }
         // ===== ESTILOS PARA TIPO "secondary" =====
         else if (buttonType === 'secondary') {
-            // Usar estilos del tema si están disponibles
-            const secondaryBg = themeSettings?.secondary_button_background
-                ? `hsl(${themeSettings.secondary_button_background})`
-                : (customStyles.backgroundColor || '#6c757d');
-
-            const secondaryColor = themeSettings?.secondary_button_text
-                ? `hsl(${themeSettings.secondary_button_text})`
-                : (customStyles.color || '#ffffff');
-
+            // Usar utilidades del tema
+            const themeButtonStyles = getButtonStyles(themeWithDefaults, 'secondary');
+            
             styles = {
                 ...styles,
-                backgroundColor: secondaryBg,
-                color: secondaryColor,
-                borderColor: themeSettings?.secondary_button_border
-                    ? `hsl(${themeSettings.secondary_button_border})`
-                    : secondaryBg,
-                borderWidth: customStyles.borderWidth || themeSettings?.secondary_button_border_thickness || '1px',
+                backgroundColor: themeButtonStyles.backgroundColor || customStyles.backgroundColor,
+                color: themeButtonStyles.color || customStyles.color,
+                borderColor: themeButtonStyles.borderColor || themeButtonStyles.backgroundColor,
+                borderWidth: themeButtonStyles.borderWidth || customStyles.borderWidth,
                 borderStyle: 'solid',
-                borderRadius: customStyles.borderRadius || themeSettings?.secondary_button_corner_radius || '4px',
+                borderRadius: themeButtonStyles.borderRadius || customStyles.borderRadius,
                 fontSize: customStyles.fontSize || '16px',
-                textTransform: customStyles.textTransform || themeSettings?.secondary_button_text_case || 'none',
+                textTransform: themeButtonStyles.textTransform || customStyles.textTransform,
                 fontWeight: customStyles.fontWeight || 'normal',
                 paddingTop: customStyles.paddingTop || '10px',
                 paddingRight: customStyles.paddingRight || '10px',
@@ -194,12 +182,12 @@ const ButtonComponent = ({
         else {
             styles = {
                 ...styles,
-                backgroundColor: customStyles.backgroundColor || '#007bff',
-                color: customStyles.color || '#ffffff',
+                backgroundColor: customStyles.backgroundColor || hslToCss(themeWithDefaults.primary_button_background),
+                color: customStyles.color || hslToCss(themeWithDefaults.primary_button_text),
                 border: customStyles.borderWidth
-                    ? `${customStyles.borderWidth} solid ${customStyles.borderColor || '#007bff'}`
-                    : '1px solid transparent',
-                borderRadius: customStyles.borderRadius || '4px',
+                    ? `${customStyles.borderWidth} solid ${customStyles.borderColor || hslToCss(themeWithDefaults.primary_button_border)}`
+                    : `${themeWithDefaults.primary_button_border_thickness} solid ${hslToCss(themeWithDefaults.primary_button_border)}`,
+                borderRadius: customStyles.borderRadius || themeWithDefaults.primary_button_corner_radius,
                 fontSize: customStyles.fontSize || '16px',
                 fontWeight: customStyles.fontWeight || 'normal',
                 padding: `${customStyles.paddingTop || '10px'} ${customStyles.paddingRight || '20px'} ${customStyles.paddingBottom || '10px'} ${customStyles.paddingLeft || '20px'}`,
@@ -221,25 +209,28 @@ const ButtonComponent = ({
                 styles.borderColor = customStyles.hoverBorderColor || customStyles.hoverBackgroundColor;
                 styles.color = customStyles.hoverColor || styles.color;
             } else if (buttonType === 'primary') {
-                const hoverBg = themeSettings?.primary_button_hover_background
-                    ? `hsl(${themeSettings.primary_button_hover_background})`
-                    : (customStyles.hoverBackgroundColor || '#0056b3');
+                const themeButtonStyles = getButtonStyles(themeWithDefaults, 'primary');
+                const hoverBg = themeButtonStyles['--hover-bg'] || customStyles.hoverBackgroundColor;
+                const hoverBorder = themeButtonStyles['--hover-border'] || hoverBg;
+                const hoverColor = themeButtonStyles['--hover-color'] || styles.color;
+                
                 styles.backgroundColor = hoverBg;
-                styles.borderColor = themeSettings?.primary_button_hover_border
-                    ? `hsl(${themeSettings.primary_button_hover_border})`
-                    : hoverBg;
+                styles.borderColor = hoverBorder;
+                styles.color = hoverColor;
             } else if (buttonType === 'secondary') {
-                const hoverBg = themeSettings?.secondary_button_hover_background
-                    ? `hsl(${themeSettings.secondary_button_hover_background})`
-                    : (customStyles.hoverBackgroundColor || '#545b62');
+                const themeButtonStyles = getButtonStyles(themeWithDefaults, 'secondary');
+                const hoverBg = themeButtonStyles['--hover-bg'] || customStyles.hoverBackgroundColor;
+                const hoverBorder = themeButtonStyles['--hover-border'] || hoverBg;
+                const hoverColor = themeButtonStyles['--hover-color'] || styles.color;
+                
                 styles.backgroundColor = hoverBg;
-                styles.borderColor = themeSettings?.secondary_button_hover_border
-                    ? `hsl(${themeSettings.secondary_button_hover_border})`
-                    : hoverBg;
+                styles.borderColor = hoverBorder;
+                styles.color = hoverColor;
             } else {
-                // Efecto hover genérico
-                styles.opacity = 0.9;
-                styles.transform = 'translateY(-1px)';
+                // Efecto hover genérico usando valores del tema
+                styles.backgroundColor = hslToCss(themeWithDefaults.primary_button_hover_background);
+                styles.borderColor = hslToCss(themeWithDefaults.primary_button_hover_border);
+                styles.color = hslToCss(themeWithDefaults.primary_button_hover_text);
             }
         }
 
@@ -334,7 +325,7 @@ const getButtonText = () => {
     // ===========================================
     // 7. OBTENER ESTILOS Y TEXTO
     // ===========================================
-    const buttonStyles = getButtonStyles();
+    const buttonStyles = getButtonStylesCustom();
     const buttonText = getButtonText();
     const customStyles = comp.styles || {};
     const layout = customStyles.layout || 'fit';

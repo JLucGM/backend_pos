@@ -4,6 +4,7 @@ import CartItemsComponent from './CartItemsComponent';
 import CartSummaryComponent from './CartSummaryComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import cartHelper from '@/Helper/cartHelper';
+import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
 
 const CartComponent = ({
     comp,
@@ -23,6 +24,8 @@ const CartComponent = ({
     const customStyles = comp.styles || {};
     const cartConfig = comp.content || {};
     const children = cartConfig.children || [];
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart');
 
     const [cartItems, setCartItems] = useState([]);
     const [cartTotal, setCartTotal] = useState(0);
@@ -35,13 +38,13 @@ const CartComponent = ({
     const isMounted = useRef(false);
     const isLoadingRef = useRef(false);
 
-    // Obtener estilos del layout
+    // Obtener estilos del layout con valores del tema
     const layoutType = customStyles.layoutType || 'grid';
     const paddingTop = customStyles.paddingTop || '20px';
     const paddingRight = customStyles.paddingRight || '20px';
     const paddingBottom = customStyles.paddingBottom || '20px';
     const paddingLeft = customStyles.paddingLeft || '20px';
-    const backgroundColor = customStyles.backgroundColor || '#ffffff';
+    const backgroundColor = customStyles.backgroundColor || themeCartStyles.backgroundColor;
     const maxWidth = '100%';
     const gap = customStyles.gap || '40px';
 
@@ -59,6 +62,7 @@ const CartComponent = ({
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
+        borderRadius: themeCartStyles.borderRadius,
     };
 
     // Detectar móvil solo en frontend

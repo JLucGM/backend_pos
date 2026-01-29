@@ -2,6 +2,7 @@ import React from 'react';
 import BentoTitleComponent from './BentoTitleComponent';
 import BentoFeatureComponent from './BentoFeatureComponent';
 import ComponentWithHover from '../ComponentWithHover';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const BentoComponent = ({
     comp,
@@ -16,6 +17,8 @@ const BentoComponent = ({
 }) => {
     const bentoConfig = comp.content || {};
     const children = bentoConfig.children || [];
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeBentoStyles = getComponentStyles(themeWithDefaults, 'bento');
 
     // Función para obtener el nombre del tipo de componente
     const getComponentTypeName = (type) => {
@@ -29,26 +32,26 @@ const BentoComponent = ({
         return typeNames[type] || type;
     };
 
-    // Configuración del contenedor principal
+    // Configuración del contenedor principal con valores del tema
     const containerStyles = {
         ...getStyles(comp),
         width: '100%',
-        backgroundColor: bentoConfig.backgroundColor || '#ffffff',
+        backgroundColor: bentoConfig.backgroundColor || themeBentoStyles.backgroundColor,
         padding: '40px 20px',
-        borderRadius: bentoConfig.containerBorderRadius || '0px',
+        borderRadius: bentoConfig.containerBorderRadius || themeBentoStyles.borderRadius,
         border: bentoConfig.containerBorder === 'solid' 
             ? `${bentoConfig.containerBorderThickness || '1px'} solid ${bentoConfig.containerBorderColor || '#e5e7eb'}` 
             : 'none',
     };
 
-    // Grid styles basado en la cantidad de características
+    // Grid styles basado en la cantidad de características con valores del tema
     const featuresCount = children.filter(child => child.type === 'bentoFeature').length;
     const gridColumns = bentoConfig.gridColumns || getGridColumns(featuresCount);
     
     const gridStyles = {
         display: 'grid',
         gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
-        gap: bentoConfig.gridGap || '20px',
+        gap: bentoConfig.gridGap || themeBentoStyles.gap,
         maxWidth: '1200px',
         margin: '0 auto',
     };

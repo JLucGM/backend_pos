@@ -5,6 +5,7 @@ import CarouselPriceComponent from './CarouselPriceComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
+import { getThemeWithDefaults, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const CarouselCardComponent = ({
     comp,
@@ -24,6 +25,7 @@ const CarouselCardComponent = ({
     const cardConfig = comp.content || {};
     const children = cardConfig.children || [];
     const productData = cardConfig.productData;
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
 
     // ==================== MANEJO DE NAVEGACIÓN ====================
     const handleProductClick = (e) => {
@@ -50,12 +52,12 @@ const CarouselCardComponent = ({
         const nameChild = children.find(child => child.type === 'carouselName');
         const priceChild = children.find(child => child.type === 'carouselPrice');
 
-        // Estilos para cada parte
+        // Estilos para cada parte con valores del tema
         const imageStyles = imageChild?.styles || {};
         const nameStyles = nameChild?.styles || {};
         const priceStyles = priceChild?.styles || {};
 
-        // Configuración de la tarjeta para frontend
+        // Configuración de la tarjeta para frontend con valores del tema
         const cardStyle = {
             paddingTop: cardConfig.cardPaddingTop || '10px',
             paddingRight: cardConfig.cardPaddingRight || '10px',
@@ -65,13 +67,13 @@ const CarouselCardComponent = ({
                 ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})` 
                 : 'none',
             borderRadius: cardConfig.cardBorderRadius || '0px',
-            backgroundColor: cardConfig.cardBackgroundColor || 'white',
+            backgroundColor: cardConfig.cardBackgroundColor || hslToCss(themeWithDefaults.background),
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            boxShadow: `0 2px 8px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`,
             textDecoration: 'none',
             color: 'inherit',
         };
@@ -100,27 +102,27 @@ const CarouselCardComponent = ({
             transition: 'transform 0.3s ease',
         };
 
-        // Estilos del nombre del producto
+        // Estilos del nombre del producto con valores del tema
         const nameStyle = {
             fontSize: nameStyles.fontSize || '14px',
             fontWeight: nameStyles.fontWeight || '600',
-            color: nameStyles.color || '#000000',
+            color: nameStyles.color || hslToCss(themeWithDefaults.text),
             textAlign: nameStyles.alignment || 'left',
             marginBottom: '8px',
             lineHeight: nameStyles.lineHeight || '1.4',
-            fontFamily: nameStyles.fontFamily || themeSettings?.body_font || 'inherit',
+            fontFamily: nameStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font'),
             textTransform: nameStyles.textTransform || 'none',
             flexGrow: 1,
         };
 
-        // Estilos del precio
+        // Estilos del precio con valores del tema
         const priceStyle = {
             fontSize: priceStyles.fontSize || '12px',
             fontWeight: priceStyles.fontWeight || 'normal',
-            color: priceStyles.color || '#666666',
+            color: priceStyles.color || hslToCss(themeWithDefaults.text),
             textAlign: priceStyles.alignment || 'left',
             lineHeight: priceStyles.lineHeight || '1.4',
-            fontFamily: priceStyles.fontFamily || themeSettings?.body_font || 'inherit',
+            fontFamily: priceStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font'),
             marginTop: 'auto',
         };
 
@@ -134,7 +136,7 @@ const CarouselCardComponent = ({
 
         const handleMouseLeave = (e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            e.currentTarget.style.boxShadow = `0 2px 8px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`;
             const img = e.currentTarget.querySelector('img');
             if (img) img.style.transform = 'scale(1)';
         };
@@ -235,7 +237,7 @@ const CarouselCardComponent = ({
         return typeNames[type] || type;
     };
 
-    // Estilos de la carta para builder
+    // Estilos de la carta para builder con valores del tema
     const cardStyles = {
         ...getStyles(comp),
         paddingTop: cardConfig.cardPaddingTop || '10px',
@@ -246,8 +248,8 @@ const CarouselCardComponent = ({
             ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || '1'})` 
             : 'none',
         borderRadius: cardConfig.cardBorderRadius || '0px',
-        backgroundColor: cardConfig.cardBackgroundColor || 'white',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        backgroundColor: cardConfig.cardBackgroundColor || hslToCss(themeWithDefaults.background),
+        boxShadow: `0 2px 4px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`,
         height: '100%',
         cursor: !isPreview ? 'pointer' : 'default',
     };

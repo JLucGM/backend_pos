@@ -1,7 +1,11 @@
 // components/BuilderPages/components/HeadingComponent.jsx
 import React from 'react';
+import { getTextStyles, getResolvedFont, getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
 
 const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) => {
+    // Obtener configuración del tema con valores por defecto
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
     const getHeadingStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
@@ -15,40 +19,31 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings })
             const fontType = customStyles.fontType;
             
             if (fontType === 'default' || !fontType) {
-                return themeSettings?.heading_font || "'Inter', sans-serif";
+                return getResolvedFont(themeWithDefaults, `heading${level}_font`);
             }
             
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
             
-            switch(fontType) {
-                case 'body_font':
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-                case 'heading_font':
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
-                case 'subheading_font':
-                    return themeSettings?.subheading_font || "'Inter', sans-serif";
-                case 'accent_font':
-                    return themeSettings?.accent_font || "'Inter', sans-serif";
-                default:
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
-            }
+            return getResolvedFont(themeWithDefaults, fontType);
         };
 
-        // Obtener configuración según el nivel
+        // Obtener configuración según el nivel usando utilidades del tema
         let fontSize, fontWeight, lineHeight, textTransform;
         
         if (textStyle === 'custom') {
-            fontSize = customStyles.fontSize || '32px';
-            fontWeight = customStyles.fontWeight || 'bold';
-            lineHeight = customStyles.lineHeight || 'tight';
-            textTransform = customStyles.textTransform || 'none';
+            fontSize = customStyles.fontSize || themeWithDefaults[`heading${level}_fontSize`];
+            fontWeight = customStyles.fontWeight || themeWithDefaults[`heading${level}_fontWeight`];
+            lineHeight = customStyles.lineHeight || themeWithDefaults[`heading${level}_lineHeight`];
+            textTransform = customStyles.textTransform || themeWithDefaults[`heading${level}_textTransform`];
         } else {
-            fontSize = customStyles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
-            fontWeight = customStyles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || 'bold';
-            lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || 'tight';
-            textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
+            // Usar utilidades del tema para obtener estilos consistentes
+            const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+            fontSize = customStyles.fontSize || themeTextStyles.fontSize;
+            fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
+            lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
+            textTransform = customStyles.textTransform || themeTextStyles.textTransform;
         }
 
         // Calcular line-height
@@ -88,7 +83,7 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings })
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform: textTransform === 'default' ? 'none' : textTransform,
-            color: customStyles.color || '#000000',
+            color: customStyles.color || hslToCss(themeWithDefaults.heading),
         };
     };
 

@@ -2,6 +2,7 @@
 import React from 'react';
 import FooterMenuComponent from './FooterMenuComponent';
 import TextComponent from '../TextComponent'; 
+import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
 
 const FooterComponent = ({
     comp,
@@ -19,15 +20,17 @@ const FooterComponent = ({
 }) => {
     const styles = getStyles(comp);
     const content = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeFooterStyles = getComponentStyles(themeWithDefaults, 'footer');
 
     // Determinar si estamos en modo de edición
     const isEditable = mode === 'builder' && !isPreview;
 
-    // Estilos del contenedor principal del footer
+    // Estilos del contenedor principal del footer con valores del tema
     const containerStyles = {
         ...styles,
         width: '100%',
-        backgroundColor: styles.backgroundColor || '#f9f9f9',
+        backgroundColor: styles.backgroundColor || themeFooterStyles.backgroundColor,
         padding: '40px 20px',
     };
 
@@ -80,14 +83,14 @@ const FooterComponent = ({
                 })}
             </div>
 
-            {/* Copyright */}
+            {/* Copyright con valores del tema */}
             {content.showCopyright && (
                 <div style={{
                     textAlign: 'center',
                     marginTop: '40px',
                     paddingTop: '20px',
-                    borderTop: '1px solid #e5e5e5',
-                    color: '#666',
+                    borderTop: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
+                    color: hslToCss(themeWithDefaults.text),
                     fontSize: '14px'
                 }}>
                     {content.copyrightText || '© 2023 Mi Empresa. Todos los derechos reservados.'}

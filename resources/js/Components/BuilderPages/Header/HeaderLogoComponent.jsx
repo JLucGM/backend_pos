@@ -1,5 +1,6 @@
 // components/BuilderPages/HeaderLogoComponent.jsx
 import React from 'react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const HeaderLogoComponent = ({ 
     comp, 
@@ -93,7 +94,7 @@ const HeaderLogoComponent = ({
             <span style={{
                 fontSize: comp.styles?.fontSize || '24px',
                 fontWeight: comp.styles?.fontWeight || 'bold',
-                color: comp.styles?.color || '#000000',
+                color: comp.styles?.color || hslToCss(getThemeWithDefaults(themeSettings).heading),
             }}>
                 {comp.content || 'Logo'}
             </span>

@@ -1,6 +1,7 @@
 // CheckoutPaymentComponent.jsx - VERSIÓN ACTUALIZADA
 import React from 'react';
 import { Button } from '@/Components/ui/button';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
 const CheckoutPaymentComponent = ({
     comp,
@@ -20,6 +21,11 @@ const CheckoutPaymentComponent = ({
 }) => {
     const styles = comp.styles || {};
     const content = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    // Obtener estilos del tema para checkout
+    const themeCheckoutStyles = getComponentStyles(themeWithDefaults, 'checkout');
+    const themeCheckoutTitleStyles = getComponentStyles(themeWithDefaults, 'checkout-title');
 
     // Datos de ejemplo para modo builder
     const examplePaymentMethods = [
@@ -44,18 +50,18 @@ const CheckoutPaymentComponent = ({
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || '#ffffff',
+        backgroundColor: styles.backgroundColor || themeCheckoutStyles.backgroundColor || hslToCss(themeWithDefaults.background),
         padding: styles.padding || '24px',
-        borderRadius: styles.borderRadius || '8px',
-        border: '1px solid #e5e7eb',
+        borderRadius: styles.borderRadius || themeCheckoutStyles.borderRadius || '8px',
+        border: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
     };
 
     const titleStyles = {
-        fontSize: styles.titleSize || '20px',
-        color: styles.titleColor || '#000000',
-        fontFamily: themeSettings?.heading_font,
+        fontSize: styles.titleSize || themeCheckoutTitleStyles.fontSize || themeWithDefaults.heading3_fontSize || '20px',
+        color: styles.titleColor || themeCheckoutTitleStyles.color || hslToCss(themeWithDefaults.heading),
+        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
         marginBottom: '20px',
-        fontWeight: '600',
+        fontWeight: themeWithDefaults.heading3_fontWeight || '600',
     };
 
     // Manejar envío de orden
@@ -143,9 +149,11 @@ const CheckoutPaymentComponent = ({
                 disabled={!selectedPaymentMethod || (content.showTerms && !acceptTerms) || isSubmitting}
                 className="w-full py-3 text-lg"
                 style={{
-                    backgroundColor: styles.buttonBackgroundColor || '#3b82f6',
-                    color: styles.buttonColor || '#ffffff',
-                    borderRadius: styles.buttonBorderRadius || '8px'
+                    ...getButtonStyles(themeWithDefaults, 'primary'),
+                    backgroundColor: styles.buttonBackgroundColor || hslToCss(themeWithDefaults.primary_button_background),
+                    color: styles.buttonColor || hslToCss(themeWithDefaults.primary_button_text),
+                    borderRadius: styles.buttonBorderRadius || themeWithDefaults.primary_button_corner_radius || '8px',
+                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
                 }}
             >
                 {isSubmitting ? (

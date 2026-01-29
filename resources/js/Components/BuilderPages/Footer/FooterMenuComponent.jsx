@@ -1,6 +1,7 @@
 // components/BuilderPages/FooterMenuComponent.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const FooterMenuComponent = ({ 
     comp, 
@@ -13,6 +14,8 @@ const FooterMenuComponent = ({
 }) => {
     const styles = getStyles(comp);
     const [menuItems, setMenuItems] = useState([]);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeFooterStyles = getComponentStyles(themeWithDefaults, 'footer');
 
     // OBTENER LOS ITEMS DEL MENÚ DINÁMICAMENTE
     useEffect(() => {        
@@ -103,13 +106,14 @@ const FooterMenuComponent = ({
                             <Link
                                 href={processedUrl}
                                 style={{
-                                    color: comp.styles?.color || '#666666',
+                                    color: comp.styles?.color || hslToCss(themeWithDefaults.text),
                                     textDecoration: 'none',
                                     fontSize: comp.styles?.fontSize || '14px',
                                     textTransform: comp.styles?.textTransform || 'none',
                                     display: 'block',
                                     padding: '4px 0',
                                     transition: 'color 0.2s',
+                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
                                 }}
                                 className="hover:opacity-80"
                             >
@@ -118,13 +122,14 @@ const FooterMenuComponent = ({
                         ) : (
                             <div
                                 style={{
-                                    color: comp.styles?.color || '#666666',
+                                    color: comp.styles?.color || hslToCss(themeWithDefaults.text),
                                     textDecoration: 'none',
                                     fontSize: comp.styles?.fontSize || '14px',
                                     textTransform: comp.styles?.textTransform || 'none',
                                     display: 'block',
                                     padding: '4px 0',
                                     cursor: 'pointer',
+                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
                                 }}
                                 onClick={(e) => {
                                     e.preventDefault();

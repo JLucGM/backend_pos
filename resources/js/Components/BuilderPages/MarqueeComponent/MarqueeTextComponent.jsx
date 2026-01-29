@@ -1,13 +1,20 @@
 // components/Builder/components/MarqueeTextComponent.jsx
 import React, { useState, useRef, useEffect } from 'react';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
 
 const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) => {
+    // Obtener configuración del tema con valores por defecto
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    // Obtener estilos específicos del componente marquee del tema
+    const themeMarqueeStyles = getComponentStyles(themeWithDefaults, 'marquee');
+    
     const [isPaused, setIsPaused] = useState(false);
     const marqueeRef = useRef(null);
     const contentRef = useRef(null);
     const containerRef = useRef(null);
 
-    // Función para obtener la familia de fuentes
+    // Función para obtener la familia de fuentes usando utilidades del tema
     const getFontFamily = () => {
         const customStyles = comp.styles || {};
         
@@ -16,43 +23,29 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
         }
         
         const fontType = customStyles.fontType || 'body_font';
-        switch(fontType) {
-            case 'body_font':
-                return themeSettings?.body_font || "'Inter', sans-serif";
-            case 'heading_font':
-                return themeSettings?.heading_font || "'Inter', sans-serif";
-            case 'subheading_font':
-                return themeSettings?.subheading_font || "'Inter', sans-serif";
-            case 'accent_font':
-                return themeSettings?.accent_font || "'Inter', sans-serif";
-            case 'custom':
-                return customStyles.customFont || "'Inter', sans-serif";
-            default:
-                return themeSettings?.body_font || "'Inter', sans-serif";
-        }
+        return getResolvedFont(themeWithDefaults, fontType);
     };
 
     const getMarqueeStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
 
-        // Padding individual
-        const paddingTop = customStyles.paddingTop || '10px';
+        // Padding individual usando valores del tema como fallback
+        const paddingTop = customStyles.paddingTop || themeWithDefaults.marquee_paddingTop || '10px';
         const paddingRight = customStyles.paddingRight || '0px';
-        const paddingBottom = customStyles.paddingBottom || '10px';
+        const paddingBottom = customStyles.paddingBottom || themeWithDefaults.marquee_paddingBottom || '10px';
         const paddingLeft = customStyles.paddingLeft || '0px';
 
         // Layout: fit (ancho natural) o fill (ancho 100%)
         const layout = customStyles.layout || 'fill';
         const width = layout === 'fill' ? '100%' : 'auto';
 
-        // Estilos de texto
-        const fontSize = customStyles.fontSize || '16px';
-        const fontWeight = customStyles.fontWeight || 'normal';
-        const color = customStyles.color || '#000000';
-        const backgroundColor = customStyles.backgroundColor || 'transparent';
-
-        const borderRadius = customStyles.borderRadius || '0px';
+        // Estilos de texto usando valores del tema
+        const fontSize = customStyles.fontSize || themeWithDefaults.marquee_fontSize || '16px';
+        const fontWeight = customStyles.fontWeight || themeWithDefaults.marquee_fontWeight || 'normal';
+        const color = customStyles.color || themeWithDefaults.marquee_color || hslToCss(themeWithDefaults.text);
+        const backgroundColor = customStyles.backgroundColor || themeWithDefaults.marquee_backgroundColor || 'transparent';
+        const borderRadius = customStyles.borderRadius || themeWithDefaults.marquee_borderRadius || '0px';
 
         return {
             ...baseStyles,

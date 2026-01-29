@@ -2,6 +2,7 @@
 import React from 'react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const CheckoutSummaryComponent = ({
     comp,

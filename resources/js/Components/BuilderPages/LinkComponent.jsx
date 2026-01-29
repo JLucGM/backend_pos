@@ -1,4 +1,5 @@
 import React from 'react';
+import { getTextStyles as getThemeTextStyles, getResolvedFont, getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
 
 const LinkComponent = ({ 
     comp, 
@@ -7,6 +8,9 @@ const LinkComponent = ({
     isPreview, 
     themeSettings 
 }) => {
+    // Obtener configuración del tema con valores por defecto
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
     const getLinkStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
@@ -21,9 +25,9 @@ const LinkComponent = ({
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`);
                 } else {
-                    return themeSettings?.body_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'paragraph_font');
                 }
             }
             
@@ -31,35 +35,26 @@ const LinkComponent = ({
                 return customStyles.customFont;
             }
             
-            switch(fontType) {
-                case 'body_font':
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-                case 'heading_font':
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
-                case 'subheading_font':
-                    return themeSettings?.subheading_font || "'Inter', sans-serif";
-                case 'accent_font':
-                    return themeSettings?.accent_font || "'Inter', sans-serif";
-                default:
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-            }
+            return getResolvedFont(themeWithDefaults, fontType);
         };
 
-        // Obtener configuración según el estilo seleccionado
-        let fontSize, fontWeight, lineHeight, textTransform;
+        // Obtener configuración según el estilo seleccionado usando utilidades del tema
+        let fontSize, fontWeight, lineHeight, textTransform, color;
         
-        if (textStyle.startsWith('heading')) {
-            const level = textStyle.replace('heading', '');
-            fontSize = customStyles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
-            fontWeight = customStyles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || 'bold';
-            lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.2';
-            textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
+        if (textStyle === 'custom') {
+            fontSize = customStyles.fontSize || themeWithDefaults.paragraph_fontSize;
+            fontWeight = customStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
+            lineHeight = customStyles.lineHeight || themeWithDefaults.paragraph_lineHeight;
+            textTransform = customStyles.textTransform || themeWithDefaults.paragraph_textTransform;
+            color = customStyles.color || hslToCss(themeWithDefaults.links);
         } else {
-            // Paragraph o custom
-            fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
-            fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
-            lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
-            textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
+            // Usar utilidades del tema para obtener estilos consistentes
+            const themeTextStyles = getThemeTextStyles(themeWithDefaults, textStyle);
+            fontSize = customStyles.fontSize || themeTextStyles.fontSize;
+            fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
+            lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
+            textTransform = customStyles.textTransform || themeTextStyles.textTransform;
+            color = customStyles.color || hslToCss(themeWithDefaults.links);
         }
 
         // Calcular line-height si es personalizado
@@ -71,7 +66,7 @@ const LinkComponent = ({
             finalLineHeight = customStyles.customLineHeight;
         }
 
-        // Estilos del enlace
+        // Estilos del enlace usando valores del tema
         const linkStyle = {
             ...baseStyles,
             fontFamily: getFontFamily(),
@@ -79,15 +74,13 @@ const LinkComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color: customStyles.color || (themeSettings?.links ? `hsl(${themeSettings.links})` : '#0000EE'),
+            color,
             textDecoration: customStyles.textDecoration || 'underline',
             cursor: 'pointer',
             display: 'inline-block',
             transition: 'color 0.2s, text-decoration 0.2s',
         };
 
-        // Manejar hover (esto no funcionará en React inline styles, necesita CSS)
-        // Moveremos el hover a className
         return linkStyle;
     };
 
@@ -113,8 +106,9 @@ const LinkComponent = ({
 
     const linkContent = getLinkContent();
 
-    // Clases para hover
+    // Clases para hover usando colores del tema
     const hoverClasses = isPreview ? '' : 'hover:opacity-80';
+    const hoverColor = hslToCss(themeWithDefaults.hover_links);
 
     return (
         <a
@@ -123,7 +117,17 @@ const LinkComponent = ({
             rel="noopener noreferrer"
             style={getLinkStyles()}
             onDoubleClick={isPreview ? undefined : () => onEdit(comp)}
-            className={`${hoverClasses} hover:text-blue-700 hover:underline`}
+            className={`${hoverClasses} transition-colors`}
+            onMouseEnter={(e) => {
+                if (!isPreview) {
+                    e.target.style.color = hoverColor;
+                }
+            }}
+            onMouseLeave={(e) => {
+                if (!isPreview) {
+                    e.target.style.color = getLinkStyles().color;
+                }
+            }}
         >
             {linkContent.text}
         </a>

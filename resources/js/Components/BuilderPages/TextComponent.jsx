@@ -1,8 +1,12 @@
 // components/BuilderPages/components/TextComponent.jsx
 import React from 'react';
+import { getTextStyles as getThemeTextStyles, getResolvedFont, getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
 
 const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
-    const getTextStyles = () => {
+    // Obtener configuración del tema con valores por defecto
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    const getTextComponentStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
 
@@ -16,9 +20,9 @@ const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`);
                 } else {
-                    return themeSettings?.body_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'paragraph_font');
                 }
             }
             
@@ -26,51 +30,26 @@ const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
                 return customStyles.customFont;
             }
             
-            switch(fontType) {
-                case 'body_font':
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-                case 'heading_font':
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
-                case 'subheading_font':
-                    return themeSettings?.subheading_font || "'Inter', sans-serif";
-                case 'accent_font':
-                    return themeSettings?.accent_font || "'Inter', sans-serif";
-                default:
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-            }
+            return getResolvedFont(themeWithDefaults, fontType);
         };
 
-        // Obtener configuración según el estilo seleccionado
-        let fontSize, fontWeight, lineHeight, textTransform;
+        // Obtener configuración según el estilo seleccionado usando utilidades del tema
+        let fontSize, fontWeight, lineHeight, textTransform, color;
         
-        switch(textStyle) {
-            case 'paragraph':
-                fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
-                fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
-                lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
-                textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
-                break;
-                
-            case 'heading1':
-            case 'heading2':
-            case 'heading3':
-            case 'heading4':
-            case 'heading5':
-            case 'heading6':
-                const level = textStyle.replace('heading', '');
-                fontSize = customStyles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
-                fontWeight = customStyles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || 'bold';
-                lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.2';
-                textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
-                break;
-                
-            case 'custom':
-            default:
-                fontSize = customStyles.fontSize || '16px';
-                fontWeight = customStyles.fontWeight || 'normal';
-                lineHeight = customStyles.lineHeight || '1.6';
-                textTransform = customStyles.textTransform || 'none';
-                break;
+        if (textStyle === 'custom') {
+            fontSize = customStyles.fontSize || themeWithDefaults.paragraph_fontSize;
+            fontWeight = customStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
+            lineHeight = customStyles.lineHeight || themeWithDefaults.paragraph_lineHeight;
+            textTransform = customStyles.textTransform || themeWithDefaults.paragraph_textTransform;
+            color = customStyles.color || hslToCss(themeWithDefaults.text);
+        } else {
+            // Usar utilidades del tema para obtener estilos consistentes
+            const themeTextStyles = getThemeTextStyles(themeWithDefaults, textStyle);
+            fontSize = customStyles.fontSize || themeTextStyles.fontSize;
+            fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
+            lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
+            textTransform = customStyles.textTransform || themeTextStyles.textTransform;
+            color = customStyles.color || themeTextStyles.color;
         }
 
         // Calcular line-height si es personalizado
@@ -110,7 +89,7 @@ const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color: customStyles.color || '#000000',
+            color,
         };
     };
 
@@ -146,7 +125,7 @@ const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
     const textContent = getTextContent();
 
     return (
-        <Tag style={getTextStyles()}>
+        <Tag style={getTextComponentStyles()}>
             {textContent}
         </Tag>
     );

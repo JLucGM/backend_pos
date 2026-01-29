@@ -3,6 +3,7 @@ import React from 'react';
 import { Trash2 } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const CartItemsComponent = ({
     comp,
@@ -17,13 +18,18 @@ const CartItemsComponent = ({
     const { settings } = usePage().props;
     const styles = comp.styles || {};
     const content = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    // Obtener estilos del tema para cart
+    const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart');
+    const themeCartTitleStyles = getComponentStyles(themeWithDefaults, 'cart-title');
     
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || '#ffffff',
+        backgroundColor: styles.backgroundColor || themeCartStyles.backgroundColor || hslToCss(themeWithDefaults.background),
         padding: `${styles.paddingTop || '20px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '20px'} ${styles.paddingLeft || '20px'}`,
-        borderRadius: styles.borderRadius || '0',
-        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || '#000000'}`,
+        borderRadius: styles.borderRadius || themeCartStyles.borderRadius || '0',
+        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || hslToCss(themeWithDefaults.borders)}`,
     };
 
     const handleClick = () => {
@@ -34,21 +40,19 @@ const CartItemsComponent = ({
 
     // Estilos de fuente del tema
     const getFontStyles = (type = 'title') => {
-        const theme = themeSettings || {};
-        
         if (type === 'title') {
             return {
-                fontFamily: theme?.heading_font || "'Inter', sans-serif",
-                fontSize: styles.titleSize || '24px',
-                fontWeight: styles.titleWeight || 'bold',
-                color: styles.titleColor || (theme?.foreground ? `hsl(${theme.foreground})` : '#000000'),
+                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
+                fontSize: styles.titleSize || themeCartTitleStyles.fontSize || themeWithDefaults.heading2_fontSize || '24px',
+                fontWeight: styles.titleWeight || themeWithDefaults.heading2_fontWeight || 'bold',
+                color: styles.titleColor || themeCartTitleStyles.color || hslToCss(themeWithDefaults.heading),
             };
         }
         
         return {
-            fontFamily: theme?.body_font || "'Inter', sans-serif",
-            fontSize: styles.fontSize || '14px',
-            color: styles.color || (theme?.text ? `hsl(${theme.text})` : '#374151'),
+            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+            fontSize: styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
+            color: styles.color || hslToCss(themeWithDefaults.text),
         };
     };
 
@@ -91,7 +95,7 @@ const CartItemsComponent = ({
             <div className="mt-2">
                 <div className="text-xs" style={{ 
                     color: '#059669',
-                    fontFamily: themeSettings?.body_font,
+                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
                     backgroundColor: 'rgba(5, 150, 105, 0.1)',
                     padding: '4px 8px',
                     borderRadius: '4px',
@@ -103,7 +107,7 @@ const CartItemsComponent = ({
                 {percentageOff > 0 && (
                     <div className="text-xs mt-1" style={{ 
                         color: '#dc2626',
-                        fontFamily: themeSettings?.body_font
+                        fontFamily: getResolvedFont(themeWithDefaults, 'body_font')
                     }}>
                         {percentageOff}% de descuento
                     </div>
@@ -158,15 +162,18 @@ const CartItemsComponent = ({
                                 <div className="flex justify-between">
                                     <div>
                                         <h3 className="font-medium" style={{ 
-                                            fontFamily: themeSettings?.body_font,
-                                            color: themeSettings?.foreground ? `hsl(${themeSettings.foreground})` : '#111827'
+                                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                                            color: hslToCss(themeWithDefaults.heading)
                                         }}>
                                             {item.name}
                                         </h3>
                                         
                                         {/* Combinación seleccionada */}
                                         {content.showCombination !== false && item.combination && (
-                                            <div className="text-sm mt-1" style={{ color: '#6b7280' }}>
+                                            <div className="text-sm mt-1" style={{ 
+                                                color: hslToCss(themeWithDefaults.text),
+                                                opacity: '0.7'
+                                            }}>
                                                 {item.combination.attribute_values
                                                     .map(attr => `${attr.attribute_name}: ${attr.value_name}`)
                                                     .join(' / ')}
@@ -179,7 +186,7 @@ const CartItemsComponent = ({
                                             <div>
                                                 <div className="line-through text-sm" style={{ 
                                                     color: '#999',
-                                                    fontFamily: themeSettings?.body_font
+                                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font')
                                                 }}>
                                                     {settings?.currency ? (
                                                         <CurrencyDisplay currency={settings.currency} amount={item.originalPrice * item.quantity} />

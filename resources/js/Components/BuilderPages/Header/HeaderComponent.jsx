@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Search, User, LogOut } from 'lucide-react';
 import CanvasItem from '../CanvasItem';
 import { Link, usePage, router } from '@inertiajs/react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const HeaderComponent = ({
     comp,
@@ -24,6 +25,8 @@ const HeaderComponent = ({
     const headerStyles = getStyles(comp);
     const customStyles = comp.styles || {};
     const content = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeHeaderStyles = getComponentStyles(themeWithDefaults, 'header');
 
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
@@ -57,7 +60,7 @@ const HeaderComponent = ({
         return () => window.removeEventListener('scroll', handleScroll);
     }, [lastScrollY, mode, stickyType]);
 
-    // Estilos del contenedor principal del header
+    // Estilos del contenedor principal del header con valores del tema
     const getContainerStyles = () => {
         const baseStyles = {
             ...headerStyles,
@@ -65,12 +68,12 @@ const HeaderComponent = ({
             height: content?.height || '70px',
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: customStyles.backgroundColor || '#ffffff',
+            backgroundColor: customStyles.backgroundColor || themeHeaderStyles.backgroundColor,
             paddingTop: customStyles.paddingTop || '20px',
             paddingRight: customStyles.paddingRight || '20px',
             paddingBottom: customStyles.paddingBottom || '20px',
             paddingLeft: customStyles.paddingLeft || '20px',
-            borderBottom: customStyles.borderBottom || '1px solid #e5e5e5',
+            borderBottom: customStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
             transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
         };
 
@@ -128,11 +131,11 @@ const HeaderComponent = ({
     // Configuración de botones con valores por defecto seguros
     const buttonsConfig = content?.buttons || {};
     const defaultButtonStyles = {
-        iconColor: '#000000',
-        backgroundColor: '#000000',
+        iconColor: hslToCss(themeWithDefaults.text),
+        backgroundColor: hslToCss(themeWithDefaults.primary_button_background),
         borderWidth: '0px',
         borderStyle: 'solid',
-        borderColor: '#000000',
+        borderColor: hslToCss(themeWithDefaults.primary_button_border),
         borderOpacity: '1',
         borderRadius: '50%',
         backgroundOpacity: '1',
@@ -142,9 +145,9 @@ const HeaderComponent = ({
         fontSize: '16px'
     };
 
-    const cartConfig = buttonsConfig.cart || { count: '0', styles: { ...defaultButtonStyles, iconColor: '#ffffff' } };
+    const cartConfig = buttonsConfig.cart || { count: '0', styles: { ...defaultButtonStyles, iconColor: hslToCss(themeWithDefaults.primary_button_text) } };
     const searchConfig = buttonsConfig.search || { styles: { ...defaultButtonStyles, backgroundColor: 'transparent' } };
-    const profileConfig = buttonsConfig.profile || { styles: { ...defaultButtonStyles, backgroundColor: '#f0f0f0' } };
+    const profileConfig = buttonsConfig.profile || { styles: { ...defaultButtonStyles, backgroundColor: hslToCss(themeWithDefaults.secondary_button_background) } };
     const showSearch = buttonsConfig.showSearch !== false; // Por defecto mostrar
     const buttonsGap = buttonsConfig.buttonsGap || '10px';
 
@@ -167,7 +170,7 @@ const HeaderComponent = ({
                 fontSize: '16px',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                backgroundColor: '#000000',
+                backgroundColor: hslToCss(themeWithDefaults.primary_button_background),
                 borderColor: 'transparent',
             };
         }
@@ -218,8 +221,8 @@ const HeaderComponent = ({
             return colorMap[color.toLowerCase()] || '0, 0, 0';
         };
 
-        const bgColor = styles.backgroundColor || '#000000';
-        const borderColor = styles.borderColor || '#000000';
+        const bgColor = styles.backgroundColor || hslToCss(themeWithDefaults.primary_button_background);
+        const borderColor = styles.borderColor || hslToCss(themeWithDefaults.primary_button_border);
 
         return {
             display: 'flex',
@@ -384,7 +387,7 @@ const HeaderComponent = ({
                     <ShoppingCart
                         size={16}
                         style={{
-                            color: cartConfig.styles?.iconColor || '#ffffff',
+                            color: cartConfig.styles?.iconColor || hslToCss(themeWithDefaults.primary_button_text),
                             transition: 'color 0.2s'
                         }}
                     />
@@ -425,7 +428,7 @@ const HeaderComponent = ({
                         <Search
                             size={16}
                             style={{
-                                color: searchConfig.styles?.iconColor || '#000000',
+                                color: searchConfig.styles?.iconColor || hslToCss(themeWithDefaults.text),
                                 transition: 'color 0.2s'
                             }}
                         />
@@ -446,7 +449,7 @@ const HeaderComponent = ({
                                 <User
                                     size={16}
                                     style={{
-                                        color: profileConfig.styles?.iconColor || '#000000',
+                                        color: profileConfig.styles?.iconColor || hslToCss(themeWithDefaults.text),
                                         transition: 'color 0.2s'
                                     }}
                                 />
@@ -472,8 +475,8 @@ const HeaderComponent = ({
                                     {/* Información del usuario */}
                                     <div style={{
                                         padding: '16px',
-                                        borderBottom: '1px solid #f0f0f0',
-                                        backgroundColor: '#f9f9f9'
+                                        borderBottom: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
+                                        backgroundColor: hslToCss(themeWithDefaults.background)
                                     }}>
                                         <div style={{
                                             fontSize: '14px',
@@ -535,7 +538,7 @@ const HeaderComponent = ({
                                             fontSize: '14px',
                                             cursor: 'pointer',
                                             transition: 'background-color 0.2s',
-                                            borderTop: '1px solid #f0f0f0'
+                                            borderTop: `1px solid ${hslToCss(themeWithDefaults.borders)}`
                                         }}
                                         className="hover:bg-red-50"
                                     >
@@ -556,7 +559,7 @@ const HeaderComponent = ({
                             <User
                                 size={16}
                                 style={{
-                                    color: profileConfig.styles?.iconColor || '#000000',
+                                    color: profileConfig.styles?.iconColor || hslToCss(themeWithDefaults.text),
                                     transition: 'color 0.2s'
                                 }}
                             />

@@ -1,4 +1,5 @@
 import React from 'react';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
 
 const BannerTitleComponent = ({
     comp,
@@ -8,9 +9,10 @@ const BannerTitleComponent = ({
     onDelete,
     themeSettings
 }) => {
-    const getTextStyles = () => {
+    const getComponentStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
+        const themeWithDefaults = getThemeWithDefaults(themeSettings);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading1'; // Por defecto heading1 para títulos
@@ -22,9 +24,9 @@ const BannerTitleComponent = ({
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'heading_font');
                 } else {
-                    return themeSettings?.body_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'body_font');
                 }
             }
             
@@ -34,33 +36,36 @@ const BannerTitleComponent = ({
             
             switch(fontType) {
                 case 'body_font':
-                    return themeSettings?.body_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'body_font');
                 case 'heading_font':
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'heading_font');
                 case 'subheading_font':
-                    return themeSettings?.subheading_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'subheading_font');
                 case 'accent_font':
-                    return themeSettings?.accent_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'accent_font');
                 default:
-                    return themeSettings?.body_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'body_font');
             }
         };
 
-        // Obtener configuración según el estilo seleccionado
-        let fontSize, fontWeight, lineHeight, textTransform;
+        // Obtener configuración según el estilo seleccionado usando theme utils
+        let fontSize, fontWeight, lineHeight, textTransform, color;
         
         if (textStyle.startsWith('heading')) {
-            const level = textStyle.replace('heading', '');
-            fontSize = customStyles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
-            fontWeight = customStyles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || 'bold';
-            lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.2';
-            textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
+            const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+            fontSize = customStyles.fontSize || themeTextStyles.fontSize;
+            fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
+            lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
+            textTransform = customStyles.textTransform || themeTextStyles.textTransform;
+            color = customStyles.color || themeTextStyles.color;
         } else {
             // Si no es heading, asumimos paragraph
-            fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
-            fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
-            lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
-            textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
+            const themeTextStyles = getTextStyles(themeWithDefaults, 'paragraph');
+            fontSize = customStyles.fontSize || themeTextStyles.fontSize;
+            fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
+            lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
+            textTransform = customStyles.textTransform || themeTextStyles.textTransform;
+            color = customStyles.color || themeTextStyles.color;
         }
 
         // Calcular line-height si es personalizado
@@ -72,7 +77,7 @@ const BannerTitleComponent = ({
             finalLineHeight = customStyles.customLineHeight;
         }
 
-        // Padding individual
+        // Padding individual con valores por defecto del tema
         const paddingTop = customStyles.paddingTop || '10px';
         const paddingRight = customStyles.paddingRight || '10px';
         const paddingBottom = customStyles.paddingBottom || '10px';
@@ -110,7 +115,7 @@ const BannerTitleComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color: customStyles.color || '#000000',
+            color,
         };
     };
 
@@ -125,7 +130,7 @@ const BannerTitleComponent = ({
     }
 
     return (
-        <div style={getTextStyles()}>
+        <div style={getComponentStyles()}>
             {comp.content}
         </div>
     );

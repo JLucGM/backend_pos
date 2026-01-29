@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
+import { getThemeWithDefaults, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const HeaderMenuComponent = ({ 
     comp, 
@@ -91,10 +92,10 @@ const HeaderMenuComponent = ({
             fontFamily: themeSettings?.body_font || 'inherit',
             fontSize: depth === 0 ? (comp.styles?.fontSize || '16px') : '14px',
             fontWeight: comp.styles?.fontWeight || 'normal',
-            color: comp.styles?.color || '#000000',
+            color: comp.styles?.color || hslToCss(getThemeWithDefaults(themeSettings).text),
             backgroundColor: comp.styles?.buttonBackgroundColor || 'transparent',
             border: comp.styles?.borderWidth ? 
-                `${comp.styles.borderWidth} solid ${comp.styles.borderColor || '#000000'}` : 'none',
+                `${comp.styles.borderWidth} solid ${comp.styles.borderColor || hslToCss(getThemeWithDefaults(themeSettings).borders)}` : 'none',
             borderRadius: comp.styles?.borderRadius || '4px',
             padding: depth === 0 ? '8px 16px' : '6px 12px',
             textDecoration: 'none',
@@ -181,7 +182,7 @@ const HeaderMenuComponent = ({
                         position: 'absolute',
                         top: '100%',
                         left: 0,
-                        backgroundColor: '#ffffff',
+                        backgroundColor: hslToCss(getThemeWithDefaults(themeSettings).background),
                         border: '1px solid #e5e7eb',
                         borderRadius: '4px',
                         boxShadow: '0 4px 6px rgba(0,0,0,0.1)',

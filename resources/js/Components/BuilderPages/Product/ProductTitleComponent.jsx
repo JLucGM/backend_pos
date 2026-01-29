@@ -1,4 +1,5 @@
 import React from 'react';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss, getComponentStyles } from '@/utils/themeUtils';
 
 const ProductTitleComponent = ({
     comp,
@@ -6,25 +7,32 @@ const ProductTitleComponent = ({
     isPreview,
     onEdit,
     onDelete,
-    themeSettings // Añadimos themeSettings
+    themeSettings
 }) => {
     const getTextStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
+        const themeWithDefaults = getThemeWithDefaults(themeSettings);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading2'; // Por defecto heading2 para títulos de producto
+
+        // Obtener estilos del tema para el tipo de texto
+        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+        
+        // Obtener estilos específicos del componente product-title
+        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-title');
 
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
             
-            // Si el usuario seleccionó "default" o no especificó nada
+            // Si el usuario seleccionó "default" o no especificó nada, usar el tema
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'heading_font');
                 } else {
-                    return themeSettings?.body_font || "'Inter', sans-serif";
+                    return getResolvedFont(themeWithDefaults, 'body_font');
                 }
             }
             
@@ -32,36 +40,15 @@ const ProductTitleComponent = ({
                 return customStyles.customFont;
             }
             
-            switch(fontType) {
-                case 'body_font':
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-                case 'heading_font':
-                    return themeSettings?.heading_font || "'Inter', sans-serif";
-                case 'subheading_font':
-                    return themeSettings?.subheading_font || "'Inter', sans-serif";
-                case 'accent_font':
-                    return themeSettings?.accent_font || "'Inter', sans-serif";
-                default:
-                    return themeSettings?.body_font || "'Inter', sans-serif";
-            }
+            // Usar getResolvedFont para resolver referencias de fuentes
+            return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
         };
 
-        // Obtener configuración según el estilo seleccionado
-        let fontSize, fontWeight, lineHeight, textTransform;
-        
-        if (textStyle.startsWith('heading')) {
-            const level = textStyle.replace('heading', '');
-            fontSize = customStyles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
-            fontWeight = customStyles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || 'bold';
-            lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.2';
-            textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
-        } else {
-            // Si no es heading, asumimos paragraph
-            fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
-            fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
-            lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
-            textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
-        }
+        // Obtener configuración según el estilo seleccionado, con fallback a tema
+        const fontSize = customStyles.fontSize || themeTextStyles.fontSize;
+        const fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
+        const lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
+        const textTransform = customStyles.textTransform || themeTextStyles.textTransform;
 
         // Calcular line-height si es personalizado
         let finalLineHeight = lineHeight;
@@ -88,7 +75,8 @@ const ProductTitleComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color: customStyles.color || '#000000',
+            // Usar color del tema como fallback
+            color: customStyles.color || themeComponentStyles.color || hslToCss(themeWithDefaults.heading),
             margin: 0,
             padding: '10px 0'
         };

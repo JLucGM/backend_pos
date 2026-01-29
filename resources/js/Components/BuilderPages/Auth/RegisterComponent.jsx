@@ -5,6 +5,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Button } from '@/Components/ui/button';
 import { Link, usePage, router } from '@inertiajs/react';
 import { toast } from 'sonner';
+import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const RegisterComponent = ({
     comp,
@@ -21,6 +22,11 @@ const RegisterComponent = ({
     const sessionDomain = props.env.SESSION_DOMAIN || '.pos.test';
     const styles = comp.styles || {};
     const content = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeAuthStyles = getComponentStyles(themeWithDefaults, 'auth');
+    const themeAuthTitleStyles = getComponentStyles(themeWithDefaults, 'auth-title');
+    const themeAuthSubtitleStyles = getComponentStyles(themeWithDefaults, 'auth-subtitle');
+    
     const [registerUrl, setRegisterUrl] = useState('');
     const [loginUrl, setLoginUrl] = useState('');
 
@@ -38,7 +44,7 @@ const RegisterComponent = ({
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || '#ffffff',
+        backgroundColor: styles.backgroundColor || themeAuthStyles.backgroundColor,
         padding: styles.padding || '32px',
         borderRadius: styles.borderRadius || '12px',
         maxWidth: styles.maxWidth || '400px',
@@ -174,38 +180,38 @@ const RegisterComponent = ({
     };
 
     const titleStyles = {
-        fontSize: styles.titleSize || '28px',
-        color: styles.titleColor || '#000000',
-        fontFamily: themeSettings?.heading_font,
+        fontSize: styles.titleSize || themeAuthTitleStyles.fontSize,
+        color: styles.titleColor || themeAuthTitleStyles.color,
+        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
         marginBottom: '8px',
         textAlign: 'center'
     };
 
     const subtitleStyles = {
-        fontSize: styles.subtitleSize || '16px',
-        color: styles.subtitleColor || '#666666',
-        fontFamily: themeSettings?.body_font,
+        fontSize: styles.subtitleSize || themeAuthSubtitleStyles.fontSize,
+        color: styles.subtitleColor || themeAuthSubtitleStyles.color,
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
         marginBottom: '24px',
         textAlign: 'center'
     };
 
     const labelStyles = {
-        color: styles.labelColor || '#374151',
-        fontFamily: themeSettings?.body_font,
+        color: styles.labelColor || hslToCss(themeWithDefaults.text),
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
         marginBottom: '8px'
     };
 
     const inputStyles = {
-        borderColor: styles.inputBorderColor || '#d1d5db',
-        borderRadius: styles.inputBorderRadius || '8px',
-        fontFamily: themeSettings?.body_font,
+        borderColor: styles.inputBorderColor || hslToCss(themeWithDefaults.input_border),
+        borderRadius: styles.inputBorderRadius || themeWithDefaults.input_corner_radius,
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
     };
 
     const buttonStyles = {
-        backgroundColor: styles.buttonBackgroundColor || '#10b981',
-        color: styles.buttonColor || '#ffffff',
-        borderRadius: styles.buttonBorderRadius || '8px',
-        fontFamily: themeSettings?.button_font_family || 'inherit',
+        backgroundColor: styles.buttonBackgroundColor || hslToCss(themeWithDefaults.primary_button_background),
+        color: styles.buttonColor || hslToCss(themeWithDefaults.primary_button_text),
+        borderRadius: styles.buttonBorderRadius || themeWithDefaults.primary_button_corner_radius,
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
         width: '100%'
     };
 

@@ -10,130 +10,144 @@ class PageSeeder extends Seeder
 {
     public function run()
     {
-        // Obtener algunos temas para asignar a las páginas
-        $minimalista = Theme::where('slug', 'minimalista')->first();
-        $moderno = Theme::where('slug', 'moderno')->first();
+        // Obtener temas disponibles
+        $temaAzul = Theme::where('slug', 'tema-azul')->first();
+        $temaOscuro = Theme::where('slug', 'tema-oscuro')->first();
+        $temaVerde = Theme::where('slug', 'tema-verde')->first();
+        
+        // Usar tema azul por defecto si no se encuentran otros
+        $defaultTheme = $temaAzul ?? Theme::first();
 
         $pages = [
+            // Páginas para Company 1 - Tema Azul
             [
                 'title' => 'Inicio',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
                 'is_homepage' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 1, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 1,
+                'theme_settings' => null, // Usar configuración del tema base
             ],
             [
                 'title' => 'Tienda',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 1, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Detalles del producto',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 1, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Carrito de compras',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 1, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Checkout',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 1, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Iniciar sesión',
-                // 'slug' => 'login', // Agrega este campo si no lo tienes
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
-                'template_id' => 3, // O el template que uses para formularios
+                'template_id' => 3,
                 'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Registrarse',
-                // 'slug' => 'login', // Agrega este campo si no lo tienes
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
-                'template_id' => 3, // O el template que uses para formularios
+                'template_id' => 3,
                 'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Perfil de usuario',
-                // 'slug' => 'login', // Agrega este campo si no lo tienes
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
-                'template_id' => 3, // O el template que uses para formularios
+                'template_id' => 3,
                 'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Pedidos',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
-                'template_id' => 3, // O el template que uses para formularios
+                'template_id' => 3,
                 'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Politicas de privacidad',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-
                 'is_default' => true,
-                'theme_id' => 1,
-                'company_id' => 1, // Asumiendo que tienes un owner con ID 1
+                'theme_id' => $defaultTheme?->id ?? 1,
+                'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Terminos de servicio',
                 'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Politicas de envio',
                 'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Información de contacto',
                 'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'company_id' => 1,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Orden exitosa',
                 'content' => '<p>Tu orden ha sido procesada exitosamente.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => false,
                 'template_id' => null,
                 'layout' => json_encode([
@@ -165,126 +179,138 @@ class PageSeeder extends Seeder
                     ]
                 ]),
                 'company_id' => 1,
+                'theme_settings' => null,
             ],
+            
+            // Páginas para Company 2 - Tema Oscuro (ejemplo de variación)
             [
                 'title' => 'Inicio',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
                 'is_homepage' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 2, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Tienda',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 2, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Detalles del producto',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 2, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Carrito de compras',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 2, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Checkout',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
-                'company_id' => 2, // Asumiendo que tienes un owner con ID 1
+                'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Iniciar sesión',
-                // 'slug' => 'login', // Agrega este campo si no lo tienes
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
-                'template_id' => 3, // O el template que uses para formularios
+                'template_id' => 3,
                 'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Registrarse',
-                // 'slug' => 'login', // Agrega este campo si no lo tienes
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
-                'template_id' => 3, // O el template que uses para formularios
+                'template_id' => 3,
                 'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Perfil de usuario',
-                // 'slug' => 'login', // Agrega este campo si no lo tienes
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
-                'template_id' => 3, // O el template que uses para formularios
+                'template_id' => 3,
                 'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Pedidos',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
-                'template_id' => 3, // O el template que uses para formularios
+                'template_id' => 3,
                 'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Politicas de privacidad',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-
                 'is_default' => true,
-                'theme_id' => 1,
-                'company_id' => 2, // Asumiendo que tienes un owner con ID 1
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
+                'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Terminos de servicio',
                 'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Politicas de envio',
                 'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Información de contacto',
                 'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'company_id' => 2,
+                'theme_settings' => null,
             ],
             [
                 'title' => 'Orden exitosa',
                 'content' => '<p>Tu orden ha sido procesada exitosamente.</p>',
                 'is_default' => true,
-                'theme_id' => 1,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => false,
                 'template_id' => null,
                 'layout' => json_encode([
@@ -295,9 +321,9 @@ class PageSeeder extends Seeder
                             'title' => '¡Orden Exitosa!',
                             'subtitle' => 'Tu orden ha sido procesada correctamente',
                             'iconColor' => '#10b981',
-                            'titleColor' => '#000000',
+                            'titleColor' => '#ffffff',
                             'titleSize' => '32px',
-                            'subtitleColor' => '#666666',
+                            'subtitleColor' => '#cccccc',
                             'subtitleSize' => '18px',
                             'showContinueShoppingButton' => true,
                             'continueButtonText' => 'Continuar Comprando',
@@ -306,7 +332,7 @@ class PageSeeder extends Seeder
                             'additionalMessage' => 'Recibirás un email de confirmación con los detalles de tu pedido.'
                         ],
                         'styles' => [
-                            'backgroundColor' => '#ffffff',
+                            'backgroundColor' => '#1a1a1a',
                             'paddingTop' => '40px',
                             'paddingRight' => '20px',
                             'paddingBottom' => '40px',
@@ -316,21 +342,19 @@ class PageSeeder extends Seeder
                     ]
                 ]),
                 'company_id' => 2,
+                'theme_settings' => null,
             ],
         ];
 
         foreach ($pages as $page) {
-            // 1. Clave de búsqueda (Busca por título y compañía para evitar duplicados accidentales)
+            // Buscar por título y compañía para evitar duplicados
             $searchKey = [
                 'title' => $page['title'],
                 'company_id' => $page['company_id'],
             ];
 
-            // 2. Datos a establecer (Todos los demás datos)
-            $data = $page;
-
-            // Usar la clave de búsqueda, que debe ser única
-            Page::updateOrCreate($searchKey, $data);
+            // Crear o actualizar la página
+            Page::updateOrCreate($searchKey, $page);
         }
     }
 }

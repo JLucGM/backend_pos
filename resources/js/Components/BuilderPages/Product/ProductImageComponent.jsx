@@ -1,4 +1,5 @@
 import React from 'react';
+import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
 
 const ProductImageComponent = ({
     comp,
@@ -11,18 +12,8 @@ const ProductImageComponent = ({
     mode = 'builder' // 'builder' o 'frontend'
 }) => {
     const styles = comp.styles || {};
-    const theme = themeSettings || {};
-    
-    // Función para obtener estilos del tema o valores por defecto
-    const getThemeStyle = (key, defaultValue) => {
-        return theme[key] || defaultValue;
-    };
-
-    // Obtener valores del tema para bordes y radios
-    const defaultBorderColor = getThemeStyle('borders', '0 0% 86.1%');
-    const defaultBorderRadius = getThemeStyle('image_border_radius', getThemeStyle('border_radius', '8px'));
-    const defaultBorderThickness = getThemeStyle('image_border_thickness', '1px');
-    const defaultBorderOpacity = getThemeStyle('image_border_opacity', '1');
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeImageStyles = getComponentStyles(themeWithDefaults, 'image');
     
     // Función para obtener estilos del contenedor según aspectRatio
     const getAspectRatioStyles = () => {
@@ -58,7 +49,7 @@ const ProductImageComponent = ({
         maxWidth: styles.maxWidth || '500px',
     };
     
-    // Aplicar estilos del tema cuando no haya estilos específicos del componente
+    // Aplicar estilos del tema con valores por defecto
     const imageStyles = {
         position: 'absolute',
         top: 0,
@@ -66,16 +57,16 @@ const ProductImageComponent = ({
         width: '100%',
         height: '100%',
         border: styles.imageBorder === 'solid' 
-            ? `${styles.imageBorderThickness || defaultBorderThickness} solid hsla(${defaultBorderColor}, ${styles.imageBorderOpacity || defaultBorderOpacity})` 
+            ? `${styles.imageBorderThickness || themeImageStyles.borderWidth} solid ${styles.imageBorderColor || themeImageStyles.borderColor}` 
             : (styles.imageBorder === 'none' ? 'none' : 
                // Si no está definido, usar el tema
-               theme.image_default_border === 'enabled' 
-                ? `${defaultBorderThickness} solid hsla(${defaultBorderColor}, ${defaultBorderOpacity})`
+               themeImageStyles.borderWidth !== '0px' 
+                ? `${themeImageStyles.borderWidth} solid ${themeImageStyles.borderColor}`
                 : 'none'),
-        borderRadius: styles.imageBorderRadius || defaultBorderRadius,
-        objectFit: 'cover',
-        // Puedes agregar más estilos del tema aquí
-        boxShadow: theme.image_shadow ? `0 2px 4px hsla(${theme.shadows}, 0.1)` : 'none',
+        borderRadius: styles.imageBorderRadius || themeImageStyles.borderRadius,
+        objectFit: styles.objectFit || themeImageStyles.objectFit,
+        // Sombra del tema
+        boxShadow: themeWithDefaults.shadows ? `0 2px 4px hsl(${themeWithDefaults.shadows})` : 'none',
         // Transición para efectos hover en frontend
         transition: mode === 'frontend' ? 'transform 0.3s ease' : 'none',
     };

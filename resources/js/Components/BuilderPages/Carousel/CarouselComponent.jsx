@@ -10,6 +10,7 @@ import VideoComponent from '../VideoComponent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ComponentWithHover from '../ComponentWithHover';
 import { Button } from '@/Components/ui/button';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const CarouselComponent = ({
     comp,
@@ -28,12 +29,15 @@ const CarouselComponent = ({
     const children = carouselConfig.children || [];
     const carouselRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeCarouselStyles = getComponentStyles(themeWithDefaults, 'carousel');
 
-    // Configuración del carrusel
+    // Configuración del carrusel con valores del tema
     const limit = carouselConfig.limit || 5;
     const slidesToShow = carouselConfig.slidesToShow || 3;
-    const gapX = carouselConfig.gapX || '10px';
-    const gapY = carouselConfig.gapY || '10px';
+    const gapX = carouselConfig.gapX || themeWithDefaults.carousel_gapX;
+    const gapY = carouselConfig.gapY || themeWithDefaults.carousel_gapY;
 
     // Función para obtener el nombre del tipo de componente
     const getComponentTypeName = (type) => {
@@ -64,7 +68,7 @@ const CarouselComponent = ({
         return typeNames[type] || type;
     };
 
-    // Container styles
+    // Container styles con valores del tema
     const containerStyles = {
         ...getStyles(comp),
         width: '100%',
@@ -75,7 +79,7 @@ const CarouselComponent = ({
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
-        backgroundColor: carouselConfig.backgroundColor || '#ffffff',
+        backgroundColor: carouselConfig.backgroundColor || themeCarouselStyles.backgroundColor,
         padding: '20px 0',
     };
 

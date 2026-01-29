@@ -8,6 +8,7 @@ import ProductDetailStockComponent from './ProductDetailStockComponent';
 import QuantitySelectorComponent from './QuantitySelectorComponent';
 import ButtonComponent from '../ButtonComponent';
 import ComponentWithHover from '../ComponentWithHover';
+import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
 
 const ProductDetailComponent = ({
     comp,

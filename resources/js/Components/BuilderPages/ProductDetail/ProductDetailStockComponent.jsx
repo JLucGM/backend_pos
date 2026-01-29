@@ -1,4 +1,5 @@
 import React from 'react';
+import { getThemeWithDefaults, hslToCss, getResolvedFont } from '@/utils/themeUtils';
 
 const ProductDetailStockComponent = ({ 
     comp, 
@@ -6,42 +7,24 @@ const ProductDetailStockComponent = ({
     currentCombination,
     themeSettings 
 }) => {
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    
+    // Función para obtener estilos de fuente (definida una sola vez)
+    const getFontStyles = () => {
+        const styles = comp.styles || {};
+        const fontType = styles.fontType || 'default';
+        
+        const fontFamily = getResolvedFont(themeWithDefaults, fontType === 'default' ? 'body_font' : fontType);
+        
+        return {
+            fontFamily,
+            fontSize: styles.fontSize || '14px',
+            fontWeight: styles.fontWeight || '500',
+        };
+    };
+
     // Si no hay producto (modo builder), mostrar datos de ejemplo
     if (!product) {
-        const getFontStyles = () => {
-            const styles = comp.styles || {};
-            const fontType = styles.fontType || 'default';
-            let fontFamily;
-            
-            if (fontType === 'default') {
-                fontFamily = themeSettings?.body_font || "'Inter', sans-serif";
-            } else if (fontType === 'custom' && styles.customFont) {
-                fontFamily = styles.customFont;
-            } else {
-                switch(fontType) {
-                    case 'body_font':
-                        fontFamily = themeSettings?.body_font || "'Inter', sans-serif";
-                        break;
-                    case 'heading_font':
-                        fontFamily = themeSettings?.heading_font || "'Inter', sans-serif";
-                        break;
-                    case 'subheading_font':
-                        fontFamily = themeSettings?.subheading_font || "'Inter', sans-serif";
-                        break;
-                    case 'accent_font':
-                        fontFamily = themeSettings?.accent_font || "'Inter', sans-serif";
-                        break;
-                    default:
-                        fontFamily = themeSettings?.body_font || "'Inter', sans-serif";
-                }
-            }
-            
-            return {
-                fontFamily,
-                fontSize: styles.fontSize || '14px',
-                fontWeight: styles.fontWeight || '500',
-            };
-        };
 
         const fontStyles = getFontStyles();
         
@@ -110,42 +93,6 @@ const ProductDetailStockComponent = ({
     };
 
     const stockInfo = getStockInfo();
-    
-    // Función para obtener estilos de fuente
-    const getFontStyles = () => {
-        const styles = comp.styles || {};
-        const fontType = styles.fontType || 'default';
-        let fontFamily;
-        
-        if (fontType === 'default') {
-            fontFamily = themeSettings?.body_font || "'Inter', sans-serif";
-        } else if (fontType === 'custom' && styles.customFont) {
-            fontFamily = styles.customFont;
-        } else {
-            switch(fontType) {
-                case 'body_font':
-                    fontFamily = themeSettings?.body_font || "'Inter', sans-serif";
-                    break;
-                case 'heading_font':
-                    fontFamily = themeSettings?.heading_font || "'Inter', sans-serif";
-                    break;
-                case 'subheading_font':
-                    fontFamily = themeSettings?.subheading_font || "'Inter', sans-serif";
-                    break;
-                case 'accent_font':
-                    fontFamily = themeSettings?.accent_font || "'Inter', sans-serif";
-                    break;
-                default:
-                    fontFamily = themeSettings?.body_font || "'Inter', sans-serif";
-            }
-        }
-        
-        return {
-            fontFamily,
-            fontSize: styles.fontSize || '14px',
-            fontWeight: styles.fontWeight || '500',
-        };
-    };
 
     // Estilos condicionales
     const getStatusStyles = () => {
