@@ -14,10 +14,10 @@ const ProductDetailPriceComponent = ({
     selectedCombination
 }) => {
     const { settings } = usePage().props;
-    
+
     // Obtener themeWithDefaults una sola vez para usar en todo el componente
     const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+
     // Función para obtener los estilos del precio
     const getPriceStyles = () => {  // ✅ Nombre diferente
         const baseStyles = getStyles(comp);
@@ -28,81 +28,81 @@ const ProductDetailPriceComponent = ({
 
         // Obtener estilos del tema para el tipo de texto
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Ahora usa la importada
-        
+
         // Obtener estilos específicos del componente product-price
         const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-price');
 
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
             const fontType = customStyles.fontType || 'default';
-            
+
             if (fontType === 'default' || !fontType) {
                 return getResolvedFont(themeWithDefaults, 'body_font');
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
+
             return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
         };
 
         // Obtener configuración según el estilo seleccionado
         let fontSize, fontWeight, lineHeight, textTransform;
-        
-        switch(textStyle) {
+
+        switch (textStyle) {
             case 'paragraph':
                 fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
                 fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
                 lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
                 textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
                 break;
-                
+
             case 'heading1':
                 fontSize = customStyles.fontSize || themeSettings?.heading1_fontSize || '2.5rem';
                 fontWeight = customStyles.fontWeight || themeSettings?.heading1_fontWeight || 'bold';
                 lineHeight = customStyles.lineHeight || themeSettings?.heading1_lineHeight || '1.2';
                 textTransform = customStyles.textTransform || themeSettings?.heading1_textTransform || 'none';
                 break;
-                
+
             case 'heading2':
                 fontSize = customStyles.fontSize || themeSettings?.heading2_fontSize || '2rem';
                 fontWeight = customStyles.fontWeight || themeSettings?.heading2_fontWeight || 'bold';
                 lineHeight = customStyles.lineHeight || themeSettings?.heading2_lineHeight || '1.3';
                 textTransform = customStyles.textTransform || themeSettings?.heading2_textTransform || 'none';
                 break;
-                
+
             case 'heading3':
                 fontSize = customStyles.fontSize || themeSettings?.heading3_fontSize || '1.75rem';
                 fontWeight = customStyles.fontWeight || themeSettings?.heading3_fontWeight || 'bold';
                 lineHeight = customStyles.lineHeight || themeSettings?.heading3_lineHeight || '1.3';
                 textTransform = customStyles.textTransform || themeSettings?.heading3_textTransform || 'none';
                 break;
-                
+
             case 'heading4':
                 fontSize = customStyles.fontSize || themeSettings?.heading4_fontSize || '1.5rem';
                 fontWeight = customStyles.fontWeight || themeSettings?.heading4_fontWeight || 'bold';
                 lineHeight = customStyles.lineHeight || themeSettings?.heading4_lineHeight || '1.4';
                 textTransform = customStyles.textTransform || themeSettings?.heading4_textTransform || 'none';
                 break;
-                
+
             case 'heading5':
                 fontSize = customStyles.fontSize || themeSettings?.heading5_fontSize || '1.25rem';
                 fontWeight = customStyles.fontWeight || themeSettings?.heading5_fontWeight || 'bold';
                 lineHeight = customStyles.lineHeight || themeSettings?.heading5_lineHeight || '1.4';
                 textTransform = customStyles.textTransform || themeSettings?.heading5_textTransform || 'none';
                 break;
-                
+
             case 'heading6':
                 fontSize = customStyles.fontSize || themeSettings?.heading6_fontSize || '1rem';
                 fontWeight = customStyles.fontWeight || themeSettings?.heading6_fontWeight || 'bold';
                 lineHeight = customStyles.lineHeight || themeSettings?.heading6_lineHeight || '1.5';
                 textTransform = customStyles.textTransform || themeSettings?.heading6_textTransform || 'none';
                 break;
-                
+
             case 'custom':
             default:
-                fontSize = customStyles.fontSize || '24px';
+                fontSize = customStyles.fontSize || themeWithDefaults.productDetail_priceSize || '24px';
                 fontWeight = customStyles.fontWeight || 'bold';
                 lineHeight = customStyles.lineHeight || '1.4';
                 textTransform = customStyles.textTransform || 'none';
@@ -175,7 +175,7 @@ const ProductDetailPriceComponent = ({
         if (hasDiscount && showDiscount && settings?.currency) {
             return (
                 <>
-                    <span 
+                    <span
                         className="line-through mr-2"
                         style={{
                             color: customStyles.originalPriceColor || hslToCss(themeWithDefaults.text),
@@ -185,7 +185,7 @@ const ProductDetailPriceComponent = ({
                     >
                         <CurrencyDisplay currency={settings.currency} amount={parseFloat(product.product_price)} />
                     </span>
-                    <span 
+                    <span
                         style={{
                             color: customStyles.discountPriceColor || hslToCss(themeWithDefaults.links),
                             fontSize: customStyles.discountPriceSize || '1.2em',
@@ -215,13 +215,13 @@ const ProductDetailPriceComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={getPriceStyles()}  // ✅ Usar nuevo nombre
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
             {renderPrice()}
-            
+
             {selectedCombination && product?.combinations?.length > 0 && (
                 <div className="text-sm mt-1" style={{
                     color: hslToCss(themeWithDefaults.text),

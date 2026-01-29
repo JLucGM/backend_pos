@@ -5,29 +5,45 @@ const ProductDetailImageComponent = ({
     getStyles,
     isPreview,
     onEdit,
+    themeSettings
 }) => {
     const styles = comp.styles || {};
-    
+    const theme = themeSettings || {};
+
+    const getAspectRatio = () => {
+        const ratio = styles.aspectRatio || 'square';
+        if (ratio === 'theme') {
+            return theme.image_aspect_ratio || '1/1';
+        }
+        switch (ratio) {
+            case 'landscape': return '16/9';
+            case 'portrait': return '4/5';
+            case 'square': return '1/1';
+            case 'auto': return 'auto';
+            default: return '1/1';
+        }
+    };
+
     const containerStyles = {
         width: '100%',
         maxWidth: '500px',
-        height: '0',
-        paddingBottom: '100%',
+        aspectRatio: getAspectRatio(),
         position: 'relative',
-        margin: '0 auto'
+        margin: '0 auto',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     };
-    
+
     const imageStyles = {
-        position: 'absolute',
-        top: 0,
-        left: 0,
         width: '100%',
         height: '100%',
-        border: styles.imageBorder === 'solid' 
-            ? `${styles.imageBorderThickness} solid rgba(0, 0, 0, ${styles.imageBorderOpacity})` 
+        border: (styles.imageBorder === 'solid' || styles.imageBorder === 'dashed')
+            ? `${styles.imageBorderThickness || '1px'} ${styles.imageBorder} ${styles.imageBorderColor || '#000000'}`
             : 'none',
         borderRadius: styles.imageBorderRadius || '0px',
-        objectFit: 'cover',
+        objectFit: styles.objectFit || 'cover',
     };
 
     const handleClick = () => {
@@ -37,13 +53,13 @@ const ProductDetailImageComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={containerStyles}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
-            <img 
-                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'} 
+            <img
+                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
                 alt="Producto"
                 style={imageStyles}
             />

@@ -19,14 +19,14 @@ const ProductDetailNameComponent = ({
 
         // Obtener estilos del tema para el tipo de texto
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Usa la función importada
-        
+
         // Obtener estilos específicos del componente product-title
         const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-title');
 
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             // Si el usuario seleccionó "default" o no especificó nada, usar el tema
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
@@ -35,26 +35,26 @@ const ProductDetailNameComponent = ({
                     return getResolvedFont(themeWithDefaults, 'body_font');
                 }
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
+
             // Usar getResolvedFont para resolver referencias de fuentes
             return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
         };
 
         // Obtener configuración según el estilo seleccionado
         let fontSize, fontWeight, lineHeight, textTransform;
-        
-        switch(textStyle) {
+
+        switch (textStyle) {
             case 'paragraph':
                 fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
                 fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
                 lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
                 textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
                 break;
-                
+
             case 'heading1':
             case 'heading2':
             case 'heading3':
@@ -67,7 +67,7 @@ const ProductDetailNameComponent = ({
                 lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.2';
                 textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
                 break;
-                
+
             case 'custom':
             default:
                 fontSize = customStyles.fontSize || '16px';
@@ -107,7 +107,7 @@ const ProductDetailNameComponent = ({
             paddingBottom,
             paddingLeft,
             backgroundColor: customStyles.backgroundColor || 'transparent',
-            borderRadius: customStyles.borderRadius || '0px',
+            borderRadius: customStyles.borderRadius || themeWithDefaults.border_radius || '0px',
             display: layout === 'fit' ? 'inline-block' : 'block',
             fontFamily: getFontFamily(),
             fontSize,
@@ -133,7 +133,7 @@ const ProductDetailNameComponent = ({
     );
 
     return (
-        <div 
+        <div
             style={getComponentStyles2()}  // ✅ Nombre diferente
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}

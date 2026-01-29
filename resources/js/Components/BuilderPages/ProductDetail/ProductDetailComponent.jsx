@@ -27,9 +27,9 @@ const ProductDetailComponent = ({
     // Extraer configuraciones personalizadas
     const customStyles = comp.styles || {};
     const productDetailConfig = comp.content || {};
-    
+
     const children = productDetailConfig.children || [];
-    
+
     const [selectedCombination, setSelectedCombination] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [currentPrice, setCurrentPrice] = useState(null);
@@ -49,23 +49,24 @@ const ProductDetailComponent = ({
     };
 
     // Obtener configuraciones de layout y estilos
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+
     const layoutType = customStyles.layoutType || 'grid';
     const padding = customStyles.padding || '20px';
-    const backgroundColor = customStyles.backgroundColor || '#ffffff';
-    // const maxWidth = customStyles.maxWidth || '1200px';
-    const maxWidth = customStyles.maxWidth || '100%'; // Cambia de '1200px' a '100%'
+    const backgroundColor = customStyles.backgroundColor || hslToCss(themeWithDefaults.background);
+    const maxWidth = customStyles.maxWidth || '100%';
     const gap = customStyles.gap || '60px';
 
     // Obtener valores de padding individuales (con valores por defecto)
-const paddingTop = customStyles.paddingTop || '20px';
-const paddingRight = customStyles.paddingRight || '20px';
-const paddingBottom = customStyles.paddingBottom || '20px';
-const paddingLeft = customStyles.paddingLeft || '20px';
+    const paddingTop = customStyles.paddingTop || '20px';
+    const paddingRight = customStyles.paddingRight || '20px';
+    const paddingBottom = customStyles.paddingBottom || '20px';
+    const paddingLeft = customStyles.paddingLeft || '20px';
 
     // Separar componentes por tipo para mejor organización
     const imageComponents = children.filter(child => child.type === 'productDetailImage');
     const descriptionComponents = children.filter(child => child.type === 'productDetailDescription');
-    const otherComponents = children.filter(child => 
+    const otherComponents = children.filter(child =>
         child.type !== 'productDetailImage' && child.type !== 'productDetailDescription'
     );
 
@@ -75,9 +76,9 @@ const paddingLeft = customStyles.paddingLeft || '20px';
             ...getStyles(comp),
             width: '100%',
             paddingTop,
-        paddingRight,
-        paddingBottom,
-        paddingLeft,
+            paddingRight,
+            paddingBottom,
+            paddingLeft,
             backgroundColor,
             maxWidth,
             margin: '0 auto',
@@ -136,7 +137,7 @@ const paddingLeft = customStyles.paddingLeft || '20px';
 
     const getMaxQuantity = () => {
         if (!product?.stocks) return 99;
-        
+
         if (selectedCombination) {
             const stock = product.stocks.find(s => s.combination_id === selectedCombination.id);
             return stock ? Math.min(stock.quantity, 99) : 0;
@@ -312,24 +313,24 @@ const paddingLeft = customStyles.paddingLeft || '20px';
                     </ComponentWithHover>
                 );
             case 'button':
-    return (
-        <ComponentWithHover
-            key={child.id}
-            component={child}
-            isPreview={isPreview}
-            hoveredComponentId={hoveredComponentId}
-            setHoveredComponentId={setHoveredComponentId}
-            getComponentTypeName={getComponentTypeName}
-        >
-            <ButtonComponent
-                {...commonProps}
-                product={product}
-                selectedCombination={selectedCombination}
-                quantity={quantity}
-                storeAutomaticDiscounts={storeAutomaticDiscounts} // Añade esta línea
-            />
-        </ComponentWithHover>
-    );
+                return (
+                    <ComponentWithHover
+                        key={child.id}
+                        component={child}
+                        isPreview={isPreview}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                        getComponentTypeName={getComponentTypeName}
+                    >
+                        <ButtonComponent
+                            {...commonProps}
+                            product={product}
+                            selectedCombination={selectedCombination}
+                            quantity={quantity}
+                            storeAutomaticDiscounts={storeAutomaticDiscounts} // Añade esta línea
+                        />
+                    </ComponentWithHover>
+                );
             default:
                 return null;
         }
@@ -352,7 +353,7 @@ const paddingLeft = customStyles.paddingLeft || '20px';
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {imageComponents.map(renderChild)}
                 </div>
-                
+
                 {/* Columna derecha - Información del producto */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {otherComponents.concat(descriptionComponents).map(renderChild)}
@@ -364,8 +365,8 @@ const paddingLeft = customStyles.paddingLeft || '20px';
     // Renderizado para layout stack - descripción al final
     const renderStackLayout = () => {
         // Primero otros componentes, luego descripción
-    const orderedComponents = [...imageComponents, ...otherComponents, ...descriptionComponents];
-            
+        const orderedComponents = [...imageComponents, ...otherComponents, ...descriptionComponents];
+
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {orderedComponents.map(renderChild)}
