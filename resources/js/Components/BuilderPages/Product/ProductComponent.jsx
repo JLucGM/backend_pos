@@ -20,10 +20,10 @@ const ProductComponent = ({
     const productConfig = comp.content || {};
     const children = productConfig.children || [];
     const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+
     // Determinar si estamos en modo frontend
     const isFrontend = mode === 'frontend';
-    
+
     // Configuración del grid con valores del tema
     const columns = productConfig.columns || 3;
     const gapX = productConfig.gapX || '10px';
@@ -32,16 +32,21 @@ const ProductComponent = ({
     // Encontrar los componentes hijos
     const titleComponent = children.find(child => child.type === 'productTitle');
     const cardComponent = children.find(child => child.type === 'productCard');
-    
+
     // Estilos del contenedor con valores del tema
     const baseStyles = getStyles(comp);
-    
+
     // Asegurar que el backgroundColor del tema tenga prioridad
-    const finalBackgroundColor = productConfig.backgroundColor || 
-                                comp.styles?.backgroundColor || 
-                                hslToCss(themeWithDefaults.background) || 
-                                '#ffffff';
-    
+    const finalBackgroundColor = hslToCss(
+        productConfig.backgroundColor ||
+        comp.styles?.backgroundColor ||
+        themeWithDefaults.background ||
+        { h: 0, s: 0, l: 100 } // valor por defecto
+    );
+
+    // const finalBackgroundColor = productConfig.backgroundColor || hslToCss(themeWithDefaults.background);
+
+
     const containerStyles = {
         ...baseStyles,
         backgroundColor: finalBackgroundColor, // Aplicar el backgroundColor final
@@ -53,10 +58,10 @@ const ProductComponent = ({
         position: 'relative',
         boxSizing: 'border-box',
     };
-    
-    console.log('Final backgroundColor:', finalBackgroundColor);
-    console.log('Container styles:', containerStyles);
-    
+
+    // console.log('Final backgroundColor:', finalBackgroundColor);
+    // console.log('Container styles:', containerStyles);
+
     // Grid styles
     const gridStyles = {
         display: 'grid',
@@ -67,17 +72,17 @@ const ProductComponent = ({
         margin: '0 auto',
         padding: '0 20px',
     };
-    
+
     // Obtener productos para mostrar
     const productsToShow = products.slice(0, limit);
-    
+
     // ==================== RENDERIZADO FRONTEND ====================
     if (isFrontend) {
         return (
             <div style={containerStyles}>
                 {/* Título del grid */}
                 {titleComponent && (
-                    <h2 
+                    <h2
                         className="product-grid-title"
                         style={{
                             ...titleComponent.styles,
@@ -91,7 +96,7 @@ const ProductComponent = ({
                         {titleComponent.content}
                     </h2>
                 )}
-                
+
                 {/* Grid de productos */}
                 {cardComponent && productsToShow.length > 0 ? (
                     <div style={gridStyles}>
@@ -106,14 +111,14 @@ const ProductComponent = ({
                                     }
                                 }}
                                 getStyles={getStyles}
-                                onEdit={() => {}}
-                                onDelete={() => {}}
+                                onEdit={() => { }}
+                                onDelete={() => { }}
                                 themeSettings={themeSettings}
                                 isPreview={false} // IMPORTANTE: false para que se active la navegación
                                 products={products}
-                                setComponents={() => {}}
+                                setComponents={() => { }}
                                 hoveredComponentId={null}
-                                setHoveredComponentId={() => {}}
+                                setHoveredComponentId={() => { }}
                                 mode="frontend" // ESTO ACTIVA LA NAVEGACIÓN
                                 companyId={companyId}
                             />
@@ -127,7 +132,7 @@ const ProductComponent = ({
             </div>
         );
     }
-    
+
     // ==================== RENDERIZADO BUILDER ====================
     // Manejo de eventos de mouse (solo en modo builder)
     const handleMouseEnter = () => {
@@ -135,13 +140,13 @@ const ProductComponent = ({
             setHoveredComponentId(comp.id);
         }
     };
-    
+
     const handleMouseLeave = () => {
         if (setHoveredComponentId && !isPreview) {
             setHoveredComponentId(null);
         }
     };
-    
+
     return (
         <div
             style={containerStyles}
@@ -158,7 +163,7 @@ const ProductComponent = ({
                     setHoveredComponentId={setHoveredComponentId}
                     getComponentTypeName={(type) => type}
                 >
-                    <div 
+                    <div
                         style={{
                             ...titleComponent.styles,
                             textAlign: titleComponent.styles?.alignment || 'center',
@@ -172,7 +177,7 @@ const ProductComponent = ({
                     </div>
                 </ComponentWithHover>
             )}
-            
+
             {/* Grid de productos */}
             {cardComponent && (
                 <div style={gridStyles}>
@@ -208,7 +213,7 @@ const ProductComponent = ({
                     ))}
                 </div>
             )}
-            
+
             {products.length === 0 && !isPreview && (
                 <div className="text-center text-gray-400 py-8">
                     <p>No hay productos disponibles</p>
