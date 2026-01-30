@@ -77,16 +77,31 @@ const HeaderComponent = ({
             transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
         };
 
-        // Aplicar sticky solo en modo frontend
-        if (mode === 'frontend') {
-            if (stickyType === 'fixed') {
+        // Aplicar sticky/fixed según modo y configuración
+        // En frontend usamos position:fixed para que se comporte en toda la página.
+        // En builder/preview usaremos position:sticky (funciona con el canvas que ahora es el contenedor scrollable).
+        if (stickyType === 'fixed') {
+            if (mode === 'frontend') {
                 return {
                     ...baseStyles,
                     position: 'fixed',
                     top: 0,
                     zIndex: 1000,
                 };
-            } else if (stickyType === 'smart') {
+            }
+
+            // En builder o preview, usar sticky en lugar de fixed (pegado al contenedor scrollable)
+            return {
+                ...baseStyles,
+                position: 'sticky',
+                top: 0,
+                zIndex: 1000,
+            };
+        }
+
+        if (stickyType === 'smart') {
+            // Smart sigue usando comportamiento basado en scroll en frontend
+            if (mode === 'frontend') {
                 return {
                     ...baseStyles,
                     position: 'fixed',
@@ -95,9 +110,17 @@ const HeaderComponent = ({
                     transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
                 };
             }
+
+            // En builder/preview, tratar smart como sticky (si el usuario quiere ver el header pegado mientras navega el canvas)
+            return {
+                ...baseStyles,
+                position: 'sticky',
+                top: 0,
+                zIndex: 1000,
+            };
         }
 
-        // Modo builder o sin sticky
+        // Modo builder o sin sticky: comportamiento por defecto
         return {
             ...baseStyles,
             position: 'static',

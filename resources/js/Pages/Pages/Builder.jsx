@@ -204,6 +204,8 @@ const EditDialogRenderer = ({
 
 export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo, dynamicPages, countries, states, cities }) {
     const [components, setComponents] = useState([]);
+    const toolbarRef = useRef(null);
+    const [contentHeight, setContentHeight] = useState('calc(100vh - 64px)');
     const [editingComponent, setEditingComponent] = useState(null);
     const [editContent, setEditContent] = useState('');
     const [editStyles, setEditStyles] = useState({});
@@ -2742,6 +2744,24 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         setCurrentThemeSettings(pageThemeSettings);
     }, [page.theme_settings, pageThemeSettings]);
 
+    // Al montar el builder, evitar scroll del body y medir la altura disponible
+    useEffect(() => {
+        const calc = () => {
+            const toolbarH = toolbarRef.current ? toolbarRef.current.offsetHeight : 64;
+            setContentHeight(`${window.innerHeight - toolbarH}px`);
+        };
+
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        calc();
+        window.addEventListener('resize', calc);
+
+        return () => {
+            window.removeEventListener('resize', calc);
+            document.body.style.overflow = prevOverflow || '';
+        };
+    }, []);
+
     return (
         <div className="min-h-screen bg-gray-50">
             <Head title={`${page.title}`} />
@@ -2784,7 +2804,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 <>
                     {/* Layout de builder */}
                     <TooltipProvider >
-                        <div className="flex justify-between items-center px-4 py-2 border-b bg-white shadow-sm">
+                        <div ref={toolbarRef} className="flex justify-between items-center px-4 py-2 border-b bg-white shadow-sm">
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <Button variant="ghost" size="icon" onClick={() => router.visit(route('pages.index'))}>
@@ -2876,11 +2896,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         </div>
                     </TooltipProvider>
 
-                    <div className="flex gap-2 p-4">
+                    <div className="flex gap-2 p-2" style={{ height: contentHeight, overflow: 'hidden' }}>
                         <div className="w-80 h-full sticky top-0 bg-white p-4 rounded-lg shadow-md">
                             {editingComponent ? (
                                 // MODO EDICIÓN - Mostrar formularios de edición
-                                <ScrollArea className="h-[80vh] flex flex-col">
+                                <ScrollArea className="h-full flex flex-col">
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-semibold">
                                             Editando {editingComponent.type}
@@ -2968,7 +2988,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             )}
                         </div>
 
-                        <div className="flex-1">
+                        <div className="flex-1" style={{ height: '100%', overflow: 'auto' }}>
                             <Canvas
                                 components={components}
                                 onEditComponent={handleEditComponent}
@@ -2991,48 +3011,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     </div>
                 </>
             )}
-
-            {/* <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Agregar Nuevo Componente</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <Label htmlFor="type">Tipo de Componente</Label>
-                        <Select value={selectedType} onValueChange={setSelectedType}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecciona un tipo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="header">Header</SelectItem>
-                                <SelectItem value="footer">Footer</SelectItem>
-                                <SelectItem value="announcementBar">Barra de Anuncios</SelectItem>
-                                <SelectItem value="banner">Banner</SelectItem>
-                                <SelectItem value="bento">Bento</SelectItem>
-                                <SelectItem value="product">Productos</SelectItem>
-                                <SelectItem value="carousel">Carrusel de Productos</SelectItem>
-                                <SelectItem value="image">Imagen</SelectItem>
-                                <SelectItem value="productDetail">Detalle de Producto</SelectItem>
-                                <SelectItem value="cart">Carrito de Compras</SelectItem>
-                                <SelectItem value="orders">Mis Pedidos</SelectItem>
-                                <SelectItem value="success">Página de Éxito</SelectItem>
-                                <SelectItem value="checkout">Checkout / Finalizar Compra</SelectItem>
-                                <SelectItem value="login">Formulario de Login</SelectItem>
-                                <SelectItem value="register">Formulario de Registro</SelectItem>
-                                <SelectItem value="profile">Perfil de Usuario</SelectItem>
-                                <SelectItem value="marquee">Texto en Movimiento</SelectItem>
-                                <SelectItem value="pageContent">Contenido de Página</SelectItem>
-                                <SelectItem value="container">Contenedor</SelectItem>
-                                <SelectItem value="divider">Divider (Línea)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleAddComponent} disabled={!selectedType}>Agregar</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog> */}
 
             <ThemeCustomizerDialog
                 open={isThemeDialogOpen}
