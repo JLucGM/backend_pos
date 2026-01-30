@@ -13,11 +13,15 @@ const ProductTitleEditDialog = ({ editContent, setEditContent, editStyles, setEd
     
         useEffect(() => {
             if (isLiveEdit) {
+                        console.log('Dialog debouncedStyles', debouncedStyles);
+
                 // Las actualizaciones se manejan automáticamente
             }
         }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
     const updateStyle = (key, value) => {
+            console.log('Dialog updateStyle', key, value);
+
         setEditStyles(prev => ({ ...prev, [key]: value }));
     };
 
@@ -38,6 +42,7 @@ const ProductTitleEditDialog = ({ editContent, setEditContent, editStyles, setEd
         }
     };
 
+    // console.log(editStyles.fontType)
     return (
         <div className="space-y-4">
             <div className="flex justify-end">

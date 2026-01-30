@@ -1,0 +1,246 @@
+import React, { useMemo, useState } from 'react';
+import ProductCardComponent from './ProductCardComponent';
+import ComponentWithHover from '../ComponentWithHover';
+import PaginationComponent from './PaginationComponent';
+import PriceFilterComponent from './PriceFilterComponent';
+import SortSelectComponent from './SortSelectComponent';
+import { getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
+
+const ProductListComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    onDelete,
+    themeSettings,
+    isPreview,
+    products = [],
+    setComponents,
+    hoveredComponentId,
+    setHoveredComponentId,
+    mode = 'builder',
+    companyId,
+}) => {
+    const listConfig = comp.content || {};
+    const children = listConfig.children || [];
+    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+
+    const titleComponent = children.find(child => child.type === 'productTitle');
+    const cardComponent = children.find(child => child.type === 'productCard');
+    const paginationComponent = children.find(child => child.type === 'productListPagination');
+    const priceFilterComponent = children.find(child => child.type === 'productListPriceFilter');
+    const sortSelectComponent = children.find(child => child.type === 'productListSortSelect');
+
+    const baseStyles = getStyles(comp);
+
+    const finalBackgroundColor = hslToCss(
+        listConfig.backgroundColor || comp.styles?.backgroundColor || themeWithDefaults.background || { h: 0, s: 0, l: 100 }
+    );
+
+    const containerStyles = {
+        ...baseStyles,
+        backgroundColor: finalBackgroundColor,
+        padding: '20px 0',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        position: 'relative',
+        boxSizing: 'border-box',
+    };
+
+    const columns = listConfig.columns || 3;
+    const gapX = listConfig.gapX || '10px';
+    const gapY = listConfig.gapY || '10px';
+    const limit = listConfig.limit || 8;
+
+    const gridStyles = {
+        display: 'grid',
+        gridTemplateColumns: `repeat(${columns}, 1fr)`,
+        gap: `${gapY} ${gapX}`,
+        width: '100%',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0 20px',
+    };
+
+    // Local UI state for frontend rendering
+    const [currentPage, setCurrentPage] = useState(1);
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+    const [sortOption, setSortOption] = useState('');
+
+    const filteredAndSorted = useMemo(() => {
+        let list = [...products];
+        // Helpers to safely extract fields from product objects
+        const getName = (p) => (p?.product_name || p?.name || p?.title || '').toString();
+        const getPriceVal = (p) => {
+            const v = p?.product_price ?? p?.price ?? p?.product_price_discount ?? 0;
+            const n = parseFloat(v);
+            return isNaN(n) ? 0 : n;
+        };
+        const getDateVal = (p) => new Date(p?.created_at || p?.createdAt || p?.date || 0);
+
+        // Price filter
+        const min = parseFloat(minPrice);
+        const max = parseFloat(maxPrice);
+        if (!isNaN(min)) list = list.filter(p => getPriceVal(p) >= min);
+        if (!isNaN(max)) list = list.filter(p => getPriceVal(p) <= max);
+
+        // Sorting
+        switch (sortOption) {
+            case 'alpha-asc':
+                list.sort((a, b) => getName(a).localeCompare(getName(b)));
+                break;
+            case 'alpha-desc':
+                list.sort((a, b) => getName(b).localeCompare(getName(a)));
+                break;
+            case 'price-asc':
+                list.sort((a, b) => getPriceVal(a) - getPriceVal(b));
+                break;
+            case 'price-desc':
+                list.sort((a, b) => getPriceVal(b) - getPriceVal(a));
+                break;
+            case 'date-new-old':
+                list.sort((a, b) => getDateVal(b) - getDateVal(a));
+                break;
+            case 'date-old-new':
+                list.sort((a, b) => getDateVal(a) - getDateVal(b));
+                break;
+            default:
+                break;
+        }
+
+        return list;
+    }, [products, minPrice, maxPrice, sortOption]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / limit));
+    const currentItems = filteredAndSorted.slice((currentPage - 1) * limit, currentPage * limit);
+
+    // Reset page if list or filters change
+    React.useEffect(() => setCurrentPage(1), [minPrice, maxPrice, sortOption, products]);
+
+    const isFrontend = mode === 'frontend';
+
+    if (isFrontend) {
+        return (
+            <div style={containerStyles}>
+                {titleComponent && (
+                    <h2 style={{ ...titleComponent.styles, textAlign: titleComponent.styles?.alignment || 'center', marginBottom: '1rem', padding: '0 20px' }}>
+                        {titleComponent.content}
+                    </h2>
+                )}
+
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {priceFilterComponent && (
+                        <PriceFilterComponent
+                            comp={priceFilterComponent}
+                            minPrice={minPrice}
+                            maxPrice={maxPrice}
+                            setMinPrice={setMinPrice}
+                            setMaxPrice={setMaxPrice}
+                        />
+                    )}
+
+                    {sortSelectComponent && (
+                        <SortSelectComponent comp={sortSelectComponent} value={sortOption} onChange={setSortOption} />
+                    )}
+                </div>
+
+                {cardComponent && currentItems.length > 0 ? (
+                    <div style={gridStyles}>
+                        {currentItems.map(product => (
+                            <ProductCardComponent
+                                key={product.id}
+                                comp={{ ...cardComponent, content: { ...cardComponent.content, productData: product } }}
+                                getStyles={getStyles}
+                                onEdit={() => { }}
+                                onDelete={() => { }}
+                                themeSettings={themeSettings}
+                                isPreview={false}
+                                products={products}
+                                setComponents={() => { }}
+                                hoveredComponentId={null}
+                                setHoveredComponentId={() => { }}
+                                mode="frontend"
+                                companyId={companyId}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-8 text-gray-500">No hay productos disponibles</div>
+                )}
+
+                {paginationComponent && (
+                    <PaginationComponent
+                        comp={paginationComponent}
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onChange={setCurrentPage}
+                    />
+                )}
+            </div>
+        );
+    }
+
+    // BUILDER RENDER
+    const handleMouseEnter = () => {
+        if (setHoveredComponentId && !isPreview) setHoveredComponentId(comp.id);
+    };
+    const handleMouseLeave = () => {
+        if (setHoveredComponentId && !isPreview) setHoveredComponentId(null);
+    };
+
+    return (
+        <div style={containerStyles} className="group relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            {titleComponent && (
+                <ComponentWithHover component={titleComponent} isPreview={isPreview} hoveredComponentId={hoveredComponentId} setHoveredComponentId={setHoveredComponentId} getComponentTypeName={(t) => t}>
+                    <div style={{ ...titleComponent.styles, textAlign: titleComponent.styles?.alignment || 'center', marginBottom: '1rem', padding: '0 20px' }}>{titleComponent.content}</div>
+                </ComponentWithHover>
+            )}
+
+            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                {priceFilterComponent && (
+                    <ComponentWithHover component={priceFilterComponent} isPreview={isPreview} hoveredComponentId={hoveredComponentId} setHoveredComponentId={setHoveredComponentId} getComponentTypeName={(t) => t}>
+                        <PriceFilterComponent comp={priceFilterComponent} minPrice={minPrice} maxPrice={maxPrice} setMinPrice={setMinPrice} setMaxPrice={setMaxPrice} />
+                    </ComponentWithHover>
+                )}
+
+                {sortSelectComponent && (
+                    <ComponentWithHover component={sortSelectComponent} isPreview={isPreview} hoveredComponentId={hoveredComponentId} setHoveredComponentId={setHoveredComponentId} getComponentTypeName={(t) => t}>
+                        <SortSelectComponent comp={sortSelectComponent} value={sortOption} onChange={setSortOption} />
+                    </ComponentWithHover>
+                )}
+            </div>
+
+            {cardComponent && (
+                <div style={gridStyles}>
+                    {products.slice(0, limit).map((product, index) => (
+                        <ComponentWithHover key={product?.id || index} component={cardComponent} isPreview={isPreview} hoveredComponentId={hoveredComponentId} setHoveredComponentId={setHoveredComponentId} getComponentTypeName={(t) => t}>
+                            <ProductCardComponent
+                                comp={{ ...cardComponent, content: { ...cardComponent.content, productData: product } }}
+                                getStyles={getStyles}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
+                                themeSettings={themeSettings}
+                                isPreview={isPreview}
+                                products={products}
+                                setComponents={setComponents}
+                                hoveredComponentId={hoveredComponentId}
+                                setHoveredComponentId={setHoveredComponentId}
+                                mode="builder"
+                            />
+                        </ComponentWithHover>
+                    ))}
+                </div>
+            )}
+
+            {paginationComponent && (
+                <ComponentWithHover component={paginationComponent} isPreview={isPreview} hoveredComponentId={hoveredComponentId} setHoveredComponentId={setHoveredComponentId} getComponentTypeName={(t) => t}>
+                    <PaginationComponent comp={paginationComponent} currentPage={1} totalPages={Math.max(1, Math.ceil(products.length / limit))} onChange={() => { }} />
+                </ComponentWithHover>
+            )}
+        </div>
+    );
+};
+
+export default ProductListComponent;

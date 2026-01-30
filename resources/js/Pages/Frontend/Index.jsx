@@ -37,6 +37,7 @@ import ProfileComponent from '@/Components/BuilderPages/Profile/ProfileComponent
 import OrdersComponent from '@/Components/BuilderPages/Orders/OrdersComponent';
 import SuccessComponent from '@/Components/BuilderPages/Success/SuccessComponent';
 import AnnouncementBarComponent from '@/Components/BuilderPages/AnnouncementBar/AnnouncementBarComponent';
+import ProductListComponent from '@/Components/BuilderPages/Product/ProductListComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -56,6 +57,7 @@ const componentMap = {
     'footer': FooterComponent,
     'marquee': MarqueeTextComponent,
     'product': ProductComponent, // ← Usando ProductComponent unificado
+    'productList': ProductListComponent, // ← Usando ProductComponent unificado
     'carousel': CarouselComponent, // ← Agregado CarouselComponent
     'productDetail': FrontendProductDetailComponent,
     'productDetailAttributes': ProductDetailAttributesComponent,
@@ -128,6 +130,15 @@ function renderBlock(
     // Props específicas por tipo de componente - CORREGIDO
     switch (block.type) {
         case 'product':
+            return (
+                <Component 
+                    key={block.id} 
+                    {...baseProps} 
+                    products={products} 
+                    companyId={companyId}
+                />
+            );
+        case 'productList':
             return (
                 <Component 
                     key={block.id} 

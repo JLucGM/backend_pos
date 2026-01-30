@@ -9,15 +9,17 @@ const ProductTitleComponent = ({
     onDelete,
     themeSettings
 }) => {
-    const getTextStyles = () => {
+    // console.log(comp.styles)
+    const computeTextStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
         const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    console.log('ProductTitleComponent computeTextStyles', { id: comp.id, customStyles });
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading2'; // Por defecto heading2 para títulos de producto
 
-        // Obtener estilos del tema para el tipo de texto
+        // Obtener estilos del tema para el tipo de texto (usar la utilidad importada)
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
         
         // Obtener estilos específicos del componente product-title
@@ -26,22 +28,34 @@ const ProductTitleComponent = ({
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             // Si el usuario seleccionó "default" o no especificó nada, usar el tema
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return getResolvedFont(themeWithDefaults, 'heading_font');
+                    const headingKey = `${textStyle}_font`;
+                    return getResolvedFont(themeWithDefaults, headingKey) || themeTextStyles.fontFamily;
                 } else {
-                    return getResolvedFont(themeWithDefaults, 'body_font');
+                    return getResolvedFont(themeWithDefaults, 'body_font') || themeTextStyles.fontFamily;
                 }
             }
-            
+
+            // Si el usuario eligió una referencia genérica a heading, mapearla al nivel actual
+            if (fontType === 'heading_font') {
+                const headingKey = `${textStyle}_font`;
+                return getResolvedFont(themeWithDefaults, headingKey) || themeTextStyles.fontFamily;
+            }
+
+            // Soporte para otras referencias de tema (subheading, accent, body, etc.)
+            if (fontType === 'subheading_font' || fontType === 'accent_font' || fontType === 'body_font' || fontType.endsWith('_font')) {
+                return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
+            }
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
-            // Usar getResolvedFont para resolver referencias de fuentes
-            return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
+
+            // Fallback al fontFamily calculado por el tema
+            return themeTextStyles.fontFamily;
         };
 
         // Obtener configuración según el estilo seleccionado, con fallback a tema
@@ -91,7 +105,7 @@ const ProductTitleComponent = ({
 
     return (
         <div 
-            style={getTextStyles()}
+            style={computeTextStyles()}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >

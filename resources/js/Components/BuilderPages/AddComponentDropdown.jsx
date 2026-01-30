@@ -119,6 +119,13 @@ const ALL_COMPONENTS = [
     description: 'Grid de productos'
   },
   {
+    type: 'productList',
+    label: 'Lista de Productos',
+    category: 'products',
+    icon: <Grid3x3 className="h-4 w-4" />,
+    description: 'Lista de productos con paginación y filtros'
+  },
+  {
     type: 'productDetail',
     label: 'Detalle de Producto',
     category: 'products',

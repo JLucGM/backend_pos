@@ -22,7 +22,7 @@ const INDENTATION_WIDTH = 40;
 // Lista de componentes que pueden tener hijos y ser colapsados
 const COLLAPSIBLE_TYPES = [
     'container', 'product', 'carousel', 'banner', 'footer', 'header',
-    'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail','cart', 'checkout','checkoutDiscountGiftCard', 'announcementBar'
+    'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail','cart', 'checkout','checkoutDiscountGiftCard', 'announcementBar', 'productList'
 ];
 
 const NO_ADD_BUTTON_TYPES = ['header',  'bentoFeature', 'productCard', 'carouselCard','productDetail', 'announcement'];
@@ -48,6 +48,7 @@ const getComponentTypeName = (type) => {
         'bannerTitle': 'Título del Banner',
         'bannerText': 'Texto del Banner',
         'productTitle': 'Título de Productos',
+        'productList': 'Lista de Productos',
         'productCard': 'Carta de Producto',
         'productImage': 'Imagen de Producto',
         'productName': 'Nombre de Producto',

@@ -24,6 +24,7 @@ import ImageEditDialog from './partials/ImageEditDialog';
 import VideoEditDialog from './partials/VideoEditDialog';
 import LinkEditDialog from './partials/LinkEditDialog';
 import ProductEditDialog from './partials/Product/ProductEditDialog';
+import ProductListEditDialog from './partials/Product/ProductListEditDialog';
 import CarouselEditDialog from './partials/Carousel/CarouselEditDialog';
 import ContainerEditDialog from './partials/ContainerEditDialog';
 import BannerEditDialog from './partials/Banner/BannerEditDialog';
@@ -34,6 +35,9 @@ import ProductCardEditDialog from './partials/Product/ProductCardEditDialog';
 import ProductImageEditDialog from './partials/Product/ProductImageEditDialog';
 import ProductNameEditDialog from './partials/Product/ProductNameEditDialog';
 import ProductPriceEditDialog from './partials/Product/ProductPriceEditDialog';
+import ProductListPaginationEditDialog from './partials/Product/ProductListPaginationEditDialog';
+import ProductListPriceFilterEditDialog from './partials/Product/ProductListPriceFilterEditDialog';
+import ProductListSortSelectEditDialog from './partials/Product/ProductListSortSelectEditDialog';
 import CarouselTitleEditDialog from './partials/Carousel/CarouselTitleEditDialog';
 import CarouselCardEditDialog from './partials/Carousel/CarouselCardEditDialog';
 import CarouselImageEditDialog from './partials/Carousel/CarouselImageEditDialog';
@@ -85,6 +89,7 @@ const componentDialogMap = {
     video: VideoEditDialog,
     link: LinkEditDialog,
     product: ProductEditDialog,
+    productList: ProductListEditDialog,
     header: HeaderEditDialog,
     headerMenu: HeaderMenuEditDialog,
     footer: FooterEditDialog,
@@ -105,6 +110,9 @@ const componentDialogMap = {
     productTitle: ProductTitleEditDialog,
     productCard: ProductCardEditDialog,
     productImage: ProductImageEditDialog,
+    productListPagination: ProductListPaginationEditDialog,
+    productListPriceFilter: ProductListPriceFilterEditDialog,
+    productListSortSelect: ProductListSortSelectEditDialog,
     pageContent: PageContentEditDialog,
     productName: ProductNameEditDialog,
     productPrice: ProductPriceEditDialog,
@@ -310,8 +318,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     const found = findComponentType(item.content.children, targetId);
                     if (found) return found;
                 }
-                // Buscar en product con hijos
-                if (item.type === 'product' && item.content && item.content.children) {
+                // Buscar en product y productList con hijos
+                if ((item.type === 'product' || item.type === 'productList') && item.content && item.content.children) {
                     const found = findComponentType(item.content.children, targetId);
                     if (found) return found;
                 }
@@ -378,7 +386,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Componentes con estructura children
                 const typesWithChildren = [
-                    'banner', 'product', 'productCard', 'carousel',
+                    'banner', 'product', 'productList', 'productCard', 'carousel',
                     'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
                     'productDetail', 'checkout', 'cart', 'announcementBar'
                 ];
@@ -440,6 +448,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     useEffect(() => {
         if (editingComponent) {
+                    console.log('Builder syncing edits for', editingComponent.id, { editStyles, editContent });
+
             // Actualizar el componente en el estado mientras se edita
             setComponents((prev) => {
                 const updateComponentInTree = (components, targetId, newData) => {
@@ -462,7 +472,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                         // Buscar en banners, products, carousels, etc.
                         const typesWithChildren = [
-                            'banner', 'product', 'productCard', 'carousel',
+                            'banner', 'product', 'productList', 'productCard', 'carousel',
                             'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
                             'productDetail', 'cart', 'checkout', 'login', 'register', 'announcementBar'
                         ];
@@ -679,6 +689,150 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     setHasUnsavedChanges(true);
                     return newComponents;
                 });
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+
+            if (selectedType === 'productList') {
+                const listId = Date.now();
+                const titleId = listId + 1;
+                const cardId = listId + 2;
+                const imageId = listId + 3;
+                const nameId = listId + 4;
+                const priceId = listId + 5;
+                const paginationId = listId + 6;
+                const priceFilterId = listId + 7;
+                const sortSelectId = listId + 8;
+
+                content = {
+                    columns: 3,
+                    gapX: themeWithDefaults.carousel_gapX,
+                    gapY: themeWithDefaults.carousel_gapY,
+                    backgroundColor: themeWithDefaults.background,
+                    limit: 8,
+                    children: [
+                        {
+                            id: titleId,
+                            type: 'productTitle',
+                            content: 'Lista de Productos',
+                            styles: {
+                                layout: 'fit',
+                                alignment: 'center',
+                                color: hslToCss(themeWithDefaults.heading),
+                                fontSize: themeWithDefaults.heading2_fontSize || '24px',
+                                fontWeight: themeWithDefaults.heading2_fontWeight || 'bold'
+                            }
+                        },
+                        {
+                            id: cardId,
+                            type: 'productCard',
+                            content: {
+                                cardBorder: 'none',
+                                cardBorderThickness: '1px',
+                                cardBorderOpacity: '1',
+                                cardBorderRadius: '0px',
+                                cardPaddingTop: '0px',
+                                cardPaddingRight: '0px',
+                                cardPaddingBottom: '0px',
+                                cardPaddingLeft: '0px',
+                                children: [
+                                    {
+                                        id: imageId,
+                                        type: 'productImage',
+                                        content: '',
+                                        styles: {
+                                            aspectRatio: 'square',
+                                            imageBorder: 'none',
+                                            imageBorderThickness: '1px',
+                                            imageBorderOpacity: '1',
+                                            imageBorderRadius: '0px'
+                                        }
+                                    },
+                                    {
+                                        id: nameId,
+                                        type: 'productName',
+                                        content: '',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: hslToCss(themeWithDefaults.text),
+                                            fontSize: themeWithDefaults.paragraph_fontSize || '16px',
+                                            fontWeight: '600'
+                                        }
+                                    },
+                                    {
+                                        id: priceId,
+                                        type: 'productPrice',
+                                        content: '',
+                                        styles: {
+                                            layout: 'fit',
+                                            alignment: 'left',
+                                            color: hslToCss(themeWithDefaults.text),
+                                            fontSize: '14px',
+                                            fontWeight: 'normal'
+                                        }
+                                    }
+                                ]
+                            },
+                            styles: {}
+                        },
+                        {
+                            id: priceFilterId,
+                            type: 'productListPriceFilter',
+                            content: {},
+                            styles: {
+                                borderRadius: '4px',
+                                borderColor: '#ccc',
+                                borderThickness: '1px',
+                                background: '#fff'
+                            }
+                        },
+                        {
+                            id: sortSelectId,
+                            type: 'productListSortSelect',
+                            content: {},
+                            styles: {
+                                borderRadius: '4px',
+                                borderColor: '#ccc',
+                                borderThickness: '1px',
+                                background: '#fff'
+                            }
+                        },
+                        {
+                            id: paginationId,
+                            type: 'productListPagination',
+                            content: {},
+                            styles: {
+                                borderRadius: '4px',
+                                borderColor: '#000',
+                                borderThickness: '1px',
+                                background: '#fff'
+                            }
+                        }
+                    ]
+                };
+
+                const newItem = {
+                    id: listId,
+                    type: 'productList',
+                    content,
+                    styles: {
+                        backgroundColor: themeWithDefaults.background,
+                        paddingTop: '20px',
+                        paddingRight: '20px',
+                        paddingBottom: '20px',
+                        paddingLeft: '20px'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+
                 setIsAddDialogOpen(false);
                 setSelectedType('');
                 return;
@@ -2337,6 +2491,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     if (found) return found;
                 }
             }
+
+            
             return null;
         };
 

@@ -6,7 +6,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { DivideCircleIcon, ImageIcon, LinkIcon, TextIcon, VideoIcon, PlusCircleIcon } from 'lucide-react';
+import { DivideCircleIcon, ImageIcon, LinkIcon, TextIcon, VideoIcon, PlusCircleIcon, Grid3x3 } from 'lucide-react';
 import { ChatBubbleBottomCenterIcon, CubeIcon } from '@heroicons/react/24/outline';
 
 // Definir todas las opciones posibles con sus propiedades
@@ -22,6 +22,12 @@ const ALL_COMPONENT_OPTIONS = [
         label: 'Encabezado',
         icon: <TextIcon className="size-4" />,
         description: 'Agregar un título'
+    },
+    {
+        type: 'productList',
+        label: 'Lista de Productos',
+        icon: <Grid3x3 className="size-4" />,
+        description: 'Lista de productos con paginación y filtros'
     },
     {
         type: 'image',
@@ -82,7 +88,7 @@ const ALL_COMPONENT_OPTIONS = [
 // Definir qué componentes pueden tener qué tipos de hijos
 const ALLOWED_CHILD_TYPES = {
     // Contenedor: permite casi todos los componentes
-    container: ['text', 'heading', 'button', 'image', 'video', 'link', 'marquee', 'divider'],
+    container: ['text', 'heading', 'button', 'image', 'video', 'link', 'marquee', 'divider', 'productList'],
     
     // Producto: permite componentes básicos pero no video
     product: ['text', 'heading', 'button', 'link'],
@@ -113,7 +119,7 @@ const ALLOWED_CHILD_TYPES = {
     bentoFeature: [],
     
     // Por defecto (si no está en la lista): permite todos los básicos
-    default: ['text', 'heading', 'button', 'image', 'link', 'video', 'marquee', 'divider']
+    default: ['text', 'heading', 'button', 'image', 'link', 'video', 'marquee', 'divider', 'productList']
 };
 
 export default function ChildComponentOptions({ 

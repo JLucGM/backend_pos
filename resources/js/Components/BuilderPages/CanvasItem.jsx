@@ -49,6 +49,7 @@ import CheckoutSummaryComponent from './Checkout/CheckoutSummaryComponent';
 import CustomerInfoComponent from './Checkout/CustomerInfoComponent';
 import CheckoutDiscountGiftCardComponent from './Checkout/CheckoutDiscountGiftCardComponent';
 import ProductComponent from './Product/ProductComponent';
+import ProductListComponent from './Product/ProductListComponent';
 import ProfileComponent from './Profile/ProfileComponent';
 import OrdersComponent from './Orders/OrdersComponent';
 import SuccessComponent from './Success/SuccessComponent';
@@ -207,6 +208,18 @@ const CanvasItem = ({
             case 'product':
                 return (
                     <ProductComponent
+                        {...commonProps}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        products={products}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'productList':
+                return (
+                    <ProductListComponent
                         {...commonProps}
                         onEdit={() => onEditComponent(comp)}
                         onDelete={() => onDeleteComponent(comp.id)}
