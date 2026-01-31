@@ -163,23 +163,23 @@ class PageController extends RoutingController
         $themes = Theme::all();
 
         $page->load('template.theme', 'theme', 'company.setting.media', 'company.setting.currency');
-      
+
         $dynamicPages = $page->company->pages()
-        ->select('title', 'slug')
-        ->where('is_published', true)
-        ->where('id', '!=', $page->id) // Excluir la página actual
-        ->get()
-        ->map(function ($page) {
-            return [
-                'title' => $page->title,
-                'slug' => $page->slug,
-            ];
-        });
+            ->select('title', 'slug')
+            ->where('is_published', true)
+            ->where('id', '!=', $page->id) // Excluir la página actual
+            ->get()
+            ->map(function ($page) {
+                return [
+                    'title' => $page->title,
+                    'slug' => $page->slug,
+                ];
+            });
 
         $logoUrl = null;
-    if ($page->company->setting && $page->company->setting->getFirstMedia('logo')) {
-        $logoUrl = $page->company->setting->getFirstMedia('logo')->getUrl();
-    }
+        if ($page->company->setting && $page->company->setting->getFirstMedia('logo')) {
+            $logoUrl = $page->company->setting->getFirstMedia('logo')->getUrl();
+        }
         // dd($logoUrl);
         // Obtener configuración del tema (personalizada o del tema original)
         $pageThemeSettings = $this->getPageThemeSettings($page);
@@ -353,18 +353,22 @@ class PageController extends RoutingController
     // En PageController.php
     public function copyThemeSettings(Page $page)
     {
-        if (!$page->theme) {
-            return back()->with('error', 'La página no tiene un tema asignado');
-        }
+        // Copiar configuración del tema a todas las páginas de la compañía
+        $allPages = Page::where('company_id', $page->company_id)->get();
+        $count = 0;
 
-        // Copiar configuración del tema a la página
-        $page->theme_settings = $page->theme->settings;
-        $page->save();
+        foreach ($allPages as $companyPage) {
+            if ($companyPage->theme && !$companyPage->theme_settings) {
+                $companyPage->theme_settings = $companyPage->theme->settings;
+                $companyPage->save();
+                $count++;
+            }
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Configuración del tema copiada para personalización',
-            'theme_settings' => $page->theme_settings
+            'message' => "Configuración del tema copiada para {$count} páginas de la compañía",
+            'theme_settings' => $page->theme ? $page->theme->settings : null
         ]);
     }
 
@@ -376,61 +380,81 @@ class PageController extends RoutingController
 
         // Verificar que primero se haya copiado la configuración
         if (!$page->theme_settings && $page->theme) {
-            return response()->json([
-                'error' => true,
-                'message' => 'Debes copiar la configuración del tema primero',
-                'needs_copy' => true
-            ], 400);
+            // Si no tiene configuración personalizada, copiar primero el tema original
+            $this->copyThemeSettingsToAll($page);
         }
 
-        $page->theme_settings = $request->theme_settings;
-        $page->save();
+        // Obtener todas las páginas de la misma compañía
+        $allPages = Page::where('company_id', $page->company_id)->get();
 
-        // Limpiar caché si usas caché
-        Cache::forget("page_theme_settings_{$page->id}");
+        foreach ($allPages as $companyPage) {
+            // Solo actualizar páginas que tengan configuración personalizada
+            if ($companyPage->theme_settings) {
+                $companyPage->theme_settings = $request->theme_settings;
+                $companyPage->save();
+
+                // Limpiar caché individual si usas caché
+                Cache::forget("page_theme_settings_{$companyPage->id}");
+            }
+        }
 
         // return response()->json([
         //     'success' => true,
-        //     'message' => 'Configuraciones del tema actualizadas'
+        //     'message' => 'Configuraciones del tema actualizadas para todas las páginas de la compañía'
         // ]);
+    }
+
+    private function copyThemeSettingsToAll(Page $page)
+    {
+        // Obtener todas las páginas de la misma compañía
+        $allPages = Page::where('company_id', $page->company_id)->get();
+
+        foreach ($allPages as $companyPage) {
+            if ($companyPage->theme && !$companyPage->theme_settings) {
+                // Copiar configuración del tema original si existe
+                $companyPage->theme_settings = $companyPage->theme->settings;
+                $companyPage->save();
+            }
+        }
     }
 
     public function resetThemeSettings(Page $page)
     {
-        $page->theme_settings = null;
-        $page->save();
+        // Restablecer todas las páginas de la compañía
+        Page::where('company_id', $page->company_id)
+            ->update(['theme_settings' => null]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Configuraciones del tema restablecidas al tema original'
+            'message' => 'Configuraciones del tema restablecidas para todas las páginas de la compañía'
         ]);
     }
 
     // En PageController.php
-public function copyImage(Request $request, Page $page)
-{
-    $request->validate([
-        'product_id' => 'required|exists:products,id',
-        'media_id' => 'nullable|exists:media,id'
-    ]);
-
-    $product = Product::find($request->product_id);
-    
-    try {
-        $media = $page->copyImageFromProduct($product, $request->media_id);
-        
-        return response()->json([
-            'success' => true,
-            'image_url' => $media->getUrl(),
-            'media_id' => $media->id
+    public function copyImage(Request $request, Page $page)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'media_id' => 'nullable|exists:media,id'
         ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error al copiar la imagen: ' . $e->getMessage()
-        ], 500);
+
+        $product = Product::find($request->product_id);
+
+        try {
+            $media = $page->copyImageFromProduct($product, $request->media_id);
+
+            return response()->json([
+                'success' => true,
+                'image_url' => $media->getUrl(),
+                'media_id' => $media->id
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al copiar la imagen: ' . $e->getMessage()
+            ], 500);
+        }
     }
-}
     public function updateCompanyTheme(Request $request)
     {
         $request->validate([
