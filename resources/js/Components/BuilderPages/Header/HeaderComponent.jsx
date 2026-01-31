@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Search, User, LogOut } from 'lucide-react';
 import CanvasItem from '../CanvasItem';
 import { Link, usePage, router } from '@inertiajs/react';
@@ -18,6 +18,9 @@ const HeaderComponent = ({
     mode = 'frontend', // 'builder' o 'frontend',
     availableMenus = [],
     companyLogo // Agregar esta prop
+    ,
+    canvasRect = null,
+    canvasScrollTop = 0
 }) => {
     const { props } = usePage();
     const user = props.auth?.user;
@@ -31,6 +34,7 @@ const HeaderComponent = ({
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
+    const headerRef = useRef(null);
 
     // Determinar si estamos en modo de edición
     const isEditable = mode === 'builder' && !isPreview;
@@ -44,6 +48,7 @@ const HeaderComponent = ({
 
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
+            console.log('[Header][smart] scrollY:', currentScrollY, 'lastScrollY:', lastScrollY);
             
             if (currentScrollY < lastScrollY) {
                 // Scrolling up - mostrar header
@@ -60,74 +65,60 @@ const HeaderComponent = ({
         return () => window.removeEventListener('scroll', handleScroll);
     }, [lastScrollY, mode, stickyType]);
 
+    // Log para depuración: posiciones y estilos calculados del header dentro del canvas
+    useEffect(() => {
+        const el = headerRef.current;
+        const parent = el?.parentElement;
+        try {
+            console.log('[Header] debug - stickyType:', stickyType, 'mode:', mode);
+            console.log('[Header] computed styles:', getContainerStyles());
+            if (el) console.log('[Header] rect:', el.getBoundingClientRect());
+            if (parent) console.log('[Header] parent rect:', parent.getBoundingClientRect());
+        } catch (err) {
+            console.warn('[Header] debug error', err);
+        }
+    }, [stickyType, mode, isVisible, content?.height, customStyles]);
+
     // Estilos del contenedor principal del header con valores del tema
-    const getContainerStyles = () => {
-        const baseStyles = {
-            ...headerStyles,
-            width: content?.fullWidth ? '100%' : customStyles.width || '100%',
-            height: content?.height || '70px',
-            display: 'flex',
-            alignItems: 'center',
-            backgroundColor: customStyles.backgroundColor || themeHeaderStyles.backgroundColor,
-            paddingTop: customStyles.paddingTop || '20px',
-            paddingRight: customStyles.paddingRight || '20px',
-            paddingBottom: customStyles.paddingBottom || '20px',
-            paddingLeft: customStyles.paddingLeft || '20px',
-            borderBottom: customStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
-            transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
-        };
+    // components/BuilderPages/HeaderComponent.jsx
+// En la función getContainerStyles:
 
-        // Aplicar sticky/fixed según modo y configuración
-        // En frontend usamos position:fixed para que se comporte en toda la página.
-        // En builder/preview usaremos position:sticky (funciona con el canvas que ahora es el contenedor scrollable).
-        if (stickyType === 'fixed') {
-            if (mode === 'frontend') {
-                return {
-                    ...baseStyles,
-                    position: 'fixed',
-                    top: 0,
-                    zIndex: 1000,
-                };
-            }
-
-            // En builder o preview, usar sticky en lugar de fixed (pegado al contenedor scrollable)
-            return {
-                ...baseStyles,
-                position: 'sticky',
-                top: 0,
-                zIndex: 1000,
-            };
-        }
-
-        if (stickyType === 'smart') {
-            // Smart sigue usando comportamiento basado en scroll en frontend
-            if (mode === 'frontend') {
-                return {
-                    ...baseStyles,
-                    position: 'fixed',
-                    top: 0,
-                    zIndex: 1000,
-                    transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
-                };
-            }
-
-            // En builder/preview, tratar smart como sticky (si el usuario quiere ver el header pegado mientras navega el canvas)
-            return {
-                ...baseStyles,
-                position: 'sticky',
-                top: 0,
-                zIndex: 1000,
-            };
-        }
-
-        // Modo builder o sin sticky: comportamiento por defecto
-        return {
-            ...baseStyles,
-            position: 'static',
-        };
+const getContainerStyles = () => {
+    const baseStyles = {
+        ...headerStyles,
+        width: content?.fullWidth ? '100%' : customStyles.width || '100%',
+        height: content?.height || '70px',
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: customStyles.backgroundColor || themeHeaderStyles.backgroundColor,
+        paddingTop: customStyles.paddingTop || '20px',
+        paddingRight: customStyles.paddingRight || '20px',
+        paddingBottom: customStyles.paddingBottom || '20px',
+        paddingLeft: customStyles.paddingLeft || '20px',
+        borderBottom: customStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
+        transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
     };
 
+    // SIEMPRE usar position: sticky en builder/preview
+    if (mode !== 'frontend') {
+        if (stickyType === 'fixed' || stickyType === 'smart') {
+            return {
+                ...baseStyles,
+                position: 'sticky',
+                top: 0,
+                zIndex: 100,
+            };
+        }
+        return baseStyles;
+    }
+
+    // EN FRONTEND: NUNCA usar position: fixed aquí
+    // El fixed se manejará en el return del componente
+    return baseStyles;
+};
+
     const containerStyles = getContainerStyles();
+    // const isFixedInBuilder = (mode !== 'frontend') && (stickyType === 'fixed' || stickyType === 'smart') && canvasRect;
 
     // Clasificar los componentes hijos por tipo
     const classifyChildren = () => {
@@ -488,7 +479,7 @@ const HeaderComponent = ({
                                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                                         borderRadius: '8px',
                                         minWidth: '200px',
-                                        zIndex: 1001,
+                                        zIndex: 2001,
                                         marginTop: '10px',
                                         border: '1px solid #e5e5e5',
                                         overflow: 'hidden'
@@ -808,18 +799,60 @@ const HeaderComponent = ({
         );
     };
 
+    
+    // Determinar si es sticky en frontend
+const isStickyFrontend = mode === 'frontend' && (stickyType === 'fixed' || stickyType === 'smart');
+
+if (isStickyFrontend) {
+    const headerHeight = content?.height || '70px';
+    
+    // Crear estilos combinados basados en containerStyles
+    const fixedHeaderStyles = {
+        ...containerStyles, // ← ¡ESTO YA TIENE display: flex, alignItems: center!
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        width: '100%',
+        height: headerHeight,
+        // Asegurar que no haya transformaciones no deseadas
+        transform: stickyType === 'smart' ? (isVisible ? 'translateY(0)' : 'translateY(-100%)') : 'none',
+    };
+    
     return (
-        <header
-            style={containerStyles}
-            onDoubleClick={isEditable ? () => onEdit(comp) : undefined}
-            className={isEditable ? 'hover:opacity-80 cursor-pointer' : ''}
-            onClick={(e) => {
-                e.stopPropagation();
-            }}
-        >
-            {renderByPosition()}
-        </header>
+        <>
+            <div 
+                style={{ 
+                    height: headerHeight,
+                    width: '100%',
+                    backgroundColor: 'transparent'
+                }} 
+            />
+            
+            <header
+                ref={headerRef}
+                style={fixedHeaderStyles}
+                onClick={(e) => { e.stopPropagation(); }}
+            >
+                {renderByPosition()}
+            </header>
+        </>
     );
+}
+
+// Para builder/preview o headers no sticky en frontend
+return (
+    <header
+        ref={headerRef}
+        style={containerStyles}
+        onDoubleClick={isEditable ? () => onEdit(comp) : undefined}
+        className={isEditable ? 'hover:opacity-80 cursor-pointer' : ''}
+        onClick={(e) => { e.stopPropagation(); }}
+    >
+        {renderByPosition()}
+    </header>
+);
 };
 
 export default HeaderComponent;

@@ -118,8 +118,8 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     <Label htmlFor="sticky">Header Fijo (Sticky)</Label>
                     <Switch
                         id="sticky"
-                        checked={editContent?.sticky || false}
-                        onCheckedChange={(checked) => updateContent('sticky', checked)}
+                        checked={(editContent?.stickyType ? editContent.stickyType !== 'none' : Boolean(editContent?.sticky)) || false}
+                        onCheckedChange={(checked) => updateContent('stickyType', checked ? 'fixed' : 'none')}
                     />
                 </div>
 

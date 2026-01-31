@@ -74,26 +74,26 @@ const componentMap = {
     'profile': ProfileComponent, // ← Agregado ProfileComponent
     'orders': OrdersComponent, // ← Agregado OrdersComponent
     'success': SuccessComponent, // ← Agregado SuccessComponent
-'announcementBar': AnnouncementBarComponent,
+    'announcementBar': AnnouncementBarComponent,
 };
 
 // ==============================================================
 // FUNCIÓN DE RENDERIZADO PÚBLICO - CORREGIDA
 // ==============================================================
 function renderBlock(
-    block, 
-    themeSettings, 
-    availableMenus, 
-    products, 
-    currentProduct = null, 
-    companyId, 
-    paymentMethods = [], 
-    shippingRates = [], 
-    userDeliveryLocations = [], 
-    userGiftCards = [], 
+    block,
+    themeSettings,
+    availableMenus,
+    products,
+    currentProduct = null,
+    companyId,
+    paymentMethods = [],
+    shippingRates = [],
+    userDeliveryLocations = [],
+    userGiftCards = [],
     userOrders = [],
-    mode = 'frontend', 
-    companyLogo, 
+    mode = 'frontend',
+    companyLogo,
     companyFavicon,
     currentUser = null,
     countries = [],
@@ -131,40 +131,40 @@ function renderBlock(
     switch (block.type) {
         case 'product':
             return (
-                <Component 
-                    key={block.id} 
-                    {...baseProps} 
-                    products={products} 
+                <Component
+                    key={block.id}
+                    {...baseProps}
+                    products={products}
                     companyId={companyId}
                 />
             );
         case 'productList':
             return (
-                <Component 
-                    key={block.id} 
-                    {...baseProps} 
-                    products={products} 
+                <Component
+                    key={block.id}
+                    {...baseProps}
+                    products={products}
                     companyId={companyId}
                 />
             );
 
         case 'carousel':
             return (
-                <Component 
-                    key={block.id} 
-                    {...baseProps} 
-                    products={products} 
+                <Component
+                    key={block.id}
+                    {...baseProps}
+                    products={products}
                     companyId={companyId}
                 />
             );
 
         case 'productDetail':
             return (
-                <Component 
-                    key={block.id} 
-                    {...baseProps} 
-                    product={currentProduct} 
-                    companyId={companyId} 
+                <Component
+                    key={block.id}
+                    {...baseProps}
+                    product={currentProduct}
+                    companyId={companyId}
                 />
             );
 
@@ -177,7 +177,7 @@ function renderBlock(
                     availableMenus={availableMenus}
                 />
             );
-            
+
         case 'footer':
             return (
                 <FooterComponent
@@ -253,7 +253,7 @@ function renderBlock(
                     cities={cities}
                 />
             );
-            
+
         default:
             return <Component key={block.id} {...baseProps} />;
     }
@@ -348,46 +348,46 @@ export default function Index({
                 )}
             </Head>
 
-            {/* Renderizar cada bloque del layout */}
-            {layoutBlocks.map(block => 
-                renderBlock(
-                    block,
-                    themeSettings,
-                    availableMenus,
-                    products,
-                    currentProduct,
-                    companyId,
-                    paymentMethods,
-                    shippingRates,
-                    userDeliveryLocations,
-                    userGiftCards,
-                    userOrders,
-                    'frontend', // Modo frontend siempre
-                    companyLogo,
-                    companyFavicon,
-                    currentUser,
-                    countries,
-                    states,
-                    cities
-                )
-            )}
+                {/* Renderizar cada bloque del layout */}
+                {layoutBlocks.map(block =>
+                    renderBlock(
+                        block,
+                        themeSettings,
+                        availableMenus,
+                        products,
+                        currentProduct,
+                        companyId,
+                        paymentMethods,
+                        shippingRates,
+                        userDeliveryLocations,
+                        userGiftCards,
+                        userOrders,
+                        'frontend', // Modo frontend siempre
+                        companyLogo,
+                        companyFavicon,
+                        currentUser,
+                        countries,
+                        states,
+                        cities
+                    )
+                )}
 
-            {isProductDetailPage && !currentProduct && (
-                <div className="text-center py-12 bg-gray-50">
-                    <h2 className="text-2xl font-bold text-gray-700 mb-4">
-                        Producto no encontrado
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        El producto que buscas no está disponible o no existe.
-                    </p>
-                    <a
-                        href="/"
-                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        Volver al inicio
-                    </a>
-                </div>
-            )}
+                {isProductDetailPage && !currentProduct && (
+                    <div className="text-center py-12 bg-gray-50">
+                        <h2 className="text-2xl font-bold text-gray-700 mb-4">
+                            Producto no encontrado
+                        </h2>
+                        <p className="text-gray-600 mb-6">
+                            El producto que buscas no está disponible o no existe.
+                        </p>
+                        <a
+                            href="/"
+                            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            Volver al inicio
+                        </a>
+                    </div>
+                )}
         </>
     );
 }

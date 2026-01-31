@@ -72,7 +72,9 @@ const CanvasItem = ({
     companyLogo,
     countries = [],
     states = [],
-    cities = []
+    cities = [],
+    canvasRect = null,
+    canvasScrollTop = 0,
 }) => {
     const getStyles = (comp) => {
         const styles = comp.styles || {};
@@ -156,6 +158,9 @@ const CanvasItem = ({
                         setHoveredComponentId={setHoveredComponentId}
                         availableMenus={availableMenus}
                         companyLogo={companyLogo}
+                        mode={isPreview ? 'frontend' : 'builder'}
+                        canvasRect={canvasRect}
+                        canvasScrollTop={canvasScrollTop}
                     />
                 );
 
@@ -177,6 +182,7 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         companyLogo={companyLogo}
+                        mode={isPreview ? 'frontend' : 'builder'}
                     />
                 );
             case 'headerMenu':
@@ -999,14 +1005,21 @@ const CanvasItem = ({
 
     return (
         <div
-            id={`component-${comp.id}`}
-            className={`relative group transition-all duration-200 ${isHovered && !isPreview
-                ? 'border border-blue-400 bg-blue-50/30'
-                : 'border border-transparent'
-                }`}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-        >
+        id={`component-${comp.id}`}
+        className={`relative group transition-all duration-200 ${isHovered && !isPreview
+            ? 'border border-blue-400 bg-blue-50/30'
+            : 'border border-transparent'
+            }`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        // Agregar estilos específicos para headers sticky
+        style={comp.type === 'header' && comp.content?.stickyType && comp.content?.stickyType !== 'none' ? {
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+            backgroundColor: 'white', // Asegurar fondo sólido
+        } : {}}
+    >
             {/* Solo mostrar el tooltip en modo edición */}
             {!isPreview && (
                 <div

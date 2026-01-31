@@ -450,7 +450,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     useEffect(() => {
         if (editingComponent) {
-                    console.log('Builder syncing edits for', editingComponent.id, { editStyles, editContent });
+                    // console.log('Builder syncing edits for', editingComponent.id, { editStyles, editContent });
 
             // Actualizar el componente en el estado mientras se edita
             setComponents((prev) => {
@@ -2988,7 +2988,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             )}
                         </div>
 
-                        <div className="flex-1" style={{ height: '100%', overflow: 'auto' }}>
+                        <div className="flex-1" style={{ height: '100%', overflow: 'hidden' }}>
                             <Canvas
                                 components={components}
                                 onEditComponent={handleEditComponent}
