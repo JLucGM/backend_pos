@@ -86,7 +86,7 @@ class RegisteredUserController extends Controller
             // Crear configuración por defecto
             Setting::create([
                 'company_id' => $company->id,
-                'default_currency' => 'USD',
+                'currency_id' => 1,
             ]);
 
             // Crear menú por defecto (exactamente como tu ejemplo)
