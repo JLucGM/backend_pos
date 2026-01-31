@@ -9,6 +9,7 @@ use App\Models\SubscriptionPlan;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\DefaultMenuService; // <-- Agregar esta línea
+use App\Services\DefaultPageService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -90,6 +91,9 @@ class RegisteredUserController extends Controller
 
             // Crear menú por defecto (exactamente como tu ejemplo)
             DefaultMenuService::createForCompany($company);
+
+            // Crear páginas por defecto para la empresa <-- Agregar esta línea
+            DefaultPageService::createForCompany($company);
 
             // Asociar la empresa al usuario
             $user->company()->associate($company);
