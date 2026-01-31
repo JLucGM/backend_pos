@@ -424,10 +424,10 @@ class PageController extends RoutingController
         Page::where('company_id', $page->company_id)
             ->update(['theme_settings' => null]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Configuraciones del tema restablecidas para todas las páginas de la compañía'
-        ]);
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Configuraciones del tema restablecidas para todas las páginas de la compañía'
+        // ]);
     }
 
     // En PageController.php

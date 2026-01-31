@@ -29,83 +29,29 @@ const ThemeCustomizerDialog = ({
         { label: 'Georgia', value: "'Georgia', serif" },
         { label: 'Arial', value: "'Arial', sans-serif" },
         { label: 'Helvetica', value: "'Helvetica', sans-serif" },
+        // Agregar las combinaciones que vienen por defecto
+        { label: 'Arial/Helvetica', value: "'Arial', 'Helvetica', sans-serif" },
+        { label: 'Georgia/Times', value: "'Georgia', 'Times New Roman', serif" },
     ]);
 
     const [localSettings, setLocalSettings] = useState({});
 
-    // Valores por defecto del tema
-    const getDefaultThemeSettings = () => ({
-        // Colores generales
-        background: '0 0% 100%',
-        heading: '0 0% 3.9%',
-        text: '0 0% 3.9%',
-        links: '209 100% 50%',
-        hover_links: '209 100% 40%',
-        borders: '0 0% 96.1%',
-        shadows: '0 0% 0% 0.1',
-
-        // Primary Button
-        primary_button_background: '209 100% 92%',
-        primary_button_text: '0 0% 3.9%',
-        primary_button_border: '209 100% 92%',
-        primary_button_border_thickness: '1px',
-        primary_button_corner_radius: '0.5rem',
-        primary_button_text_case: 'default',
-        primary_button_hover_background: '209 100% 84%',
-        primary_button_hover_text: '0 0% 3.9%',
-        primary_button_hover_border: '209 100% 84%',
-
-        // Secondary Button
-        secondary_button_background: '0 0% 96.1%',
-        secondary_button_text: '0 0% 3.9%',
-        secondary_button_border: '0 0% 96.1%',
-        secondary_button_border_thickness: '1px',
-        secondary_button_corner_radius: '0.5rem',
-        secondary_button_text_case: 'default',
-        secondary_button_hover_background: '0 0% 84.1%',
-        secondary_button_hover_text: '0 0% 3.9%',
-        secondary_button_hover_border: '0 0% 84.1%',
-
-        // Inputs
-        input_background: '0 0% 100%',
-        input_text: '0 0% 3.9%',
-        input_border: '0 0% 96.1%',
-        input_border_thickness: '1px',
-        input_corner_radius: '0.375rem',
-        input_hover_background: '0 0% 100%',
-        input_focus_background: '0 0% 100%',
-        input_focus_border: '209 100% 92%',
-
-        // Tipografía
-        body_font: "'Inter', sans-serif",
-        heading_font: "'Inter', sans-serif",
-        subheading_font: "'Inter', sans-serif",
-        accent_font: "'Inter', sans-serif",
-
-        // Párrafo
-        paragraph_font: 'body_font',
-        paragraph_fontSize: '16px',
-        paragraph_fontWeight: 'normal',
-        paragraph_lineHeight: '1.6',
-        paragraph_textTransform: 'none',
-
-        // Headings
-        ...Array.from({ length: 6 }, (_, i) => {
-            const level = i + 1;
-            const baseSize = 3.5 - (level * 0.25);
-            return {
-                [`heading${level}_font`]: 'heading_font',
-                [`heading${level}_fontSize`]: `${baseSize}rem`,
-                [`heading${level}_fontWeight`]: 'bold',
-                [`heading${level}_lineHeight`]: level <= 2 ? 'tight' : 'normal',
-                [`heading${level}_textTransform`]: 'none',
-            };
-        }).reduce((acc, curr) => ({ ...acc, ...curr }), {}),
-    });
+    // Valores por defecto mínimos para fuentes (solo se usarán si themeSettings está vacío)
+    const defaultFontSettings = {
+        body_font: "'Arial', 'Helvetica', sans-serif",
+        heading_font: "'Arial', 'Helvetica', sans-serif",
+        subheading_font: "'Arial', 'Helvetica', sans-serif",
+        accent_font: "'Georgia', 'Times New Roman', serif",
+    };
 
     useEffect(() => {
-        const defaultSettings = getDefaultThemeSettings();
-        setLocalSettings({ ...defaultSettings, ...themeSettings });
+        if (themeSettings && typeof themeSettings === 'object' && Object.keys(themeSettings).length > 0) {
+            // Si themeSettings tiene datos, usarlo directamente
+            setLocalSettings(themeSettings);
+        } else {
+            // Si themeSettings está vacío, usar los valores por defecto mínimos
+            setLocalSettings(defaultFontSettings);
+        }
     }, [themeSettings]);
 
     const handleChange = (key, value) => {
@@ -173,8 +119,8 @@ const ThemeCustomizerDialog = ({
                     </DialogTitle>
                     <DialogDescription>
                         {hasCopiedTheme
-                            ? 'Estás editando una copia personalizada de la configuración del tema.'
-                            : 'Debes copiar la configuración del tema para personalizarla.'}
+                            ? 'Las personalizaciones del tema se aplicarán a TODAS las páginas de la compañía.'
+                            : 'Debes copiar la configuración del tema para personalizarla. Esto creará una copia para todas las páginas de la compañía.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -186,11 +132,11 @@ const ThemeCustomizerDialog = ({
                         <h3 className="text-lg font-semibold mb-2">Configuración no copiada</h3>
                         <p className="text-gray-600 mb-6">
                             Para personalizar el tema, necesitas crear una copia de la configuración del tema original.
-                            Esto permitirá modificarlo sin afectar al tema base.
+                            Esto permitirá modificarlo sin afectar al tema base. Se creará una copia para TODAS las páginas de la compañía.
                         </p>
                         <Button onClick={handleCopyTheme} size="lg">
                             <Copy className="h-4 w-4 mr-2" />
-                            Copiar Configuración del Tema
+                            Copiar Configuración del Tema para Todas las Páginas
                         </Button>
                     </div>
                 ) : (
@@ -558,7 +504,7 @@ const ThemeCustomizerDialog = ({
                                                 <div>
                                                     <Label>Fuente Body (Texto normal)</Label>
                                                     <Select
-                                                        value={localSettings.body_font || "'Inter', sans-serif"}
+                                                        value={localSettings.body_font || "'Arial', 'Helvetica', sans-serif"}
                                                         onValueChange={(value) => handleChange('body_font', value)}
                                                     >
                                                         <SelectTrigger>
@@ -576,7 +522,7 @@ const ThemeCustomizerDialog = ({
                                                 <div>
                                                     <Label>Fuente Heading (Títulos)</Label>
                                                     <Select
-                                                        value={localSettings.heading_font || "'Inter', sans-serif"}
+                                                        value={localSettings.heading_font || "'Arial', 'Helvetica', sans-serif"}
                                                         onValueChange={(value) => handleChange('heading_font', value)}
                                                     >
                                                         <SelectTrigger>
@@ -594,7 +540,7 @@ const ThemeCustomizerDialog = ({
                                                 <div>
                                                     <Label>Fuente Subheading (Subtítulos)</Label>
                                                     <Select
-                                                        value={localSettings.subheading_font || "'Inter', sans-serif"}
+                                                        value={localSettings.subheading_font || "'Arial', 'Helvetica', sans-serif"}
                                                         onValueChange={(value) => handleChange('subheading_font', value)}
                                                     >
                                                         <SelectTrigger>
@@ -612,7 +558,7 @@ const ThemeCustomizerDialog = ({
                                                 <div>
                                                     <Label>Fuente Accent (Acento/Decorativa)</Label>
                                                     <Select
-                                                        value={localSettings.accent_font || "'Inter', sans-serif"}
+                                                        value={localSettings.accent_font || "'Georgia', 'Times New Roman', serif"}
                                                         onValueChange={(value) => handleChange('accent_font', value)}
                                                     >
                                                         <SelectTrigger>
@@ -753,9 +699,17 @@ const ThemeCustomizerDialog = ({
                                                     <div>
                                                         <Label>Tamaño de fuente</Label>
                                                         <Input
-                                                            value={localSettings[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`}
+                                                            value={localSettings[`heading${level}_fontSize`] || (level === 1 ? '2.5rem' : 
+                                                                    level === 2 ? '2rem' : 
+                                                                    level === 3 ? '1.75rem' : 
+                                                                    level === 4 ? '1.5rem' : 
+                                                                    level === 5 ? '1.25rem' : '1rem')}
                                                             onChange={(e) => handleChange(`heading${level}_fontSize`, e.target.value)}
-                                                            placeholder={`${3.5 - (level * 0.25)}rem`}
+                                                            placeholder={level === 1 ? '2.5rem' : 
+                                                                    level === 2 ? '2rem' : 
+                                                                    level === 3 ? '1.75rem' : 
+                                                                    level === 4 ? '1.5rem' : 
+                                                                    level === 5 ? '1.25rem' : '1rem'}
                                                         />
                                                     </div>
                                                     <div>
@@ -811,7 +765,11 @@ const ThemeCustomizerDialog = ({
                                                     <div
                                                         style={{
                                                             fontFamily: getResolvedFont(`heading${level}_font`),
-                                                            fontSize: localSettings[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`,
+                                                            fontSize: localSettings[`heading${level}_fontSize`] || (level === 1 ? '2.5rem' : 
+                                                                    level === 2 ? '2rem' : 
+                                                                    level === 3 ? '1.75rem' : 
+                                                                    level === 4 ? '1.5rem' : 
+                                                                    level === 5 ? '1.25rem' : '1rem'),
                                                             fontWeight: localSettings[`heading${level}_fontWeight`] || 'bold',
                                                             lineHeight: localSettings[`heading${level}_lineHeight`] || (level <= 2 ? '1.2' : '1.4'),
                                                             textTransform: localSettings[`heading${level}_textTransform`] || 'none',
@@ -828,16 +786,18 @@ const ThemeCustomizerDialog = ({
                             </div>
                         </Tabs>
 
-                        <DialogFooter className="gap-2">
+                        
+
+                        <DialogFooter className="gap-2 mt-4">
                             <Button variant="outline" onClick={handleReset}>
                                 <RefreshCw className="h-4 w-4 mr-2" />
-                                Restablecer
+                                Restablecer Todas las Páginas
                             </Button>
                             <Button variant="outline" onClick={() => onOpenChange(false)}>
                                 Cancelar
                             </Button>
                             <Button onClick={handleSave}>
-                                Guardar Cambios
+                                Guardar en Todas las Páginas
                             </Button>
                         </DialogFooter>
                     </>

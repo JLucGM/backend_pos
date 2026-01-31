@@ -450,7 +450,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     useEffect(() => {
         if (editingComponent) {
-                    // console.log('Builder syncing edits for', editingComponent.id, { editStyles, editContent });
+            // console.log('Builder syncing edits for', editingComponent.id, { editStyles, editContent });
 
             // Actualizar el componente en el estado mientras se edita
             setComponents((prev) => {
@@ -1020,7 +1020,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
             if (selectedType === 'divider') {
                 content = '';
-                
+
                 const newItem = {
                     id: Date.now(),
                     type: selectedType,
@@ -1048,7 +1048,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
             if (selectedType === 'marquee') {
                 content = '¡Texto en movimiento! Personaliza este texto.';
-                
+
                 const newItem = {
                     id: Date.now(),
                     type: selectedType,
@@ -2183,7 +2183,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
             if (selectedType === 'text') {
                 content = 'Nuevo texto';
-                
+
                 const newItem = {
                     id: Date.now(),
                     type: selectedType,
@@ -2215,7 +2215,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
             if (selectedType === 'link') {
                 content = 'Nuevo enlace';
-                
+
                 const newItem = {
                     id: Date.now(),
                     type: selectedType,
@@ -2246,7 +2246,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
             if (selectedType === 'video') {
                 content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
-                
+
                 const newItem = {
                     id: Date.now(),
                     type: selectedType,
@@ -2494,7 +2494,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 }
             }
 
-            
+
             return null;
         };
 
@@ -2728,7 +2728,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     };
 
     const resetThemeSettings = () => {
-        router.post(route('pages.resetThemeSettings', page.id), {}, {
+        router.post(route('pages.resetThemeSettings', page), {}, {
             onSuccess: () => {
                 toast.success("Configuraciones del tema restablecidas");
                 setIsThemeDialogOpen(false);
@@ -2900,8 +2900,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         <div className="w-80 h-full sticky top-0 bg-white p-4 rounded-lg shadow-md">
                             {editingComponent ? (
                                 // MODO EDICIÓN - Mostrar formularios de edición
-                                <ScrollArea className="h-full flex flex-col">
-                                    <div className="flex justify-between items-center mb-4">
+                                <div className="h-full flex flex-col">
+                                    {/* Encabezado fijo */}
+                                    <div className="flex-shrink-0 flex justify-between items-center mb-4 p-2 border-b bg-white">
                                         <h3 className="font-semibold">
                                             Editando {editingComponent.type}
                                         </h3>
@@ -2914,20 +2915,23 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         </Button>
                                     </div>
 
-                                    <ScrollArea className="flex-1 px-4">
-                                        <EditDialogRenderer
-                                            editingComponent={editingComponent}
-                                            editContent={editContent}
-                                            setEditContent={setEditContent}
-                                            editStyles={editStyles}
-                                            setEditStyles={setEditStyles}
-                                            themeSettings={themeSettings}
-                                            availableMenus={availableMenus}
-                                            products={products}
-                                            dynamicPages={dynamicPages}
-                                        />
+                                    {/* Contenido desplazable */}
+                                    <ScrollArea className="flex-1">
+                                        <div className="px-4">
+                                            <EditDialogRenderer
+                                                editingComponent={editingComponent}
+                                                editContent={editContent}
+                                                setEditContent={setEditContent}
+                                                editStyles={editStyles}
+                                                setEditStyles={setEditStyles}
+                                                themeSettings={themeSettings}
+                                                availableMenus={availableMenus}
+                                                products={products}
+                                                dynamicPages={dynamicPages}
+                                            />
+                                        </div>
                                     </ScrollArea>
-                                </ScrollArea>
+                                </div>
                             ) : (
                                 // MODO NORMAL - Mostrar árbol de componentes
                                 <>
