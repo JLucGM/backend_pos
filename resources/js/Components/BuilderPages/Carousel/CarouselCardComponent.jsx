@@ -5,7 +5,7 @@ import CarouselPriceComponent from './CarouselPriceComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const CarouselCardComponent = ({
     comp,
@@ -13,6 +13,7 @@ const CarouselCardComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     products,
     setComponents,
@@ -25,7 +26,7 @@ const CarouselCardComponent = ({
     const cardConfig = comp.content || {};
     const children = cardConfig.children || [];
     const productData = cardConfig.productData;
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     // ==================== MANEJO DE NAVEGACIÓN ====================
     const handleProductClick = (e) => {
@@ -36,7 +37,7 @@ const CarouselCardComponent = ({
             window.location.href = `/detalles-del-producto?product=${productData.slug}`;
             return;
         }
-        
+
         // Modo builder: editar (si no está en preview)
         if (mode === 'builder' && !isPreview && onEdit && e.target === e.currentTarget) {
             e.preventDefault();
@@ -63,25 +64,25 @@ const CarouselCardComponent = ({
             paddingRight: cardConfig.cardPaddingRight || '10px',
             paddingBottom: cardConfig.cardPaddingBottom || '10px',
             paddingLeft: cardConfig.cardPaddingLeft || '10px',
-            border: cardConfig.cardBorder === 'solid' 
-                ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})` 
+            border: cardConfig.cardBorder === 'solid'
+                ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})`
                 : 'none',
             borderRadius: cardConfig.cardBorderRadius || '0px',
-            backgroundColor: cardConfig.cardBackgroundColor || hslToCss(themeWithDefaults.background),
+            backgroundColor: cardConfig.cardBackgroundColor || themeWithDefaults.background,
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: `0 2px 8px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`,
+            boxShadow: `0 2px 8px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`,
             textDecoration: 'none',
             color: 'inherit',
         };
 
         // Estilos del contenedor de imagen
         const imageContainerStyle = {
-            aspectRatio: imageStyles.aspectRatio === 'portrait' ? '3/4' : 
-                        imageStyles.aspectRatio === 'landscape' ? '4/3' : '1/1',
+            aspectRatio: imageStyles.aspectRatio === 'portrait' ? '3/4' :
+                imageStyles.aspectRatio === 'landscape' ? '4/3' : '1/1',
             position: 'relative',
             overflow: 'hidden',
             borderRadius: imageStyles.imageBorderRadius || '0px',
@@ -94,8 +95,8 @@ const CarouselCardComponent = ({
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            border: imageStyles.imageBorder === 'solid' 
-                ? `${imageStyles.imageBorderThickness || '1px'} solid rgba(0, 0, 0, ${imageStyles.imageBorderOpacity || 1})` 
+            border: imageStyles.imageBorder === 'solid'
+                ? `${imageStyles.imageBorderThickness || '1px'} solid rgba(0, 0, 0, ${imageStyles.imageBorderOpacity || 1})`
                 : imageStyles.imageBorder === 'none' ? 'none' : undefined,
             borderRadius: imageStyles.imageBorderRadius || '0px',
             display: 'block',
@@ -106,7 +107,7 @@ const CarouselCardComponent = ({
         const nameStyle = {
             fontSize: nameStyles.fontSize || '14px',
             fontWeight: nameStyles.fontWeight || '600',
-            color: nameStyles.color || hslToCss(themeWithDefaults.text),
+            color: nameStyles.color || themeWithDefaults.text,
             textAlign: nameStyles.alignment || 'left',
             marginBottom: '8px',
             lineHeight: nameStyles.lineHeight || '1.4',
@@ -119,7 +120,7 @@ const CarouselCardComponent = ({
         const priceStyle = {
             fontSize: priceStyles.fontSize || '12px',
             fontWeight: priceStyles.fontWeight || 'normal',
-            color: priceStyles.color || hslToCss(themeWithDefaults.text),
+            color: priceStyles.color || themeWithDefaults.text,
             textAlign: priceStyles.alignment || 'left',
             lineHeight: priceStyles.lineHeight || '1.4',
             fontFamily: priceStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font'),
@@ -136,13 +137,13 @@ const CarouselCardComponent = ({
 
         const handleMouseLeave = (e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = `0 2px 8px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`;
+            e.currentTarget.style.boxShadow = `0 2px 8px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`;
             const img = e.currentTarget.querySelector('img');
             if (img) img.style.transform = 'scale(1)';
         };
 
         return (
-            <div 
+            <div
                 className="carousel-card"
                 onClick={handleProductClick}
                 onMouseEnter={handleMouseEnter}
@@ -158,7 +159,7 @@ const CarouselCardComponent = ({
             >
                 {/* Imagen del producto */}
                 <div className="carousel-image-container" style={imageContainerStyle}>
-                    <img 
+                    <img
                         src={productData?.media?.[0]?.original_url || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
                         alt={productData?.product_name || 'Producto'}
                         style={imageStyle}
@@ -167,12 +168,12 @@ const CarouselCardComponent = ({
                         }}
                     />
                 </div>
-                
+
                 {/* Nombre del producto */}
                 <h4 className="carousel-name" style={nameStyle}>
                     {productData?.product_name || 'Nombre del producto'}
                 </h4>
-                
+
                 {/* Precio del producto */}
                 <div className="carousel-price" style={priceStyle}>
                     {productData?.product_price_discount && settings?.currency ? (
@@ -244,12 +245,12 @@ const CarouselCardComponent = ({
         paddingRight: cardConfig.cardPaddingRight || '10px',
         paddingBottom: cardConfig.cardPaddingBottom || '10px',
         paddingLeft: cardConfig.cardPaddingLeft || '10px',
-        border: cardConfig.cardBorder === 'solid' 
-            ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || '1'})` 
+        border: cardConfig.cardBorder === 'solid'
+            ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || '1'})`
             : 'none',
         borderRadius: cardConfig.cardBorderRadius || '0px',
-        backgroundColor: cardConfig.cardBackgroundColor || hslToCss(themeWithDefaults.background),
-        boxShadow: `0 2px 4px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`,
+        backgroundColor: cardConfig.cardBackgroundColor || themeWithDefaults.background,
+        boxShadow: `0 2px 4px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`,
         height: '100%',
         cursor: !isPreview ? 'pointer' : 'default',
     };
@@ -280,7 +281,7 @@ const CarouselCardComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={cardStyles}
             className="carousel-card flex flex-col h-full"
             onMouseEnter={handleMouseEnter}
@@ -299,8 +300,8 @@ const CarouselCardComponent = ({
                     <CarouselImageComponent
                         comp={{
                             ...imageComponent,
-                            content: productData.media && productData.media.length > 0 
-                                ? productData.media[0].original_url 
+                            content: productData.media && productData.media.length > 0
+                                ? productData.media[0].original_url
                                 : imageComponent.content
                         }}
                         getStyles={getStyles}
@@ -341,6 +342,7 @@ const CarouselCardComponent = ({
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                         themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
                     />
                 </ComponentWithHover>
             )}
@@ -357,7 +359,7 @@ const CarouselCardComponent = ({
                     <CarouselPriceComponent
                         comp={{
                             ...priceComponent,
-                            content: productData.product_price 
+                            content: productData.product_price
                                 ? parseFloat(productData.product_price)
                                 : priceComponent.content
                         }}
@@ -368,6 +370,7 @@ const CarouselCardComponent = ({
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                         themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
                     />
                 </ComponentWithHover>
             )}

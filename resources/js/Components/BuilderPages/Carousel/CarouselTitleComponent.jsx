@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const CarouselTitleComponent = ({
     comp,
@@ -7,36 +7,37 @@ const CarouselTitleComponent = ({
     isPreview,
     onEdit,
     onDelete,
-    themeSettings
+    themeSettings,
+    appliedTheme
 }) => {
     const styles = comp.styles || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     // Obtener configuración de fuente del tema usando utilidades
     const getFontFamily = () => {
         const fontType = styles.fontType;
-        
+
         if (fontType === 'default' || !fontType) {
             return getResolvedFont(themeWithDefaults, 'heading_font');
         }
-        
+
         if (fontType === 'custom' && styles.customFont) {
             return styles.customFont;
         }
-        
+
         return getResolvedFont(themeWithDefaults, fontType);
     };
 
     // Determinar qué heading level usar (por defecto heading2) con utilidades del tema
     const textStyle = styles.textStyle || 'heading2';
     let fontSize, fontWeight, lineHeight, textTransform, color;
-    
+
     if (textStyle === 'custom') {
         fontSize = styles.fontSize || themeWithDefaults.heading2_fontSize;
         fontWeight = styles.fontWeight || themeWithDefaults.heading2_fontWeight;
         lineHeight = styles.lineHeight || themeWithDefaults.heading2_lineHeight;
         textTransform = styles.textTransform || themeWithDefaults.heading2_textTransform;
-        color = styles.color || hslToCss(themeWithDefaults.heading);
+        color = styles.color || themeWithDefaults.heading;
     } else {
         // Usar utilidades del tema para obtener estilos consistentes
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
@@ -76,7 +77,7 @@ const CarouselTitleComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={componentStyles}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}

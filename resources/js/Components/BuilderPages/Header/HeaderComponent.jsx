@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Search, User, LogOut } from 'lucide-react';
 import CanvasItem from '../CanvasItem';
 import { Link, usePage, router } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const HeaderComponent = ({
     comp,
@@ -28,8 +28,8 @@ const HeaderComponent = ({
     const headerStyles = getStyles(comp);
     const customStyles = comp.styles || {};
     const content = comp.content || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    const themeHeaderStyles = getComponentStyles(themeWithDefaults, 'header');
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const themeHeaderStyles = getComponentStyles(themeWithDefaults, 'header', appliedTheme);
 
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
@@ -48,8 +48,8 @@ const HeaderComponent = ({
 
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
-            console.log('[Header][smart] scrollY:', currentScrollY, 'lastScrollY:', lastScrollY);
-            
+            // console.log('[Header][smart] scrollY:', currentScrollY, 'lastScrollY:', lastScrollY);
+
             if (currentScrollY < lastScrollY) {
                 // Scrolling up - mostrar header
                 setIsVisible(true);
@@ -57,7 +57,7 @@ const HeaderComponent = ({
                 // Scrolling down y pasó los 100px - ocultar header
                 setIsVisible(false);
             }
-            
+
             setLastScrollY(currentScrollY);
         };
 
@@ -66,56 +66,56 @@ const HeaderComponent = ({
     }, [lastScrollY, mode, stickyType]);
 
     // Log para depuración: posiciones y estilos calculados del header dentro del canvas
-    useEffect(() => {
-        const el = headerRef.current;
-        const parent = el?.parentElement;
-        try {
-            console.log('[Header] debug - stickyType:', stickyType, 'mode:', mode);
-            console.log('[Header] computed styles:', getContainerStyles());
-            if (el) console.log('[Header] rect:', el.getBoundingClientRect());
-            if (parent) console.log('[Header] parent rect:', parent.getBoundingClientRect());
-        } catch (err) {
-            console.warn('[Header] debug error', err);
-        }
-    }, [stickyType, mode, isVisible, content?.height, customStyles]);
+    // useEffect(() => {
+    //     const el = headerRef.current;
+    //     const parent = el?.parentElement;
+    //     try {
+    //         console.log('[Header] debug - stickyType:', stickyType, 'mode:', mode);
+    //         console.log('[Header] computed styles:', getContainerStyles());
+    //         if (el) console.log('[Header] rect:', el.getBoundingClientRect());
+    //         if (parent) console.log('[Header] parent rect:', parent.getBoundingClientRect());
+    //     } catch (err) {
+    //         console.warn('[Header] debug error', err);
+    //     }
+    // }, [stickyType, mode, isVisible, content?.height, customStyles]);
 
     // Estilos del contenedor principal del header con valores del tema
     // components/BuilderPages/HeaderComponent.jsx
-// En la función getContainerStyles:
+    // En la función getContainerStyles:
 
-const getContainerStyles = () => {
-    const baseStyles = {
-        ...headerStyles,
-        width: content?.fullWidth ? '100%' : customStyles.width || '100%',
-        height: content?.height || '70px',
-        display: 'flex',
-        alignItems: 'center',
-        backgroundColor: customStyles.backgroundColor || themeHeaderStyles.backgroundColor,
-        paddingTop: customStyles.paddingTop || '20px',
-        paddingRight: customStyles.paddingRight || '20px',
-        paddingBottom: customStyles.paddingBottom || '20px',
-        paddingLeft: customStyles.paddingLeft || '20px',
-        borderBottom: customStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
-        transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
-    };
+    const getContainerStyles = () => {
+        const baseStyles = {
+            ...headerStyles,
+            width: content?.fullWidth ? '100%' : customStyles.width || '100%',
+            height: content?.height || '70px',
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: customStyles.backgroundColor || themeHeaderStyles.backgroundColor,
+            paddingTop: customStyles.paddingTop || '20px',
+            paddingRight: customStyles.paddingRight || '20px',
+            paddingBottom: customStyles.paddingBottom || '20px',
+            paddingLeft: customStyles.paddingLeft || '20px',
+            borderBottom: customStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
+            transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
+        };
 
-    // SIEMPRE usar position: sticky en builder/preview
-    if (mode !== 'frontend') {
-        if (stickyType === 'fixed' || stickyType === 'smart') {
-            return {
-                ...baseStyles,
-                position: 'sticky',
-                top: 0,
-                zIndex: 100,
-            };
+        // SIEMPRE usar position: sticky en builder/preview
+        if (mode !== 'frontend') {
+            if (stickyType === 'fixed' || stickyType === 'smart') {
+                return {
+                    ...baseStyles,
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 100,
+                };
+            }
+            return baseStyles;
         }
-        return baseStyles;
-    }
 
-    // EN FRONTEND: NUNCA usar position: fixed aquí
-    // El fixed se manejará en el return del componente
-    return baseStyles;
-};
+        // EN FRONTEND: NUNCA usar position: fixed aquí
+        // El fixed se manejará en el return del componente
+        return baseStyles;
+    };
 
     const containerStyles = getContainerStyles();
     // const isFixedInBuilder = (mode !== 'frontend') && (stickyType === 'fixed' || stickyType === 'smart') && canvasRect;
@@ -145,11 +145,11 @@ const getContainerStyles = () => {
     // Configuración de botones con valores por defecto seguros
     const buttonsConfig = content?.buttons || {};
     const defaultButtonStyles = {
-        iconColor: hslToCss(themeWithDefaults.text),
-        backgroundColor: hslToCss(themeWithDefaults.primary_button_background),
+        iconColor: themeWithDefaults.text,
+        backgroundColor: themeWithDefaults.primary_button_background,
         borderWidth: '0px',
         borderStyle: 'solid',
-        borderColor: hslToCss(themeWithDefaults.primary_button_border),
+        borderColor: themeWithDefaults.primary_button_border,
         borderOpacity: '1',
         borderRadius: '50%',
         backgroundOpacity: '1',
@@ -159,9 +159,9 @@ const getContainerStyles = () => {
         fontSize: '16px'
     };
 
-    const cartConfig = buttonsConfig.cart || { count: '0', styles: { ...defaultButtonStyles, iconColor: hslToCss(themeWithDefaults.primary_button_text) } };
+    const cartConfig = buttonsConfig.cart || { count: '0', styles: { ...defaultButtonStyles, iconColor: themeWithDefaults.primary_button_text } };
     const searchConfig = buttonsConfig.search || { styles: { ...defaultButtonStyles, backgroundColor: 'transparent' } };
-    const profileConfig = buttonsConfig.profile || { styles: { ...defaultButtonStyles, backgroundColor: hslToCss(themeWithDefaults.secondary_button_background) } };
+    const profileConfig = buttonsConfig.profile || { styles: { ...defaultButtonStyles, backgroundColor: themeWithDefaults.secondary_button_background } };
     const showSearch = buttonsConfig.showSearch !== false; // Por defecto mostrar
     const buttonsGap = buttonsConfig.buttonsGap || '10px';
 
@@ -184,7 +184,7 @@ const getContainerStyles = () => {
                 fontSize: '16px',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                backgroundColor: hslToCss(themeWithDefaults.primary_button_background),
+                backgroundColor: themeWithDefaults.primary_button_background,
                 borderColor: 'transparent',
             };
         }
@@ -235,8 +235,8 @@ const getContainerStyles = () => {
             return colorMap[color.toLowerCase()] || '0, 0, 0';
         };
 
-        const bgColor = styles.backgroundColor || hslToCss(themeWithDefaults.primary_button_background);
-        const borderColor = styles.borderColor || hslToCss(themeWithDefaults.primary_button_border);
+        const bgColor = styles.backgroundColor || themeWithDefaults.primary_button_background;
+        const borderColor = styles.borderColor || themeWithDefaults.primary_button_border;
 
         return {
             display: 'flex',
@@ -391,6 +391,30 @@ const getContainerStyles = () => {
                 alignItems: 'center',
                 gap: buttonsGap
             }}>
+
+                {/* Buscador - solo si showSearch es true */}
+                {showSearch && (
+                    <button
+                        style={getButtonStyles(searchConfig)}
+                        title="Buscar"
+                        className="hover:opacity-80"
+                        onClick={() => {
+                            if (mode === 'frontend') {
+                                router.visit('/search');
+                            } else if (isPreview) {
+                                alert('Abrir buscador (simulación)');
+                            }
+                        }}
+                    >
+                        <Search
+                            size={16}
+                            style={{
+                                color: searchConfig.styles?.iconColor || themeWithDefaults.text,
+                                transition: 'color 0.2s'
+                            }}
+                        />
+                    </button>
+                )}
                 {/* Carrito - Redirige al carrito real */}
                 <Link
                     style={getButtonStyles(cartConfig)}
@@ -401,7 +425,7 @@ const getContainerStyles = () => {
                     <ShoppingCart
                         size={16}
                         style={{
-                            color: cartConfig.styles?.iconColor || hslToCss(themeWithDefaults.primary_button_text),
+                            color: cartConfig.styles?.iconColor || themeWithDefaults.primary_button_text,
                             transition: 'color 0.2s'
                         }}
                     />
@@ -425,30 +449,6 @@ const getContainerStyles = () => {
                     )}
                 </Link>
 
-                {/* Buscador - solo si showSearch es true */}
-                {showSearch && (
-                    <button
-                        style={getButtonStyles(searchConfig)}
-                        title="Buscar"
-                        className="hover:opacity-80"
-                        onClick={() => {
-                            if (mode === 'frontend') {
-                                router.visit('/search');
-                            } else if (isPreview) {
-                                alert('Abrir buscador (simulación)');
-                            }
-                        }}
-                    >
-                        <Search
-                            size={16}
-                            style={{
-                                color: searchConfig.styles?.iconColor || hslToCss(themeWithDefaults.text),
-                                transition: 'color 0.2s'
-                            }}
-                        />
-                    </button>
-                )}
-
                 {/* Botón de Perfil/Login condicional */}
                 <div style={{ position: 'relative' }}>
                     {isAuthenticated ? (
@@ -463,7 +463,7 @@ const getContainerStyles = () => {
                                 <User
                                     size={16}
                                     style={{
-                                        color: profileConfig.styles?.iconColor || hslToCss(themeWithDefaults.text),
+                                        color: profileConfig.styles?.iconColor || themeWithDefaults.text,
                                         transition: 'color 0.2s'
                                     }}
                                 />
@@ -489,8 +489,8 @@ const getContainerStyles = () => {
                                     {/* Información del usuario */}
                                     <div style={{
                                         padding: '16px',
-                                        borderBottom: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
-                                        backgroundColor: hslToCss(themeWithDefaults.background)
+                                        borderBottom: `1px solid ${themeWithDefaults.borders}`,
+                                        backgroundColor: themeWithDefaults.background
                                     }}>
                                         <div style={{
                                             fontSize: '14px',
@@ -552,7 +552,7 @@ const getContainerStyles = () => {
                                             fontSize: '14px',
                                             cursor: 'pointer',
                                             transition: 'background-color 0.2s',
-                                            borderTop: `1px solid ${hslToCss(themeWithDefaults.borders)}`
+                                            borderTop: `1px solid ${themeWithDefaults.borders}`
                                         }}
                                         className="hover:bg-red-50"
                                     >
@@ -573,7 +573,7 @@ const getContainerStyles = () => {
                             <User
                                 size={16}
                                 style={{
-                                    color: profileConfig.styles?.iconColor || hslToCss(themeWithDefaults.text),
+                                    color: profileConfig.styles?.iconColor || themeWithDefaults.text,
                                     transition: 'color 0.2s'
                                 }}
                             />
@@ -799,60 +799,60 @@ const getContainerStyles = () => {
         );
     };
 
-    
+
     // Determinar si es sticky en frontend
-const isStickyFrontend = mode === 'frontend' && (stickyType === 'fixed' || stickyType === 'smart');
+    const isStickyFrontend = mode === 'frontend' && (stickyType === 'fixed' || stickyType === 'smart');
 
-if (isStickyFrontend) {
-    const headerHeight = content?.height || '70px';
-    
-    // Crear estilos combinados basados en containerStyles
-    const fixedHeaderStyles = {
-        ...containerStyles, // ← ¡ESTO YA TIENE display: flex, alignItems: center!
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        width: '100%',
-        height: headerHeight,
-        // Asegurar que no haya transformaciones no deseadas
-        transform: stickyType === 'smart' ? (isVisible ? 'translateY(0)' : 'translateY(-100%)') : 'none',
-    };
-    
+    if (isStickyFrontend) {
+        const headerHeight = content?.height || '70px';
+
+        // Crear estilos combinados basados en containerStyles
+        const fixedHeaderStyles = {
+            ...containerStyles, // ← ¡ESTO YA TIENE display: flex, alignItems: center!
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            width: '100%',
+            height: headerHeight,
+            // Asegurar que no haya transformaciones no deseadas
+            transform: stickyType === 'smart' ? (isVisible ? 'translateY(0)' : 'translateY(-100%)') : 'none',
+        };
+
+        return (
+            <>
+                <div
+                    style={{
+                        height: headerHeight,
+                        width: '100%',
+                        backgroundColor: 'transparent'
+                    }}
+                />
+
+                <header
+                    ref={headerRef}
+                    style={fixedHeaderStyles}
+                    onClick={(e) => { e.stopPropagation(); }}
+                >
+                    {renderByPosition()}
+                </header>
+            </>
+        );
+    }
+
+    // Para builder/preview o headers no sticky en frontend
     return (
-        <>
-            <div 
-                style={{ 
-                    height: headerHeight,
-                    width: '100%',
-                    backgroundColor: 'transparent'
-                }} 
-            />
-            
-            <header
-                ref={headerRef}
-                style={fixedHeaderStyles}
-                onClick={(e) => { e.stopPropagation(); }}
-            >
-                {renderByPosition()}
-            </header>
-        </>
+        <header
+            ref={headerRef}
+            style={containerStyles}
+            onDoubleClick={isEditable ? () => onEdit(comp) : undefined}
+            className={isEditable ? 'hover:opacity-80 cursor-pointer' : ''}
+            onClick={(e) => { e.stopPropagation(); }}
+        >
+            {renderByPosition()}
+        </header>
     );
-}
-
-// Para builder/preview o headers no sticky en frontend
-return (
-    <header
-        ref={headerRef}
-        style={containerStyles}
-        onDoubleClick={isEditable ? () => onEdit(comp) : undefined}
-        className={isEditable ? 'hover:opacity-80 cursor-pointer' : ''}
-        onClick={(e) => { e.stopPropagation(); }}
-    >
-        {renderByPosition()}
-    </header>
-);
 };
 
 export default HeaderComponent;

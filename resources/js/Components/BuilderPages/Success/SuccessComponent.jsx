@@ -6,7 +6,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Separator } from '@/Components/ui/separator';
 import { Button } from '@/Components/ui/button';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
 const SuccessComponent = ({
     comp,
@@ -176,7 +176,7 @@ const SuccessComponent = ({
                 <h1
                     className="text-3xl font-bold mb-2"
                     style={{
-                        color: content.titleColor || styles.titleColor || hslToCss(getThemeWithDefaults(themeSettings).heading),
+                        color: content.titleColor || styles.titleColor || getThemeWithDefaults(themeSettings.heading),
                         fontSize: content.titleSize || styles.titleSize || '32px',
                         fontWeight: content.titleWeight || styles.titleWeight || 'bold'
                     }}
@@ -374,7 +374,7 @@ const SuccessComponent = ({
                         className="mr-4"
                         style={{
                             backgroundColor: content.continueButtonBg || 'transparent',
-                            color: content.continueButtonColor || hslToCss(getThemeWithDefaults(themeSettings).text),
+                            color: content.continueButtonColor || getThemeWithDefaults(themeSettings.text),
                             borderColor: content.continueButtonBorder || '#d1d5db'
                         }}
                         onClick={() => {
@@ -392,7 +392,7 @@ const SuccessComponent = ({
                         size="lg"
                         style={{
                             backgroundColor: content.ordersButtonBg || '#3b82f6',
-                            color: content.ordersButtonColor || hslToCss(getThemeWithDefaults(themeSettings).primary_button_text)
+                            color: content.ordersButtonColor || getThemeWithDefaults(themeSettings.primary_button_text)
                         }}
                         onClick={() => {
                             if (mode === 'frontend') {

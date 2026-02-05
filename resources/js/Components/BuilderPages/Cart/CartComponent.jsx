@@ -4,7 +4,7 @@ import CartItemsComponent from './CartItemsComponent';
 import CartSummaryComponent from './CartSummaryComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import cartHelper from '@/Helper/cartHelper';
-import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const CartComponent = ({
     comp,
@@ -12,6 +12,7 @@ const CartComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     products = [],
     setComponents,
@@ -24,8 +25,8 @@ const CartComponent = ({
     const customStyles = comp.styles || {};
     const cartConfig = comp.content || {};
     const children = cartConfig.children || [];
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart');
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart', appliedTheme);
 
     const [cartItems, setCartItems] = useState([]);
     const [cartTotal, setCartTotal] = useState(0);
@@ -391,6 +392,7 @@ const CartComponent = ({
             hoveredComponentId,
             setHoveredComponentId,
             themeSettings,
+            appliedTheme,
             cartItems,
             cartTotal,
             mode,

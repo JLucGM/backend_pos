@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Badge } from '@/Components/ui/badge';
 import { toast } from 'sonner';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 import { User, MapPin, Plus, Edit, Trash2, Phone, Mail, CreditCard } from 'lucide-react';
 import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
@@ -16,7 +16,8 @@ import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 
 export default function ProfileComponent({ 
     comp, 
-    themeSettings, 
+    themeSettings,
+    appliedTheme,
     isPreview = false, 
     currentUser = null,
     userDeliveryLocations = [],
@@ -61,6 +62,81 @@ export default function ProfileComponent({
     const styles = comp?.styles || {};
     const content = comp?.content || {};
 
+    // Aplicar estilos del tema
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const themeProfileStyles = getComponentStyles(themeWithDefaults, 'profile', appliedTheme);
+    const themeProfileCardStyles = getComponentStyles(themeWithDefaults, 'profile-card', appliedTheme);
+    
+    // 1. Contenedor principal que usa el fondo del tema
+    const outerContainerStyles = {
+        width: '100%',
+        minHeight: mode === 'frontend' ? '100vh' : 'auto',
+        backgroundColor: themeWithDefaults.background || { h: 0, s: 0, l: 100 },
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: mode === 'frontend' ? 'flex-start' : 'center',
+        padding: mode === 'frontend' ? '20px' : '0',
+    };
+
+    // 2. Contenedor interno del perfil
+    const containerStyles = {
+        backgroundColor:  themeWithDefaults.background || themeProfileStyles.backgroundColor || styles.backgroundColor,
+        padding: `${styles.paddingTop || '40px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '40px'} ${styles.paddingLeft || '20px'}`,
+        maxWidth: styles.maxWidth || '1200px',
+        width: '100%',
+        margin: '0 auto',
+        borderRadius: styles.borderRadius || '0px',
+        minHeight: mode === 'frontend' ? 'auto' : '100%',
+    };
+
+    const titleStyles = {
+        color: styles.titleColor || themeWithDefaults.heading,
+        fontSize: styles.titleSize || '32px',
+        fontWeight: styles.titleWeight || 'bold',
+        marginBottom: '24px',
+        textAlign: styles.titleAlignment || 'left',
+        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
+    };
+
+    const cardStyles = {
+        backgroundColor:  themeWithDefaults.background || styles.cardBackgroundColor || themeProfileCardStyles.backgroundColor || '#ffffff',
+        borderRadius: styles.cardBorderRadius || '12px',
+        border: styles.cardBorder || `1px solid ${themeWithDefaults.borders}`,
+        padding: styles.cardPadding || '24px'
+    };
+
+    // Estilos para etiquetas
+    const labelStyles = {
+        color: themeWithDefaults.text,
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+        marginBottom: '8px'
+    };
+
+    // Estilos para inputs
+    const inputStyles = {
+        borderColor: themeWithDefaults.input_border,
+        borderRadius: themeWithDefaults.input_corner_radius || '6px',
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+        color: themeWithDefaults.text,
+        backgroundColor: themeWithDefaults.input_background,
+    };
+
+    // Estilos para botones primarios
+    const primaryButtonStyles = {
+        backgroundColor: themeWithDefaults.primary_button_background,
+        color: themeWithDefaults.primary_button_text,
+        borderRadius: themeWithDefaults.primary_button_corner_radius || '8px',
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+    };
+
+    // Estilos para botones secundarios/outline
+    const outlineButtonStyles = {
+        borderColor: themeWithDefaults.borders,
+        color: themeWithDefaults.text,
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+    };
+
     // Efectos para filtrar estados y ciudades
     useEffect(() => {
         if (addressData.country_id) {
@@ -90,52 +166,43 @@ export default function ProfileComponent({
         }
     }, [addressData.state_id, cities]);
 
-    // Aplicar estilos del tema
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    const themeProfileStyles = getComponentStyles(themeWithDefaults, 'profile');
-    const themeProfileCardStyles = getComponentStyles(themeWithDefaults, 'profile-card');
-    
-    const containerStyles = {
-        backgroundColor: styles.backgroundColor || themeProfileStyles.backgroundColor || hslToCss(themeWithDefaults.background),
-        padding: `${styles.paddingTop || '40px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '40px'} ${styles.paddingLeft || '20px'}`,
-        maxWidth: styles.maxWidth || '1200px',
-        margin: '0 auto',
-        borderRadius: styles.borderRadius || '0px',
-    };
-
-    const titleStyles = {
-        color: styles.titleColor || hslToCss(themeWithDefaults.heading),
-        fontSize: styles.titleSize || '32px',
-        fontWeight: styles.titleWeight || 'bold',
-        marginBottom: '24px',
-        textAlign: styles.titleAlignment || 'left'
-    };
-
-    const cardStyles = {
-        backgroundColor: styles.cardBackgroundColor || themeProfileCardStyles.backgroundColor || hslToCss(themeWithDefaults.background),
-        borderRadius: styles.cardBorderRadius || '12px',
-        border: styles.cardBorder || '1px solid #e5e7eb',
-        padding: styles.cardPadding || '24px'
-    };
-
     // Si no hay usuario autenticado y estamos en preview
     if (!currentUser && isPreview) {
         return (
-            <div style={containerStyles} className="text-center">
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                    <User className="mx-auto h-12 w-12 text-yellow-600 mb-4" />
-                    <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                        {content.loginRequiredTitle || 'Inicia sesión para ver tu perfil'}
-                    </h3>
-                    <p className="text-yellow-700 mb-4">
-                        {content.loginRequiredMessage || 'Necesitas iniciar sesión para acceder a tu perfil y gestionar tus datos.'}
-                    </p>
-                    <Button 
-                        onClick={() => router.visit('/iniciar-sesion')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                        {content.loginButtonText || 'Iniciar Sesión'}
-                    </Button>
+            <div style={outerContainerStyles}>
+                <div style={containerStyles} className="text-center">
+                    <div style={{
+                        backgroundColor: themeWithDefaults.background,
+                        border: `1px solid ${themeWithDefaults.borders}`,
+                        borderRadius: '12px',
+                        padding: '40px',
+                        maxWidth: '500px',
+                        width: '100%',
+                    }}>
+                        <User className="mx-auto h-12 w-12" style={{ color: themeWithDefaults.heading }} />
+                        <h3 style={{
+                            color: themeWithDefaults.heading,
+                            fontSize: '24px',
+                            fontWeight: 'bold',
+                            marginBottom: '8px',
+                            fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
+                        }}>
+                            {content.loginRequiredTitle || 'Inicia sesión para ver tu perfil'}
+                        </h3>
+                        <p style={{
+                            color: themeWithDefaults.text,
+                            marginBottom: '16px',
+                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+                        }}>
+                            {content.loginRequiredMessage || 'Necesitas iniciar sesión para acceder a tu perfil y gestionar tus datos.'}
+                        </p>
+                        <Button 
+                            onClick={() => router.visit('/iniciar-sesion')}
+                            style={primaryButtonStyles}
+                        >
+                            {content.loginButtonText || 'Iniciar Sesión'}
+                        </Button>
+                    </div>
                 </div>
             </div>
         );
@@ -149,7 +216,7 @@ export default function ProfileComponent({
         const exampleProfileSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
                         <User className="h-5 w-5" />
                         {content.personalInfoTitle || 'Información Personal'}
                     </CardTitle>
@@ -157,19 +224,19 @@ export default function ProfileComponent({
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <Label>Nombre completo</Label>
-                            <Input value="Usuario Ejemplo" disabled />
+                            <Label style={labelStyles}>Nombre completo</Label>
+                            <Input value="Usuario Ejemplo" disabled style={inputStyles} />
                         </div>
                         <div>
-                            <Label>Email</Label>
-                            <Input value="usuario@ejemplo.com" disabled />
+                            <Label style={labelStyles}>Email</Label>
+                            <Input value="usuario@ejemplo.com" disabled style={inputStyles} />
                         </div>
                         <div>
-                            <Label>Teléfono</Label>
-                            <Input value="+1 234 567 8900" disabled />
+                            <Label style={labelStyles}>Teléfono</Label>
+                            <Input value="+1 234 567 8900" disabled style={inputStyles} />
                         </div>
                     </div>
-                    <Button variant="outline" disabled>
+                    <Button variant="outline" disabled style={outlineButtonStyles}>
                         <Edit className="h-4 w-4 mr-2" />
                         Editar Información
                     </Button>
@@ -180,27 +247,30 @@ export default function ProfileComponent({
         const exampleAddressesSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
                         <MapPin className="h-5 w-5" />
                         {content.addressesTitle || 'Direcciones de Envío'}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="border rounded-lg p-4">
+                        <div className="border rounded-lg p-4" style={{ 
+                            borderColor: themeWithDefaults.borders,
+                            backgroundColor: themeWithDefaults.background
+                        }}>
                             <div className="flex items-center justify-between mb-2">
                                 <Badge variant="secondary">Principal</Badge>
-                                <Button variant="ghost" size="sm" disabled>
+                                <Button variant="ghost" size="sm" disabled style={{ color: themeWithDefaults.text }}>
                                     <Edit className="h-4 w-4" />
                                 </Button>
                             </div>
-                            <p className="text-sm font-medium">Calle Principal 123</p>
-                            <p className="text-sm text-gray-600">Apartamento 4B</p>
-                            <p className="text-sm text-gray-600">Ciudad, Estado 12345</p>
-                            <p className="text-sm text-gray-600">+1 234 567 8900</p>
+                            <p className="text-sm font-medium" style={{ color: themeWithDefaults.text }}>Calle Principal 123</p>
+                            <p className="text-sm" style={{ color: themeWithDefaults.text }}>Apartamento 4B</p>
+                            <p className="text-sm" style={{ color: themeWithDefaults.text }}>Ciudad, Estado 12345</p>
+                            <p className="text-sm" style={{ color: themeWithDefaults.text }}>+1 234 567 8900</p>
                         </div>
                     </div>
-                    <Button variant="outline" className="mt-4" disabled>
+                    <Button variant="outline" className="mt-4" disabled style={outlineButtonStyles}>
                         <Plus className="h-4 w-4 mr-2" />
                         Agregar Nueva Dirección
                     </Button>
@@ -211,29 +281,33 @@ export default function ProfileComponent({
         const exampleGiftCardsSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
                         <CreditCard className="h-5 w-5" />
                         {content.giftCardsTitle || 'Mis Gift Cards'}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+                        <div className="border rounded-lg p-4" style={{ 
+                            borderColor: themeWithDefaults.borders,
+                            backgroundColor: themeWithDefaults.background,
+                            background: `linear-gradient(135deg, ${themeWithDefaults.primary_button_background}20, ${themeWithDefaults.secondary_button_background}20)`
+                        }}>
                             <div className="flex items-center justify-between mb-2">
                                 <Badge variant="outline">Gift Card</Badge>
-                                <CreditCard className="h-5 w-5 text-blue-600" />
+                                <CreditCard className="h-5 w-5" style={{ color: themeWithDefaults.primary_button_background }} />
                             </div>
-                            <p className="text-lg font-mono font-bold text-gray-800 mb-2">
+                            <p className="text-lg font-mono font-bold mb-2" style={{ color: themeWithDefaults.heading }}>
                                 GIFT-123456
                             </p>
                             <div className="space-y-1">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Saldo disponible:</span>
-                                    <span className="font-semibold text-green-600">$75.00</span>
+                                    <span style={{ color: themeWithDefaults.text }}>Saldo disponible:</span>
+                                    <span className="font-semibold" style={{ color: themeWithDefaults.primary_button_background }}>$75.00</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Expira:</span>
-                                    <span className="text-gray-800">31/12/2024</span>
+                                    <span style={{ color: themeWithDefaults.text }}>Expira:</span>
+                                    <span style={{ color: themeWithDefaults.text }}>31/12/2024</span>
                                 </div>
                             </div>
                         </div>
@@ -243,72 +317,77 @@ export default function ProfileComponent({
         );
 
         return (
-            <div style={containerStyles}>
-                <h1 style={titleStyles}>
-                    {content.title || 'Mi Perfil'}
-                </h1>
-                
-                {layoutType === 'grid' ? (
-                    // Grid Layout - Todo visible a la vez
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Información Personal - ocupa 2 columnas */}
-                            <div className="lg:col-span-2">
-                                {exampleProfileSection}
+            <div style={outerContainerStyles}>
+                <div style={containerStyles}>
+                    <h1 style={titleStyles}>
+                        {content.title || 'Mi Perfil'}
+                    </h1>
+                    
+                    {layoutType === 'grid' ? (
+                        // Grid Layout - Todo visible a la vez
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Información Personal - ocupa 2 columnas */}
+                                <div className="lg:col-span-2">
+                                    {exampleProfileSection}
+                                </div>
+
+                                {/* Resumen - ocupa 1 columna */}
+                                <div>
+                                    <Card style={cardStyles}>
+                                        <CardHeader>
+                                            <CardTitle style={{ color: themeWithDefaults.heading }}>Resumen</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm" style={{ color: themeWithDefaults.text }}>Direcciones</span>
+                                                <Badge>2</Badge>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm" style={{ color: themeWithDefaults.text }}>Gift Cards</span>
+                                                <Badge>1</Badge>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm" style={{ color: themeWithDefaults.text }}>Pedidos</span>
+                                                <Badge>5</Badge>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
                             </div>
 
-                            {/* Resumen - ocupa 1 columna */}
-                            <div>
-                                <Card style={cardStyles}>
-                                    <CardHeader>
-                                        <CardTitle>Resumen</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600">Direcciones</span>
-                                            <Badge>2</Badge>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600">Gift Cards</span>
-                                            <Badge>1</Badge>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600">Pedidos</span>
-                                            <Badge>5</Badge>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </div>
-
-                        {/* Direcciones de Envío - ancho completo */}
-                        {exampleAddressesSection}
-
-                        {/* Gift Cards - ancho completo */}
-                        {exampleGiftCardsSection}
-                    </div>
-                ) : (
-                    // Tabs Layout - Contenido organizado en pestañas
-                    <Tabs defaultValue="profile" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="profile">Perfil</TabsTrigger>
-                            <TabsTrigger value="addresses">Direcciones</TabsTrigger>
-                            <TabsTrigger value="giftcards">Gift Cards</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="profile" className="space-y-6">
-                            {exampleProfileSection}
-                        </TabsContent>
-
-                        <TabsContent value="addresses" className="space-y-6">
+                            {/* Direcciones de Envío - ancho completo */}
                             {exampleAddressesSection}
-                        </TabsContent>
 
-                        <TabsContent value="giftcards" className="space-y-6">
+                            {/* Gift Cards - ancho completo */}
                             {exampleGiftCardsSection}
-                        </TabsContent>
-                    </Tabs>
-                )}
+                        </div>
+                    ) : (
+                        // Tabs Layout - Contenido organizado en pestañas
+                        <Tabs defaultValue="profile" className="w-full">
+                            <TabsList className="grid w-full grid-cols-3" style={{ 
+                                backgroundColor: themeWithDefaults.background,
+                                borderBottom: `1px solid ${themeWithDefaults.borders}`
+                            }}>
+                                <TabsTrigger value="profile" style={{ color: themeWithDefaults.text }}>Perfil</TabsTrigger>
+                                <TabsTrigger value="addresses" style={{ color: themeWithDefaults.text }}>Direcciones</TabsTrigger>
+                                <TabsTrigger value="giftcards" style={{ color: themeWithDefaults.text }}>Gift Cards</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="profile" className="space-y-6">
+                                {exampleProfileSection}
+                            </TabsContent>
+
+                            <TabsContent value="addresses" className="space-y-6">
+                                {exampleAddressesSection}
+                            </TabsContent>
+
+                            <TabsContent value="giftcards" className="space-y-6">
+                                {exampleGiftCardsSection}
+                            </TabsContent>
+                        </Tabs>
+                    )}
+                </div>
             </div>
         );
     }
@@ -408,7 +487,7 @@ export default function ProfileComponent({
         const profileSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
                         <User className="h-5 w-5" />
                         {content.personalInfoTitle || 'Información Personal'}
                     </CardTitle>
@@ -418,69 +497,78 @@ export default function ProfileComponent({
                         <form onSubmit={handleProfileUpdate} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <Label htmlFor="name">Nombre completo</Label>
+                                    <Label htmlFor="name" style={labelStyles}>Nombre completo</Label>
                                     <Input
                                         id="name"
                                         value={profileData.name}
                                         onChange={(e) => setProfileData(prev => ({...prev, name: e.target.value}))}
                                         required
+                                        style={inputStyles}
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="email">Email</Label>
+                                    <Label htmlFor="email" style={labelStyles}>Email</Label>
                                     <Input
                                         id="email"
                                         type="email"
                                         value={profileData.email}
                                         onChange={(e) => setProfileData(prev => ({...prev, email: e.target.value}))}
                                         required
+                                        style={inputStyles}
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="phone">Teléfono</Label>
+                                    <Label htmlFor="phone" style={labelStyles}>Teléfono</Label>
                                     <Input
                                         id="phone"
                                         value={profileData.phone}
                                         onChange={(e) => setProfileData(prev => ({...prev, phone: e.target.value}))}
+                                        style={inputStyles}
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="current_password">Contraseña actual</Label>
+                                    <Label htmlFor="current_password" style={labelStyles}>Contraseña actual</Label>
                                     <Input
                                         id="current_password"
                                         type="password"
                                         value={profileData.current_password}
                                         onChange={(e) => setProfileData(prev => ({...prev, current_password: e.target.value}))}
                                         placeholder="Solo si quieres cambiar contraseña"
+                                        style={inputStyles}
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="password">Nueva contraseña</Label>
+                                    <Label htmlFor="password" style={labelStyles}>Nueva contraseña</Label>
                                     <Input
                                         id="password"
                                         type="password"
                                         value={profileData.password}
                                         onChange={(e) => setProfileData(prev => ({...prev, password: e.target.value}))}
                                         placeholder="Solo si quieres cambiar contraseña"
+                                        style={inputStyles}
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="password_confirmation">Confirmar nueva contraseña</Label>
+                                    <Label htmlFor="password_confirmation" style={labelStyles}>Confirmar nueva contraseña</Label>
                                     <Input
                                         id="password_confirmation"
                                         type="password"
                                         value={profileData.password_confirmation}
                                         onChange={(e) => setProfileData(prev => ({...prev, password_confirmation: e.target.value}))}
                                         placeholder="Solo si quieres cambiar contraseña"
+                                        style={inputStyles}
                                     />
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <Button type="submit">Guardar Cambios</Button>
+                                <Button type="submit" style={primaryButtonStyles}>
+                                    Guardar Cambios
+                                </Button>
                                 <Button 
                                     type="button" 
                                     variant="outline" 
                                     onClick={() => setIsEditingProfile(false)}
+                                    style={outlineButtonStyles}
                                 >
                                     Cancelar
                                 </Button>
@@ -490,28 +578,37 @@ export default function ProfileComponent({
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <Label>Nombre completo</Label>
-                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                        <User className="h-4 w-4 text-gray-500" />
+                                    <Label style={labelStyles}>Nombre completo</Label>
+                                    <div className="flex items-center gap-2 p-2 rounded" style={{ 
+                                        backgroundColor: `${themeWithDefaults.background}50`,
+                                        color: themeWithDefaults.text
+                                    }}>
+                                        <User className="h-4 w-4" />
                                         <span>{currentUser?.name}</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <Label>Email</Label>
-                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                        <Mail className="h-4 w-4 text-gray-500" />
+                                    <Label style={labelStyles}>Email</Label>
+                                    <div className="flex items-center gap-2 p-2 rounded" style={{ 
+                                        backgroundColor: `${themeWithDefaults.background}50`,
+                                        color: themeWithDefaults.text
+                                    }}>
+                                        <Mail className="h-4 w-4" />
                                         <span>{currentUser?.email}</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <Label>Teléfono</Label>
-                                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                                        <Phone className="h-4 w-4 text-gray-500" />
+                                    <Label style={labelStyles}>Teléfono</Label>
+                                    <div className="flex items-center gap-2 p-2 rounded" style={{ 
+                                        backgroundColor: `${themeWithDefaults.background}50`,
+                                        color: themeWithDefaults.text
+                                    }}>
+                                        <Phone className="h-4 w-4" />
                                         <span>{currentUser?.phone || 'No especificado'}</span>
                                     </div>
                                 </div>
                             </div>
-                            <Button onClick={() => setIsEditingProfile(true)}>
+                            <Button onClick={() => setIsEditingProfile(true)} style={primaryButtonStyles}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Editar Información
                             </Button>
@@ -525,7 +622,7 @@ export default function ProfileComponent({
             <Card style={cardStyles}>
                 <CardHeader>
                     <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
                             <MapPin className="h-5 w-5" />
                             {content.addressesTitle || 'Direcciones de Envío'}
                         </CardTitle>
@@ -534,50 +631,57 @@ export default function ProfileComponent({
                                 <Button onClick={() => {
                                     setEditingAddress(null);
                                     resetAddressForm();
-                                }}>
+                                }} style={primaryButtonStyles}>
                                     <Plus className="h-4 w-4 mr-2" />
                                     Agregar Dirección
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent style={{
+                                backgroundColor: themeWithDefaults.background,
+                                borderColor: themeWithDefaults.borders,
+                            }}>
                                 <DialogHeader>
-                                    <DialogTitle>
+                                    <DialogTitle style={{ color: themeWithDefaults.heading }}>
                                         {editingAddress ? 'Editar Dirección' : 'Nueva Dirección'}
                                     </DialogTitle>
                                 </DialogHeader>
                                 <form onSubmit={handleAddressSubmit} className="space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <Label htmlFor="address_line_1">Dirección principal *</Label>
+                                            <Label htmlFor="address_line_1" style={labelStyles}>Dirección principal *</Label>
                                             <Input
                                                 id="address_line_1"
                                                 value={addressData.address_line_1}
                                                 onChange={(e) => setAddressData(prev => ({...prev, address_line_1: e.target.value}))}
                                                 required
+                                                style={inputStyles}
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="address_line_2">Dirección secundaria</Label>
+                                            <Label htmlFor="address_line_2" style={labelStyles}>Dirección secundaria</Label>
                                             <Input
                                                 id="address_line_2"
                                                 value={addressData.address_line_2}
                                                 onChange={(e) => setAddressData(prev => ({...prev, address_line_2: e.target.value}))}
+                                                style={inputStyles}
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="postal_code">Código postal</Label>
+                                            <Label htmlFor="postal_code" style={labelStyles}>Código postal</Label>
                                             <Input
                                                 id="postal_code"
                                                 value={addressData.postal_code}
                                                 onChange={(e) => setAddressData(prev => ({...prev, postal_code: e.target.value}))}
+                                                style={inputStyles}
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="phone_number">Teléfono</Label>
+                                            <Label htmlFor="phone_number" style={labelStyles}>Teléfono</Label>
                                             <Input
                                                 id="phone_number"
                                                 value={addressData.phone_number}
                                                 onChange={(e) => setAddressData(prev => ({...prev, phone_number: e.target.value}))}
+                                                style={inputStyles}
                                             />
                                         </div>
                                     </div>
@@ -585,41 +689,113 @@ export default function ProfileComponent({
                                     {/* País, Estado, Ciudad */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
-                                            <Label htmlFor="country_id">País</Label>
+                                            <Label htmlFor="country_id" style={labelStyles}>País</Label>
                                             <Select
                                                 name="country_id"
                                                 id="country_id"
                                                 options={countryOptions}
                                                 value={countryOptions.find(option => option.value === addressData.country_id)}
                                                 onChange={(selectedOption) => setAddressData(prev => ({...prev, country_id: selectedOption?.value || null}))}
-                                                styles={customStyles}
+                                                styles={{
+                                                    ...customStyles,
+                                                    control: (base) => ({
+                                                        ...base,
+                                                        borderColor: themeWithDefaults.input_border,
+                                                        backgroundColor: themeWithDefaults.input_background,
+                                                    }),
+                                                    menu: (base) => ({
+                                                        ...base,
+                                                        backgroundColor: themeWithDefaults.background,
+                                                    }),
+                                                    option: (base, { isFocused }) => ({
+                                                        ...base,
+                                                        backgroundColor: isFocused ? `${themeWithDefaults.primary_button_background}20` : 'transparent',
+                                                        color: themeWithDefaults.text,
+                                                    }),
+                                                    singleValue: (base) => ({
+                                                        ...base,
+                                                        color: themeWithDefaults.text,
+                                                    }),
+                                                    input: (base) => ({
+                                                        ...base,
+                                                        color: themeWithDefaults.text,
+                                                    }),
+                                                }}
                                                 isClearable
                                                 placeholder="Seleccionar país"
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="state_id">Estado</Label>
+                                            <Label htmlFor="state_id" style={labelStyles}>Estado</Label>
                                             <Select
                                                 name="state_id"
                                                 id="state_id"
                                                 options={stateOptions}
                                                 value={stateOptions.find(option => option.value === addressData.state_id)}
                                                 onChange={(selectedOption) => setAddressData(prev => ({...prev, state_id: selectedOption?.value || null}))}
-                                                styles={customStyles}
+                                                styles={{
+                                                    ...customStyles,
+                                                    control: (base) => ({
+                                                        ...base,
+                                                        borderColor: themeWithDefaults.input_border,
+                                                        backgroundColor: themeWithDefaults.input_background,
+                                                    }),
+                                                    menu: (base) => ({
+                                                        ...base,
+                                                        backgroundColor: themeWithDefaults.background,
+                                                    }),
+                                                    option: (base, { isFocused }) => ({
+                                                        ...base,
+                                                        backgroundColor: isFocused ? `${themeWithDefaults.primary_button_background}20` : 'transparent',
+                                                        color: themeWithDefaults.text,
+                                                    }),
+                                                    singleValue: (base) => ({
+                                                        ...base,
+                                                        color: themeWithDefaults.text,
+                                                    }),
+                                                    input: (base) => ({
+                                                        ...base,
+                                                        color: themeWithDefaults.text,
+                                                    }),
+                                                }}
                                                 isClearable
                                                 placeholder="Seleccionar estado"
                                                 isDisabled={!addressData.country_id}
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="city_id">Ciudad</Label>
+                                            <Label htmlFor="city_id" style={labelStyles}>Ciudad</Label>
                                             <Select
                                                 name="city_id"
                                                 id="city_id"
                                                 options={cityOptions}
                                                 value={cityOptions.find(option => option.value === addressData.city_id)}
                                                 onChange={(selectedOption) => setAddressData(prev => ({...prev, city_id: selectedOption?.value || null}))}
-                                                styles={customStyles}
+                                                styles={{
+                                                    ...customStyles,
+                                                    control: (base) => ({
+                                                        ...base,
+                                                        borderColor: themeWithDefaults.input_border,
+                                                        backgroundColor: themeWithDefaults.input_background,
+                                                    }),
+                                                    menu: (base) => ({
+                                                        ...base,
+                                                        backgroundColor: themeWithDefaults.background,
+                                                    }),
+                                                    option: (base, { isFocused }) => ({
+                                                        ...base,
+                                                        backgroundColor: isFocused ? `${themeWithDefaults.primary_button_background}20` : 'transparent',
+                                                        color: themeWithDefaults.text,
+                                                    }),
+                                                    singleValue: (base) => ({
+                                                        ...base,
+                                                        color: themeWithDefaults.text,
+                                                    }),
+                                                    input: (base) => ({
+                                                        ...base,
+                                                        color: themeWithDefaults.text,
+                                                    }),
+                                                }}
                                                 isClearable
                                                 placeholder="Seleccionar ciudad"
                                                 isDisabled={!addressData.state_id}
@@ -628,11 +804,12 @@ export default function ProfileComponent({
                                     </div>
                                     
                                     <div>
-                                        <Label htmlFor="notes">Notas adicionales</Label>
+                                        <Label htmlFor="notes" style={labelStyles}>Notas adicionales</Label>
                                         <Input
                                             id="notes"
                                             value={addressData.notes}
                                             onChange={(e) => setAddressData(prev => ({...prev, notes: e.target.value}))}
+                                            style={inputStyles}
                                         />
                                     </div>
                                     <div className="flex items-center space-x-2">
@@ -641,17 +818,19 @@ export default function ProfileComponent({
                                             id="is_default"
                                             checked={addressData.is_default}
                                             onChange={(e) => setAddressData(prev => ({...prev, is_default: e.target.checked}))}
+                                            style={{ accentColor: themeWithDefaults.primary_button_background }}
                                         />
-                                        <Label htmlFor="is_default">Establecer como dirección principal</Label>
+                                        <Label htmlFor="is_default" style={labelStyles}>Establecer como dirección principal</Label>
                                     </div>
                                     <div className="flex gap-2">
-                                        <Button type="submit">
+                                        <Button type="submit" style={primaryButtonStyles}>
                                             {editingAddress ? 'Actualizar' : 'Agregar'}
                                         </Button>
                                         <Button 
                                             type="button" 
                                             variant="outline" 
                                             onClick={() => setIsAddingAddress(false)}
+                                            style={outlineButtonStyles}
                                         >
                                             Cancelar
                                         </Button>
@@ -664,13 +843,16 @@ export default function ProfileComponent({
                 <CardContent>
                     {userDeliveryLocations.length === 0 ? (
                         <div className="text-center py-8">
-                            <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                            <p className="text-gray-600">No tienes direcciones guardadas</p>
+                            <MapPin className="mx-auto h-12 w-12" style={{ color: `${themeWithDefaults.text}50` }} />
+                            <p style={{ color: themeWithDefaults.text }}>No tienes direcciones guardadas</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {userDeliveryLocations.map((address) => (
-                                <div key={address.id} className="border rounded-lg p-4">
+                                <div key={address.id} className="border rounded-lg p-4" style={{ 
+                                    borderColor: themeWithDefaults.borders,
+                                    backgroundColor: themeWithDefaults.background
+                                }}>
                                     <div className="flex items-center justify-between mb-2">
                                         {address.is_default && (
                                             <Badge variant="secondary">Principal</Badge>
@@ -680,6 +862,7 @@ export default function ProfileComponent({
                                                 variant="ghost" 
                                                 size="sm"
                                                 onClick={() => startEditAddress(address)}
+                                                style={{ color: themeWithDefaults.text }}
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </Button>
@@ -687,21 +870,22 @@ export default function ProfileComponent({
                                                 variant="ghost" 
                                                 size="sm"
                                                 onClick={() => handleDeleteAddress(address.id)}
+                                                style={{ color: themeWithDefaults.text }}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>
-                                    <p className="text-sm font-medium">{address.address_line_1}</p>
+                                    <p className="text-sm font-medium" style={{ color: themeWithDefaults.text }}>{address.address_line_1}</p>
                                     {address.address_line_2 && (
-                                        <p className="text-sm text-gray-600">{address.address_line_2}</p>
+                                        <p className="text-sm" style={{ color: themeWithDefaults.text }}>{address.address_line_2}</p>
                                     )}
-                                    <p className="text-sm text-gray-600">{address.full_address}</p>
+                                    <p className="text-sm" style={{ color: themeWithDefaults.text }}>{address.full_address}</p>
                                     {address.phone_number && (
-                                        <p className="text-sm text-gray-600">{address.phone_number}</p>
+                                        <p className="text-sm" style={{ color: themeWithDefaults.text }}>{address.phone_number}</p>
                                     )}
                                     {address.notes && (
-                                        <p className="text-sm text-gray-500 italic">{address.notes}</p>
+                                        <p className="text-sm italic" style={{ color: `${themeWithDefaults.text}80` }}>{address.notes}</p>
                                     )}
                                 </div>
                             ))}
@@ -714,7 +898,7 @@ export default function ProfileComponent({
         const giftCardsSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
                         <CreditCard className="h-5 w-5" />
                         {content.giftCardsTitle || 'Mis Gift Cards'}
                     </CardTitle>
@@ -722,36 +906,40 @@ export default function ProfileComponent({
                 <CardContent>
                     {userGiftCards.length === 0 ? (
                         <div className="text-center py-8">
-                            <CreditCard className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                            <p className="text-gray-600">No tienes gift cards disponibles</p>
+                            <CreditCard className="mx-auto h-12 w-12" style={{ color: `${themeWithDefaults.text}50` }} />
+                            <p style={{ color: themeWithDefaults.text }}>No tienes gift cards disponibles</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {userGiftCards.map((giftCard) => (
-                                <div key={giftCard.id} className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+                                <div key={giftCard.id} className="border rounded-lg p-4" style={{ 
+                                    borderColor: themeWithDefaults.borders,
+                                    backgroundColor: themeWithDefaults.background,
+                                    background: `linear-gradient(135deg, ${themeWithDefaults.primary_button_background}20, ${themeWithDefaults.secondary_button_background}20)`
+                                }}>
                                     <div className="flex items-center justify-between mb-2">
                                         <Badge variant="outline">Gift Card</Badge>
-                                        <CreditCard className="h-5 w-5 text-blue-600" />
+                                        <CreditCard className="h-5 w-5" style={{ color: themeWithDefaults.primary_button_background }} />
                                     </div>
-                                    <p className="text-lg font-mono font-bold text-gray-800 mb-2">
+                                    <p className="text-lg font-mono font-bold mb-2" style={{ color: themeWithDefaults.heading }}>
                                         {giftCard.code}
                                     </p>
                                     <div className="space-y-1">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Saldo disponible:</span>
-                                            <span className="font-semibold text-green-600">
+                                            <span style={{ color: themeWithDefaults.text }}>Saldo disponible:</span>
+                                            <span className="font-semibold" style={{ color: themeWithDefaults.primary_button_background }}>
                                                 ${giftCard.current_balance}
                                             </span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Saldo inicial:</span>
-                                            <span className="text-gray-800">
+                                            <span style={{ color: themeWithDefaults.text }}>Saldo inicial:</span>
+                                            <span style={{ color: themeWithDefaults.text }}>
                                                 ${giftCard.initial_balance}
                                             </span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Expira:</span>
-                                            <span className="text-gray-800">
+                                            <span style={{ color: themeWithDefaults.text }}>Expira:</span>
+                                            <span style={{ color: themeWithDefaults.text }}>
                                                 {new Date(giftCard.expiration_date).toLocaleDateString()}
                                             </span>
                                         </div>
@@ -779,19 +967,19 @@ export default function ProfileComponent({
                         <div>
                             <Card style={cardStyles}>
                                 <CardHeader>
-                                    <CardTitle>Resumen</CardTitle>
+                                    <CardTitle style={{ color: themeWithDefaults.heading }}>Resumen</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Direcciones</span>
+                                        <span className="text-sm" style={{ color: themeWithDefaults.text }}>Direcciones</span>
                                         <Badge>{userDeliveryLocations.length}</Badge>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Gift Cards</span>
+                                        <span className="text-sm" style={{ color: themeWithDefaults.text }}>Gift Cards</span>
                                         <Badge>{userGiftCards.length}</Badge>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm text-gray-600">Pedidos</span>
+                                        <span className="text-sm" style={{ color: themeWithDefaults.text }}>Pedidos</span>
                                         <Badge>0</Badge>
                                     </div>
                                 </CardContent>
@@ -810,10 +998,13 @@ export default function ProfileComponent({
             // Tabs Layout - Contenido organizado en pestañas
             return (
                 <Tabs defaultValue="profile" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="profile">Perfil</TabsTrigger>
-                        <TabsTrigger value="addresses">Direcciones</TabsTrigger>
-                        <TabsTrigger value="giftcards">Gift Cards</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3" style={{ 
+                        backgroundColor: themeWithDefaults.background,
+                        borderBottom: `1px solid ${themeWithDefaults.borders}`
+                    }}>
+                        <TabsTrigger value="profile" style={{ color: themeWithDefaults.text }}>Perfil</TabsTrigger>
+                        <TabsTrigger value="addresses" style={{ color: themeWithDefaults.text }}>Direcciones</TabsTrigger>
+                        <TabsTrigger value="giftcards" style={{ color: themeWithDefaults.text }}>Gift Cards</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="profile" className="space-y-6">
@@ -833,12 +1024,14 @@ export default function ProfileComponent({
     };
 
     return (
-        <div style={containerStyles}>
-            <h1 style={titleStyles}>
-                {content.title || 'Mi Perfil'}
-            </h1>
-            
-            {renderProfileContent()}
+        <div style={outerContainerStyles}>
+            <div style={containerStyles}>
+                <h1 style={titleStyles}>
+                    {content.title || 'Mi Perfil'}
+                </h1>
+                
+                {renderProfileContent()}
+            </div>
         </div>
     );
 }

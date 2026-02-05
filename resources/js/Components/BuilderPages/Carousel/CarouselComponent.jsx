@@ -18,6 +18,7 @@ const CarouselComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     products,
     setComponents,
@@ -30,8 +31,8 @@ const CarouselComponent = ({
     const carouselRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    const themeCarouselStyles = getComponentStyles(themeWithDefaults, 'carousel');
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const themeCarouselStyles = getComponentStyles(themeWithDefaults, 'carousel', appliedTheme);
 
     // Configuración del carrusel con valores del tema
     const limit = carouselConfig.limit || 5;
@@ -137,6 +138,7 @@ const CarouselComponent = ({
             getStyles,
             isPreview,
             themeSettings,
+            appliedTheme,
             onEdit,
             onDelete,
             hoveredComponentId,
@@ -153,7 +155,7 @@ const CarouselComponent = ({
             case 'image':
                 return <ImageComponent {...commonProps} />;
             case 'link':
-                return <LinkComponent {...commonProps} themeSettings={themeSettings} onEdit={onEdit} />;
+                return <LinkComponent {...commonProps} onEdit={onEdit} />;
             case 'video':
                 return <VideoComponent {...commonProps} />;
             default:

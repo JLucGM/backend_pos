@@ -9,7 +9,7 @@ import ComponentWithHover from '../ComponentWithHover';
 import { usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
-import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const CheckoutComponent = ({
     comp,
@@ -17,6 +17,7 @@ const CheckoutComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     products = [],
     setComponents,
@@ -35,10 +36,10 @@ const CheckoutComponent = ({
     const customStyles = comp.styles || {};
     const checkoutConfig = comp.content || {};
     const children = checkoutConfig.children || [];
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     // Obtener estilos del tema para checkout
-    const themeCheckoutStyles = getComponentStyles(themeWithDefaults, 'checkout');
+    const themeCheckoutStyles = getComponentStyles(themeWithDefaults, 'checkout', appliedTheme);
 
     // Estados
     const [cartItems, setCartItems] = useState([]);
@@ -57,7 +58,7 @@ const CheckoutComponent = ({
     const [isMobile, setIsMobile] = useState(false);
     const [giftCardAmountUsed, setGiftCardAmountUsed] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
-const [orderError, setOrderError] = useState(null);
+    const [orderError, setOrderError] = useState(null);
 
     // Referencias para evitar loops
     const hasLoaded = useRef(false);
@@ -390,7 +391,7 @@ const [orderError, setOrderError] = useState(null);
 
                 const { settings } = props;
                 const currencySymbol = settings?.currency?.symbol || '$';
-                
+
                 alert(`¡Gift Card "${giftCardToApply.code}" aplicada! Se usarán ${currencySymbol}${amountToUse.toFixed(2)} de los ${currencySymbol}${availableBalance.toFixed(2)} disponibles`);
 
             } catch (error) {
@@ -556,7 +557,7 @@ const [orderError, setOrderError] = useState(null);
         ...getStyles(comp),
         width: '100%',
         padding: customStyles.padding || '40px 20px',
-        backgroundColor: customStyles.backgroundColor || themeCheckoutStyles.backgroundColor || hslToCss(themeWithDefaults.background),
+        backgroundColor: customStyles.backgroundColor || themeCheckoutStyles.backgroundColor || themeWithDefaults.background,
         maxWidth: customStyles.maxWidth || '1200px',
         margin: '0 auto',
         border: isPreview ? 'none' : '1px none #ccc',
@@ -649,7 +650,7 @@ const [orderError, setOrderError] = useState(null);
             gift_card_amount: totals.giftCardAmount,
         };
 
-        console.log({cartItemsData, userInfo, shippingInfo, paymentInfo, discountsData, giftCardData, totalsData});
+        console.log({ cartItemsData, userInfo, shippingInfo, paymentInfo, discountsData, giftCardData, totalsData });
 
         // Enviar datos al backend usando Inertia.js
         router.post('/checkout/process', {
@@ -667,7 +668,7 @@ const [orderError, setOrderError] = useState(null);
                 // Limpiar carrito cuando la redirección sea exitosa
                 cartHelper.clearCart(companyId);
                 window.dispatchEvent(new Event('cartUpdated'));
-                
+
                 console.log('Orden creada exitosamente, redirigiendo...');
                 // Inertia.js manejará automáticamente la redirección
             },
@@ -697,7 +698,7 @@ const [orderError, setOrderError] = useState(null);
                     type: 'checkoutDiscountGiftCard',
                     content: { title: 'Descuentos y Gift Cards' },
                     styles: {
-                        backgroundColor: hslToCss(themeWithDefaults.background),
+                        backgroundColor: themeWithDefaults.background,
                         padding: '16px',
                         borderRadius: '8px'
                     }
@@ -712,11 +713,11 @@ const [orderError, setOrderError] = useState(null);
                         showPaymentMethodsPreview: true
                     },
                     styles: {
-                        backgroundColor: hslToCss(themeWithDefaults.background),
+                        backgroundColor: themeWithDefaults.background,
                         padding: '24px',
                         borderRadius: '12px',
                         titleSize: themeWithDefaults.heading3_fontSize || '20px',
-                        titleColor: hslToCss(themeWithDefaults.heading),
+                        titleColor: themeWithDefaults.heading,
                     }
                 },
                 {
@@ -728,13 +729,14 @@ const [orderError, setOrderError] = useState(null);
                         showShipping: true,
                         showTax: true,
                         showDiscount: true,
-                        showOrderTotal: true
+                        showOrderTotal: true,
+                        backgroundColor: themeWithDefaults.danger_color,
                     },
                     styles: {
-                        backgroundColor: hslToCss(themeWithDefaults.background),
+                        backgroundColor: themeWithDefaults.background,
                         padding: '24px',
                         borderRadius: '12px',
-                        borderColor: hslToCss(themeWithDefaults.borders),
+                        borderColor: themeWithDefaults.borders,
                         titleSize: themeWithDefaults.heading3_fontSize || '20px',
                         totalFontSize: themeWithDefaults.heading2_fontSize || '24px',
                     }
@@ -749,12 +751,12 @@ const [orderError, setOrderError] = useState(null);
                         buttonText: 'Realizar Pedido'
                     },
                     styles: {
-                        backgroundColor: hslToCss(themeWithDefaults.background),
+                        backgroundColor: themeWithDefaults.background,
                         padding: '24px',
                         borderRadius: '12px',
                         titleSize: themeWithDefaults.heading3_fontSize || '20px',
-                        buttonBackgroundColor: hslToCss(themeWithDefaults.primary_button_background),
-                        buttonColor: hslToCss(themeWithDefaults.primary_button_text),
+                        buttonBackgroundColor: themeWithDefaults.primary_button_background,
+                        buttonColor: themeWithDefaults.primary_button_text,
                         buttonBorderRadius: themeWithDefaults.primary_button_corner_radius || '8px'
                     }
                 }
@@ -774,6 +776,7 @@ const [orderError, setOrderError] = useState(null);
             hoveredComponentId,
             setHoveredComponentId,
             themeSettings,
+            appliedTheme,
             cartItems: displayCartItems,
             cartTotal: displayCartTotal,
             shipping: totals.shipping,
@@ -897,7 +900,7 @@ const [orderError, setOrderError] = useState(null);
                             onSubmitOrder={submitOrder}
                             paymentMethods={displayPaymentMethods}
                             isSubmitting={isSubmitting}  // <-- Pasar el estado
-                orderError={orderError}      // <-- Pasar error si existe
+                            orderError={orderError}      // <-- Pasar error si existe
                         />
                     </ComponentWithHover>
                 );

@@ -14,7 +14,7 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import ApplyTemplate from '@/Components/ApplyTemplate';
 import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
 import { Badge } from '@/Components/ui/badge';
-import { getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults } from '@/utils/themeUtils';
 
 // Importar todos los diálogos
 import TextEditDialog from './partials/TextEditDialog';
@@ -505,6 +505,18 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         }
     }, [editContent, editStyles, editingComponent]);
 
+    // Helper function para agregar componentes y evitar duplicación de código
+    const addComponentToState = (newItem) => {
+        setComponents((prev) => {
+            const newComponents = [...prev, newItem];
+            addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+            setHasUnsavedChanges(true);
+            return newComponents;
+        });
+        setIsAddDialogOpen(false);
+        setSelectedType('');
+    };
+
     const handleAddComponent = (selectedType) => {
         if (!selectedType) {
             toast.error("Por favor selecciona un tipo de componente");
@@ -512,8 +524,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         }
 
         // Obtener configuración del tema con valores por defecto
-        const themeWithDefaults = getThemeWithDefaults(currentThemeSettings);
-
+        const themeWithDefaults = getThemeWithDefaults(currentThemeSettings, appliedTheme);
+        console.log(themeWithDefaults)
         if (selectedType) {
             let content = 'Nuevo ' + selectedType;
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
@@ -527,10 +539,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const initialStyles = {
                     aspectRatio: 'square',
                     layout: 'fit',
-                    borderRadius: themeWithDefaults.image_borderRadius || '0px',
-                    borderWidth: themeWithDefaults.image_borderWidth || '0px',
+                    borderRadius: '0px',
+                    borderWidth: '0px',
                     borderStyle: 'solid',
-                    borderColor: themeWithDefaults.image_borderColor || hslToCss(themeWithDefaults.borders),
+                    borderColor: themeWithDefaults.borders,
                     marginTop: '0px',
                     marginRight: '0px',
                     marginBottom: '0px',
@@ -539,7 +551,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     paddingRight: '0px',
                     paddingBottom: '0px',
                     paddingLeft: '0px',
-                    objectFit: themeWithDefaults.image_objectFit || 'cover'
+                    objectFit: 'cover'
                 };
 
                 const newItem = {
@@ -549,22 +561,13 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     styles: initialStyles
                 };
 
-                setComponents((prev) => {
-                    const newComponents = [...prev, newItem];
-                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-                    setHasUnsavedChanges(true);
-                    return newComponents;
-                });
-                setIsAddDialogOpen(false);
-                setSelectedType('');
+                addComponentToState(newItem);
                 return;
             }
             if (selectedType === 'header') {
                 const headerId = Date.now();
                 const logoId = headerId + 1;
                 const menuId = headerId + 2;
-
-                const defaultMenu = availableMenus && availableMenus.length > 0 ? availableMenus[0] : null;
 
                 content = {
                     logoPosition: 'left',
@@ -577,30 +580,14 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         cart: {
                             count: '0',
                             styles: {
-                                iconColor: '#ffffff',
-                                backgroundColor: '#000000',
-                                borderWidth: '0px',
-                                borderStyle: 'solid',
-                                borderColor: '#000000',
-                                borderOpacity: '1',
-                                borderRadius: '50%',
-                                backgroundOpacity: '1',
-                                width: '36px',
-                                height: '36px',
-                                padding: '8px',
-                                fontSize: '16px'
-                            }
-                        },
-                        search: {
-                            styles: {
-                                iconColor: '#000000',
-                                backgroundColor: 'transparent',
-                                borderWidth: '0px',
-                                borderStyle: 'solid',
-                                borderColor: '#000000',
-                                borderOpacity: '1',
-                                borderRadius: '50%',
-                                backgroundOpacity: '1',
+                                iconColor: themeWithDefaults.text || '#ffffff',
+                                backgroundColor: themeWithDefaults.muted_color || '#000000',
+                                borderWidth: themeWithDefaults.border_thickness_none || '0px',
+                                borderStyle: themeWithDefaults.border_style_solid || 'solid',
+                                borderColor: themeWithDefaults.muted_color || '#000000',
+                                borderOpacity: themeWithDefaults.opacity_100 || '1',
+                                borderRadius: themeWithDefaults.border_radius_full || '50%',
+                                backgroundOpacity: themeWithDefaults.opacity_100 || '1',
                                 width: '36px',
                                 height: '36px',
                                 padding: '8px',
@@ -609,20 +596,36 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         },
                         profile: {
                             styles: {
-                                iconColor: '#000000',
-                                backgroundColor: '#f0f0f0',
-                                borderWidth: '0px',
-                                borderStyle: 'solid',
-                                borderColor: '#000000',
-                                borderOpacity: '1',
-                                borderRadius: '50%',
-                                backgroundOpacity: '1',
+                                iconColor: themeWithDefaults.text || '#ffffff',
+                                backgroundColor: themeWithDefaults.muted_color || '#000000',
+                                borderWidth: themeWithDefaults.border_thickness_none || '0px',
+                                borderStyle: themeWithDefaults.border_style_solid || 'solid',
+                                borderColor: themeWithDefaults.muted_color || '#000000',
+                                borderOpacity: themeWithDefaults.opacity_100 || '1',
+                                borderRadius: themeWithDefaults.border_radius_full || '50%',
+                                backgroundOpacity: themeWithDefaults.opacity_100 || '1',
                                 width: '36px',
                                 height: '36px',
                                 padding: '8px',
                                 fontSize: '16px'
                             }
-                        }
+                        },
+                        search: {
+                            styles: {
+                                iconColor: themeWithDefaults.text || '#ffffff',
+                                backgroundColor: 'transparent',
+                                borderWidth: themeWithDefaults.border_thickness_none || '0px',
+                                borderStyle: themeWithDefaults.border_style_solid || 'solid',
+                                borderColor: themeWithDefaults.muted_color || '#000000',
+                                borderOpacity: themeWithDefaults.opacity_100 || '1',
+                                borderRadius: themeWithDefaults.border_radius_full || '50%',
+                                backgroundOpacity: themeWithDefaults.opacity_100 || '1',
+                                width: '36px',
+                                height: '36px',
+                                padding: '8px',
+                                fontSize: '16px'
+                            }
+                        },
                     },
                     children: [
                         {
@@ -631,9 +634,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             content: 'Logo',
                             styles: {
                                 layout: 'fit',
-                                fontSize: themeWithDefaults.header_logoSize || '24px',
+                                fontSize: themeWithDefaults.heading5_fontSize || '24px',
                                 fontWeight: 'bold',
-                                color: themeWithDefaults.header_logoColor || hslToCss(themeWithDefaults.heading),
+                                color: themeWithDefaults.muted_color || themeWithDefaults.heading,
                                 backgroundColor: 'none',
                                 paddingTop: '0px',
                                 paddingRight: '0px',
@@ -651,17 +654,17 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 layout: 'fit',
                                 display: 'flex',
                                 gap: '20px',
-                                fontSize: themeWithDefaults.header_menuSize || '16px',
+                                fontSize: themeWithDefaults.heading6_fontSize || '16px',
                                 fontWeight: 'normal',
                                 textTransform: 'none',
                                 lineHeight: 'normal',
                                 fontType: 'default',
-                                color: themeWithDefaults.header_menuColor || hslToCss(themeWithDefaults.text),
+                                color: themeWithDefaults.muted_color || themeWithDefaults.text,
                                 buttonBackgroundColor: 'transparent',
                                 backgroundColor: 'transparent',
-                                borderWidth: '0px',
-                                borderColor: hslToCss(themeWithDefaults.borders),
-                                borderRadius: '0px',
+                                borderWidth: themeWithDefaults.border_thickness_none || '0px',
+                                borderColor: themeWithDefaults.borders,
+                                borderRadius: themeWithDefaults.border_radius_none || '0px',
                                 paddingTop: '5px',
                                 paddingRight: '10px',
                                 paddingBottom: '5px',
@@ -680,19 +683,12 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         paddingRight: '20px',
                         paddingBottom: '20px',
                         paddingLeft: '20px',
-                        backgroundColor: themeWithDefaults.header_backgroundColor || hslToCss(themeWithDefaults.background),
-                        borderBottom: `1px solid ${hslToCss(themeWithDefaults.borders)}`
+                        backgroundColor: themeWithDefaults.background || themeWithDefaults.background,
+                        borderBottom: `1px solid ${themeWithDefaults.borders}`
                     }
                 };
 
-                setComponents((prev) => {
-                    const newComponents = [...prev, newItem];
-                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-                    setHasUnsavedChanges(true);
-                    return newComponents;
-                });
-                setIsAddDialogOpen(false);
-                setSelectedType('');
+                addComponentToState(newItem);
                 return;
             }
 
@@ -721,7 +717,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 layout: 'fit',
                                 alignment: 'center',
-                                color: hslToCss(themeWithDefaults.heading),
+                                color: themeWithDefaults.heading,
                                 fontSize: themeWithDefaults.heading2_fontSize || '24px',
                                 fontWeight: themeWithDefaults.heading2_fontWeight || 'bold'
                             }
@@ -731,9 +727,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             type: 'productCard',
                             content: {
                                 cardBorder: 'none',
-                                cardBorderThickness: '1px',
-                                cardBorderOpacity: '1',
-                                cardBorderRadius: '0px',
+                                cardBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                cardBorderOpacity: themeWithDefaults.opacity_100,
+                                cardBorderRadius: themeWithDefaults.border_radius_small || '0px',
                                 cardPaddingTop: '0px',
                                 cardPaddingRight: '0px',
                                 cardPaddingBottom: '0px',
@@ -745,10 +741,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         content: '',
                                         styles: {
                                             aspectRatio: 'square',
-                                            imageBorder: 'none',
-                                            imageBorderThickness: '1px',
-                                            imageBorderOpacity: '1',
-                                            imageBorderRadius: '0px'
+                                            imageBorder: themeWithDefaults.border_radius_small || 'none',
+                                            imageBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                            imageBorderOpacity: themeWithDefaults.opacity_100,
+                                            imageBorderRadius: themeWithDefaults.border_radius_small || '0px'
                                         }
                                     },
                                     {
@@ -758,7 +754,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: hslToCss(themeWithDefaults.text),
+                                            color: themeWithDefaults.text,
                                             fontSize: themeWithDefaults.paragraph_fontSize || '16px',
                                             fontWeight: '600'
                                         }
@@ -770,8 +766,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: hslToCss(themeWithDefaults.text),
-                                            fontSize: '14px',
+                                            color: themeWithDefaults.text,
+                                            fontSize: themeWithDefaults.paragraph_fontSize || '14px',
                                             fontWeight: 'normal'
                                         }
                                     }
@@ -784,10 +780,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             type: 'productListPriceFilter',
                             content: {},
                             styles: {
-                                borderRadius: '4px',
-                                borderColor: '#ccc',
-                                borderThickness: '1px',
-                                background: '#fff'
+                                borderRadius: themeWithDefaults.border_radius_small || '4px',
+                                borderColor: themeWithDefaults.borders || '#ccc',
+                                borderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                background: themeWithDefaults.background || '#fff'
                             }
                         },
                         {
@@ -795,10 +791,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             type: 'productListSortSelect',
                             content: {},
                             styles: {
-                                borderRadius: '4px',
-                                borderColor: '#ccc',
-                                borderThickness: '1px',
-                                background: '#fff'
+                                borderRadius: themeWithDefaults.border_radius_small || '4px',
+                                borderColor: themeWithDefaults.borders || '#ccc',
+                                borderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                background: themeWithDefaults.background || '#fff'
                             }
                         },
                         {
@@ -806,10 +802,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             type: 'productListPagination',
                             content: {},
                             styles: {
-                                borderRadius: '4px',
-                                borderColor: '#000',
-                                borderThickness: '1px',
-                                background: '#fff'
+                                borderRadius: themeWithDefaults.border_radius_small || '4px',
+                                border: themeWithDefaults.border_thickness_hairline || '1px solid',
+                                borderColor: themeWithDefaults.borders || '#000',
+                                background: themeWithDefaults.background || '#fff'
                             }
                         }
                     ]
@@ -866,7 +862,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             content: 'Dirección: Calle Principal 123\nTeléfono: (123) 456-7890\nEmail: info@empresa.com',
                             styles: {
                                 layout: 'fit',
-                                color: themeWithDefaults.footer_textColor || hslToCss(themeWithDefaults.text),
+                                color: themeWithDefaults.footer_textColor || themeWithDefaults.text,
                                 fontSize: themeWithDefaults.paragraph_fontSize || '14px',
                                 lineHeight: themeWithDefaults.paragraph_lineHeight || '1.6'
                             }
@@ -881,7 +877,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 layout: 'fit',
                                 display: 'column',
                                 gap: '8px',
-                                color: themeWithDefaults.footer_linkColor || hslToCss(themeWithDefaults.text),
+                                color: themeWithDefaults.footer_linkColor || themeWithDefaults.text,
                                 fontSize: '14px',
                                 textTransform: 'none'
                             }
@@ -894,7 +890,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     type: selectedType,
                     content,
                     styles: {
-                        backgroundColor: themeWithDefaults.footer_backgroundColor || hslToCss(themeWithDefaults.background),
+                        backgroundColor: themeWithDefaults.footer_backgroundColor || themeWithDefaults.background,
                         paddingTop: '40px',
                         paddingRight: '20px',
                         paddingBottom: '40px',
@@ -923,7 +919,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         type: 'text',
                         content: { text: 'Nuevo texto' },
                         styles: {
-                            color: hslToCss(themeWithDefaults.text),
+                            color: themeWithDefaults.text,
                             fontSize: themeWithDefaults.paragraph_fontSize || '16px',
                             fontWeight: themeWithDefaults.paragraph_fontWeight || 'normal',
                             lineHeight: themeWithDefaults.paragraph_lineHeight || '1.6'
@@ -936,7 +932,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     type: 'container',
                     content,
                     styles: {
-                        backgroundColor: themeWithDefaults.container_backgroundColor || 'transparent',
+                        backgroundColor: themeWithDefaults.background || 'transparent',
                         borderRadius: themeWithDefaults.container_borderRadius || '0px',
                         gap: themeWithDefaults.container_gap || '0px',
                         paddingTop: '20px',
@@ -946,14 +942,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     }
                 };
 
-                setComponents((prev) => {
-                    const newComponents = [...prev, newItem];
-                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-                    setHasUnsavedChanges(true);
-                    return newComponents;
-                });
-                setIsAddDialogOpen(false);
-                setSelectedType('');
+                addComponentToState(newItem);
                 return;
             }
 
@@ -971,18 +960,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         paddingLeft: '10px',
                         backgroundColor: 'transparent',
                         borderRadius: '0px',
-                        color: hslToCss(themeWithDefaults.heading)
+                        color: themeWithDefaults.heading
                     }
                 };
 
-                setComponents((prev) => {
-                    const newComponents = [...prev, newItem];
-                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-                    setHasUnsavedChanges(true);
-                    return newComponents;
-                });
-                setIsAddDialogOpen(false);
-                setSelectedType('');
+                addComponentToState(newItem);
                 return;
             }
 
@@ -996,8 +978,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     paddingBottom: '10px',
                     paddingLeft: '10px',
                     borderRadius: themeWithDefaults.primary_button_corner_radius,
-                    backgroundColor: hslToCss(themeWithDefaults.primary_button_background),
-                    color: hslToCss(themeWithDefaults.primary_button_text)
+                    backgroundColor: themeWithDefaults.primary_button_background,
+                    color: themeWithDefaults.primary_button_text
                 };
 
                 const newItem = {
@@ -1030,7 +1012,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         paddingBottom: themeWithDefaults.divider_paddingBottom,
                         lineWidth: themeWithDefaults.divider_lineWidth,
                         lineLength: themeWithDefaults.divider_lineLength,
-                        lineColor: themeWithDefaults.divider_lineColor,
+                        lineColor: themeWithDefaults.borders,
                         opacity: themeWithDefaults.divider_opacity,
                     }
                 };
@@ -1058,20 +1040,13 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         paddingBottom: themeWithDefaults.marquee_paddingBottom,
                         fontSize: themeWithDefaults.marquee_fontSize,
                         fontWeight: themeWithDefaults.marquee_fontWeight,
-                        color: themeWithDefaults.marquee_color,
-                        backgroundColor: themeWithDefaults.marquee_backgroundColor,
+                        color: themeWithDefaults.text,
+                        backgroundColor: themeWithDefaults.background || 'transparent',
                         borderRadius: themeWithDefaults.marquee_borderRadius,
                     }
                 };
 
-                setComponents((prev) => {
-                    const newComponents = [...prev, newItem];
-                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-                    setHasUnsavedChanges(true);
-                    return newComponents;
-                });
-                setIsAddDialogOpen(false);
-                setSelectedType('');
+                addComponentToState(newItem);
                 return;
             }
 
@@ -1092,7 +1067,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 fontSize: '14px',
                                 fontWeight: 'normal',
-                                color: '#ffffff',
+                                color: themeWithDefaults.announcementBar_textColor || themeWithDefaults.text,
                                 textTransform: 'none',
                                 fontType: 'default'
                             }
@@ -1105,20 +1080,13 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     type: selectedType,
                     content,
                     styles: {
-                        backgroundColor: hslToCss(themeWithDefaults.background),
+                        backgroundColor: themeWithDefaults.background,
                         paddingTop: '15px',
                         paddingBottom: '15px'
                     }
                 };
 
-                setComponents((prev) => {
-                    const newComponents = [...prev, newItem];
-                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
-                    setHasUnsavedChanges(true);
-                    return newComponents;
-                });
-                setIsAddDialogOpen(false);
-                setSelectedType('');
+                addComponentToState(newItem);
                 return;
             }
 
@@ -1135,7 +1103,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     slidesToShow: 3,
                     gapX: themeWithDefaults.carousel_gapX,
                     gapY: themeWithDefaults.carousel_gapY,
-                    backgroundColor: themeWithDefaults.carousel_backgroundColor,
+                    backgroundColor: themeWithDefaults.background,
                     children: [
                         {
                             id: titleId,
@@ -1144,7 +1112,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 layout: 'fit',
                                 alignment: 'center',
-                                color: hslToCss(themeWithDefaults.heading),
+                                color: themeWithDefaults.heading,
                                 fontSize: themeWithDefaults.heading2_fontSize || '24px',
                                 fontWeight: themeWithDefaults.heading2_fontWeight || 'bold'
                             }
@@ -1154,17 +1122,17 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             type: 'carouselCard',
                             content: {
                                 cardBorder: 'none',
-                                cardBorderThickness: '1px',
-                                cardBorderOpacity: '1',
-                                cardBorderRadius: '0px',
+                                cardBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                cardBorderOpacity: themeWithDefaults.opacity_100 || '1',
+                                cardBorderRadius: themeWithDefaults.border_radius_small || '0px',
                                 cardPaddingTop: '10px',
                                 cardPaddingRight: '10px',
                                 cardPaddingBottom: '10px',
                                 cardPaddingLeft: '10px',
                                 imageBorder: 'none',
-                                imageBorderThickness: '1px',
-                                imageBorderOpacity: '1',
-                                imageBorderRadius: '0px',
+                                imageBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                imageBorderOpacity: themeWithDefaults.opacity_100 || '1',
+                                imageBorderRadius: themeWithDefaults.border_radius_small || '0px',
                                 children: [
                                     {
                                         id: imageId,
@@ -1173,9 +1141,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             aspectRatio: 'square',
                                             imageBorder: 'none',
-                                            imageBorderThickness: '1px',
-                                            imageBorderOpacity: '1',
-                                            imageBorderRadius: '0px'
+                                            imageBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                            imageBorderOpacity: themeWithDefaults.opacity_100 || '1',
+                                            imageBorderRadius: themeWithDefaults.border_radius_small || '0px'
                                         }
                                     },
                                     {
@@ -1185,7 +1153,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: hslToCss(themeWithDefaults.text),
+                                            color: themeWithDefaults.text,
                                             fontSize: themeWithDefaults.paragraph_fontSize || '16px',
                                             fontWeight: '600'
                                         }
@@ -1197,7 +1165,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: hslToCss(themeWithDefaults.text),
+                                            color: themeWithDefaults.text,
                                             fontSize: '14px',
                                             fontWeight: 'normal'
                                         }
@@ -1232,7 +1200,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 layout: 'fit',
                                 alignment: 'center',
-                                color: hslToCss(themeWithDefaults.heading),
+                                color: themeWithDefaults.heading,
                                 fontSize: themeWithDefaults.heading2_fontSize || '24px',
                                 fontWeight: themeWithDefaults.heading2_fontWeight || 'bold',
                                 background: 'none',
@@ -1243,9 +1211,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             type: 'productCard',
                             content: {
                                 cardBorder: 'none',
-                                cardBorderThickness: '1px',
-                                cardBorderOpacity: '1',
-                                cardBorderRadius: '0px',
+                                cardBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                cardBorderOpacity: themeWithDefaults.opacity_100 || '1',
+                                cardBorderRadius: themeWithDefaults.border_radius_small || '0px',
                                 cardPaddingTop: '0px',
                                 cardPaddingRight: '0px',
                                 cardPaddingBottom: '0px',
@@ -1257,10 +1225,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         content: '',
                                         styles: {
                                             aspectRatio: 'square',
-                                            imageBorder: 'none',
-                                            imageBorderThickness: '1px',
-                                            imageBorderOpacity: '1',
-                                            imageBorderRadius: '0px'
+                                            imageBorder: themeWithDefaults.border_thickness_none || 'none',
+                                            imageBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                            imageBorderOpacity: themeWithDefaults.opacity_100 || '1',
+                                            imageBorderRadius: themeWithDefaults.border_radius_small || '0px'
                                         }
                                     },
                                     {
@@ -1270,7 +1238,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: hslToCss(themeWithDefaults.text),
+                                            color: themeWithDefaults.text,
                                             fontSize: themeWithDefaults.paragraph_fontSize || '16px',
                                             fontWeight: '600'
                                         }
@@ -1282,7 +1250,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: hslToCss(themeWithDefaults.text),
+                                            color: themeWithDefaults.text,
                                             fontSize: '14px',
                                             fontWeight: 'normal'
                                         }
@@ -1311,7 +1279,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     paddingRight: themeWithDefaults.banner_paddingRight,
                     paddingBottom: themeWithDefaults.banner_paddingBottom,
                     paddingLeft: themeWithDefaults.banner_paddingLeft,
-                    backgroundColor: themeWithDefaults.banner_backgroundColor,
+                    backgroundColor: themeWithDefaults.background || 'transparent',
                     backgroundImage: null,
                     backgroundVideo: null,
                     backgroundSize: 'cover',
@@ -1322,7 +1290,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     // NUEVAS PROPIEDADES: Contenedor interno
                     innerContainerShow: true,
                     innerContainerHasBackground: true,
-                    innerContainerBackgroundColor: themeWithDefaults.banner_innerContainerBackgroundColor,
+                    innerContainerBackgroundColor: 'transparent',
                     innerContainerBackgroundOpacity: themeWithDefaults.banner_innerContainerBackgroundOpacity,
                     innerContainerPaddingTop: themeWithDefaults.banner_innerContainerPaddingTop,
                     innerContainerPaddingRight: themeWithDefaults.banner_innerContainerPaddingRight,
@@ -1339,13 +1307,14 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 textStyle: 'heading2',
                                 layout: 'fit',
+                                alignment: 'center',
                                 paddingTop: '10px',
                                 paddingRight: '10px',
                                 paddingBottom: '10px',
                                 paddingLeft: '10px',
                                 backgroundColor: 'transparent',
-                                borderRadius: '0px',
-                                color: hslToCss(themeWithDefaults.heading)
+                                borderRadius: themeWithDefaults.border_radius_small || '0px',
+                                color: themeWithDefaults.heading
                             }
                         },
                         {
@@ -1356,13 +1325,13 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 layout: 'fit',
                                 alignment: 'center',
                                 background: 'transparent',
-                                backgroundOpacity: '1',
-                                borderRadius: '0px',
+                                backgroundOpacity: themeWithDefaults.opacity_100 || '1',
+                                borderRadius: themeWithDefaults.border_radius_small || '0px',
                                 paddingTop: '10px',
                                 paddingRight: '10px',
                                 paddingBottom: '10px',
                                 paddingLeft: '10px',
-                                color: hslToCss(themeWithDefaults.text),
+                                color: themeWithDefaults.text,
                                 fontSize: themeWithDefaults.paragraph_fontSize,
                                 fontWeight: themeWithDefaults.paragraph_fontWeight
                             }
@@ -1411,7 +1380,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     containerBorderRadius: themeWithDefaults.bento_containerBorderRadius,
                     containerBorder: 'none',
                     containerBorderThickness: '1px',
-                    containerBorderColor: hslToCss(themeWithDefaults.borders),
+                    containerBorderColor: themeWithDefaults.borders,
                     children: [
                         {
                             id: titleId,
@@ -1420,7 +1389,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 layout: 'fit',
                                 alignment: 'center',
-                                color: hslToCss(themeWithDefaults.heading),
+                                color: themeWithDefaults.heading,
                                 fontSize: themeWithDefaults.heading1_fontSize || '2.5rem',
                                 fontWeight: themeWithDefaults.heading1_fontWeight || 'bold'
                             }
@@ -1429,14 +1398,14 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             id: feature1Id,
                             type: 'bentoFeature',
                             content: {
-                                backgroundColor: '#f8fafc',
+                                backgroundColor: themeWithDefaults.background,
                                 backgroundImage: null,
-                                border: 'none',
-                                borderThickness: '1px',
-                                borderColor: '#e5e7eb',
-                                borderRadius: '12px',
+                                border: themeWithDefaults.border_thickness_hairline || 'none',
+                                borderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                borderColor: themeWithDefaults.borders,
+                                borderRadius: themeWithDefaults.border_radius_small || '12px',
                                 padding: '24px',
-                                opacity: 1,
+                                opacity: themeWithDefaults.opacity_100 || 1,
                                 children: [
                                     {
                                         id: feature1TitleId,
@@ -1445,7 +1414,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: '#1f2937',
+                                            color: themeWithDefaults.heading,
                                             fontSize: '20px',
                                             fontWeight: '600'
                                         }
@@ -1457,7 +1426,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: '#6b7280',
+                                            color: themeWithDefaults.text,
                                             fontSize: '16px',
                                             fontWeight: 'normal'
                                         }
@@ -1470,14 +1439,14 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             id: feature2Id,
                             type: 'bentoFeature',
                             content: {
-                                backgroundColor: '#f8fafc',
+                                backgroundColor: themeWithDefaults.background,
                                 backgroundImage: null,
-                                border: 'none',
-                                borderThickness: '1px',
-                                borderColor: '#e5e7eb',
-                                borderRadius: '12px',
+                                border: themeWithDefaults.border_thickness_hairline || 'none',
+                                borderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                borderColor: themeWithDefaults.borders,
+                                borderRadius: themeWithDefaults.border_radius_small || '12px',
                                 padding: '24px',
-                                opacity: 1,
+                                opacity: themeWithDefaults.opacity_100 || 1,
                                 children: [
                                     {
                                         id: feature2TitleId,
@@ -1486,7 +1455,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: '#1f2937',
+                                            color: themeWithDefaults.heading,
                                             fontSize: '20px',
                                             fontWeight: '600'
                                         }
@@ -1498,7 +1467,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: '#6b7280',
+                                            color: themeWithDefaults.text,
                                             fontSize: '16px',
                                             fontWeight: 'normal'
                                         }
@@ -1511,14 +1480,14 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             id: feature3Id,
                             type: 'bentoFeature',
                             content: {
-                                backgroundColor: '#f8fafc',
+                                backgroundColor: themeWithDefaults.background,
                                 backgroundImage: null,
-                                border: 'none',
-                                borderThickness: '1px',
-                                borderColor: '#e5e7eb',
-                                borderRadius: '12px',
+                                border: themeWithDefaults.border_thickness_hairline || 'none',
+                                borderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                borderColor: themeWithDefaults.borders,
+                                borderRadius: themeWithDefaults.border_radius_small || '12px',
                                 padding: '24px',
-                                opacity: 1,
+                                opacity: themeWithDefaults.opacity_100 || 1,
                                 children: [
                                     {
                                         id: feature3TitleId,
@@ -1527,7 +1496,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: '#1f2937',
+                                            color: themeWithDefaults.heading,
                                             fontSize: '20px',
                                             fontWeight: '600'
                                         }
@@ -1539,7 +1508,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: '#6b7280',
+                                            color: themeWithDefaults.text,
                                             fontSize: '16px',
                                             fontWeight: 'normal'
                                         }
@@ -1552,14 +1521,14 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             id: feature4Id,
                             type: 'bentoFeature',
                             content: {
-                                backgroundColor: '#f8fafc',
+                                backgroundColor: themeWithDefaults.background,
                                 backgroundImage: null,
-                                border: 'none',
-                                borderThickness: '1px',
-                                borderColor: '#e5e7eb',
-                                borderRadius: '12px',
+                                border: themeWithDefaults.border_thickness_hairline || 'none',
+                                borderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                borderColor: themeWithDefaults.borders,
+                                borderRadius: themeWithDefaults.border_radius_small || '12px',
                                 padding: '24px',
-                                opacity: 1,
+                                opacity: themeWithDefaults.opacity_100 || 1,
                                 children: [
                                     {
                                         id: feature4TitleId,
@@ -1568,7 +1537,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: '#1f2937',
+                                            color: themeWithDefaults.heading,
                                             fontSize: '20px',
                                             fontWeight: '600'
                                         }
@@ -1580,7 +1549,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                         styles: {
                                             layout: 'fit',
                                             alignment: 'left',
-                                            color: '#6b7280',
+                                            color: themeWithDefaults.text,
                                             fontSize: '16px',
                                             fontWeight: 'normal'
                                         }
@@ -1613,9 +1582,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 aspectRatio: 'square',
                                 imageBorder: 'none',
-                                imageBorderThickness: '1px',
-                                imageBorderOpacity: '1',
-                                imageBorderRadius: '0px'
+                                imageBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
+                                imageBorderOpacity: themeWithDefaults.opacity_100 || '1',
+                                imageBorderRadius: themeWithDefaults.border_radius_small || '0px'
                             }
                         },
                         {
@@ -1625,7 +1594,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 layout: 'fit',
                                 alignment: 'left',
-                                color: themeWithDefaults.productDetail_titleColor || hslToCss(themeWithDefaults.heading),
+                                color: themeWithDefaults.productDetail_titleColor || themeWithDefaults.heading,
                                 fontSize: themeWithDefaults.productDetail_titleSize || '32px',
                                 fontWeight: 'bold'
                             }
@@ -1637,7 +1606,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 layout: 'fit',
                                 alignment: 'left',
-                                color: themeWithDefaults.productDetail_priceColor || hslToCss(themeWithDefaults.text),
+                                color: themeWithDefaults.productDetail_priceColor || themeWithDefaults.text,
                                 fontSize: themeWithDefaults.productDetail_priceSize || '24px',
                                 fontWeight: 'normal'
                             }
@@ -1649,7 +1618,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             styles: {
                                 layout: 'fit',
                                 alignment: 'left',
-                                color: themeWithDefaults.productDetail_descriptionColor || hslToCss(themeWithDefaults.text),
+                                color: themeWithDefaults.productDetail_descriptionColor || themeWithDefaults.text,
                                 fontSize: themeWithDefaults.productDetail_descriptionSize || '16px',
                                 fontWeight: 'normal'
                             }
@@ -1666,8 +1635,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 paddingBottom: '10px',
                                 paddingLeft: '10px',
                                 borderRadius: themeWithDefaults.primary_button_corner_radius || '4px',
-                                backgroundColor: hslToCss(themeWithDefaults.primary_button_background),
-                                color: hslToCss(themeWithDefaults.primary_button_text)
+                                backgroundColor: themeWithDefaults.primary_button_background,
+                                color: themeWithDefaults.primary_button_text
                             }
                         },
                         {
@@ -1677,9 +1646,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 title: 'Opciones del Producto',
                             },
                             styles: {
-                                titleColor: '#000000',
+                                titleColor: themeWithDefaults.heading,
                                 titleSize: '18px',
-                                labelColor: '#666666',
+                                labelColor: themeWithDefaults.text,
                                 labelSize: '14px',
                             }
                         },
@@ -1694,12 +1663,12 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             },
                             styles: {
                                 padding: '12px 16px',
-                                borderRadius: '8px',
-                                borderWidth: '1px',
-                                inStockBgColor: '#dcfce7',
-                                inStockColor: '#166534',
-                                outOfStockBgColor: '#fee2e2',
-                                outOfStockColor: '#991b1b',
+                                borderRadius: themeWithDefaults.border_radius_small || '8px',
+                                borderWidth: themeWithDefaults.border_thickness_hairline || '1px',
+                                inStockBgColor: themeWithDefaults.muted_color || '#dcfce7',
+                                inStockColor: themeWithDefaults.success_color || '#166534',
+                                outOfStockBgColor: themeWithDefaults.muted_color || '#fee2e2',
+                                outOfStockColor: themeWithDefaults.danger_color || '#991b1b',
                             }
                         },
                         {
@@ -1710,11 +1679,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 showMax: true,
                             },
                             styles: {
-                                labelColor: '#666666',
-                                borderColor: '#d1d5db',
-                                borderRadius: '6px',
-                                buttonColor: '#374151',
-                                inputColor: '#000000',
+                                labelColor: themeWithDefaults.text,
+                                borderColor: themeWithDefaults.borders,
+                                borderRadius: themeWithDefaults.border_radius_medium || '6px',
+                                buttonColor: themeWithDefaults.text,
+                                inputColor: themeWithDefaults.text,
                             }
                         }
                     ]
@@ -1757,15 +1726,15 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 showStock: true,
                             },
                             styles: {
-                                backgroundColor: themeWithDefaults.cart_backgroundColor || '#ffffff',
+                                backgroundColor: themeWithDefaults.background,
                                 padding: '20px',
-                                borderRadius: themeWithDefaults.cart_borderRadius || '12px',
-                                titleSize: themeWithDefaults.cart_titleSize || '24px',
-                                titleColor: themeWithDefaults.cart_titleColor || hslToCss(themeWithDefaults.heading),
+                                borderRadius: themeWithDefaults.borderRadius || '12px',
+                                titleSize: themeWithDefaults.titleSize || '24px',
+                                titleColor: themeWithDefaults.titleColor || themeWithDefaults.heading,
                                 imageSize: '80px',
                                 rowPadding: '16px',
-                                rowBorder: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
-                                buttonColor: '#dc2626',
+                                rowBorder: `1px solid ${themeWithDefaults.borders}`,
+                                buttonColor: themeWithDefaults.danger_color || '#dc2626',
                             }
                         },
 
@@ -1783,10 +1752,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 checkoutButtonText: 'Proceder al pago',
                             },
                             styles: {
-                                backgroundColor: themeWithDefaults.checkout_backgroundColor || '#f9fafb',
+                                backgroundColor: themeWithDefaults.background,
                                 padding: '24px',
-                                borderRadius: themeWithDefaults.checkout_borderRadius || '12px',
-                                borderColor: hslToCss(themeWithDefaults.borders),
+                                borderWidth: themeWithDefaults.border_thickness_hairline || '1px',
+                                borderRadius: themeWithDefaults.border_radius_large || '12px',
+                                borderColor: themeWithDefaults.borders,
                                 titleSize: '20px',
                                 totalFontSize: '24px',
                             }
@@ -1805,7 +1775,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         paddingRight: '20px',
                         paddingBottom: '40px',
                         paddingLeft: '20px',
-                        backgroundColor: themeWithDefaults.cart_backgroundColor || '#ffffff',
+                        backgroundColor: themeWithDefaults.background || '#ffffff',
                         gap: '40px',
                     }
                 };
@@ -1820,6 +1790,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 setSelectedType('');
                 return;
             }
+
             if (selectedType === 'checkout') {
                 const checkoutId = Date.now();
                 const discountGiftCardId = checkoutId + 1;
@@ -1838,9 +1809,9 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 title: 'Descuentos y Gift Cards',
                             },
                             styles: {
-                                backgroundColor: '#f8f9fa',
+                                backgroundColor: themeWithDefaults.background,
                                 padding: '16px',
-                                borderRadius: '8px'
+                                borderRadius: themeWithDefaults.border_radius_medium || '8px'
                             }
                         },
                         {
@@ -1853,11 +1824,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 showPaymentMethodsPreview: true
                             },
                             styles: {
-                                backgroundColor: themeWithDefaults.checkout_backgroundColor || '#ffffff',
+                                backgroundColor: themeWithDefaults.background || '#ffffff',
                                 padding: '24px',
-                                borderRadius: themeWithDefaults.checkout_borderRadius || '12px',
+                                borderRadius: themeWithDefaults.borderRadius || '12px',
                                 titleSize: '20px',
-                                titleColor: themeWithDefaults.checkout_titleColor || hslToCss(themeWithDefaults.heading),
+                                titleColor: themeWithDefaults.titleColor || themeWithDefaults.heading,
                             }
                         },
                         {
@@ -1875,10 +1846,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 totalText: 'Total'
                             },
                             styles: {
-                                backgroundColor: '#f9fafb',
+                                backgroundColor: themeWithDefaults.background,
                                 padding: '24px',
-                                borderRadius: '12px',
-                                borderColor: '#e5e7eb',
+                                borderRadius: themeWithDefaults.border_radius_large || '12px',
+                                borderColor: themeWithDefaults.borders,
                                 titleSize: '20px',
                                 totalFontSize: '24px',
                             }
@@ -1898,13 +1869,13 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 buttonText: 'Realizar Pedido'
                             },
                             styles: {
-                                backgroundColor: '#ffffff',
+                                backgroundColor: themeWithDefaults.background,
                                 padding: '24px',
-                                borderRadius: '12px',
+                                borderRadius: themeWithDefaults.border_radius_large || '12px',
                                 titleSize: '20px',
-                                buttonBackgroundColor: '#3b82f6',
-                                buttonColor: '#ffffff',
-                                buttonBorderRadius: '8px'
+                                buttonBackgroundColor: themeWithDefaults.primary_button_background,
+                                buttonColor: themeWithDefaults.primary_button_text,
+                                buttonBorderRadius: themeWithDefaults.primary_button_corner_radius || '8px'
                             }
                         }
                     ]
@@ -1921,7 +1892,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         paddingRight: '20px',
                         paddingBottom: '40px',
                         paddingLeft: '20px',
-                        backgroundColor: '#ffffff',
+                        backgroundColor: themeWithDefaults.background || '#ffffff',
                         gap: '40px',
                     }
                 };
@@ -1936,6 +1907,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 setSelectedType('');
                 return;
             }
+
             if (selectedType === 'login') {
                 const loginId = Date.now();
 
@@ -1960,15 +1932,15 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     content,
                     styles: {
                         layout: 'vertical',
-                        backgroundColor: themeWithDefaults.auth_backgroundColor || '#ffffff',
+                        backgroundColor: themeWithDefaults.background || 'red',
                         padding: '32px',
-                        borderRadius: '12px',
-                        titleColor: themeWithDefaults.auth_titleColor || hslToCss(themeWithDefaults.heading),
-                        titleSize: '28px',
-                        subtitleColor: themeWithDefaults.auth_subtitleColor || hslToCss(themeWithDefaults.text),
-                        subtitleSize: '16px',
-                        buttonBackgroundColor: hslToCss(themeWithDefaults.primary_button_background),
-                        buttonColor: hslToCss(themeWithDefaults.primary_button_text),
+                        borderRadius: themeWithDefaults.border_radius_medium || '12px',
+                        titleColor: themeWithDefaults.text || themeWithDefaults.heading,
+                        titleSize: themeWithDefaults.heading4_fontSize || '28px',
+                        subtitleColor: themeWithDefaults.text || themeWithDefaults.text,
+                        subtitleSize: themeWithDefaults.text_fontSize || '16px',
+                        buttonBackgroundColor: themeWithDefaults.primary_button_background,
+                        buttonColor: themeWithDefaults.primary_button_text,
                         buttonBorderRadius: themeWithDefaults.primary_button_corner_radius || '8px',
                         maxWidth: '400px',
                         margin: '0 auto'
@@ -2011,15 +1983,15 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     content,
                     styles: {
                         layout: 'vertical',
-                        backgroundColor: themeWithDefaults.auth_backgroundColor || '#ffffff',
+                        backgroundColor: themeWithDefaults.background || '#ffffff',
                         padding: '32px',
-                        borderRadius: '12px',
-                        titleColor: themeWithDefaults.auth_titleColor || hslToCss(themeWithDefaults.heading),
-                        titleSize: '28px',
-                        subtitleColor: themeWithDefaults.auth_subtitleColor || hslToCss(themeWithDefaults.text),
-                        subtitleSize: '16px',
-                        buttonBackgroundColor: hslToCss(themeWithDefaults.secondary_button_background),
-                        buttonColor: hslToCss(themeWithDefaults.secondary_button_text),
+                        borderRadius: themeWithDefaults.border_radius_medium || '12px',
+                        titleColor: themeWithDefaults.text || themeWithDefaults.heading,
+                        titleSize: themeWithDefaults.heading4_fontSize || '28px',
+                        subtitleColor: themeWithDefaults.text || themeWithDefaults.text,
+                        subtitleSize: themeWithDefaults.text_fontSize || '16px',
+                        buttonBackgroundColor: themeWithDefaults.secondary_button_background,
+                        buttonColor: themeWithDefaults.secondary_button_text,
                         buttonBorderRadius: themeWithDefaults.secondary_button_corner_radius || '8px',
                         maxWidth: '400px',
                         margin: '0 auto'
@@ -2060,13 +2032,13 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     type: selectedType,
                     content,
                     styles: {
-                        backgroundColor: themeWithDefaults.profile_backgroundColor || '#ffffff',
+                        backgroundColor: themeWithDefaults.border_radius_medium || '#ffffff',
                         paddingTop: '40px',
                         paddingRight: '20px',
                         paddingBottom: '40px',
                         paddingLeft: '20px',
                         maxWidth: '1000px',
-                        borderRadius: '0px'
+                        borderRadius: themeWithDefaults.border_radius_small || '0px'
                     }
                 };
 
@@ -2100,20 +2072,20 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     type: selectedType,
                     content,
                     styles: {
-                        backgroundColor: themeWithDefaults.profile_backgroundColor || '#ffffff',
+                        backgroundColor: themeWithDefaults.backgroundColor || '#ffffff',
                         paddingTop: '40px',
                         paddingRight: '20px',
                         paddingBottom: '40px',
                         paddingLeft: '20px',
                         maxWidth: '1200px',
-                        borderRadius: '0px',
-                        titleColor: themeWithDefaults.profile_titleColor || hslToCss(themeWithDefaults.heading),
-                        titleSize: '32px',
+                        borderRadius: themeWithDefaults.border_radius_small || '0px',
+                        titleColor: themeWithDefaults.text || themeWithDefaults.heading,
+                        titleSize: themeWithDefaults.heading4_fontSize || '32px',
                         titleWeight: 'bold',
                         titleAlignment: 'left',
-                        cardBackgroundColor: themeWithDefaults.profile_cardBackgroundColor || '#ffffff',
-                        cardBorderRadius: themeWithDefaults.profile_cardBorderRadius || '12px',
-                        cardBorder: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
+                        cardBackgroundColor: themeWithDefaults.cardBackgroundColor || '#ffffff',
+                        cardBorderRadius: themeWithDefaults.cardBorderRadius || '12px',
+                        cardBorder: `1px solid ${themeWithDefaults.borders}`,
                         cardPadding: '24px'
                     }
                 };
@@ -2136,23 +2108,23 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     title: '¡Orden Exitosa!',
                     subtitle: 'Tu orden ha sido procesada correctamente',
                     iconColor: '#10b981',
-                    titleColor: hslToCss(themeWithDefaults.heading),
-                    titleSize: '32px',
+                    titleColor: themeWithDefaults.heading,
+                    titleSize: themeWithDefaults.heading4_fontSize || '32px',
                     titleWeight: 'bold',
-                    subtitleColor: hslToCss(themeWithDefaults.text),
-                    subtitleSize: '18px',
+                    subtitleColor: themeWithDefaults.text,
+                    subtitleSize: themeWithDefaults.heading6_fontSize || '18px',
                     showContinueShoppingButton: true,
                     continueButtonText: 'Continuar Comprando',
                     continueButtonBg: 'transparent',
-                    continueButtonColor: hslToCss(themeWithDefaults.text),
-                    continueButtonBorder: hslToCss(themeWithDefaults.borders),
+                    continueButtonColor: themeWithDefaults.text,
+                    continueButtonBorder: themeWithDefaults.borders,
                     showOrdersButton: true,
                     ordersButtonText: 'Ver Mis Pedidos',
-                    ordersButtonBg: hslToCss(themeWithDefaults.primary_button_background),
-                    ordersButtonColor: hslToCss(themeWithDefaults.primary_button_text),
+                    ordersButtonBg: themeWithDefaults.primary_button_background,
+                    ordersButtonColor: themeWithDefaults.primary_button_text,
                     additionalMessage: '',
-                    messageBackgroundColor: hslToCss(themeWithDefaults.background),
-                    messageTextColor: hslToCss(themeWithDefaults.text)
+                    messageBackgroundColor: themeWithDefaults.background,
+                    messageTextColor: themeWithDefaults.text
                 };
 
                 const newItem = {
@@ -2160,13 +2132,13 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     type: selectedType,
                     content,
                     styles: {
-                        backgroundColor: themeWithDefaults.background ? hslToCss(themeWithDefaults.background) : '#ffffff',
+                        backgroundColor: themeWithDefaults.background || '#ffffff',
                         paddingTop: '40px',
                         paddingRight: '20px',
                         paddingBottom: '40px',
                         paddingLeft: '20px',
                         maxWidth: '1200px',
-                        borderRadius: '0px'
+                        borderRadius: themeWithDefaults.border_radius_small || '0px'
                     }
                 };
 
@@ -2189,7 +2161,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     type: selectedType,
                     content,
                     styles: {
-                        color: hslToCss(themeWithDefaults.text),
+                        color: themeWithDefaults.text,
                         fontSize: themeWithDefaults.paragraph_fontSize || '16px',
                         fontWeight: themeWithDefaults.paragraph_fontWeight || 'normal',
                         lineHeight: themeWithDefaults.paragraph_lineHeight || '1.6',
@@ -2221,7 +2193,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     type: selectedType,
                     content,
                     styles: {
-                        color: hslToCss(themeWithDefaults.links),
+                        color: themeWithDefaults.links,
                         fontSize: themeWithDefaults.paragraph_fontSize || '16px',
                         fontWeight: themeWithDefaults.paragraph_fontWeight || 'normal',
                         textDecoration: 'underline',
@@ -2255,7 +2227,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         aspectRatio: '16/9',
                         borderRadius: themeWithDefaults.video_borderRadius || '0px',
                         borderWidth: themeWithDefaults.video_borderWidth || '0px',
-                        borderColor: themeWithDefaults.video_borderColor || hslToCss(themeWithDefaults.borders),
+                        borderColor: themeWithDefaults.video_borderColor || themeWithDefaults.borders,
                         paddingTop: '10px',
                         paddingRight: '10px',
                         paddingBottom: '10px',
@@ -2278,23 +2250,23 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 content = null;
             }
 
-            const newItem = {
-                id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
-                type: selectedType,
-                content,
-                styles: {
-                    // Aplicar estilos por defecto del tema según el tipo de componente
-                    color: selectedType === 'text' ? hslToCss(themeWithDefaults.text) : undefined,
-                    fontSize: selectedType === 'text' ? themeWithDefaults.paragraph_fontSize : undefined,
-                    fontWeight: selectedType === 'text' ? themeWithDefaults.paragraph_fontWeight : undefined,
-                    lineHeight: selectedType === 'text' ? themeWithDefaults.paragraph_lineHeight : undefined,
-                    paddingTop: '10px',
-                    paddingRight: '10px',
-                    paddingBottom: '10px',
-                    paddingLeft: '10px',
-                    backgroundColor: 'transparent'
-                }
-            };
+            // const newItem = {
+            //     id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
+            //     type: selectedType,
+            //     content,
+            //     styles: {
+            //         // Aplicar estilos por defecto del tema según el tipo de componente
+            //         color: selectedType === 'text' ? themeWithDefaults.text : undefined,
+            //         fontSize: selectedType === 'text' ? themeWithDefaults.paragraph_fontSize : undefined,
+            //         fontWeight: selectedType === 'text' ? themeWithDefaults.paragraph_fontWeight : undefined,
+            //         lineHeight: selectedType === 'text' ? themeWithDefaults.paragraph_lineHeight : undefined,
+            //         paddingTop: '10px',
+            //         paddingRight: '10px',
+            //         paddingBottom: '10px',
+            //         paddingLeft: '10px',
+            //         backgroundColor: 'transparent'
+            //     }
+            // };
 
             setComponents((prev) => {
                 const newComponents = [...prev, newItem];
@@ -2358,10 +2330,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             };
 
             const targetComponent = findComponent(components, over.id);
-            const isContainer = [
-                'container', 'banner', 'product', 'carousel',
-                'bento', 'productCard', 'carouselCard', 'bentoFeature', 'checkout'
-            ].includes(targetComponent?.type);
+            // const isContainer = [
+            //     'container', 'banner', 'product', 'carousel',
+            //     'bento', 'productCard', 'carouselCard', 'bentoFeature', 'checkout'
+            // ].includes(targetComponent?.type);
 
             // Lógica normal para no contenedores
             const overElement = document.getElementById(`component-${over.id}`);
@@ -2776,7 +2748,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         <X size={16} />
                     </Button>
                     <div style={{
-                        backgroundColor: themeSettings?.background ? `hsl(${themeSettings.background})` : '#fff',
+                        backgroundColor: themeSettings?.background ? themeSettings.background : '#fff',
                         fontFamily: themeSettings?.fontFamily || 'inherit',
                     }}>
                         <Canvas

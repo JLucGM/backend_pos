@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, getComponentStyles } from '@/utils/themeUtils';
 
 const ProductTitleComponent = ({
     comp,
@@ -7,21 +7,22 @@ const ProductTitleComponent = ({
     isPreview,
     onEdit,
     onDelete,
-    themeSettings
+    themeSettings,
+    appliedTheme
 }) => {
     // console.log(comp.styles)
     const computeTextStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    console.log('ProductTitleComponent computeTextStyles', { id: comp.id, customStyles });
+        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+        console.log('ProductTitleComponent computeTextStyles', { id: comp.id, customStyles });
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading2'; // Por defecto heading2 para títulos de producto
 
         // Obtener estilos del tema para el tipo de texto (usar la utilidad importada)
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
-        
+
         // Obtener estilos específicos del componente product-title
         const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-title');
 
@@ -90,7 +91,7 @@ const ProductTitleComponent = ({
             lineHeight: finalLineHeight,
             textTransform,
             // Usar color del tema como fallback
-            color: customStyles.color || themeComponentStyles.color || hslToCss(themeWithDefaults.heading),
+            color: customStyles.color || themeComponentStyles.color || themeWithDefaults.heading,
             margin: 0,
             padding: '10px 0'
         };
@@ -104,7 +105,7 @@ const ProductTitleComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={computeTextStyles()}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}

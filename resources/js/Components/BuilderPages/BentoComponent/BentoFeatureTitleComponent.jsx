@@ -1,10 +1,11 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const BentoFeatureTitleComponent = ({
     comp,
     getStyles,
     themeSettings,
+    appliedTheme,
     isPreview,
     onEdit,
     onDelete,
@@ -14,7 +15,7 @@ const BentoFeatureTitleComponent = ({
     const getComponentStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings);
+        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading4'; // Por defecto heading4 para títulos de características
@@ -22,7 +23,7 @@ const BentoFeatureTitleComponent = ({
         // Función para obtener la fuente usando utilidades del tema
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
@@ -31,23 +32,23 @@ const BentoFeatureTitleComponent = ({
                     return getResolvedFont(themeWithDefaults, 'paragraph_font');
                 }
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
+
             return getResolvedFont(themeWithDefaults, fontType);
         };
 
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
         let fontSize, fontWeight, lineHeight, textTransform, color;
-        
+
         if (textStyle === 'custom') {
             fontSize = customStyles.fontSize || themeWithDefaults.heading4_fontSize;
             fontWeight = customStyles.fontWeight || themeWithDefaults.heading4_fontWeight;
             lineHeight = customStyles.lineHeight || themeWithDefaults.heading4_lineHeight;
             textTransform = customStyles.textTransform || themeWithDefaults.heading4_textTransform;
-            color = customStyles.color || hslToCss(themeWithDefaults.heading);
+            color = customStyles.color || themeWithDefaults.heading;
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
             const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
@@ -109,7 +110,7 @@ const BentoFeatureTitleComponent = ({
     };
 
     return (
-        <h3 
+        <h3
             style={getComponentStyles()}
             onClick={handleClick}
             onMouseEnter={handleMouseEnter}

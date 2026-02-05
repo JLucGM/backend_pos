@@ -7,12 +7,13 @@ const CarouselImageComponent = ({
     isPreview,
     onEdit,
     onDelete,
-    themeSettings
+    themeSettings,
+    appliedTheme
 }) => {
     const styles = comp.styles || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeImageStyles = getComponentStyles(themeWithDefaults, 'image');
-    
+
     const getAspectRatioStyles = () => {
         switch (styles.aspectRatio) {
             case 'landscape':
@@ -41,7 +42,7 @@ const CarouselImageComponent = ({
     };
 
     const containerStyles = getAspectRatioStyles();
-    
+
     // Estilos de imagen con valores del tema
     const imageStyles = {
         position: 'absolute',
@@ -49,8 +50,8 @@ const CarouselImageComponent = ({
         left: 0,
         width: '100%',
         height: '100%',
-        border: styles.imageBorder === 'solid' 
-            ? `${styles.imageBorderThickness || themeImageStyles.borderWidth} solid ${styles.imageBorderColor || themeImageStyles.borderColor}` 
+        border: styles.imageBorder === 'solid'
+            ? `${styles.imageBorderThickness || themeImageStyles.borderWidth} solid ${styles.imageBorderColor || themeImageStyles.borderColor}`
             : 'none',
         borderRadius: styles.imageBorderRadius || themeImageStyles.borderRadius,
         objectFit: styles.objectFit || themeImageStyles.objectFit,
@@ -63,13 +64,13 @@ const CarouselImageComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={containerStyles}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
-            <img 
-                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'} 
+            <img
+                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
                 alt="Producto"
                 style={imageStyles}
                 onError={(e) => {

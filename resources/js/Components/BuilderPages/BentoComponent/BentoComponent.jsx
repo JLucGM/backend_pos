@@ -10,6 +10,7 @@ const BentoComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     setComponents,
     hoveredComponentId,
@@ -17,7 +18,7 @@ const BentoComponent = ({
 }) => {
     const bentoConfig = comp.content || {};
     const children = bentoConfig.children || [];
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeBentoStyles = getComponentStyles(themeWithDefaults, 'bento');
 
     // Función para obtener el nombre del tipo de componente
@@ -39,15 +40,15 @@ const BentoComponent = ({
         backgroundColor: bentoConfig.backgroundColor || themeBentoStyles.backgroundColor,
         padding: '40px 20px',
         borderRadius: bentoConfig.containerBorderRadius || themeBentoStyles.borderRadius,
-        border: bentoConfig.containerBorder === 'solid' 
-            ? `${bentoConfig.containerBorderThickness || '1px'} solid ${bentoConfig.containerBorderColor || '#e5e7eb'}` 
+        border: bentoConfig.containerBorder === 'solid'
+            ? `${bentoConfig.containerBorderThickness || '1px'} solid ${bentoConfig.containerBorderColor || '#e5e7eb'}`
             : 'none',
     };
 
     // Grid styles basado en la cantidad de características con valores del tema
     const featuresCount = children.filter(child => child.type === 'bentoFeature').length;
     const gridColumns = bentoConfig.gridColumns || getGridColumns(featuresCount);
-    
+
     const gridStyles = {
         display: 'grid',
         gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,

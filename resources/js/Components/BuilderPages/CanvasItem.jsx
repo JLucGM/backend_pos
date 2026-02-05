@@ -81,13 +81,13 @@ const CanvasItem = ({
 
         // Estilos base del tema aplicado
         const themeStyles = {
-            color: themeSettings?.foreground ? `hsl(${themeSettings.foreground})` : '#000000',
-            backgroundColor: themeSettings?.background ? `hsl(${themeSettings.background})` : 'transparent',
+            color: themeSettings?.foreground ? themeSettings.foreground : '#000000',
+            backgroundColor: themeSettings?.background ? themeSettings.background : 'transparent',
             fontFamily: themeSettings?.fontFamily || 'inherit',
             borderRadius: themeSettings?.borderRadius || '0',
             // Agregar más propiedades del tema si existen
             ...(themeSettings?.primary && {
-                '--primary-color': `hsl(${themeSettings.primary})`
+                '--primary-color': themeSettings.primary
             }),
         };
 
@@ -1005,21 +1005,21 @@ const CanvasItem = ({
 
     return (
         <div
-        id={`component-${comp.id}`}
-        className={`relative group transition-all duration-200 ${isHovered && !isPreview
-            ? 'border border-blue-400 bg-blue-50/30'
-            : 'border border-transparent'
-            }`}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        // Agregar estilos específicos para headers sticky
-        style={comp.type === 'header' && comp.content?.stickyType && comp.content?.stickyType !== 'none' ? {
-            position: 'sticky',
-            top: 0,
-            zIndex: 100,
-            backgroundColor: 'white', // Asegurar fondo sólido
-        } : {}}
-    >
+            id={`component-${comp.id}`}
+            className={`relative group transition-all duration-200 ${isHovered && !isPreview
+                ? 'border border-blue-400 bg-blue-50/30'
+                : 'border border-transparent'
+                }`}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            // Agregar estilos específicos para headers sticky
+            style={comp.type === 'header' && comp.content?.stickyType && comp.content?.stickyType !== 'none' ? {
+                position: 'sticky',
+                top: 0,
+                zIndex: 100,
+                backgroundColor: 'white', // Asegurar fondo sólido
+            } : {}}
+        >
             {/* Solo mostrar el tooltip en modo edición */}
             {!isPreview && (
                 <div

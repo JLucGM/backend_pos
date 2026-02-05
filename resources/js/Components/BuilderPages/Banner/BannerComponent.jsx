@@ -10,7 +10,7 @@ import ContainerComponent from '../ContainerComponent';
 import MarqueeTextComponent from '../MarqueeComponent/MarqueeTextComponent';
 import LinkComponent from '../LinkComponent';
 import DividerComponent from '../DividerComponent/DividerComponent';
-import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const BannerComponent = ({
     comp,
@@ -18,17 +18,18 @@ const BannerComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     setComponents,
     hoveredComponentId,
     setHoveredComponentId
 }) => {
     // Obtener configuración del tema con valores por defecto
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     
     // Obtener estilos específicos del componente banner del tema
-    const themeBannerStyles = getComponentStyles(themeWithDefaults, 'banner');
-    const themeBannerInnerStyles = getComponentStyles(themeWithDefaults, 'banner-inner');
+    const themeBannerStyles = getComponentStyles(themeWithDefaults, 'banner', appliedTheme);
+    const themeBannerInnerStyles = getComponentStyles(themeWithDefaults, 'banner-inner', appliedTheme);
     
     const customStyles = comp.styles || {};
     const bannerConfig = comp.content || {};

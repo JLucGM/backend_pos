@@ -3,7 +3,7 @@ import React from 'react';
 import cartHelper from '@/Helper/cartHelper';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
 const CartSummaryComponent = ({
     comp,
@@ -15,22 +15,26 @@ const CartSummaryComponent = ({
     themeSettings,
     mode = 'builder',
     automaticDiscounts = [],
-    companyId
+    companyId,
+    appliedTheme
 }) => {
     const { settings } = usePage().props;
     const styles = comp.styles || {};
     const content = comp.content || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    console.log(styles)
+    // console.log(content)
+    // console.log(themeWithDefaults)
     // Obtener estilos del tema para cart
-    const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart');
+    const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart', appliedTheme);
+    // console.log(themeWithDefaults.background)
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || themeCartStyles.backgroundColor || hslToCss(themeWithDefaults.background),
+        backgroundColor: styles.backgroundColor || themeCartStyles.backgroundColor || themeWithDefaults.background,
         padding: `${styles.paddingTop || '20px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '20px'} ${styles.paddingLeft || '20px'}`,
         borderRadius: styles.borderRadius || themeCartStyles.borderRadius || '12px',
-        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || hslToCss(themeWithDefaults.borders)}`,
+        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || themeWithDefaults.borders}`,
     };
 
     const handleClick = () => {
@@ -45,16 +49,16 @@ const CartSummaryComponent = ({
             // En modo frontend, usar cartHelper
             return cartHelper.getCartSummary(companyId, null, automaticDiscounts);
         }
-        
+
         // En modo builder, calcular manualmente
         const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const originalSubtotal = cartItems.reduce((sum, item) => sum + ((item.originalPrice || item.price) * item.quantity), 0);
         const automaticDiscountTotal = originalSubtotal - subtotal;
-        
+
         // Calcular impuestos por tipo
         const taxDetailsMap = {};
         let taxTotal = 0;
-        
+
         cartItems.forEach(item => {
             if (item.taxRate && item.taxRate > 0) {
                 const taxKey = item.taxName ? `${item.taxName}_${item.taxRate}` : `tax_${item.taxRate}`;
@@ -70,9 +74,9 @@ const CartSummaryComponent = ({
                 taxTotal += itemTax;
             }
         });
-        
+
         const taxDetails = Object.values(taxDetailsMap);
-        
+
         return {
             subtotal: subtotal,
             originalSubtotal: originalSubtotal,
@@ -90,12 +94,12 @@ const CartSummaryComponent = ({
     // Estilos de fuente del tema
     const getFontStyles = (type = 'normal') => {
         if (type === 'title') {
-            const themeCartTitleStyles = getComponentStyles(themeWithDefaults, 'cart-title');
+            const themeCartTitleStyles = getComponentStyles(themeWithDefaults, 'cart-title', appliedTheme);
             return {
                 fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
                 fontSize: styles.titleSize || themeCartTitleStyles.fontSize || themeWithDefaults.heading3_fontSize || '20px',
                 fontWeight: styles.titleWeight || themeWithDefaults.heading3_fontWeight || 'bold',
-                color: styles.titleColor || themeCartTitleStyles.color || hslToCss(themeWithDefaults.heading),
+                color: styles.titleColor || themeCartTitleStyles.color || themeWithDefaults.heading,
             };
         }
 
@@ -104,7 +108,7 @@ const CartSummaryComponent = ({
                 fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
                 fontSize: styles.totalFontSize || '24px',
                 fontWeight: 'bold',
-                color: styles.totalColor || hslToCss(themeWithDefaults.links),
+                color: styles.totalColor || themeWithDefaults.links,
             };
         }
 
@@ -120,7 +124,7 @@ const CartSummaryComponent = ({
         return {
             fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
             fontSize: styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
-            color: styles.color || hslToCss(themeWithDefaults.text),
+            color: styles.color || themeWithDefaults.text,
         };
     };
 
@@ -227,7 +231,7 @@ const CartSummaryComponent = ({
 
                 {/* Línea divisoria */}
                 {(content.showDivider !== false) && (
-                    <hr className="my-4" style={{ borderColor: styles.dividerColor || hslToCss(themeWithDefaults.borders) }} />
+                    <hr className="my-4" style={{ borderColor: styles.dividerColor || themeWithDefaults.borders }} />
                 )}
 
                 {/* Total */}
@@ -268,7 +272,7 @@ const CartSummaryComponent = ({
 
                 {/* Información de ahorro */}
                 {cartSummary.automaticDiscountTotal > 0 && (
-                    <div className="mt-4 p-3 rounded-md" style={{ 
+                    <div className="mt-4 p-3 rounded-md" style={{
                         backgroundColor: 'rgba(5, 150, 105, 0.1)',
                         border: '1px solid rgba(5, 150, 105, 0.2)'
                     }}>

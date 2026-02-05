@@ -1,7 +1,7 @@
 import React from 'react';
 import ProductCardComponent from './ProductCardComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import { getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const ProductComponent = ({
     comp,
@@ -9,6 +9,7 @@ const ProductComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     products = [],
     setComponents,
@@ -19,7 +20,7 @@ const ProductComponent = ({
 }) => {
     const productConfig = comp.content || {};
     const children = productConfig.children || [];
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     // Determinar si estamos en modo frontend
     const isFrontend = mode === 'frontend';
@@ -37,14 +38,12 @@ const ProductComponent = ({
     const baseStyles = getStyles(comp);
 
     // Asegurar que el backgroundColor del tema tenga prioridad
-    const finalBackgroundColor = hslToCss(
-        productConfig.backgroundColor ||
+    const finalBackgroundColor = productConfig.backgroundColor ||
         comp.styles?.backgroundColor ||
         themeWithDefaults.background ||
-        { h: 0, s: 0, l: 100 } // valor por defecto
-    );
+        '#ffffff';
 
-    // const finalBackgroundColor = productConfig.backgroundColor || hslToCss(themeWithDefaults.background);
+    // const finalBackgroundColor = productConfig.backgroundColor || themeWithDefaults.background;
 
 
     const containerStyles = {
@@ -202,6 +201,7 @@ const ProductComponent = ({
                                 onEdit={onEdit}
                                 onDelete={onDelete}
                                 themeSettings={themeSettings}
+                                appliedTheme={appliedTheme}
                                 isPreview={isPreview}
                                 products={products}
                                 setComponents={setComponents}

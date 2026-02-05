@@ -1,7 +1,7 @@
 // CheckoutPaymentComponent.jsx - VERSIÓN ACTUALIZADA
 import React from 'react';
 import { Button } from '@/Components/ui/button';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
 const CheckoutPaymentComponent = ({
     comp,
@@ -9,6 +9,7 @@ const CheckoutPaymentComponent = ({
     isPreview,
     onEdit,
     themeSettings,
+    appliedTheme,
     selectedPaymentMethod,
     setSelectedPaymentMethod,
     acceptTerms,
@@ -22,7 +23,7 @@ const CheckoutPaymentComponent = ({
     const styles = comp.styles || {};
     const content = comp.content || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+
     // Obtener estilos del tema para checkout
     const themeCheckoutStyles = getComponentStyles(themeWithDefaults, 'checkout');
     const themeCheckoutTitleStyles = getComponentStyles(themeWithDefaults, 'checkout-title');
@@ -50,15 +51,15 @@ const CheckoutPaymentComponent = ({
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || themeCheckoutStyles.backgroundColor || hslToCss(themeWithDefaults.background),
+        backgroundColor: styles.backgroundColor || themeCheckoutStyles.backgroundColor || themeWithDefaults.background,
         padding: styles.padding || '24px',
         borderRadius: styles.borderRadius || themeCheckoutStyles.borderRadius || '8px',
-        border: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
+        border: `1px solid ${themeWithDefaults.borders}`,
     };
 
     const titleStyles = {
         fontSize: styles.titleSize || themeCheckoutTitleStyles.fontSize || themeWithDefaults.heading3_fontSize || '20px',
-        color: styles.titleColor || themeCheckoutTitleStyles.color || hslToCss(themeWithDefaults.heading),
+        color: styles.titleColor || themeCheckoutTitleStyles.color || themeWithDefaults.heading,
         fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
         marginBottom: '20px',
         fontWeight: themeWithDefaults.heading3_fontWeight || '600',
@@ -92,11 +93,10 @@ const CheckoutPaymentComponent = ({
                     {displayPaymentMethods.map(method => (
                         <div
                             key={method.id}
-                            className={`p-4 border rounded-lg cursor-pointer ${
-                                selectedPaymentMethod === method.id 
-                                    ? 'border-blue-500 bg-blue-50' 
+                            className={`p-4 border rounded-lg cursor-pointer ${selectedPaymentMethod === method.id
+                                    ? 'border-blue-500 bg-blue-50'
                                     : 'border-gray-200'
-                            }`}
+                                }`}
                             onClick={() => setSelectedPaymentMethod(method.id)}
                         >
                             <div className="flex items-center justify-between">
@@ -150,8 +150,8 @@ const CheckoutPaymentComponent = ({
                 className="w-full py-3 text-lg"
                 style={{
                     ...getButtonStyles(themeWithDefaults, 'primary'),
-                    backgroundColor: styles.buttonBackgroundColor || hslToCss(themeWithDefaults.primary_button_background),
-                    color: styles.buttonColor || hslToCss(themeWithDefaults.primary_button_text),
+                    backgroundColor: styles.buttonBackgroundColor || themeWithDefaults.primary_button_background,
+                    color: styles.buttonColor || themeWithDefaults.primary_button_text,
                     borderRadius: styles.buttonBorderRadius || themeWithDefaults.primary_button_corner_radius || '8px',
                     fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
                 }}

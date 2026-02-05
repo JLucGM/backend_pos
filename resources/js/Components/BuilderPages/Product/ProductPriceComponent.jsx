@@ -1,7 +1,7 @@
 import React from 'react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const ProductPriceComponent = ({
     comp,
@@ -9,11 +9,12 @@ const ProductPriceComponent = ({
     isPreview,
     onEdit,
     onDelete,
-    themeSettings // Añadimos themeSettings
+    themeSettings, // Añadimos themeSettings
+    appliedTheme
 }) => {
     const { settings } = usePage().props;
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     const getComponentStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
@@ -24,7 +25,7 @@ const ProductPriceComponent = ({
         // Función para obtener la fuente usando utilidades del tema
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
@@ -33,23 +34,23 @@ const ProductPriceComponent = ({
                     return getResolvedFont(themeWithDefaults, 'paragraph_font');
                 }
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
+
             return getResolvedFont(themeWithDefaults, fontType);
         };
 
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
         let fontSize, fontWeight, lineHeight, textTransform, color;
-        
+
         if (textStyle === 'custom') {
             fontSize = customStyles.fontSize || themeWithDefaults.paragraph_fontSize;
             fontWeight = customStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
             lineHeight = customStyles.lineHeight || themeWithDefaults.paragraph_lineHeight;
             textTransform = customStyles.textTransform || themeWithDefaults.paragraph_textTransform;
-            color = customStyles.color || hslToCss(themeWithDefaults.text);
+            color = customStyles.color || themeWithDefaults.text;
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
             const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
@@ -102,7 +103,7 @@ const ProductPriceComponent = ({
         if (settings?.currency && comp.content && typeof comp.content === 'number') {
             return <CurrencyDisplay currency={settings.currency} amount={comp.content} />;
         }
-        
+
         return comp.content || (
             <span className="text-gray-400 italic">
                 Precio del producto (se obtiene de la base de datos)
@@ -111,7 +112,7 @@ const ProductPriceComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={getComponentStyles()}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}

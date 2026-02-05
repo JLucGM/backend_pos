@@ -1,17 +1,18 @@
 // components/BuilderPages/HeaderLogoComponent.jsx
 import React from 'react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
-const HeaderLogoComponent = ({ 
-    comp, 
-    getStyles, 
-    onEdit, 
-    isPreview, 
-    themeSettings, 
-    companyLogo 
+const HeaderLogoComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    isPreview,
+    themeSettings,
+    companyLogo,
+    appliedTheme
 }) => {
     const styles = getStyles(comp);
-    
+
     // Estilos específicos para el logo
     const logoStyles = {
         ...styles,
@@ -37,11 +38,11 @@ const HeaderLogoComponent = ({
     const displayContent = () => {
         // Si hay logo de compañía disponible y no hay contenido personalizado
         const isDefaultContent = !comp.content || comp.content === 'Logo' || comp.content === '';
-        
+
         if (companyLogo && isDefaultContent) {
             return (
-                <img 
-                    src={companyLogo} 
+                <img
+                    src={companyLogo}
                     alt="Logo de la compañía"
                     style={{
                         width: '100%',
@@ -53,13 +54,13 @@ const HeaderLogoComponent = ({
                 />
             );
         }
-        
+
         // Si el contenido es una URL de imagen
-        if (comp.content && typeof comp.content === 'string' && 
+        if (comp.content && typeof comp.content === 'string' &&
             (comp.content.startsWith('http') || comp.content.startsWith('/'))) {
             return (
-                <img 
-                    src={comp.content} 
+                <img
+                    src={comp.content}
                     alt="Logo personalizado"
                     style={{
                         width: '100%',
@@ -71,12 +72,12 @@ const HeaderLogoComponent = ({
                 />
             );
         }
-        
+
         // Si el contenido es un objeto con propiedades de imagen
         if (comp.content && typeof comp.content === 'object' && comp.content.src) {
             return (
-                <img 
-                    src={comp.content.src} 
+                <img
+                    src={comp.content.src}
                     alt={comp.content.alt || 'Logo'}
                     style={{
                         width: '100%',
@@ -88,13 +89,13 @@ const HeaderLogoComponent = ({
                 />
             );
         }
-        
+
         // Si es texto simple
         return (
             <span style={{
                 fontSize: comp.styles?.fontSize || '24px',
                 fontWeight: comp.styles?.fontWeight || 'bold',
-                color: comp.styles?.color || hslToCss(getThemeWithDefaults(themeSettings).heading),
+                color: comp.styles?.color || getThemeWithDefaults(themeSettings, appliedTheme.heading),
             }}>
                 {comp.content || 'Logo'}
             </span>

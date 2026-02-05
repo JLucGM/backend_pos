@@ -3,7 +3,7 @@ import React from 'react';
 import { Trash2 } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const CartItemsComponent = ({
     comp,
@@ -13,23 +13,24 @@ const CartItemsComponent = ({
     cartItems,
     onUpdateQuantity,
     onRemoveItem,
-    themeSettings
+    themeSettings,
+    appliedTheme
 }) => {
     const { settings } = usePage().props;
     const styles = comp.styles || {};
     const content = comp.content || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     // Obtener estilos del tema para cart
     const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart');
     const themeCartTitleStyles = getComponentStyles(themeWithDefaults, 'cart-title');
-    
+
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || themeCartStyles.backgroundColor || hslToCss(themeWithDefaults.background),
+        backgroundColor: styles.backgroundColor || themeCartStyles.backgroundColor || themeWithDefaults.background,
         padding: `${styles.paddingTop || '20px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '20px'} ${styles.paddingLeft || '20px'}`,
         borderRadius: styles.borderRadius || themeCartStyles.borderRadius || '0',
-        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || hslToCss(themeWithDefaults.borders)}`,
+        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || themeWithDefaults.borders}`,
     };
 
     const handleClick = () => {
@@ -45,14 +46,14 @@ const CartItemsComponent = ({
                 fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
                 fontSize: styles.titleSize || themeCartTitleStyles.fontSize || themeWithDefaults.heading2_fontSize || '24px',
                 fontWeight: styles.titleWeight || themeWithDefaults.heading2_fontWeight || 'bold',
-                color: styles.titleColor || themeCartTitleStyles.color || hslToCss(themeWithDefaults.heading),
+                color: styles.titleColor || themeCartTitleStyles.color || themeWithDefaults.heading,
             };
         }
-        
+
         return {
             fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
             fontSize: styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
-            color: styles.color || hslToCss(themeWithDefaults.text),
+            color: styles.color || themeWithDefaults.text,
         };
     };
 
@@ -67,10 +68,10 @@ const CartItemsComponent = ({
     // Función para renderizar información de descuento
     const renderDiscountInfo = (item) => {
         if (!item.automaticDiscount) return null;
-        
+
         const discount = item.automaticDiscount;
         let discountText = '';
-        
+
         if (item.discountType === 'direct_discount') {
             discountText = 'Descuento directo aplicado';
         } else if (discount.name) {
@@ -78,22 +79,22 @@ const CartItemsComponent = ({
         } else {
             discountText = 'Descuento automático';
         }
-        
+
         let discountValue = '';
         if (discount.discount_type === 'percentage') {
             discountValue = ` (${discount.value}%)`;
         } else if (discount.discount_type === 'fixed_amount') {
-            discountValue = settings?.currency ? 
+            discountValue = settings?.currency ?
                 ` (${settings.currency.symbol}${parseFloat(discount.value).toFixed(2)})` :
                 ` ($${parseFloat(discount.value).toFixed(2)})`;
         }
-        
-        const percentageOff = item.originalPrice > 0 ? 
+
+        const percentageOff = item.originalPrice > 0 ?
             Math.round((1 - item.price / item.originalPrice) * 100) : 0;
-        
+
         return (
             <div className="mt-2">
-                <div className="text-xs" style={{ 
+                <div className="text-xs" style={{
                     color: '#059669',
                     fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
                     backgroundColor: 'rgba(5, 150, 105, 0.1)',
@@ -105,7 +106,7 @@ const CartItemsComponent = ({
                     {discountText}{discountValue}
                 </div>
                 {percentageOff > 0 && (
-                    <div className="text-xs mt-1" style={{ 
+                    <div className="text-xs mt-1" style={{
                         color: '#dc2626',
                         fontFamily: getResolvedFont(themeWithDefaults, 'body_font')
                     }}>
@@ -117,7 +118,7 @@ const CartItemsComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={containerStyles}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
@@ -125,7 +126,7 @@ const CartItemsComponent = ({
             <h2 style={{ ...titleStyles, marginBottom: '24px' }}>
                 {content.title || 'Tu carrito'}
             </h2>
-            
+
             {cartItems.length === 0 ? (
                 <div className="text-center py-12" style={textStyles}>
                     <p>{content.emptyMessage || 'Tu carrito está vacío'}</p>
@@ -133,13 +134,13 @@ const CartItemsComponent = ({
             ) : (
                 <div className="space-y-4">
                     {cartItems.map(item => (
-                        <div 
+                        <div
                             key={item.id}
                             className="flex items-start gap-4 p-4 rounded-lg border"
                             style={{
                                 border: styles.rowBorder || '1px solid #e5e7eb',
                                 padding: styles.rowPadding || '16px',
-                                backgroundColor: styles.rowBackground || '#ffffff',
+                                backgroundColor: styles.rowBackground || themeWithDefaults.background,
                             }}
                         >
                             {/* Imagen del producto */}
@@ -161,17 +162,17 @@ const CartItemsComponent = ({
                             <div className="flex-grow">
                                 <div className="flex justify-between">
                                     <div>
-                                        <h3 className="font-medium" style={{ 
+                                        <h3 className="font-medium" style={{
                                             fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
-                                            color: hslToCss(themeWithDefaults.heading)
+                                            color: themeWithDefaults.heading
                                         }}>
                                             {item.name}
                                         </h3>
-                                        
+
                                         {/* Combinación seleccionada */}
                                         {content.showCombination !== false && item.combination && (
-                                            <div className="text-sm mt-1" style={{ 
-                                                color: hslToCss(themeWithDefaults.text),
+                                            <div className="text-sm mt-1" style={{
+                                                color: themeWithDefaults.text,
                                                 opacity: '0.7'
                                             }}>
                                                 {item.combination.attribute_values
@@ -184,7 +185,7 @@ const CartItemsComponent = ({
                                         {/* Mostrar precio original tachado si hay descuento */}
                                         {hasDiscount(item) ? (
                                             <div>
-                                                <div className="line-through text-sm" style={{ 
+                                                <div className="line-through text-sm" style={{
                                                     color: '#999',
                                                     fontFamily: getResolvedFont(themeWithDefaults, 'body_font')
                                                 }}>
@@ -194,8 +195,8 @@ const CartItemsComponent = ({
                                                         `$${(item.originalPrice * item.quantity).toFixed(2)}`
                                                     )}
                                                 </div>
-                                                <div className="font-semibold" style={{ 
-                                                    color: themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#1d4ed8',
+                                                <div className="font-semibold" style={{
+                                                    color: themeSettings?.primary ? themeSettings.primary : '#1d4ed8',
                                                     fontFamily: themeSettings?.heading_font
                                                 }}>
                                                     {settings?.currency ? (
@@ -205,7 +206,7 @@ const CartItemsComponent = ({
                                                     )}
                                                 </div>
                                                 {/* Mostrar ahorro */}
-                                                <div className="text-xs mt-1" style={{ 
+                                                <div className="text-xs mt-1" style={{
                                                     color: '#059669',
                                                     fontFamily: themeSettings?.body_font
                                                 }}>
@@ -218,8 +219,8 @@ const CartItemsComponent = ({
                                             </div>
                                         ) : (
                                             <div>
-                                                <div className="font-semibold" style={{ 
-                                                    color: themeSettings?.primary ? `hsl(${themeSettings.primary})` : '#1d4ed8',
+                                                <div className="font-semibold" style={{
+                                                    color: themeSettings?.primary ? themeSettings.primary : '#1d4ed8',
                                                     fontFamily: themeSettings?.heading_font
                                                 }}>
                                                     {settings?.currency ? (
@@ -245,12 +246,12 @@ const CartItemsComponent = ({
 
                                 {/* Stock disponible */}
                                 {content.showStock && (
-                                    <div className="text-sm mt-1" style={{ 
+                                    <div className="text-sm mt-1" style={{
                                         color: item.stock > 0 ? '#059669' : '#dc2626',
                                         fontFamily: themeSettings?.body_font
                                     }}>
-                                        {item.stock > 0 
-                                            ? `${item.stock} disponibles` 
+                                        {item.stock > 0
+                                            ? `${item.stock} disponibles`
                                             : 'Agotado'}
                                     </div>
                                 )}
@@ -267,14 +268,14 @@ const CartItemsComponent = ({
                                             className="px-3 py-1 hover:bg-gray-100"
                                             style={{
                                                 borderRight: '1px solid #e5e7eb',
-                                                color: themeSettings?.foreground ? `hsl(${themeSettings.foreground})` : '#374151',
+                                                color: themeSettings?.foreground ? themeSettings.foreground : '#374151',
                                                 fontFamily: themeSettings?.body_font
                                             }}
                                         >
                                             -
                                         </button>
-                                        <span className="px-4 py-1" style={{ 
-                                            fontFamily: themeSettings?.body_font 
+                                        <span className="px-4 py-1" style={{
+                                            fontFamily: themeSettings?.body_font
                                         }}>
                                             {item.quantity}
                                         </span>
@@ -287,14 +288,14 @@ const CartItemsComponent = ({
                                             className="px-3 py-1 hover:bg-gray-100"
                                             style={{
                                                 borderLeft: '1px solid #e5e7eb',
-                                                color: themeSettings?.foreground ? `hsl(${themeSettings.foreground})` : '#374151',
+                                                color: themeSettings?.foreground ? themeSettings.foreground : '#374151',
                                                 fontFamily: themeSettings?.body_font
                                             }}
                                         >
                                             +
                                         </button>
                                     </div>
-                                    
+
                                     <button
                                         type="button"
                                         onClick={(e) => {

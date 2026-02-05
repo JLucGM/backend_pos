@@ -1,33 +1,34 @@
 // components/BuilderPages/FooterMenuComponent.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
-const FooterMenuComponent = ({ 
-    comp, 
-    getStyles, 
-    onEdit, 
-    isPreview, 
-    themeSettings, 
+const FooterMenuComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    isPreview,
+    themeSettings,
+    appliedTheme,
     availableMenus = [],
     mode = 'frontend'
 }) => {
     const styles = getStyles(comp);
     const [menuItems, setMenuItems] = useState([]);
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    const themeFooterStyles = getComponentStyles(themeWithDefaults, 'footer');
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const themeFooterStyles = getComponentStyles(themeWithDefaults, 'footer', appliedTheme);
 
     // OBTENER LOS ITEMS DEL MENÚ DINÁMICAMENTE
-    useEffect(() => {        
+    useEffect(() => {
         if (!comp.content?.menuId) {
             setMenuItems([]);
             return;
         }
 
         const menuId = parseInt(comp.content.menuId);
-        
+
         const foundMenu = availableMenus.find(menu => parseInt(menu.id) === menuId);
-        
+
         if (foundMenu?.items) {
             setMenuItems(foundMenu.items);
         } else {
@@ -46,7 +47,7 @@ const FooterMenuComponent = ({
     // Si no hay items en modo builder
     if (menuItems.length === 0 && mode === 'builder' && !isPreview) {
         return (
-            <div 
+            <div
                 style={{
                     padding: '10px',
                     border: '2px dashed #f59e0b',
@@ -59,7 +60,7 @@ const FooterMenuComponent = ({
                 }}
                 onDoubleClick={() => onEdit && onEdit(comp)}
             >
-                <strong>Menú Footer</strong><br/>
+                <strong>Menú Footer</strong><br />
                 <small>Doble clic para configurar</small>
                 <div style={{ fontSize: '10px', marginTop: '5px' }}>
                     ID: {comp.id} | menuId: {comp.content?.menuId || 'none'}
@@ -71,7 +72,7 @@ const FooterMenuComponent = ({
     // En modo frontend/preview sin items
     if (menuItems.length === 0 && (isPreview || mode === 'frontend')) {
         return (
-            <div style={{ 
+            <div style={{
                 padding: '10px',
                 border: '1px dashed #ccc',
                 borderRadius: '4px'
@@ -83,7 +84,7 @@ const FooterMenuComponent = ({
 
     // Determinar disposición (column o row)
     const displayStyle = comp.styles?.display || 'column';
-    
+
     const containerStyles = {
         ...styles,
         display: 'flex',
@@ -99,14 +100,14 @@ const FooterMenuComponent = ({
         >
             {menuItems.map(item => {
                 const processedUrl = processUrl(item.url);
-                
+
                 return (
                     <div key={item.id}>
                         {mode === 'frontend' || isPreview ? (
                             <Link
                                 href={processedUrl}
                                 style={{
-                                    color: comp.styles?.color || hslToCss(themeWithDefaults.text),
+                                    color: comp.styles?.color || themeWithDefaults.text,
                                     textDecoration: 'none',
                                     fontSize: comp.styles?.fontSize || '14px',
                                     textTransform: comp.styles?.textTransform || 'none',
@@ -122,7 +123,7 @@ const FooterMenuComponent = ({
                         ) : (
                             <div
                                 style={{
-                                    color: comp.styles?.color || hslToCss(themeWithDefaults.text),
+                                    color: comp.styles?.color || themeWithDefaults.text,
                                     textDecoration: 'none',
                                     fontSize: comp.styles?.fontSize || '14px',
                                     textTransform: comp.styles?.textTransform || 'none',

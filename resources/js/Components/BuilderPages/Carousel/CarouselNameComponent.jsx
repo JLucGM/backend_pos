@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const CarouselNameComponent = ({
     comp,
@@ -7,36 +7,37 @@ const CarouselNameComponent = ({
     isPreview,
     onEdit,
     onDelete,
-    themeSettings
+    themeSettings,
+    appliedTheme
 }) => {
     const styles = comp.styles || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     // Obtener configuración de fuente del tema usando utilidades
     const getFontFamily = () => {
         const fontType = styles.fontType;
-        
+
         if (fontType === 'default' || !fontType) {
             return getResolvedFont(themeWithDefaults, 'body_font');
         }
-        
+
         if (fontType === 'custom' && styles.customFont) {
             return styles.customFont;
         }
-        
+
         return getResolvedFont(themeWithDefaults, fontType);
     };
 
     // Usar estilo de párrafo por defecto para nombres con utilidades del tema
     const textStyle = styles.textStyle || 'paragraph';
     let fontSize, fontWeight, lineHeight, textTransform, color;
-    
+
     if (textStyle === 'custom') {
         fontSize = styles.fontSize || themeWithDefaults.paragraph_fontSize;
         fontWeight = styles.fontWeight || themeWithDefaults.paragraph_fontWeight;
         lineHeight = styles.lineHeight || themeWithDefaults.paragraph_lineHeight;
         textTransform = styles.textTransform || themeWithDefaults.paragraph_textTransform;
-        color = styles.color || hslToCss(themeWithDefaults.text);
+        color = styles.color || themeWithDefaults.text;
     } else {
         // Usar utilidades del tema para obtener estilos consistentes
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
@@ -76,7 +77,7 @@ const CarouselNameComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={componentStyles}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}

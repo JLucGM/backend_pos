@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults } from '@/utils/themeUtils';
 
 const ImageComponent = ({
   comp,
@@ -8,10 +8,11 @@ const ImageComponent = ({
   onEdit,
   isPreview,
   themeSettings,
+  appliedTheme,
   mode = 'builder' // 'builder' o 'frontend'
 }) => {
   // Obtener configuración del tema con valores por defecto
-  const themeWithDefaults = getThemeWithDefaults(themeSettings);
+  const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
   // Obtener la URL de la imagen
   const getImageUrl = () => {
@@ -98,7 +99,7 @@ const ImageComponent = ({
     borderRadius: comp.styles?.borderRadius || baseStyles.borderRadius || '0px',
     borderWidth: comp.styles?.borderWidth || baseStyles.borderWidth || '0px',
     borderStyle: comp.styles?.borderStyle || baseStyles.borderStyle || 'solid',
-    borderColor: comp.styles?.borderColor || baseStyles.borderColor || hslToCss(themeWithDefaults.borders),
+    borderColor: comp.styles?.borderColor || baseStyles.borderColor || themeWithDefaults.borders,
     // Ajuste de imagen
     objectFit: comp.styles?.objectFit || baseStyles.objectFit || 'cover',
     // Márgenes personalizados (para el contenedor, no la imagen)
@@ -138,8 +139,8 @@ const ImageComponent = ({
         onClick={handleClick}
         style={{
           ...containerStyles,
-          border: isPreview ? 'none' : `2px dashed ${hslToCss(themeWithDefaults.borders)}`,
-          backgroundColor: hslToCss(themeWithDefaults.background),
+          border: isPreview ? 'none' : `2px dashed ${themeWithDefaults.borders}`,
+          backgroundColor: themeWithDefaults.background,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -214,8 +215,8 @@ const ImageComponent = ({
         onError={(e) => {
           // Manejar error de carga de imagen usando colores del tema
           e.target.style.display = 'none';
-          e.target.parentNode.style.border = isPreview ? 'none' : `2px dashed ${hslToCss(themeWithDefaults.borders)}`;
-          e.target.parentNode.style.backgroundColor = hslToCss(themeWithDefaults.background);
+          e.target.parentNode.style.border = isPreview ? 'none' : `2px dashed ${themeWithDefaults.borders}`;
+          e.target.parentNode.style.backgroundColor = themeWithDefaults.background;
         }}
       />
     </div>

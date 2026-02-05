@@ -5,7 +5,7 @@ import ProductPriceComponent from './ProductPriceComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const ProductCardComponent = ({
     comp,
@@ -13,6 +13,7 @@ const ProductCardComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     products,
     setComponents,
@@ -25,7 +26,7 @@ const ProductCardComponent = ({
     const cardConfig = comp.content || {};
     const children = cardConfig.children || [];
     const productData = cardConfig.productData;
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     // ==================== MANEJO DE NAVEGACIÓN ====================
     const handleProductClick = (e) => {
@@ -36,7 +37,7 @@ const ProductCardComponent = ({
             window.location.href = `/detalles-del-producto?product=${productData.slug}`;
             return;
         }
-        
+
         // Modo builder: editar (si no está en preview)
         if (mode === 'builder' && !isPreview && onEdit && e.target === e.currentTarget) {
             e.preventDefault();
@@ -64,25 +65,25 @@ const ProductCardComponent = ({
             paddingRight: cardConfig.cardPaddingRight || '0px',
             paddingBottom: cardConfig.cardPaddingBottom || '0px',
             paddingLeft: cardConfig.cardPaddingLeft || '0px',
-            border: cardConfig.cardBorder === 'solid' 
-                ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})` 
+            border: cardConfig.cardBorder === 'solid'
+                ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})`
                 : 'none',
             borderRadius: cardConfig.cardBorderRadius || '0px',
-            backgroundColor: cardConfig.cardBackgroundColor || hslToCss(themeWithDefaults.background),
+            backgroundColor: cardConfig.cardBackgroundColor || themeWithDefaults.background,
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: `0 2px 8px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`,
+            boxShadow: `0 2px 8px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`,
             textDecoration: 'none',
             color: 'inherit',
         };
 
         // Estilos del contenedor de imagen
         const imageContainerStyle = {
-            aspectRatio: imageStyles.aspectRatio === 'portrait' ? '3/4' : 
-                        imageStyles.aspectRatio === 'landscape' ? '4/3' : '1/1',
+            aspectRatio: imageStyles.aspectRatio === 'portrait' ? '3/4' :
+                imageStyles.aspectRatio === 'landscape' ? '4/3' : '1/1',
             position: 'relative',
             overflow: 'hidden',
             borderRadius: imageStyles.imageBorderRadius || '0px',
@@ -95,8 +96,8 @@ const ProductCardComponent = ({
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            border: imageStyles.imageBorder === 'solid' 
-                ? `${imageStyles.imageBorderThickness || '1px'} solid rgba(0, 0, 0, ${imageStyles.imageBorderOpacity || 1})` 
+            border: imageStyles.imageBorder === 'solid'
+                ? `${imageStyles.imageBorderThickness || '1px'} solid rgba(0, 0, 0, ${imageStyles.imageBorderOpacity || 1})`
                 : imageStyles.imageBorder === 'none' ? 'none' : undefined,
             borderRadius: imageStyles.imageBorderRadius || '0px',
             display: 'block',
@@ -107,7 +108,7 @@ const ProductCardComponent = ({
         const nameStyle = {
             fontSize: nameStyles.fontSize || '16px',
             fontWeight: nameStyles.fontWeight || '600',
-            color: nameStyles.color || hslToCss(themeWithDefaults.text),
+            color: nameStyles.color || themeWithDefaults.text,
             textAlign: nameStyles.alignment || 'left',
             marginBottom: '8px',
             lineHeight: nameStyles.lineHeight || '1.4',
@@ -120,7 +121,7 @@ const ProductCardComponent = ({
         const priceStyle = {
             fontSize: priceStyles.fontSize || '14px',
             fontWeight: priceStyles.fontWeight || 'normal',
-            color: priceStyles.color || hslToCss(themeWithDefaults.text),
+            color: priceStyles.color || themeWithDefaults.text,
             textAlign: priceStyles.alignment || 'left',
             lineHeight: priceStyles.lineHeight || '1.4',
             fontFamily: priceStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font'),
@@ -139,7 +140,7 @@ const ProductCardComponent = ({
 
         const handleMouseLeave = (e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = `0 2px 8px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`;
+            e.currentTarget.style.boxShadow = `0 2px 8px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`;
             if (imageStyle) {
                 const img = e.currentTarget.querySelector('img');
                 if (img) img.style.transform = 'scale(1)';
@@ -147,7 +148,7 @@ const ProductCardComponent = ({
         };
 
         return (
-            <div 
+            <div
                 className="product-card"
                 onClick={handleProductClick}
                 onMouseEnter={handleMouseEnter}
@@ -163,7 +164,7 @@ const ProductCardComponent = ({
             >
                 {/* Imagen del producto */}
                 <div className="product-image-container" style={imageContainerStyle}>
-                    <img 
+                    <img
                         src={productData?.media?.[0]?.original_url || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
                         alt={productData?.product_name || 'Producto'}
                         style={imageStyle}
@@ -172,12 +173,12 @@ const ProductCardComponent = ({
                         }}
                     />
                 </div>
-                
+
                 {/* Nombre del producto */}
                 <h3 className="product-name" style={nameStyle}>
                     {productData?.product_name || 'Nombre del producto'}
                 </h3>
-                
+
                 {/* Precio */}
                 <div className="product-price" style={priceStyle}>
                     {productData?.product_price_discount && settings?.currency ? (
@@ -206,12 +207,12 @@ const ProductCardComponent = ({
         paddingRight: cardConfig.cardPaddingRight || '0px',
         paddingBottom: cardConfig.cardPaddingBottom || '0px',
         paddingLeft: cardConfig.cardPaddingLeft || '0px',
-        border: cardConfig.cardBorder === 'solid' 
-            ? `${cardConfig.cardBorderThickness} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity})` 
+        border: cardConfig.cardBorder === 'solid'
+            ? `${cardConfig.cardBorderThickness} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity})`
             : 'none',
         borderRadius: cardConfig.cardBorderRadius || '0px',
-        backgroundColor: cardConfig.cardBackgroundColor || hslToCss(themeWithDefaults.background),
-        boxShadow: `0 2px 4px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0,0,0,0.1)'}`,
+        backgroundColor: cardConfig.cardBackgroundColor || themeWithDefaults.background,
+        boxShadow: `0 2px 4px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`,
     };
 
     // Manejo de eventos de mouse para builder
@@ -286,6 +287,7 @@ const ProductCardComponent = ({
                                     getStyles={getStyles}
                                     isPreview={isPreview}
                                     themeSettings={themeSettings}
+                                    appliedTheme={appliedTheme}
                                     onEdit={onEdit}
                                     onDelete={onDelete}
                                     hoveredComponentId={hoveredComponentId}
@@ -308,6 +310,7 @@ const ProductCardComponent = ({
                                     comp={enhancedChild}
                                     getStyles={getStyles}
                                     themeSettings={themeSettings}
+                                    appliedTheme={appliedTheme}
                                     isPreview={isPreview}
                                     onEdit={onEdit}
                                     onDelete={onDelete}

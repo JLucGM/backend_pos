@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, getComponentStyles } from '@/utils/themeUtils';
 
 const ProductDetailNameComponent = ({
     comp,
@@ -7,12 +7,13 @@ const ProductDetailNameComponent = ({
     isPreview,
     onEdit,
     themeSettings,
-    product
+    product,
+    appliedTheme
 }) => {
     const getComponentStyles2 = () => {  // Nombre diferente
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings);
+        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'paragraph';
@@ -21,7 +22,7 @@ const ProductDetailNameComponent = ({
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Usa la función importada
 
         // Obtener estilos específicos del componente product-title
-        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-title');
+        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-title', appliedTheme);
 
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
@@ -115,7 +116,7 @@ const ProductDetailNameComponent = ({
             lineHeight: finalLineHeight,
             textTransform,
             // Usar color del tema como fallback
-            color: customStyles.color || themeComponentStyles.color || hslToCss(themeWithDefaults.heading),
+            color: customStyles.color || themeComponentStyles.color || themeWithDefaults.heading,
         };
     };
 

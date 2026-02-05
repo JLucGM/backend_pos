@@ -1,3 +1,5 @@
+// Reemplaza el componente LoginComponent con esta versión corregida
+
 import React, { useEffect, useState } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -5,7 +7,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Button } from '@/Components/ui/button';
 import { Link, usePage, router } from '@inertiajs/react';
 import { toast } from 'sonner';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const LoginComponent = ({
     comp,
@@ -13,6 +15,7 @@ const LoginComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     hoveredComponentId,
     setHoveredComponentId,
@@ -22,11 +25,9 @@ const LoginComponent = ({
     const sessionDomain = props.env.SESSION_DOMAIN || '.pos.test';
     const styles = comp.styles || {};
     const content = comp.content || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    const themeAuthStyles = getComponentStyles(themeWithDefaults, 'auth');
-    const themeAuthTitleStyles = getComponentStyles(themeWithDefaults, 'auth-title');
-    const themeAuthSubtitleStyles = getComponentStyles(themeWithDefaults, 'auth-subtitle');
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const themeAuthStyles = getComponentStyles(themeWithDefaults, 'auth', appliedTheme);
+
     const [loginUrl, setLoginUrl] = useState('');
     const [registerUrl, setRegisterUrl] = useState('');
 
@@ -39,63 +40,72 @@ const LoginComponent = ({
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
+    // 1. Contenedor principal que usa el fondo del tema
+    const outerContainerStyles = {
+        width: '100%',
+        minHeight: mode === 'frontend' ? '100vh' : 'auto',
+        backgroundColor: themeWithDefaults.background,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: mode === 'frontend' ? '20px' : '0',
+    };
+    console.log(styles.backgroundColor)
+    // 2. Contenedor de la tarjeta del formulario
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || themeAuthStyles.backgroundColor,
+        backgroundColor: styles.backgroundColor || themeAuthStyles.backgroundColor || themeWithDefaults.background,
         padding: styles.padding || '32px',
+        borderColor: styles.borderColor || themeWithDefaults.borders,
+        borderWidth: styles.borderWidth || '1px',
+        borderStyle: 'solid',
         borderRadius: styles.borderRadius || '12px',
         maxWidth: styles.maxWidth || '400px',
-        margin: styles.margin || '0 auto',
+        width: '100%',
+        margin: styles.margin || '0',
+        boxShadow: `0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`,
     };
 
     // Función para obtener la ruta de login correcta
-const getLoginRoute = () => {
-    const hostname = window.location.hostname;
-    
-    if (hostname.endsWith(sessionDomain)) {
-        const subdomain = hostname.split('.')[0];
-        return route('frontend.login.store', { subdomain });
-    }
-    
-    const domain = hostname;
-    return route('frontend.login.store.custom', { domain });
-};
+    const getLoginRoute = () => {
+        const hostname = window.location.hostname;
+
+        if (hostname.endsWith(sessionDomain)) {
+            const subdomain = hostname.split('.')[0];
+            return route('frontend.login.store', { subdomain });
+        }
+
+        const domain = hostname;
+        return route('frontend.login.store.custom', { domain });
+    };
 
     // Función para obtener la ruta de registro correcta
     const getRegisterRoute = () => {
         const hostname = window.location.hostname;
-        
-        // Si estamos en un subdominio (ej: tienda.pos.test)
+
         if (hostname.endsWith(sessionDomain)) {
             const subdomain = hostname.split('.')[0];
             return route('frontend.register', { subdomain });
         }
-        
-        // Si estamos en un dominio personalizado (ej: mitienda.com)
+
         const domain = hostname;
         return route('frontend.register.custom', { domain });
     };
 
     useEffect(() => {
-    if (mode === 'frontend') {
-        try {
-            const hostname = window.location.hostname;
-            // console.log('Current hostname:', hostname);
-            // console.log('Session domain:', sessionDomain);
-            
-            const logRoute = getLoginRoute();
-            const regRoute = getRegisterRoute();
-            setLoginUrl(logRoute);
-            setRegisterUrl(regRoute);
-            
-            // console.log('Generated Login URL:', logRoute);
-            // console.log('Generated Register URL:', regRoute);
-        } catch (error) {
-            console.error('Error generating routes:', error);
-            toast.error('Error de configuración de rutas');
+        if (mode === 'frontend') {
+            try {
+                const hostname = window.location.hostname;
+                const logRoute = getLoginRoute();
+                const regRoute = getRegisterRoute();
+                setLoginUrl(logRoute);
+                setRegisterUrl(regRoute);
+            } catch (error) {
+                console.error('Error generating routes:', error);
+                toast.error('Error de configuración de rutas');
+            }
         }
-    }
-}, [mode]);
+    }, [mode]);
 
     // Solo permitir edición en modo builder (no en frontend o preview)
     const handleClick = () => {
@@ -106,95 +116,96 @@ const getLoginRoute = () => {
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
-        // Limpiar error al cambiar
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (mode === 'frontend') {
-        setIsLoading(true);
-        setErrors({});
+        e.preventDefault();
 
-        try {
-            // console.log('Submitting to login URL:', loginUrl);
-            // console.log('Current loginUrl state:', loginUrl);
-            
-            // Verificar si loginUrl es válido
-            if (!loginUrl) {
-                toast.error('Error: URL de login no configurada');
-                setIsLoading(false);
-                return;
-            }
-            
-            router.post(loginUrl, {
-                email: formData.email,
-                password: formData.password,
-                remember: formData.remember
-            }, {
-                onSuccess: () => {
-                    toast.success('¡Inicio de sesión exitoso!');
-                    router.reload();
-                },
-                onError: (errors) => {
-                    console.error('Login errors:', errors);
-                    setErrors(errors);
-                    if (errors.email) {
-                        toast.error(errors.email);
-                    } else if (errors.password) {
-                        toast.error(errors.password);
-                    } else {
-                        toast.error('Error al iniciar sesión');
-                    }
-                },
-                onFinish: () => {
+        if (mode === 'frontend') {
+            setIsLoading(true);
+            setErrors({});
+
+            try {
+                if (!loginUrl) {
+                    toast.error('Error: URL de login no configurada');
                     setIsLoading(false);
+                    return;
                 }
-            });
-        } catch (error) {
-            console.error('Login error:', error);
-            toast.error('Error al procesar la solicitud');
-            setIsLoading(false);
-        }
-    }
-};
 
-    const titleStyles = {
-        fontSize: styles.titleSize || themeAuthTitleStyles.fontSize,
-        color: styles.titleColor || themeAuthTitleStyles.color,
-        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
-        marginBottom: '8px',
-        textAlign: 'center'
+                router.post(loginUrl, {
+                    email: formData.email,
+                    password: formData.password,
+                    remember: formData.remember
+                }, {
+                    onSuccess: () => {
+                        toast.success('¡Inicio de sesión exitoso!');
+                        router.reload();
+                    },
+                    onError: (errors) => {
+                        console.error('Login errors:', errors);
+                        setErrors(errors);
+                        if (errors.email) {
+                            toast.error(errors.email);
+                        } else if (errors.password) {
+                            toast.error(errors.password);
+                        } else {
+                            toast.error('Error al iniciar sesión');
+                        }
+                    },
+                    onFinish: () => {
+                        setIsLoading(false);
+                    }
+                });
+            } catch (error) {
+                console.error('Login error:', error);
+                toast.error('Error al procesar la solicitud');
+                setIsLoading(false);
+            }
+        }
     };
 
+    // CORRECCIÓN: Usar heading del tema para el título
+    const titleStyles = {
+        fontSize: styles.titleSize || themeWithDefaults.heading1_fontSize || '28px',
+        color: styles.titleColor || themeWithDefaults.heading, // <-- Usa heading del tema
+        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
+        marginBottom: '8px',
+        textAlign: 'center',
+        fontWeight: 'bold'
+    };
+
+    // CORRECCIÓN: Usar text del tema para el subtítulo
     const subtitleStyles = {
-        fontSize: styles.subtitleSize || themeAuthSubtitleStyles.fontSize,
-        color: styles.subtitleColor || themeAuthSubtitleStyles.color,
-        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+        fontSize: styles.subtitleSize || themeWithDefaults.paragraph_fontSize || '16px',
+        color: styles.subtitleColor || themeWithDefaults.text, // <-- Usa text del tema
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         marginBottom: '24px',
         textAlign: 'center'
     };
 
+    // CORRECCIÓN: Usar text del tema para las etiquetas
     const labelStyles = {
-        color: styles.labelColor || hslToCss(themeWithDefaults.text),
-        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+        color: styles.labelColor || themeWithDefaults.text, // <-- Usa text del tema
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         marginBottom: '8px'
     };
 
     const inputStyles = {
-        borderColor: styles.inputBorderColor || hslToCss(themeWithDefaults.input_border),
+        borderColor: styles.inputBorderColor || themeWithDefaults.input_border,
         borderRadius: styles.inputBorderRadius || themeWithDefaults.input_corner_radius,
-        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+        color: themeWithDefaults.text, // <-- Color del texto dentro del input
+        backgroundColor: styles.inputBackgroundColor || themeWithDefaults.input_background,
     };
 
     const buttonStyles = {
-        backgroundColor: styles.buttonBackgroundColor || hslToCss(themeWithDefaults.primary_button_background),
-        color: styles.buttonColor || hslToCss(themeWithDefaults.primary_button_text),
+        backgroundColor: styles.buttonBackgroundColor || themeWithDefaults.primary_button_background,
+        color: styles.buttonColor || themeWithDefaults.primary_button_text,
         borderRadius: styles.buttonBorderRadius || themeWithDefaults.primary_button_corner_radius,
-        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         width: '100%'
     };
 
@@ -202,128 +213,130 @@ const getLoginRoute = () => {
     const isInputDisabled = mode === 'frontend' ? isLoading : (isPreview || isLoading);
 
     return (
-        <div 
-            style={containerStyles}
-            onClick={handleClick}
+        <div
+            style={outerContainerStyles}
             className={mode === 'builder' && !isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
+            onClick={handleClick}
         >
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <h2 style={titleStyles}>
-                        {content.title || 'Iniciar Sesión'}
-                    </h2>
-                    {content.subtitle && (
-                        <p style={subtitleStyles}>
-                            {content.subtitle}
-                        </p>
-                    )}
-                </div>
-
-                {content.showEmail !== false && (
+            <div style={containerStyles}>
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <Label htmlFor="email" style={labelStyles}>Email</Label>
-                        <Input
-                            type="email"
-                            id="email"
-                            value={formData.email}
-                            onChange={(e) => handleChange('email', e.target.value)}
-                            required={mode === 'frontend'}
-                            style={inputStyles}
-                            disabled={isInputDisabled}
-                            placeholder="ejemplo@correo.com"
-                        />
-                        {errors.email && (
-                            <p className="text-sm text-red-600 mt-1">{errors.email}</p>
+                        <h2 style={titleStyles}>
+                            {content.title || 'Iniciar Sesión'}
+                        </h2>
+                        {content.subtitle && (
+                            <p style={subtitleStyles}>
+                                {content.subtitle}
+                            </p>
                         )}
                     </div>
-                )}
 
-                {content.showPassword !== false && (
-                    <div>
-                        <Label htmlFor="password" style={labelStyles}>Contraseña</Label>
-                        <Input
-                            type="password"
-                            id="password"
-                            value={formData.password}
-                            onChange={(e) => handleChange('password', e.target.value)}
-                            required={mode === 'frontend'}
-                            style={inputStyles}
-                            disabled={isInputDisabled}
-                            placeholder="••••••••"
-                        />
-                        {errors.password && (
-                            <p className="text-sm text-red-600 mt-1">{errors.password}</p>
-                        )}
-                    </div>
-                )}
-
-                <div className="flex justify-between items-center">
-                    {content.showRemember && (
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="remember"
-                                checked={formData.remember}
-                                onCheckedChange={(checked) => handleChange('remember', checked)}
+                    {content.showEmail !== false && (
+                        <div>
+                            <Label htmlFor="email" style={labelStyles}>Email</Label>
+                            <Input
+                                type="email"
+                                id="email"
+                                value={formData.email}
+                                onChange={(e) => handleChange('email', e.target.value)}
+                                required={mode === 'frontend'}
+                                style={inputStyles}
                                 disabled={isInputDisabled}
+                                placeholder="ejemplo@correo.com"
                             />
-                            <Label
-                                htmlFor="remember"
-                                className="text-sm"
-                                style={labelStyles}
-                            >
-                                {content.rememberText || 'Recordarme'}
-                            </Label>
+                            {errors.email && (
+                                <p className="text-sm text-red-600 mt-1">{errors.email}</p>
+                            )}
                         </div>
                     )}
 
-                    {/* {content.showForgotPassword && mode === 'frontend' && (
-                        <Link
-                            href={route('frontend.password.request')}
-                            className="text-sm text-blue-600 hover:text-blue-800"
-                        >
-                            {content.forgotPasswordText || '¿Olvidaste tu contraseña?'}
-                        </Link>
-                    )} */}
-                </div>
+                    {content.showPassword !== false && (
+                        <div>
+                            <Label htmlFor="password" style={labelStyles}>Contraseña</Label>
+                            <Input
+                                type="password"
+                                id="password"
+                                value={formData.password}
+                                onChange={(e) => handleChange('password', e.target.value)}
+                                required={mode === 'frontend'}
+                                style={inputStyles}
+                                disabled={isInputDisabled}
+                                placeholder="••••••••"
+                            />
+                            {errors.password && (
+                                <p className="text-sm text-red-600 mt-1">{errors.password}</p>
+                            )}
+                        </div>
+                    )}
 
-                {mode === 'frontend' ? (
-                    <Button
-                        type="submit"
-                        style={buttonStyles}
-                        disabled={isLoading}
-                        className="hover:opacity-90 transition-opacity"
-                    >
-                        {isLoading ? 'Procesando...' : (content.buttonText || 'Iniciar Sesión')}
-                    </Button>
-                ) : (
-                    <div style={buttonStyles} className="py-2 px-4 text-center rounded">
-                        {content.buttonText || 'Iniciar Sesión'}
-                    </div>
-                )}
+                    <div className="flex justify-between items-center">
+                        {content.showRemember && (
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="remember"
+                                    checked={formData.remember}
+                                    onCheckedChange={(checked) => handleChange('remember', checked)}
+                                    disabled={isInputDisabled}
+                                />
+                                <Label
+                                    htmlFor="remember"
+                                    className="text-sm"
+                                    style={labelStyles}
+                                >
+                                    {content.rememberText || 'Recordarme'}
+                                </Label>
+                            </div>
+                        )}
 
-                {content.showRegisterLink && mode === 'frontend' && registerUrl && (
-                    <div className="text-center pt-4 border-t">
-                        <p className="text-sm" style={{ color: styles.subtitleColor || '#666666' }}>
-                            {content.registerText || '¿No tienes una cuenta? '}
+                        {/* {content.showForgotPassword && mode === 'frontend' && (
                             <Link
-                                href={content.registerUrl || registerUrl}
-                                className="font-medium text-blue-600 hover:text-blue-800"
+                                href={route('frontend.password.request')}
+                                className="text-sm text-blue-600 hover:text-blue-800"
                             >
-                                Regístrate
+                                {content.forgotPasswordText || '¿Olvidaste tu contraseña?'}
                             </Link>
-                        </p>
+                        )} */}
                     </div>
-                )}
 
-                {/* Para modo builder, mostrar texto estático */}
-                {content.showRegisterLink && mode === 'builder' && !isPreview && (
-                    <div className="text-center pt-4 border-t">
-                        <p className="text-sm" style={{ color: styles.subtitleColor || '#666666' }}>
-                            {content.registerText || '¿No tienes una cuenta?'}
-                        </p>
-                    </div>
-                )}
-            </form>
+                    {mode === 'frontend' ? (
+                        <Button
+                            type="submit"
+                            style={buttonStyles}
+                            disabled={isLoading}
+                            className="hover:opacity-90 transition-opacity"
+                        >
+                            {isLoading ? 'Procesando...' : (content.buttonText || 'Iniciar Sesión')}
+                        </Button>
+                    ) : (
+                        <div style={buttonStyles} className="py-2 px-4 text-center rounded">
+                            {content.buttonText || 'Iniciar Sesión'}
+                        </div>
+                    )}
+
+                    {content.showRegisterLink && mode === 'frontend' && registerUrl && (
+                        <div className="text-center pt-4 border-t">
+                            <p className="text-sm" style={{ color: styles.subtitleColor || themeWithDefaults.text }}>
+                                {content.registerText || '¿No tienes una cuenta? '}
+                                <Link
+                                    href={content.registerUrl || registerUrl}
+                                    className="font-medium text-blue-600 hover:text-blue-800"
+                                >
+                                    Regístrate
+                                </Link>
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Para modo builder, mostrar texto estático */}
+                    {content.showRegisterLink && mode === 'builder' && !isPreview && (
+                        <div className="text-center pt-4 border-t">
+                            <p className="text-sm" style={{ color: styles.subtitleColor || themeWithDefaults.text }}>
+                                {content.registerText || '¿No tienes una cuenta?'}
+                            </p>
+                        </div>
+                    )}
+                </form>
+            </div>
         </div>
     );
 };

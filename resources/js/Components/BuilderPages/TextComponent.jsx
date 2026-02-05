@@ -1,10 +1,10 @@
 // components/BuilderPages/components/TextComponent.jsx
 import React from 'react';
-import { getTextStyles as getThemeTextStyles, getResolvedFont, getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
+import { getTextStyles as getThemeTextStyles, getResolvedFont, getThemeWithDefaults } from '@/utils/themeUtils';
 
-const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
+const TextComponent = ({ comp, getStyles, themeSettings, appliedTheme, isPreview }) => {
     // Obtener configuración del tema con valores por defecto
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     
     const getTextComponentStyles = () => {
         const baseStyles = getStyles(comp);
@@ -20,9 +20,9 @@ const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`);
+                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`, appliedTheme);
                 } else {
-                    return getResolvedFont(themeWithDefaults, 'paragraph_font');
+                    return getResolvedFont(themeWithDefaults, 'paragraph_font', appliedTheme);
                 }
             }
             
@@ -30,7 +30,7 @@ const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
                 return customStyles.customFont;
             }
             
-            return getResolvedFont(themeWithDefaults, fontType);
+            return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
         };
 
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
@@ -41,10 +41,10 @@ const TextComponent = ({ comp, getStyles, themeSettings, isPreview }) => {
             fontWeight = customStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
             lineHeight = customStyles.lineHeight || themeWithDefaults.paragraph_lineHeight;
             textTransform = customStyles.textTransform || themeWithDefaults.paragraph_textTransform;
-            color = customStyles.color || hslToCss(themeWithDefaults.text);
+            color = customStyles.color || themeWithDefaults.text;
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
-            const themeTextStyles = getThemeTextStyles(themeWithDefaults, textStyle);
+            const themeTextStyles = getThemeTextStyles(themeWithDefaults, textStyle, appliedTheme);
             fontSize = customStyles.fontSize || themeTextStyles.fontSize;
             fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
             lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;

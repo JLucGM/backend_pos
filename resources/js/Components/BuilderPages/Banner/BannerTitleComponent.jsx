@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const BannerTitleComponent = ({
     comp,
@@ -7,12 +7,13 @@ const BannerTitleComponent = ({
     isPreview,
     onEdit,
     onDelete,
-    themeSettings
+    themeSettings,
+    appliedTheme
 }) => {
     const getComponentStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings);
+        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading1'; // Por defecto heading1 para títulos
@@ -20,7 +21,7 @@ const BannerTitleComponent = ({
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
@@ -29,12 +30,12 @@ const BannerTitleComponent = ({
                     return getResolvedFont(themeWithDefaults, 'body_font');
                 }
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
-            switch(fontType) {
+
+            switch (fontType) {
                 case 'body_font':
                     return getResolvedFont(themeWithDefaults, 'body_font');
                 case 'heading_font':
@@ -50,7 +51,7 @@ const BannerTitleComponent = ({
 
         // Obtener configuración según el estilo seleccionado usando theme utils
         let fontSize, fontWeight, lineHeight, textTransform, color;
-        
+
         if (textStyle.startsWith('heading')) {
             const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
             fontSize = customStyles.fontSize || themeTextStyles.fontSize;
@@ -120,12 +121,12 @@ const BannerTitleComponent = ({
     };
 
     function hexToRgb(hex) {
-        const longHex = hex.length === 4 ? 
+        const longHex = hex.length === 4 ?
             `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}` : hex;
-        
+
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(longHex);
-        return result ? 
-            `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` 
+        return result ?
+            `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
             : '0, 0, 0';
     }
 

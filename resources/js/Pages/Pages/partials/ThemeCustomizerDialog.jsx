@@ -90,7 +90,7 @@ const ThemeCustomizerDialog = ({
                 <div
                     className="w-10 h-10 rounded border cursor-pointer"
                     style={{
-                        backgroundColor: value ? `hsl(${value})` : '#ffffff'
+                        backgroundColor: value ? value : '#ffffff'
                     }}
                     title="Vista previa del color"
                 />
@@ -163,37 +163,37 @@ const ThemeCustomizerDialog = ({
                                                     label="Color de Fondo"
                                                     value={localSettings.background}
                                                     onChange={(value) => handleChange('background', value)}
-                                                    placeholder="0 0% 100%"
+                                                    placeholder="#ffffff"
                                                 />
                                                 <ColorPicker
                                                     label="Color de Títulos"
                                                     value={localSettings.heading}
                                                     onChange={(value) => handleChange('heading', value)}
-                                                    placeholder="0 0% 3.9%"
+                                                    placeholder="#0a0a0a"
                                                 />
                                                 <ColorPicker
                                                     label="Color de Texto"
                                                     value={localSettings.text}
                                                     onChange={(value) => handleChange('text', value)}
-                                                    placeholder="0 0% 3.9%"
+                                                    placeholder="#0a0a0a"
                                                 />
                                                 <ColorPicker
                                                     label="Color de Enlaces"
                                                     value={localSettings.links}
                                                     onChange={(value) => handleChange('links', value)}
-                                                    placeholder="209 100% 50%"
+                                                    placeholder="#0080ff"
                                                 />
                                                 <ColorPicker
                                                     label="Color de Enlaces (Hover)"
                                                     value={localSettings.hover_links}
                                                     onChange={(value) => handleChange('hover_links', value)}
-                                                    placeholder="209 100% 40%"
+                                                    placeholder="#0066cc"
                                                 />
                                                 <ColorPicker
                                                     label="Color de Bordes"
                                                     value={localSettings.borders}
                                                     onChange={(value) => handleChange('borders', value)}
-                                                    placeholder="0 0% 96.1%"
+                                                    placeholder="#f5f5f5"
                                                 />
                                             </div>
                                         </div>
@@ -202,11 +202,11 @@ const ThemeCustomizerDialog = ({
                                             <h4 className="font-medium mb-4">Sombras</h4>
                                             <div className="grid grid-cols-1 gap-4">
                                                 <div>
-                                                    <Label>Sombras (HSL + Opacidad)</Label>
+                                                    <Label>Sombras (Propiedad CSS completa)</Label>
                                                     <Input
                                                         value={localSettings.shadows || ''}
                                                         onChange={(e) => handleChange('shadows', e.target.value)}
-                                                        placeholder="0 0% 0% 0.1"
+                                                        placeholder="0 2px 4px rgba(0,0,0,0.1)"
                                                     />
                                                 </div>
                                             </div>
@@ -228,19 +228,19 @@ const ThemeCustomizerDialog = ({
                                                             label="Color de Fondo"
                                                             value={localSettings.primary_button_background}
                                                             onChange={(value) => handleChange('primary_button_background', value)}
-                                                            placeholder="209 100% 92%"
+                                                            placeholder="#d6eaff"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Texto"
                                                             value={localSettings.primary_button_text}
                                                             onChange={(value) => handleChange('primary_button_text', value)}
-                                                            placeholder="0 0% 3.9%"
+                                                            placeholder="#0a0a0a"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Borde"
                                                             value={localSettings.primary_button_border}
                                                             onChange={(value) => handleChange('primary_button_border', value)}
-                                                            placeholder="209 100% 92%"
+                                                            placeholder="#d6eaff"
                                                         />
                                                         <div>
                                                             <Label>Grosor de Borde</Label>
@@ -294,19 +294,19 @@ const ThemeCustomizerDialog = ({
                                                             label="Color de Fondo (Hover)"
                                                             value={localSettings.primary_button_hover_background}
                                                             onChange={(value) => handleChange('primary_button_hover_background', value)}
-                                                            placeholder="209 100% 84%"
+                                                            placeholder="#add6ff"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Texto (Hover)"
                                                             value={localSettings.primary_button_hover_text}
                                                             onChange={(value) => handleChange('primary_button_hover_text', value)}
-                                                            placeholder="0 0% 3.9%"
+                                                            placeholder="#0a0a0a"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Borde (Hover)"
                                                             value={localSettings.primary_button_hover_border}
                                                             onChange={(value) => handleChange('primary_button_hover_border', value)}
-                                                            placeholder="209 100% 84%"
+                                                            placeholder="#add6ff"
                                                         />
                                                     </div>
                                                 </div>
@@ -324,19 +324,19 @@ const ThemeCustomizerDialog = ({
                                                             label="Color de Fondo"
                                                             value={localSettings.secondary_button_background}
                                                             onChange={(value) => handleChange('secondary_button_background', value)}
-                                                            placeholder="0 0% 96.1%"
+                                                            placeholder="#f5f5f5"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Texto"
                                                             value={localSettings.secondary_button_text}
                                                             onChange={(value) => handleChange('secondary_button_text', value)}
-                                                            placeholder="0 0% 3.9%"
+                                                            placeholder="#0a0a0a"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Borde"
                                                             value={localSettings.secondary_button_border}
                                                             onChange={(value) => handleChange('secondary_button_border', value)}
-                                                            placeholder="0 0% 96.1%"
+                                                            placeholder="#f5f5f5"
                                                         />
                                                         <div>
                                                             <Label>Grosor de Borde</Label>
@@ -390,19 +390,19 @@ const ThemeCustomizerDialog = ({
                                                             label="Color de Fondo (Hover)"
                                                             value={localSettings.secondary_button_hover_background}
                                                             onChange={(value) => handleChange('secondary_button_hover_background', value)}
-                                                            placeholder="0 0% 84.1%"
+                                                            placeholder="#e6e6e6"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Texto (Hover)"
                                                             value={localSettings.secondary_button_hover_text}
                                                             onChange={(value) => handleChange('secondary_button_hover_text', value)}
-                                                            placeholder="0 0% 3.9%"
+                                                            placeholder="#0a0a0a"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Borde (Hover)"
                                                             value={localSettings.secondary_button_hover_border}
                                                             onChange={(value) => handleChange('secondary_button_hover_border', value)}
-                                                            placeholder="0 0% 84.1%"
+                                                            placeholder="#e6e6e6"
                                                         />
                                                     </div>
                                                 </div>
@@ -424,19 +424,19 @@ const ThemeCustomizerDialog = ({
                                                             label="Color de Fondo"
                                                             value={localSettings.input_background}
                                                             onChange={(value) => handleChange('input_background', value)}
-                                                            placeholder="0 0% 100%"
+                                                            placeholder="#ffffff"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Texto"
                                                             value={localSettings.input_text}
                                                             onChange={(value) => handleChange('input_text', value)}
-                                                            placeholder="0 0% 3.9%"
+                                                            placeholder="#0a0a0a"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Borde"
                                                             value={localSettings.input_border}
                                                             onChange={(value) => handleChange('input_border', value)}
-                                                            placeholder="0 0% 96.1%"
+                                                            placeholder="#f5f5f5"
                                                         />
                                                         <div>
                                                             <Label>Grosor de Borde</Label>
@@ -473,19 +473,19 @@ const ThemeCustomizerDialog = ({
                                                             label="Color de Fondo (Hover)"
                                                             value={localSettings.input_hover_background}
                                                             onChange={(value) => handleChange('input_hover_background', value)}
-                                                            placeholder="0 0% 100%"
+                                                            placeholder="#ffffff"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Fondo (Focus)"
                                                             value={localSettings.input_focus_background}
                                                             onChange={(value) => handleChange('input_focus_background', value)}
-                                                            placeholder="0 0% 100%"
+                                                            placeholder="#ffffff"
                                                         />
                                                         <ColorPicker
                                                             label="Color de Borde (Focus)"
                                                             value={localSettings.input_focus_border}
                                                             onChange={(value) => handleChange('input_focus_border', value)}
-                                                            placeholder="209 100% 92%"
+                                                            placeholder="#d6eaff"
                                                         />
                                                     </div>
                                                 </div>
@@ -699,17 +699,17 @@ const ThemeCustomizerDialog = ({
                                                     <div>
                                                         <Label>Tamaño de fuente</Label>
                                                         <Input
-                                                            value={localSettings[`heading${level}_fontSize`] || (level === 1 ? '2.5rem' : 
-                                                                    level === 2 ? '2rem' : 
-                                                                    level === 3 ? '1.75rem' : 
-                                                                    level === 4 ? '1.5rem' : 
-                                                                    level === 5 ? '1.25rem' : '1rem')}
+                                                            value={localSettings[`heading${level}_fontSize`] || (level === 1 ? '2.5rem' :
+                                                                level === 2 ? '2rem' :
+                                                                    level === 3 ? '1.75rem' :
+                                                                        level === 4 ? '1.5rem' :
+                                                                            level === 5 ? '1.25rem' : '1rem')}
                                                             onChange={(e) => handleChange(`heading${level}_fontSize`, e.target.value)}
-                                                            placeholder={level === 1 ? '2.5rem' : 
-                                                                    level === 2 ? '2rem' : 
-                                                                    level === 3 ? '1.75rem' : 
-                                                                    level === 4 ? '1.5rem' : 
-                                                                    level === 5 ? '1.25rem' : '1rem'}
+                                                            placeholder={level === 1 ? '2.5rem' :
+                                                                level === 2 ? '2rem' :
+                                                                    level === 3 ? '1.75rem' :
+                                                                        level === 4 ? '1.5rem' :
+                                                                            level === 5 ? '1.25rem' : '1rem'}
                                                         />
                                                     </div>
                                                     <div>
@@ -758,22 +758,22 @@ const ThemeCustomizerDialog = ({
                                                         </Select>
                                                     </div>
                                                 </div>
-                                                
+
                                                 {/* Vista previa del heading */}
                                                 <div className="mt-2 p-3 bg-gray-50 rounded">
                                                     <div className="text-xs text-gray-500 mb-1">Vista previa:</div>
                                                     <div
                                                         style={{
                                                             fontFamily: getResolvedFont(`heading${level}_font`),
-                                                            fontSize: localSettings[`heading${level}_fontSize`] || (level === 1 ? '2.5rem' : 
-                                                                    level === 2 ? '2rem' : 
-                                                                    level === 3 ? '1.75rem' : 
-                                                                    level === 4 ? '1.5rem' : 
-                                                                    level === 5 ? '1.25rem' : '1rem'),
+                                                            fontSize: localSettings[`heading${level}_fontSize`] || (level === 1 ? '2.5rem' :
+                                                                level === 2 ? '2rem' :
+                                                                    level === 3 ? '1.75rem' :
+                                                                        level === 4 ? '1.5rem' :
+                                                                            level === 5 ? '1.25rem' : '1rem'),
                                                             fontWeight: localSettings[`heading${level}_fontWeight`] || 'bold',
                                                             lineHeight: localSettings[`heading${level}_lineHeight`] || (level <= 2 ? '1.2' : '1.4'),
                                                             textTransform: localSettings[`heading${level}_textTransform`] || 'none',
-                                                            color: `hsl(${localSettings.heading || '0 0% 3.9%'})`
+                                                            color: localSettings.heading || '#0a0a0a'
                                                         }}
                                                     >
                                                         Ejemplo Heading {level}
@@ -786,7 +786,7 @@ const ThemeCustomizerDialog = ({
                             </div>
                         </Tabs>
 
-                        
+
 
                         <DialogFooter className="gap-2 mt-4">
                             <Button variant="outline" onClick={handleReset}>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
-import { getButtonStyles, hslToCss, getThemeWithDefaults } from '@/utils/themeUtils';
+import { getButtonStyles, getThemeWithDefaults } from '@/utils/themeUtils';
 
 const ButtonComponent = ({
     comp: originalComp,
@@ -9,6 +9,7 @@ const ButtonComponent = ({
     onEdit,
     isPreview = false,
     themeSettings = {},
+    appliedTheme = null,
     product = null,
     selectedCombination = null,
     quantity = 1,
@@ -34,7 +35,7 @@ const ButtonComponent = ({
     }, [originalComp]);
 
     // Obtener configuración del tema con valores por defecto
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     // ===========================================
     // 2. DETERMINAR SI ES UNA URL
@@ -119,9 +120,9 @@ const ButtonComponent = ({
         if (buttonType === 'custom') {
             styles = {
                 ...styles,
-                backgroundColor: customStyles.backgroundColor || hslToCss(themeWithDefaults.primary_button_background),
-                color: customStyles.color || hslToCss(themeWithDefaults.primary_button_text),
-                borderColor: customStyles.borderColor || customStyles.backgroundColor || hslToCss(themeWithDefaults.primary_button_border),
+                backgroundColor: customStyles.backgroundColor || themeWithDefaults.primary_button_background,
+                color: customStyles.color || themeWithDefaults.primary_button_text,
+                borderColor: customStyles.borderColor || customStyles.backgroundColor || themeWithDefaults.primary_button_border,
                 borderWidth: customStyles.borderWidth || themeWithDefaults.primary_button_border_thickness,
                 borderStyle: customStyles.borderStyle || 'solid',
                 borderRadius: customStyles.borderRadius || themeWithDefaults.primary_button_corner_radius,
@@ -137,7 +138,7 @@ const ButtonComponent = ({
         // ===== ESTILOS PARA TIPO "primary" =====
         else if (buttonType === 'primary') {
             // Usar utilidades del tema
-            const themeButtonStyles = getButtonStyles(themeWithDefaults, 'primary');
+            const themeButtonStyles = getButtonStyles(themeWithDefaults, 'primary', appliedTheme);
             
             styles = {
                 ...styles,
@@ -159,7 +160,7 @@ const ButtonComponent = ({
         // ===== ESTILOS PARA TIPO "secondary" =====
         else if (buttonType === 'secondary') {
             // Usar utilidades del tema
-            const themeButtonStyles = getButtonStyles(themeWithDefaults, 'secondary');
+            const themeButtonStyles = getButtonStyles(themeWithDefaults, 'secondary', appliedTheme);
             
             styles = {
                 ...styles,
@@ -182,11 +183,11 @@ const ButtonComponent = ({
         else {
             styles = {
                 ...styles,
-                backgroundColor: customStyles.backgroundColor || hslToCss(themeWithDefaults.primary_button_background),
-                color: customStyles.color || hslToCss(themeWithDefaults.primary_button_text),
+                backgroundColor: customStyles.backgroundColor || themeWithDefaults.primary_button_background,
+                color: customStyles.color || themeWithDefaults.primary_button_text,
                 border: customStyles.borderWidth
-                    ? `${customStyles.borderWidth} solid ${customStyles.borderColor || hslToCss(themeWithDefaults.primary_button_border)}`
-                    : `${themeWithDefaults.primary_button_border_thickness} solid ${hslToCss(themeWithDefaults.primary_button_border)}`,
+                    ? `${customStyles.borderWidth} solid ${customStyles.borderColor || themeWithDefaults.primary_button_border}`
+                    : `${themeWithDefaults.primary_button_border_thickness} solid ${themeWithDefaults.primary_button_border}`,
                 borderRadius: customStyles.borderRadius || themeWithDefaults.primary_button_corner_radius,
                 fontSize: customStyles.fontSize || '16px',
                 fontWeight: customStyles.fontWeight || 'normal',
@@ -209,7 +210,7 @@ const ButtonComponent = ({
                 styles.borderColor = customStyles.hoverBorderColor || customStyles.hoverBackgroundColor;
                 styles.color = customStyles.hoverColor || styles.color;
             } else if (buttonType === 'primary') {
-                const themeButtonStyles = getButtonStyles(themeWithDefaults, 'primary');
+                const themeButtonStyles = getButtonStyles(themeWithDefaults, 'primary', appliedTheme);
                 const hoverBg = themeButtonStyles['--hover-bg'] || customStyles.hoverBackgroundColor;
                 const hoverBorder = themeButtonStyles['--hover-border'] || hoverBg;
                 const hoverColor = themeButtonStyles['--hover-color'] || styles.color;
@@ -218,7 +219,7 @@ const ButtonComponent = ({
                 styles.borderColor = hoverBorder;
                 styles.color = hoverColor;
             } else if (buttonType === 'secondary') {
-                const themeButtonStyles = getButtonStyles(themeWithDefaults, 'secondary');
+                const themeButtonStyles = getButtonStyles(themeWithDefaults, 'secondary', appliedTheme);
                 const hoverBg = themeButtonStyles['--hover-bg'] || customStyles.hoverBackgroundColor;
                 const hoverBorder = themeButtonStyles['--hover-border'] || hoverBg;
                 const hoverColor = themeButtonStyles['--hover-color'] || styles.color;
@@ -228,9 +229,9 @@ const ButtonComponent = ({
                 styles.color = hoverColor;
             } else {
                 // Efecto hover genérico usando valores del tema
-                styles.backgroundColor = hslToCss(themeWithDefaults.primary_button_hover_background);
-                styles.borderColor = hslToCss(themeWithDefaults.primary_button_hover_border);
-                styles.color = hslToCss(themeWithDefaults.primary_button_hover_text);
+                styles.backgroundColor = themeWithDefaults.primary_button_hover_background;
+                styles.borderColor = themeWithDefaults.primary_button_hover_border;
+                styles.color = themeWithDefaults.primary_button_hover_text;
             }
         }
 

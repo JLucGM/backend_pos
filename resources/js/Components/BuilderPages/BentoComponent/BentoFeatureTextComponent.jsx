@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const BentoFeatureTextComponent = ({
     comp,
@@ -9,12 +9,13 @@ const BentoFeatureTextComponent = ({
     onEdit,
     onDelete,
     hoveredComponentId,
-    setHoveredComponentId
+    setHoveredComponentId,
+    appliedTheme
 }) => {
     const getComponentStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings);
+        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'paragraph'; // Por defecto paragraph para texto
@@ -22,7 +23,7 @@ const BentoFeatureTextComponent = ({
         // Función para obtener la fuente usando utilidades del tema
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
@@ -31,23 +32,23 @@ const BentoFeatureTextComponent = ({
                     return getResolvedFont(themeWithDefaults, 'paragraph_font');
                 }
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
+
             return getResolvedFont(themeWithDefaults, fontType);
         };
 
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
         let fontSize, fontWeight, lineHeight, textTransform, color;
-        
+
         if (textStyle === 'custom') {
             fontSize = customStyles.fontSize || themeWithDefaults.paragraph_fontSize;
             fontWeight = customStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
             lineHeight = customStyles.lineHeight || themeWithDefaults.paragraph_lineHeight;
             textTransform = customStyles.textTransform || themeWithDefaults.paragraph_textTransform;
-            color = customStyles.color || hslToCss(themeWithDefaults.text);
+            color = customStyles.color || themeWithDefaults.text;
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
             const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);

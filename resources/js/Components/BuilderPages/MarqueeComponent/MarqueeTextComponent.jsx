@@ -1,13 +1,13 @@
 // components/Builder/components/MarqueeTextComponent.jsx
 import React, { useState, useRef, useEffect } from 'react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
-const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) => {
+const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, appliedTheme }) => {
     // Obtener configuración del tema con valores por defecto
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     
     // Obtener estilos específicos del componente marquee del tema
-    const themeMarqueeStyles = getComponentStyles(themeWithDefaults, 'marquee');
+    const themeMarqueeStyles = getComponentStyles(themeWithDefaults, 'marquee', appliedTheme);
     
     const [isPaused, setIsPaused] = useState(false);
     const marqueeRef = useRef(null);
@@ -23,7 +23,7 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
         }
         
         const fontType = customStyles.fontType || 'body_font';
-        return getResolvedFont(themeWithDefaults, fontType);
+        return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
     };
 
     const getMarqueeStyles = () => {
@@ -43,7 +43,7 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
         // Estilos de texto usando valores del tema
         const fontSize = customStyles.fontSize || themeWithDefaults.marquee_fontSize || '16px';
         const fontWeight = customStyles.fontWeight || themeWithDefaults.marquee_fontWeight || 'normal';
-        const color = customStyles.color || themeWithDefaults.marquee_color || hslToCss(themeWithDefaults.text);
+        const color = customStyles.color || themeWithDefaults.marquee_color || themeWithDefaults.text;
         const backgroundColor = customStyles.backgroundColor || themeWithDefaults.marquee_backgroundColor || 'transparent';
         const borderRadius = customStyles.borderRadius || themeWithDefaults.marquee_borderRadius || '0px';
 

@@ -1,21 +1,22 @@
 import React from 'react';
-import { getThemeWithDefaults, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getResolvedFont } from '@/utils/themeUtils';
 
-const ProductDetailStockComponent = ({ 
-    comp, 
-    product, 
+const ProductDetailStockComponent = ({
+    comp,
+    product,
     currentCombination,
-    themeSettings 
+    themeSettings,
+    appliedTheme
 }) => {
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     // Función para obtener estilos de fuente (definida una sola vez)
     const getFontStyles = () => {
         const styles = comp.styles || {};
         const fontType = styles.fontType || 'default';
-        
+
         const fontFamily = getResolvedFont(themeWithDefaults, fontType === 'default' ? 'body_font' : fontType);
-        
+
         return {
             fontFamily,
             fontSize: styles.fontSize || '14px',
@@ -27,7 +28,7 @@ const ProductDetailStockComponent = ({
     if (!product) {
 
         const fontStyles = getFontStyles();
-        
+
         return (
             <div className="product-stock" style={{
                 ...comp.styles,
@@ -49,11 +50,11 @@ const ProductDetailStockComponent = ({
                 }}>
                     {comp.content?.inStockIcon || '✓'}
                 </span>
-                
+
                 <span className="stock-message" style={fontStyles}>
                     {comp.content?.inStockText || 'En stock'}
                 </span>
-                
+
                 {comp.content?.showSku && (
                     <span className="stock-sku ml-auto text-xs opacity-70">
                         SKU: ABC123
@@ -66,25 +67,25 @@ const ProductDetailStockComponent = ({
     // Obtener stock para producto simple o combinación
     const getStockInfo = () => {
         if (!product?.stocks) return { quantity: 0, status: 'unavailable' };
-        
+
         if (currentCombination) {
             const stock = product.stocks.find(s => s.combination_id === currentCombination.id);
             const quantity = stock ? stock.quantity : 0;
-            
+
             return {
                 quantity,
                 status: quantity > 0 ? 'in_stock' : 'out_of_stock'
             };
         } else {
             const totalQuantity = product.stocks.reduce((sum, stock) => sum + stock.quantity, 0);
-            
+
             let status = 'out_of_stock';
             if (totalQuantity > 5) {
                 status = 'in_stock';
             } else if (totalQuantity > 0) {
                 status = 'low_stock';
             }
-            
+
             return {
                 quantity: totalQuantity,
                 status
@@ -98,8 +99,8 @@ const ProductDetailStockComponent = ({
     const getStatusStyles = () => {
         const status = stockInfo.status;
         const styles = comp.styles || {};
-        
-        switch(status) {
+
+        switch (status) {
             case 'in_stock':
                 return {
                     backgroundColor: styles.inStockBgColor || '#dcfce7',
@@ -125,7 +126,7 @@ const ProductDetailStockComponent = ({
     // Determinar mensaje según cantidad
     const getStockMessage = () => {
         const quantity = stockInfo.quantity;
-        
+
         if (quantity <= 0) {
             return comp.content?.outOfStockText || 'Agotado';
         } else if (quantity <= 5) {
@@ -138,7 +139,7 @@ const ProductDetailStockComponent = ({
     // Determinar icono
     const getStockIcon = () => {
         const status = stockInfo.status;
-        
+
         if (status === 'in_stock') {
             return comp.content?.inStockIcon || '✓';
         } else if (status === 'low_stock') {
@@ -170,7 +171,7 @@ const ProductDetailStockComponent = ({
             }}>
                 {getStockIcon()}
             </span>
-            
+
             <span className="stock-message" style={fontStyles}>
                 {getStockMessage()}
             </span>

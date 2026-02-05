@@ -2,7 +2,7 @@
 import React from 'react';
 import FooterMenuComponent from './FooterMenuComponent';
 import TextComponent from '../TextComponent'; 
-import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const FooterComponent = ({
     comp,
@@ -20,8 +20,8 @@ const FooterComponent = ({
 }) => {
     const styles = getStyles(comp);
     const content = comp.content || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    const themeFooterStyles = getComponentStyles(themeWithDefaults, 'footer');
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const themeFooterStyles = getComponentStyles(themeWithDefaults, 'footer', appliedTheme);
 
     // Determinar si estamos en modo de edición
     const isEditable = mode === 'builder' && !isPreview;
@@ -62,6 +62,7 @@ const FooterComponent = ({
                                     onEdit={onEdit}
                                     isPreview={isPreview}
                                     themeSettings={themeSettings}
+                                    appliedTheme={appliedTheme}
                                     availableMenus={availableMenus}
                                     mode={mode}
                                 />
@@ -74,6 +75,7 @@ const FooterComponent = ({
                                     comp={child}
                                     getStyles={getStyles}
                                     themeSettings={themeSettings}
+                                    appliedTheme={appliedTheme}
                                     isPreview={isPreview}
                                 />
                             </div>
@@ -89,8 +91,8 @@ const FooterComponent = ({
                     textAlign: 'center',
                     marginTop: '40px',
                     paddingTop: '20px',
-                    borderTop: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
-                    color: hslToCss(themeWithDefaults.text),
+                    borderTop: `1px solid ${themeWithDefaults.borders}`,
+                    color: themeWithDefaults.text,
                     fontSize: '14px'
                 }}>
                     {content.copyrightText || '© 2023 Mi Empresa. Todos los derechos reservados.'}

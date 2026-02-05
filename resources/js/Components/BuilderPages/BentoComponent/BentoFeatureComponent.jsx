@@ -2,7 +2,7 @@ import React from 'react';
 import BentoFeatureTitleComponent from './BentoFeatureTitleComponent';
 import BentoFeatureTextComponent from './BentoFeatureTextComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import { getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const BentoFeatureComponent = ({
     comp,
@@ -12,12 +12,13 @@ const BentoFeatureComponent = ({
     onDelete,
     hoveredComponentId,
     setHoveredComponentId,
-    themeSettings
+    themeSettings,
+    appliedTheme
 }) => {
     const featureConfig = comp.content || {};
     const children = featureConfig.children || [];
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     // Función para obtener el nombre del tipo de componente
     const getComponentTypeName = (type) => {
         const typeNames = {
@@ -30,12 +31,12 @@ const BentoFeatureComponent = ({
     // Estilos de la carta de característica con valores del tema
     const cardStyles = {
         ...getStyles(comp),
-        backgroundColor: featureConfig.backgroundColor || hslToCss(themeWithDefaults.background),
+        backgroundColor: featureConfig.backgroundColor || themeWithDefaults.background,
         backgroundImage: featureConfig.backgroundImage ? `url(${featureConfig.backgroundImage})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        border: featureConfig.border === 'solid' 
-            ? `${featureConfig.borderThickness || '1px'} solid ${featureConfig.borderColor || hslToCss(themeWithDefaults.borders)}` 
+        border: featureConfig.border === 'solid'
+            ? `${featureConfig.borderThickness || '1px'} solid ${featureConfig.borderColor || themeWithDefaults.borders}`
             : 'none',
         borderRadius: featureConfig.borderRadius || '12px',
         padding: featureConfig.padding || '24px',
@@ -44,7 +45,7 @@ const BentoFeatureComponent = ({
         flexDirection: 'column',
         justifyContent: 'center',
         opacity: featureConfig.opacity || 1,
-        boxShadow: `0 4px 6px -1px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0, 0, 0, 0.1)'}, 0 2px 4px -1px ${themeWithDefaults.shadows ? `hsl(${themeWithDefaults.shadows})` : 'rgba(0, 0, 0, 0.06)'}`,
+        boxShadow: `0 4px 6px -1px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0, 0, 0, 0.1)'}, 0 2px 4px -1px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0, 0, 0, 0.06)'}`,
     };
 
     // Manejo de eventos
@@ -76,9 +77,8 @@ const BentoFeatureComponent = ({
             onClick={handleClick}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className={`group transition-all duration-300 hover:scale-105 ${
-                !isPreview ? 'cursor-pointer hover:shadow-xl' : ''
-            }`}
+            className={`group transition-all duration-300 hover:scale-105 ${!isPreview ? 'cursor-pointer hover:shadow-xl' : ''
+                }`}
         >
             {/* Título de la característica */}
             {titleComponent && (

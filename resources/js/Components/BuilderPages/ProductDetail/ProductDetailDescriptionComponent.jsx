@@ -3,7 +3,7 @@ import {
     getThemeWithDefaults,
     getTextStyles,
     getResolvedFont,
-    hslToCss,
+
     getComponentStyles
 } from '@/utils/themeUtils';
 
@@ -13,12 +13,13 @@ const ProductDetailDescriptionComponent = ({
     isPreview,
     onEdit,
     themeSettings,
-    product
+    product,
+    appliedTheme
 }) => {
     const getDescriptionStyles = () => {  // ✅ Nombre diferente
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings);
+        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'paragraph';
@@ -27,7 +28,7 @@ const ProductDetailDescriptionComponent = ({
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Ahora usa la importada
 
         // Obtener estilos específicos del componente product-description
-        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-description');
+        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-description', appliedTheme);
 
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
@@ -136,7 +137,7 @@ const ProductDetailDescriptionComponent = ({
         const textAlign = layout === 'fill' ? alignment : 'left';
 
         // Color del texto - usar color del tema como valor por defecto
-        const textColor = customStyles.color || themeComponentStyles.color || hslToCss(themeWithDefaults.text);
+        const textColor = customStyles.color || themeComponentStyles.color || themeWithDefaults.text;
 
         // Background color
         const backgroundColor = customStyles.backgroundColor || 'transparent';

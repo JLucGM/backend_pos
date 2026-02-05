@@ -1,7 +1,7 @@
 import React from 'react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const CarouselPriceComponent = ({
     comp,
@@ -9,37 +9,38 @@ const CarouselPriceComponent = ({
     isPreview,
     onEdit,
     onDelete,
-    themeSettings
+    themeSettings,
+    appliedTheme
 }) => {
     const { settings } = usePage().props;
     const styles = comp.styles || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     // Obtener configuración de fuente del tema usando utilidades
     const getFontFamily = () => {
         const fontType = styles.fontType;
-        
+
         if (fontType === 'default' || !fontType) {
             return getResolvedFont(themeWithDefaults, 'body_font');
         }
-        
+
         if (fontType === 'custom' && styles.customFont) {
             return styles.customFont;
         }
-        
+
         return getResolvedFont(themeWithDefaults, fontType);
     };
 
     // Usar estilo de párrafo por defecto para precios con utilidades del tema
     const textStyle = styles.textStyle || 'paragraph';
     let fontSize, fontWeight, lineHeight, textTransform, color;
-    
+
     if (textStyle === 'custom') {
         fontSize = styles.fontSize || themeWithDefaults.paragraph_fontSize;
         fontWeight = styles.fontWeight || themeWithDefaults.paragraph_fontWeight;
         lineHeight = styles.lineHeight || themeWithDefaults.paragraph_lineHeight;
         textTransform = styles.textTransform || themeWithDefaults.paragraph_textTransform;
-        color = styles.color || hslToCss(themeWithDefaults.text);
+        color = styles.color || themeWithDefaults.text;
     } else {
         // Usar utilidades del tema para obtener estilos consistentes
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
@@ -83,7 +84,7 @@ const CarouselPriceComponent = ({
         if (settings?.currency && comp.content && typeof comp.content === 'number') {
             return <CurrencyDisplay currency={settings.currency} amount={comp.content} />;
         }
-        
+
         return comp.content || (
             <span className="text-gray-400 italic">
                 Precio del producto (se obtiene de la base de datos)
@@ -92,7 +93,7 @@ const CarouselPriceComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={componentStyles}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}

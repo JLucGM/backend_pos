@@ -2,7 +2,7 @@
 import React from 'react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const CheckoutSummaryComponent = ({
     comp,
@@ -98,8 +98,8 @@ const CheckoutSummaryComponent = ({
     };
 
     const titleStyles = {
-        fontSize: styles.titleSize || '20px',
-        color: styles.titleColor || '#000000',
+        fontSize: styles.heading6_fontSize || '20px',
+        color: styles.text || '#000000',
         fontFamily: themeSettings?.heading_font,
         marginBottom: '20px',
         fontWeight: '600',
@@ -206,7 +206,7 @@ const CheckoutSummaryComponent = ({
                                             {/* Mostrar impuesto del producto */}
                                             {item.taxRate > 0 && (
                                                 <div className="text-xs text-gray-500 mt-1">
-                                                    Impuesto ({item.taxName || `${item.taxRate}%`}): 
+                                                    Impuesto ({item.taxName || `${item.taxRate}%`}):
                                                     {settings?.currency ? (
                                                         <CurrencyDisplay currency={settings.currency} amount={(item.price * item.quantity) * (item.taxRate / 100)} />
                                                     ) : (

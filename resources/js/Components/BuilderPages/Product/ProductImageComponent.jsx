@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const ProductImageComponent = ({
     comp,
@@ -12,9 +12,9 @@ const ProductImageComponent = ({
     mode = 'builder' // 'builder' o 'frontend'
 }) => {
     const styles = comp.styles || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeImageStyles = getComponentStyles(themeWithDefaults, 'image');
-    
+
     // Función para obtener estilos del contenedor según aspectRatio
     const getAspectRatioStyles = () => {
         switch (styles.aspectRatio) {
@@ -48,7 +48,7 @@ const ProductImageComponent = ({
         margin: '0 auto',
         maxWidth: styles.maxWidth || '500px',
     };
-    
+
     // Aplicar estilos del tema con valores por defecto
     const imageStyles = {
         position: 'absolute',
@@ -56,17 +56,17 @@ const ProductImageComponent = ({
         left: 0,
         width: '100%',
         height: '100%',
-        border: styles.imageBorder === 'solid' 
-            ? `${styles.imageBorderThickness || themeImageStyles.borderWidth} solid ${styles.imageBorderColor || themeImageStyles.borderColor}` 
-            : (styles.imageBorder === 'none' ? 'none' : 
-               // Si no está definido, usar el tema
-               themeImageStyles.borderWidth !== '0px' 
-                ? `${themeImageStyles.borderWidth} solid ${themeImageStyles.borderColor}`
-                : 'none'),
+        border: styles.imageBorder === 'solid'
+            ? `${styles.imageBorderThickness || themeImageStyles.borderWidth} solid ${styles.imageBorderColor || themeImageStyles.borderColor}`
+            : (styles.imageBorder === 'none' ? 'none' :
+                // Si no está definido, usar el tema
+                themeImageStyles.borderWidth !== '0px'
+                    ? `${themeImageStyles.borderWidth} solid ${themeImageStyles.borderColor}`
+                    : 'none'),
         borderRadius: styles.imageBorderRadius || themeImageStyles.borderRadius,
         objectFit: styles.objectFit || themeImageStyles.objectFit,
         // Sombra del tema
-        boxShadow: themeWithDefaults.shadows ? `0 2px 4px hsl(${themeWithDefaults.shadows})` : 'none',
+        boxShadow: themeWithDefaults.shadows ? `0 2px 4px ${themeWithDefaults.shadows}` : 'none',
         // Transición para efectos hover en frontend
         transition: mode === 'frontend' ? 'transform 0.3s ease' : 'none',
     };
@@ -92,17 +92,17 @@ const ProductImageComponent = ({
     };
 
     return (
-        <div 
+        <div
             style={containerStyles}
             onClick={handleClick}
             className={
-                mode === 'builder' && !isPreview 
-                    ? "cursor-pointer hover:opacity-80 transition-opacity" 
+                mode === 'builder' && !isPreview
+                    ? "cursor-pointer hover:opacity-80 transition-opacity"
                     : ""
             }
         >
-            <img 
-                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'} 
+            <img
+                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
                 alt="Producto"
                 style={imageStyles}
                 onError={(e) => {

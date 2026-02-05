@@ -8,7 +8,7 @@ import ProductDetailStockComponent from './ProductDetailStockComponent';
 import QuantitySelectorComponent from './QuantitySelectorComponent';
 import ButtonComponent from '../ButtonComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const ProductDetailComponent = ({
     comp,
@@ -22,7 +22,8 @@ const ProductDetailComponent = ({
     hoveredComponentId,
     setHoveredComponentId,
     product,
-    storeAutomaticDiscounts = []
+    storeAutomaticDiscounts = [],
+    appliedTheme,
 }) => {
     // Extraer configuraciones personalizadas
     const customStyles = comp.styles || {};
@@ -49,11 +50,11 @@ const ProductDetailComponent = ({
     };
 
     // Obtener configuraciones de layout y estilos
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     const layoutType = customStyles.layoutType || 'grid';
     const padding = customStyles.padding || '20px';
-    const backgroundColor = customStyles.backgroundColor || hslToCss(themeWithDefaults.background);
+    const backgroundColor = customStyles.backgroundColor || themeWithDefaults.background;
     const maxWidth = customStyles.maxWidth || '100%';
     const gap = customStyles.gap || '60px';
 
@@ -189,7 +190,8 @@ const ProductDetailComponent = ({
             onDelete: () => handleDeleteChild(child.id),
             hoveredComponentId,
             setHoveredComponentId,
-            themeSettings
+            themeSettings,
+            appliedTheme
         };
 
         switch (child.type) {

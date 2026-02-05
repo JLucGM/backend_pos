@@ -1,16 +1,17 @@
 import React from 'react';
-import { getTextStyles as getThemeTextStyles, getResolvedFont, getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
+import { getTextStyles as getThemeTextStyles, getResolvedFont, getThemeWithDefaults } from '@/utils/themeUtils';
 
-const LinkComponent = ({ 
-    comp, 
-    getStyles, 
-    onEdit, 
-    isPreview, 
-    themeSettings 
+const LinkComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    isPreview,
+    themeSettings,
+    appliedTheme
 }) => {
     // Obtener configuración del tema con valores por defecto
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     const getLinkStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
@@ -21,7 +22,7 @@ const LinkComponent = ({
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
@@ -30,23 +31,23 @@ const LinkComponent = ({
                     return getResolvedFont(themeWithDefaults, 'paragraph_font');
                 }
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
+
             return getResolvedFont(themeWithDefaults, fontType);
         };
 
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
         let fontSize, fontWeight, lineHeight, textTransform, color;
-        
+
         if (textStyle === 'custom') {
             fontSize = customStyles.fontSize || themeWithDefaults.paragraph_fontSize;
             fontWeight = customStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
             lineHeight = customStyles.lineHeight || themeWithDefaults.paragraph_lineHeight;
             textTransform = customStyles.textTransform || themeWithDefaults.paragraph_textTransform;
-            color = customStyles.color || hslToCss(themeWithDefaults.links);
+            color = customStyles.color || themeWithDefaults.links;
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
             const themeTextStyles = getThemeTextStyles(themeWithDefaults, textStyle);
@@ -54,7 +55,7 @@ const LinkComponent = ({
             fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
             lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
             textTransform = customStyles.textTransform || themeTextStyles.textTransform;
-            color = customStyles.color || hslToCss(themeWithDefaults.links);
+            color = customStyles.color || themeWithDefaults.links;
         }
 
         // Calcular line-height si es personalizado
@@ -87,12 +88,12 @@ const LinkComponent = ({
     // EXTRAER EL CONTENIDO DEL ENLACE
     const getLinkContent = () => {
         if (!comp.content) return { url: '#', text: 'Enlace' };
-        
+
         // Si content es una cadena, asumimos que es la URL
         if (typeof comp.content === 'string') {
             return { url: comp.content, text: comp.content };
         }
-        
+
         // Si content es un objeto, extraer url y text
         if (typeof comp.content === 'object' && comp.content !== null) {
             return {
@@ -100,7 +101,7 @@ const LinkComponent = ({
                 text: comp.content.text || comp.content.label || 'Enlace'
             };
         }
-        
+
         return { url: '#', text: 'Enlace' };
     };
 
@@ -108,7 +109,7 @@ const LinkComponent = ({
 
     // Clases para hover usando colores del tema
     const hoverClasses = isPreview ? '' : 'hover:opacity-80';
-    const hoverColor = hslToCss(themeWithDefaults.hover_links);
+    const hoverColor = themeWithDefaults.hover_links;
 
     return (
         <a

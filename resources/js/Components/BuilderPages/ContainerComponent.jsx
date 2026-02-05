@@ -1,7 +1,7 @@
 // components/BuilderPages/components/ContainerComponent.jsx
 import React from 'react';
 import CanvasItem from './CanvasItem';
-import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const ContainerComponent = ({
     comp,
@@ -9,6 +9,7 @@ const ContainerComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     products,
     setComponents,
@@ -16,10 +17,10 @@ const ContainerComponent = ({
     setHoveredComponentId
 }) => {
     // Obtener configuración del tema con valores por defecto
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     
     // Obtener estilos específicos del componente container del tema
-    const themeContainerStyles = getComponentStyles(themeWithDefaults, 'container');
+    const themeContainerStyles = getComponentStyles(themeWithDefaults, 'container', appliedTheme);
     
     // Extraer estilos personalizados
     const customStyles = comp.styles || {};
@@ -88,7 +89,7 @@ const ContainerComponent = ({
         // Permitir que los hijos se envuelvan si no caben
         flexWrap: 'wrap',
         // Estilos de borde para modo edición usando colores del tema
-        border: isPreview ? 'none' : `2px dashed ${hslToCss(themeWithDefaults.borders)}`,
+        border: isPreview ? 'none' : `2px dashed ${themeWithDefaults.borders}`,
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
@@ -147,6 +148,7 @@ const ContainerComponent = ({
                         onEditComponent={onEdit}
                         onDeleteComponent={handleDeleteChild}
                         themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
                         isPreview={isPreview}
                         products={products}
                         setComponents={setComponents}

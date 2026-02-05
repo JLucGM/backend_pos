@@ -1,10 +1,11 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const BentoTitleComponent = ({
     comp,
     getStyles,
     themeSettings,
+    appliedTheme,
     isPreview,
     onEdit,
     onDelete,
@@ -14,7 +15,7 @@ const BentoTitleComponent = ({
     const getComponentStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings);
+        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading1'; // Por defecto heading1 para títulos de bento
@@ -22,7 +23,7 @@ const BentoTitleComponent = ({
         // Función para obtener la fuente usando utilidades del tema
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
@@ -31,23 +32,23 @@ const BentoTitleComponent = ({
                     return getResolvedFont(themeWithDefaults, 'paragraph_font');
                 }
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
+
             return getResolvedFont(themeWithDefaults, fontType);
         };
 
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
         let fontSize, fontWeight, lineHeight, textTransform, color;
-        
+
         if (textStyle === 'custom') {
             fontSize = customStyles.fontSize || themeWithDefaults.heading1_fontSize;
             fontWeight = customStyles.fontWeight || themeWithDefaults.heading1_fontWeight;
             lineHeight = customStyles.lineHeight || themeWithDefaults.heading1_lineHeight;
             textTransform = customStyles.textTransform || themeWithDefaults.heading1_textTransform;
-            color = customStyles.color || hslToCss(themeWithDefaults.heading);
+            color = customStyles.color || themeWithDefaults.heading;
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
             const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);

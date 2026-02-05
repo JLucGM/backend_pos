@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const AnnouncementComponent = ({
     comp,
@@ -8,12 +8,13 @@ const AnnouncementComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     mode = 'builder'
 }) => {
     const customStyles = comp.styles || {};
     const announcementConfig = comp.content || {};
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeAnnouncementStyles = getComponentStyles(themeWithDefaults, 'announcement-bar');
 
     // Obtener el texto del anuncio
@@ -73,7 +74,7 @@ const AnnouncementComponent = ({
             fontFamily: getFontFamily(),
             fontSize: customStyles.fontSize || themeAnnouncementStyles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
             fontWeight: customStyles.fontWeight || 'normal',
-            color: customStyles.color || themeAnnouncementStyles.color || hslToCss(themeWithDefaults.text),
+            color: customStyles.color || themeAnnouncementStyles.color || themeWithDefaults.text,
             textTransform: customStyles.textTransform || 'none',
             lineHeight: customStyles.lineHeight || '1.4',
             textDecoration: hasNavigation() ? 'underline' : 'none',

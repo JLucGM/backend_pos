@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { getThemeWithDefaults, hslToCss, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getResolvedFont } from '@/utils/themeUtils';
 
-const QuantitySelectorComponent = ({ 
-    comp, 
-    maxQuantity = 99, 
+const QuantitySelectorComponent = ({
+    comp,
+    maxQuantity = 99,
     onQuantityChange,
-    themeSettings // Añadir themeSettings como prop
+    themeSettings, // Añadir themeSettings como prop
+    appliedTheme
 }) => {
     const [quantity, setQuantity] = useState(1);
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     // Función para obtener valores por defecto del tema
     const getThemeValue = (key, defaultValue) => {
@@ -17,12 +18,12 @@ const QuantitySelectorComponent = ({
             'labelColor': themeSettings?.quantity_labelColor || themeSettings?.text_color || '#666666',
             'borderColor': themeSettings?.quantity_borderColor || themeSettings?.border_color || '#d1d5db',
             'buttonColor': themeSettings?.quantity_buttonColor || themeSettings?.primary_color || '#374151',
-            'inputColor': hslToCss(themeWithDefaults.text),
+            'inputColor': themeWithDefaults.text,
             'borderRadius': themeSettings?.quantity_borderRadius || themeSettings?.border_radius || '6px',
             'buttonSize': themeSettings?.quantity_buttonSize || themeSettings?.button_font_size || '16px',
             'inputSize': themeSettings?.quantity_inputSize || themeSettings?.input_font_size || '16px',
         };
-        
+
         return comp.styles?.[key] || themeMap[key] || defaultValue;
     };
 
@@ -62,7 +63,7 @@ const QuantitySelectorComponent = ({
             }}>
                 {comp.content?.label || 'Cantidad:'}
             </label>
-            
+
             <div className="flex items-center border rounded-md" style={{
                 borderColor: getThemeValue('borderColor', '#d1d5db'),
                 borderRadius: getThemeValue('borderRadius', '6px'),
@@ -80,7 +81,7 @@ const QuantitySelectorComponent = ({
                 >
                     -
                 </button>
-                
+
                 <input
                     type="number"
                     min="1"
@@ -90,11 +91,11 @@ const QuantitySelectorComponent = ({
                     className="w-16 text-center border-0 focus:ring-0 focus:outline-none"
                     style={{
                         fontSize: getThemeValue('inputSize', '16px'),
-                        color: getThemeValue('inputColor', hslToCss(themeWithDefaults.text)),
+                        color: getThemeValue('inputColor', themeWithDefaults.text),
                         backgroundColor: 'transparent',
                     }}
                 />
-                
+
                 <button
                     type="button"
                     onClick={handleIncrement}
@@ -109,7 +110,7 @@ const QuantitySelectorComponent = ({
                     +
                 </button>
             </div>
-            
+
             {comp.content?.showMax && maxQuantity < 20 && (
                 <span className="text-xs text-gray-500">
                     Máx: {maxQuantity}

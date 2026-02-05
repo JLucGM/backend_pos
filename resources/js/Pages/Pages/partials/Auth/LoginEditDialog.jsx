@@ -5,7 +5,7 @@ import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true, themeSettings }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
 
@@ -127,8 +127,9 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
 
             <Separator className="my-4" />
 
+            {/* Sección de estilos */}
             <div>
-                <Label htmlFor="maxWidth">Ancho máximo</Label>
+                <Label htmlFor="maxWidth">Ancho máximo del formulario</Label>
                 <Input
                     type="text"
                     value={editStyles?.maxWidth || '400px'}
@@ -137,7 +138,25 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
             </div>
 
             <div>
-                <Label htmlFor="backgroundColor">Color de fondo</Label>
+                <Label htmlFor="padding">Padding del formulario</Label>
+                <Input
+                    type="text"
+                    value={editStyles?.padding || '32px'}
+                    onChange={(e) => setEditStyles({ ...editStyles, padding: e.target.value })}
+                />
+            </div>
+
+            <div>
+                <Label htmlFor="borderRadius">Borde redondeado del formulario</Label>
+                <Input
+                    type="text"
+                    value={editStyles?.borderRadius || '12px'}
+                    onChange={(e) => setEditStyles({ ...editStyles, borderRadius: e.target.value })}
+                />
+            </div>
+
+            <div>
+                <Label htmlFor="backgroundColor">Color de fondo del formulario</Label>
                 <div className="flex gap-2">
                     <Input
                         type="text"
@@ -153,31 +172,12 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <Label htmlFor="padding">Padding</Label>
-                    <Input
-                        type="text"
-                        value={editStyles?.padding || '32px'}
-                        onChange={(e) => setEditStyles({ ...editStyles, padding: e.target.value })}
-                    />
-                </div>
-                <div>
-                    <Label htmlFor="borderRadius">Borde redondeado</Label>
-                    <Input
-                        type="text"
-                        value={editStyles?.borderRadius || '12px'}
-                        onChange={(e) => setEditStyles({ ...editStyles, borderRadius: e.target.value })}
-                    />
-                </div>
-            </div>
-
             <div>
                 <Label htmlFor="titleColor">Color del título</Label>
                 <div className="flex gap-2">
                     <Input
                         type="text"
-                        value={editStyles?.titleColor || '#000000'}
+                        value={editStyles?.titleColor || themeSettings?.heading || '#000000'}
                         onChange={(e) => setEditStyles({ ...editStyles, titleColor: e.target.value })}
                     />
                     <Input
@@ -194,7 +194,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                 <div className="flex gap-2">
                     <Input
                         type="text"
-                        value={editStyles?.buttonBackgroundColor || '#3b82f6'}
+                        value={editStyles?.buttonBackgroundColor || themeSettings?.primary_button_background || '#3b82f6'}
                         onChange={(e) => setEditStyles({ ...editStyles, buttonBackgroundColor: e.target.value })}
                     />
                     <Input

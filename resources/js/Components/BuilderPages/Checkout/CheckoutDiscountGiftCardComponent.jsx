@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Percent, Gift, X, Calendar, DollarSign } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss, getResolvedFont, getInputStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getInputStyles } from '@/utils/themeUtils';
 
 const CheckoutDiscountGiftCardComponent = ({
     comp,
@@ -13,18 +13,19 @@ const CheckoutDiscountGiftCardComponent = ({
     onDelete,
     themeSettings,
     discountCode = '',
-    setDiscountCode = () => {},
+    setDiscountCode = () => { },
     giftCardCode = '',
-    setGiftCardCode = () => {},
-    onApplyDiscount = () => {},
-    onRemoveDiscount = () => {},
-    onApplyGiftCard = () => {},
-    onRemoveGiftCard = () => {},
+    setGiftCardCode = () => { },
+    onApplyDiscount = () => { },
+    onRemoveDiscount = () => { },
+    onApplyGiftCard = () => { },
+    onRemoveGiftCard = () => { },
     appliedDiscounts = [],
     appliedGiftCard = null,
     giftCardAmountUsed = 0,
     userGiftCards = [],
-    mode = 'builder'
+    mode = 'builder',
+    appliedTheme
 }) => {
     const { settings } = usePage().props;
     const styles = comp.styles || {};
@@ -32,8 +33,8 @@ const CheckoutDiscountGiftCardComponent = ({
     const [activeTab, setActiveTab] = useState('discount');
     const [isApplying, setIsApplying] = useState(false);
     const [isApplyingGiftCard, setIsApplyingGiftCard] = useState(false);
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     // Obtener estilos del tema
     const themeInputStyles = getInputStyles(themeWithDefaults);
 
@@ -61,15 +62,15 @@ const CheckoutDiscountGiftCardComponent = ({
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || hslToCss(themeWithDefaults.background),
+        backgroundColor: styles.backgroundColor || themeWithDefaults.background,
         padding: styles.padding || '16px',
         borderRadius: styles.borderRadius || '8px',
-        border: `1px solid ${hslToCss(themeWithDefaults.borders)}`,
+        border: `1px solid ${themeWithDefaults.borders}`,
     };
 
     const titleStyles = {
         fontSize: styles.titleSize || themeWithDefaults.heading4_fontSize || '16px',
-        color: styles.titleColor || hslToCss(themeWithDefaults.heading),
+        color: styles.titleColor || themeWithDefaults.heading,
         fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
         marginBottom: '12px',
         fontWeight: themeWithDefaults.heading4_fontWeight || '600',
@@ -103,7 +104,7 @@ const CheckoutDiscountGiftCardComponent = ({
             onApplyGiftCard();
             return;
         }
-        
+
         setIsApplyingGiftCard(true);
         try {
             await onApplyGiftCard();
@@ -175,16 +176,16 @@ const CheckoutDiscountGiftCardComponent = ({
                             disabled={mode === 'builder' || isApplying || !discountCode.trim()}
                             className="px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                             style={{
-                                backgroundColor: hslToCss(themeWithDefaults.primary_button_background),
-                                color: hslToCss(themeWithDefaults.primary_button_text),
-                                border: `1px solid ${hslToCss(themeWithDefaults.primary_button_border)}`,
+                                backgroundColor: themeWithDefaults.primary_button_background,
+                                color: themeWithDefaults.primary_button_text,
+                                border: `1px solid ${themeWithDefaults.primary_button_border}`,
                                 fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
                             }}
                         >
                             {isApplying ? 'Aplicando...' : 'Aplicar'}
                         </button>
                     </div>
-                    
+
                     {/* Descuentos aplicados */}
                     {exampleAppliedDiscounts.length > 0 && (
                         <div className="space-y-2 mt-3">
@@ -196,7 +197,7 @@ const CheckoutDiscountGiftCardComponent = ({
                                                 ✓ Cupón aplicado: {discount.code}
                                             </p>
                                             <p className="text-xs text-green-600 mt-1">
-                                                {discount.discount_type === 'percentage' 
+                                                {discount.discount_type === 'percentage'
                                                     ? `${discount.value}% de descuento`
                                                     : `$${discount.value} de descuento`}
                                             </p>
@@ -258,20 +259,19 @@ const CheckoutDiscountGiftCardComponent = ({
                             {isApplyingGiftCard ? 'Aplicando...' : 'Aplicar'}
                         </button>
                     </div>
-                    
+
                     {/* Lista de gift cards del usuario */}
                     {userGiftCards && userGiftCards.length > 0 && mode !== 'builder' && (
                         <div className="mt-3">
                             <p className="text-sm font-medium text-gray-700 mb-2">Tus Gift Cards:</p>
                             <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {userGiftCards.map(giftCard => (
-                                    <div 
+                                    <div
                                         key={giftCard.id}
-                                        className={`p-3 border rounded-md cursor-pointer transition-all hover:shadow-sm ${
-                                            appliedGiftCard?.id === giftCard.id 
-                                                ? 'bg-green-50 border-green-300' 
-                                                : 'border-gray-200 hover:border-green-300'
-                                        }`}
+                                        className={`p-3 border rounded-md cursor-pointer transition-all hover:shadow-sm ${appliedGiftCard?.id === giftCard.id
+                                            ? 'bg-green-50 border-green-300'
+                                            : 'border-gray-200 hover:border-green-300'
+                                            }`}
                                         onClick={() => handleGiftCardClick(giftCard)}
                                     >
                                         <div className="flex justify-between items-start">
@@ -285,7 +285,7 @@ const CheckoutDiscountGiftCardComponent = ({
                                                         </span>
                                                     )}
                                                 </div>
-                                                
+
                                                 <div className="grid grid-cols-2 gap-2 text-xs">
                                                     <div className="flex items-center gap-1 text-gray-600">
                                                         <DollarSign size={12} />
@@ -297,13 +297,13 @@ const CheckoutDiscountGiftCardComponent = ({
                                                             )}
                                                         </strong></span>
                                                     </div>
-                                                    
+
                                                     <div className="flex items-center gap-1 text-gray-600">
                                                         <Calendar size={12} />
                                                         <span>Expira: {formatDate(giftCard.expiration_date)}</span>
                                                     </div>
                                                 </div>
-                                                
+
                                                 {appliedGiftCard?.id === giftCard.id && exampleGiftCardAmountUsed > 0 && (
                                                     <div className="mt-2 pt-2 border-t border-green-200">
                                                         <p className="text-xs text-green-700">
@@ -331,7 +331,7 @@ const CheckoutDiscountGiftCardComponent = ({
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Gift Card aplicada */}
                     {exampleAppliedGiftCard && (
                         <div className="p-3 bg-green-50 border border-green-200 rounded-md mt-3">
@@ -343,7 +343,7 @@ const CheckoutDiscountGiftCardComponent = ({
                                             ✓ Gift Card aplicada: {exampleAppliedGiftCard.code}
                                         </p>
                                     </div>
-                                    
+
                                     <div className="grid grid-cols-2 gap-3 text-xs">
                                         <div>
                                             <p className="text-gray-600">Saldo total:</p>
@@ -355,7 +355,7 @@ const CheckoutDiscountGiftCardComponent = ({
                                                 )}
                                             </p>
                                         </div>
-                                        
+
                                         <div>
                                             <p className="text-gray-600">Se usará en esta orden:</p>
                                             <p className="font-medium text-green-600">
@@ -366,18 +366,18 @@ const CheckoutDiscountGiftCardComponent = ({
                                                 )}
                                             </p>
                                         </div>
-                                        
+
                                         <div className="col-span-2">
                                             <p className="text-gray-600">Fecha de expiración:</p>
                                             <p className="font-medium">
                                                 {formatDate(exampleAppliedGiftCard.expiration_date)}
                                             </p>
                                         </div>
-                                        
+
                                         {exampleGiftCardAmountUsed > 0 && (
                                             <div className="col-span-2 mt-2 pt-2 border-t border-green-200">
                                                 <p className="text-xs text-green-700 font-medium">
-                                                    Saldo restante después de la compra: 
+                                                    Saldo restante después de la compra:
                                                     {settings?.currency ? (
                                                         <CurrencyDisplay currency={settings.currency} amount={parseFloat(exampleAppliedGiftCard.current_balance) - exampleGiftCardAmountUsed} />
                                                     ) : (
@@ -388,7 +388,7 @@ const CheckoutDiscountGiftCardComponent = ({
                                         )}
                                     </div>
                                 </div>
-                                
+
                                 <button
                                     onClick={onRemoveGiftCard}
                                     className="ml-2 text-red-600 hover:text-red-800 text-sm"
@@ -399,7 +399,7 @@ const CheckoutDiscountGiftCardComponent = ({
                             </div>
                         </div>
                     )}
-                    
+
                     {/* Información adicional */}
                     {mode === 'builder' && (
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">

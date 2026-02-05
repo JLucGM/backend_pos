@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ComponentWithHover from '../ComponentWithHover';
 import AnnouncementComponent from './AnnouncementComponent';
-import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const AnnouncementBarComponent = ({
     comp,
@@ -15,12 +15,13 @@ const AnnouncementBarComponent = ({
     setComponents,
     hoveredComponentId,
     setHoveredComponentId,
-    mode = 'builder'
+    mode = 'builder',
+    appliedTheme
 }) => {
     const customStyles = comp.styles || {};
     const announcementConfig = comp.content || {};
     const children = announcementConfig.children || [];
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeAnnouncementStyles = getComponentStyles(themeWithDefaults, 'announcement-bar');
 
     // Estados para el carrusel

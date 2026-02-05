@@ -38,7 +38,7 @@ const LinkEditDialog = ({
             textTransform: themeSettings?.paragraph_textTransform || 'none',
             fontType: 'default',
             customFont: '',
-            color: themeSettings?.links ? `hsl(${themeSettings.links})` : '#0000EE',
+            color: themeSettings?.links ? themeSettings.links : '#0000EE',
             textDecoration: 'underline',
         }));
     };
@@ -239,14 +239,14 @@ const LinkEditDialog = ({
                 <div className="flex gap-2">
                     <Input
                         id="color"
-                        value={editStyles.color || (themeSettings?.links ? `hsl(${themeSettings.links})` : '#0000EE')}
+                        value={editStyles.color || (themeSettings?.links ? themeSettings.links : '#0000EE')}
                         onChange={(e) => updateStyle('color', e.target.value)}
                         placeholder="#0000EE"
                         className="flex-1"
                     />
                     <Input
                         type="color"
-                        value={editStyles.color || (themeSettings?.links ? `hsl(${themeSettings.links})` : '#0000EE')}
+                        value={editStyles.color || (themeSettings?.links ? themeSettings.links : '#0000EE')}
                         onChange={(e) => updateStyle('color', e.target.value)}
                         className="w-12"
                     />
@@ -258,14 +258,14 @@ const LinkEditDialog = ({
                 <div className="flex gap-2">
                     <Input
                         id="hoverColor"
-                        value={editStyles.hoverColor || (themeSettings?.hover_links ? `hsl(${themeSettings.hover_links})` : '#0000FF')}
+                        value={editStyles.hoverColor || (themeSettings?.hover_links ? themeSettings.hover_links : '#0000FF')}
                         onChange={(e) => updateStyle('hoverColor', e.target.value)}
                         placeholder="#0000FF"
                         className="flex-1"
                     />
                     <Input
                         type="color"
-                        value={editStyles.hoverColor || (themeSettings?.hover_links ? `hsl(${themeSettings.hover_links})` : '#0000FF')}
+                        value={editStyles.hoverColor || (themeSettings?.hover_links ? themeSettings.hover_links : '#0000FF')}
                         onChange={(e) => updateStyle('hoverColor', e.target.value)}
                         className="w-12"
                     />

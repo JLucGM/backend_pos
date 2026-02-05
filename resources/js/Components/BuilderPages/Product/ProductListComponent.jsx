@@ -4,7 +4,7 @@ import ComponentWithHover from '../ComponentWithHover';
 import PaginationComponent from './PaginationComponent';
 import PriceFilterComponent from './PriceFilterComponent';
 import SortSelectComponent from './SortSelectComponent';
-import { getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
 
 const ProductListComponent = ({
     comp,
@@ -12,6 +12,7 @@ const ProductListComponent = ({
     onEdit,
     onDelete,
     themeSettings,
+    appliedTheme,
     isPreview,
     products = [],
     setComponents,
@@ -22,7 +23,7 @@ const ProductListComponent = ({
 }) => {
     const listConfig = comp.content || {};
     const children = listConfig.children || [];
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     const titleComponent = children.find(child => child.type === 'productTitle');
     const cardComponent = children.find(child => child.type === 'productCard');
@@ -32,9 +33,7 @@ const ProductListComponent = ({
 
     const baseStyles = getStyles(comp);
 
-    const finalBackgroundColor = hslToCss(
-        listConfig.backgroundColor || comp.styles?.backgroundColor || themeWithDefaults.background || { h: 0, s: 0, l: 100 }
-    );
+    const finalBackgroundColor = listConfig.backgroundColor || comp.styles?.backgroundColor || themeWithDefaults.background || '#ffffff';
 
     const containerStyles = {
         ...baseStyles,
@@ -156,6 +155,7 @@ const ProductListComponent = ({
                                 onEdit={() => { }}
                                 onDelete={() => { }}
                                 themeSettings={themeSettings}
+                                appliedTheme={appliedTheme}
                                 isPreview={false}
                                 products={products}
                                 setComponents={() => { }}
@@ -222,6 +222,7 @@ const ProductListComponent = ({
                                 onEdit={onEdit}
                                 onDelete={onDelete}
                                 themeSettings={themeSettings}
+                                appliedTheme={appliedTheme}
                                 isPreview={isPreview}
                                 products={products}
                                 setComponents={setComponents}

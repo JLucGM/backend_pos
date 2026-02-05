@@ -1,10 +1,10 @@
 // components/BuilderPages/components/HeadingComponent.jsx
 import React from 'react';
-import { getTextStyles, getResolvedFont, getThemeWithDefaults, hslToCss } from '@/utils/themeUtils';
+import { getTextStyles, getResolvedFont, getThemeWithDefaults } from '@/utils/themeUtils';
 
-const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) => {
+const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, appliedTheme }) => {
     // Obtener configuración del tema con valores por defecto
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     
     const getHeadingStyles = () => {
         const baseStyles = getStyles(comp);
@@ -19,14 +19,14 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings })
             const fontType = customStyles.fontType;
             
             if (fontType === 'default' || !fontType) {
-                return getResolvedFont(themeWithDefaults, `heading${level}_font`);
+                return getResolvedFont(themeWithDefaults, `heading${level}_font`, appliedTheme);
             }
             
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
             
-            return getResolvedFont(themeWithDefaults, fontType);
+            return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
         };
 
         // Obtener configuración según el nivel usando utilidades del tema
@@ -39,7 +39,7 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings })
             textTransform = customStyles.textTransform || themeWithDefaults[`heading${level}_textTransform`];
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
-            const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+            const themeTextStyles = getTextStyles(themeWithDefaults, textStyle, appliedTheme);
             fontSize = customStyles.fontSize || themeTextStyles.fontSize;
             fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
             lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
@@ -83,7 +83,7 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings })
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform: textTransform === 'default' ? 'none' : textTransform,
-            color: customStyles.color || hslToCss(themeWithDefaults.heading),
+            color: customStyles.color || themeWithDefaults.heading,
         };
     };
 

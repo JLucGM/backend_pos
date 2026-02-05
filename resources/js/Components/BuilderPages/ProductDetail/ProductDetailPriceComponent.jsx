@@ -1,7 +1,7 @@
 import React from 'react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, hslToCss, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, getComponentStyles } from '@/utils/themeUtils';
 
 const ProductDetailPriceComponent = ({
     comp,
@@ -11,12 +11,13 @@ const ProductDetailPriceComponent = ({
     themeSettings,
     product,
     currentPrice,
-    selectedCombination
+    selectedCombination,
+    appliedTheme
 }) => {
     const { settings } = usePage().props;
 
     // Obtener themeWithDefaults una sola vez para usar en todo el componente
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     // Función para obtener los estilos del precio
     const getPriceStyles = () => {  // ✅ Nombre diferente
@@ -30,7 +31,7 @@ const ProductDetailPriceComponent = ({
         const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Ahora usa la importada
 
         // Obtener estilos específicos del componente product-price
-        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-price');
+        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-price', appliedTheme);
 
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
@@ -140,7 +141,7 @@ const ProductDetailPriceComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color: customStyles.color || themeComponentStyles.color || hslToCss(themeWithDefaults.text),
+            color: customStyles.color || themeComponentStyles.color || themeWithDefaults.text,
             margin: customStyles.margin || '0 0 1rem 0',
             paddingTop,
             paddingRight,
@@ -178,7 +179,7 @@ const ProductDetailPriceComponent = ({
                     <span
                         className="line-through mr-2"
                         style={{
-                            color: customStyles.originalPriceColor || hslToCss(themeWithDefaults.text),
+                            color: customStyles.originalPriceColor || themeWithDefaults.text,
                             fontSize: customStyles.originalPriceSize || '0.8em',
                             opacity: 0.7,
                         }}
@@ -187,7 +188,7 @@ const ProductDetailPriceComponent = ({
                     </span>
                     <span
                         style={{
-                            color: customStyles.discountPriceColor || hslToCss(themeWithDefaults.links),
+                            color: customStyles.discountPriceColor || themeWithDefaults.links,
                             fontSize: customStyles.discountPriceSize || '1.2em',
                             fontWeight: 'bold',
                         }}
@@ -224,7 +225,7 @@ const ProductDetailPriceComponent = ({
 
             {selectedCombination && product?.combinations?.length > 0 && (
                 <div className="text-sm mt-1" style={{
-                    color: hslToCss(themeWithDefaults.text),
+                    color: themeWithDefaults.text,
                     opacity: '0.7',
                     fontSize: '0.8em',
                 }}>

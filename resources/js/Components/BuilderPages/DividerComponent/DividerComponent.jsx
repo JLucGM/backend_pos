@@ -1,13 +1,13 @@
 import React from 'react';
-import { getThemeWithDefaults, getComponentStyles, hslToCss } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
-const DividerComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings }) => {
+const DividerComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, appliedTheme }) => {
     // Obtener configuración del tema con valores por defecto
-    const themeWithDefaults = getThemeWithDefaults(themeSettings);
-    
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
     // Obtener estilos específicos del componente divider del tema
-    const themeDividerStyles = getComponentStyles(themeWithDefaults, 'divider');
-    
+    const themeDividerStyles = getComponentStyles(themeWithDefaults, 'divider', appliedTheme);
+
     const getDividerStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};

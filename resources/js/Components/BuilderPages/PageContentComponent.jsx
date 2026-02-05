@@ -1,14 +1,14 @@
 import React from 'react';
 
-const PageContentComponent = ({ 
-    comp, 
-    getStyles, 
+const PageContentComponent = ({
+    comp,
+    getStyles,
     isPreview,
     hoveredComponentId,
     setHoveredComponentId,
     pageContent // ← Recibir el contenido real de la página
 }) => {
-    
+
     const handleMouseEnter = () => {
         if (setHoveredComponentId && !isPreview) {
             setHoveredComponentId(comp.id);
@@ -25,6 +25,7 @@ const PageContentComponent = ({
     const containerStyles = {
         ...getStyles(comp),
         width: '100%',
+        backgroundColor: comp.styles?.backgroundColor,
         // padding: '20px',
         // backgroundColor: '#ffffff',
         border: isPreview ? 'none' : '1px dashed #ddd',
@@ -39,10 +40,10 @@ const PageContentComponent = ({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
-            
+
             {/* Mostrar el contenido real de la página */}
             {pageContent ? (
-                <div 
+                <div
                     className="page-content prose max-w-none"
                     dangerouslySetInnerHTML={{ __html: pageContent }}
                 />
