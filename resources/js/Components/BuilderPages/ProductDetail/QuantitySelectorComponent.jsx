@@ -11,6 +11,14 @@ const QuantitySelectorComponent = ({
     const [quantity, setQuantity] = useState(1);
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Función para obtener valores por defecto del tema
     const getThemeValue = (key, defaultValue) => {
         // Mapear las claves del componente a las claves del tema
@@ -25,6 +33,12 @@ const QuantitySelectorComponent = ({
         };
 
         return comp.styles?.[key] || themeMap[key] || defaultValue;
+    };
+
+    const getThemeValueWithUnit = (key, unitKey, defaultValue) => {
+        const value = getThemeValue(key, defaultValue);
+        const unit = comp.styles?.[unitKey] || (value.toString().includes('rem') ? 'rem' : (value.toString().includes('em') ? 'em' : 'px'));
+        return withUnit(value, unit);
     };
 
     const handleIncrement = () => {
@@ -55,7 +69,7 @@ const QuantitySelectorComponent = ({
             ...comp.styles,
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: withUnit(comp.styles?.gap || '8px'),
         }}>
             <label className="quantity-label text-sm font-medium" style={{
                 color: getThemeValue('labelColor', '#666666'),
@@ -66,7 +80,7 @@ const QuantitySelectorComponent = ({
 
             <div className="flex items-center border rounded-md" style={{
                 borderColor: getThemeValue('borderColor', '#d1d5db'),
-                borderRadius: getThemeValue('borderRadius', '6px'),
+                borderRadius: getThemeValueWithUnit('borderRadius', 'borderRadiusUnit', '6px'),
             }}>
                 <button
                     type="button"
@@ -75,7 +89,7 @@ const QuantitySelectorComponent = ({
                     style={{
                         borderRight: `1px solid ${getThemeValue('borderColor', '#d1d5db')}`,
                         color: getThemeValue('buttonColor', '#374151'),
-                        fontSize: getThemeValue('buttonSize', '16px'),
+                        fontSize: getThemeValueWithUnit('buttonSize', 'buttonSizeUnit', '16px'),
                     }}
                     disabled={quantity <= 1}
                 >
@@ -90,7 +104,7 @@ const QuantitySelectorComponent = ({
                     onChange={handleInputChange}
                     className="w-16 text-center border-0 focus:ring-0 focus:outline-none"
                     style={{
-                        fontSize: getThemeValue('inputSize', '16px'),
+                        fontSize: getThemeValueWithUnit('inputSize', 'inputSizeUnit', '16px'),
                         color: getThemeValue('inputColor', themeWithDefaults.text),
                         backgroundColor: 'transparent',
                     }}
@@ -103,7 +117,7 @@ const QuantitySelectorComponent = ({
                     style={{
                         borderLeft: `1px solid ${getThemeValue('borderColor', '#d1d5db')}`,
                         color: getThemeValue('buttonColor', '#374151'),
-                        fontSize: getThemeValue('buttonSize', '16px'),
+                        fontSize: getThemeValueWithUnit('buttonSize', 'buttonSizeUnit', '16px'),
                     }}
                     disabled={quantity >= maxQuantity}
                 >

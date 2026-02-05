@@ -199,25 +199,40 @@ const ProductDetailPriceEditDialog = ({
                             <div className="flex gap-2">
                                 <Input
                                     id="fontSize"
-                                    value={editStyles.fontSize || '24px'}
+                                    type="number"
+                                    value={parseInt(editStyles.fontSize) || ''}
                                     onChange={(e) => handleStyleChange('fontSize', e.target.value)}
-                                    placeholder="Ej: 24px, 1.5rem"
+                                    placeholder="24"
                                     className="flex-1"
                                 />
+                                <Select
+                                    value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                    onValueChange={(value) => handleStyleChange('fontSizeUnit', value)}
+                                >
+                                    <SelectTrigger className="w-[80px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="px">px</SelectItem>
+                                        <SelectItem value="rem">rem</SelectItem>
+                                        <SelectItem value="em">em</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
                                         const textStyle = editStyles.textStyle;
+                                        let themeVal = '24px';
                                         if (textStyle === 'paragraph') {
-                                            handleStyleChange('fontSize', theme.paragraph_fontSize || '16px');
+                                            themeVal = theme.paragraph_fontSize || '16px';
                                         } else if (textStyle?.startsWith('heading')) {
                                             const level = textStyle.replace('heading', '');
-                                            handleStyleChange('fontSize', theme[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`);
-                                        } else {
-                                            handleStyleChange('fontSize', '24px');
+                                            themeVal = theme[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
                                         }
+                                        handleStyleChange('fontSize', parseInt(themeVal) || 24);
+                                        handleStyleChange('fontSizeUnit', themeVal.toString().includes('rem') ? 'rem' : 'px');
                                     }}
                                     className="whitespace-nowrap"
                                 >

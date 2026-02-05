@@ -12,6 +12,14 @@ const LinkComponent = ({
     // Obtener configuración del tema con valores por defecto
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     const getLinkStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
@@ -58,6 +66,8 @@ const LinkComponent = ({
             color = customStyles.color || themeWithDefaults.links;
         }
 
+        const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+
         // Calcular line-height si es personalizado
         let finalLineHeight = lineHeight;
         if (lineHeight === 'tight') finalLineHeight = '1.2';
@@ -71,7 +81,7 @@ const LinkComponent = ({
         const linkStyle = {
             ...baseStyles,
             fontFamily: getFontFamily(),
-            fontSize,
+            fontSize: withUnit(fontSize, fontSizeUnit),
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,

@@ -85,17 +85,16 @@ const AnnouncementBarEditDialog = ({
                 </div>
 
                 <div>
-                    <Label>Padding (px)</Label>
+                    <Label>Padding</Label>
                     <div className="grid grid-cols-2 gap-4 mt-1">
                         <div>
                             <Label htmlFor="paddingTop" className="text-xs text-gray-600">Superior</Label>
                             <Input
                                 id="paddingTop"
                                 type="number"
-                                min="0"
-                                max="100"
                                 value={parseInt(editStyles.paddingTop) || 15}
-                                onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingTop', e.target.value)}
+                                placeholder="15"
                             />
                         </div>
                         <div>
@@ -103,10 +102,9 @@ const AnnouncementBarEditDialog = ({
                             <Input
                                 id="paddingBottom"
                                 type="number"
-                                min="0"
-                                max="100"
                                 value={parseInt(editStyles.paddingBottom) || 15}
-                                onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingBottom', e.target.value)}
+                                placeholder="15"
                             />
                         </div>
                         <div>
@@ -114,10 +112,9 @@ const AnnouncementBarEditDialog = ({
                             <Input
                                 id="paddingLeft"
                                 type="number"
-                                min="0"
-                                max="100"
                                 value={parseInt(editStyles.paddingLeft) || 20}
-                                onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingLeft', e.target.value)}
+                                placeholder="20"
                             />
                         </div>
                         <div>
@@ -125,10 +122,9 @@ const AnnouncementBarEditDialog = ({
                             <Input
                                 id="paddingRight"
                                 type="number"
-                                min="0"
-                                max="100"
                                 value={parseInt(editStyles.paddingRight) || 20}
-                                onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingRight', e.target.value)}
+                                placeholder="20"
                             />
                         </div>
                     </div>
@@ -178,20 +174,21 @@ const AnnouncementBarEditDialog = ({
                 </div>
 
                 <div>
-                    <Label htmlFor="arrowSize">Tamaño de las Flechas (px)</Label>
+                    <Label htmlFor="arrowSize">Tamaño de las Flechas</Label>
                     <Input
                         id="arrowSize"
                         type="number"
                         min="20"
                         max="60"
                         value={parseInt(editStyles.arrowSize) || 32}
-                        onChange={(e) => updateStyle('arrowSize', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('arrowSize', e.target.value)}
+                        placeholder="32"
                         className="mt-1"
                     />
                 </div>
 
                 <div>
-                    <Label htmlFor="arrowIconSize">Tamaño del Ícono (px)</Label>
+                    <Label htmlFor="arrowIconSize">Tamaño del Ícono</Label>
                     <Input
                         id="arrowIconSize"
                         type="number"
@@ -199,6 +196,7 @@ const AnnouncementBarEditDialog = ({
                         max="32"
                         value={parseInt(editStyles.arrowIconSize) || 16}
                         onChange={(e) => updateStyle('arrowIconSize', e.target.value)}
+                        placeholder="16"
                         className="mt-1"
                     />
                 </div>
@@ -226,22 +224,22 @@ const AnnouncementBarEditDialog = ({
                     <Label htmlFor="arrowBorderRadius">Radio del Borde</Label>
                     <Input
                         id="arrowBorderRadius"
-                        value={editStyles.arrowBorderRadius || '50%'}
+                        type="number"
+                        value={parseInt(editStyles.arrowBorderRadius) || 50}
                         onChange={(e) => updateStyle('arrowBorderRadius', e.target.value)}
-                        placeholder="50% (circular) o 8px (redondeado)"
+                        placeholder="50"
                         className="mt-1"
                     />
                 </div>
 
                 <div>
-                    <Label htmlFor="arrowBorderWidth">Grosor del Borde (px)</Label>
+                    <Label htmlFor="arrowBorderWidth">Grosor del Borde</Label>
                     <Input
                         id="arrowBorderWidth"
                         type="number"
-                        min="0"
-                        max="5"
                         value={parseInt(editStyles.arrowBorderWidth) || 0}
-                        onChange={(e) => updateStyle('arrowBorderWidth', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('arrowBorderWidth', e.target.value)}
+                        placeholder="0"
                         className="mt-1"
                     />
                 </div>

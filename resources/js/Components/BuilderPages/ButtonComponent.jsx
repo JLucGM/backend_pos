@@ -116,21 +116,32 @@ const ButtonComponent = ({
         // Determinar tipo de botón
         const buttonType = customStyles.buttonType || 'primary';
 
+        // Helper para añadir unidad (px) si es solo número
+        const withUnit = (value, unit = 'px') => {
+            if (value === undefined || value === null || value === '') return undefined;
+            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+            if (typeof value === 'string' && isNaN(Number(value))) return value;
+            return `${value}${unit}`;
+        };
+
         // ===== ESTILOS PARA TIPO "custom" =====
         if (buttonType === 'custom') {
+            const fontSize = customStyles.fontSize || '16px';
+            const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+
             styles = {
                 ...styles,
                 backgroundColor: customStyles.backgroundColor || themeWithDefaults.primary_button_background,
                 color: customStyles.color || themeWithDefaults.primary_button_text,
                 borderColor: customStyles.borderColor || customStyles.backgroundColor || themeWithDefaults.primary_button_border,
-                borderWidth: customStyles.borderWidth || themeWithDefaults.primary_button_border_thickness,
+                borderWidth: withUnit(customStyles.borderWidth) || themeWithDefaults.primary_button_border_thickness,
                 borderStyle: customStyles.borderStyle || 'solid',
-                borderRadius: customStyles.borderRadius || themeWithDefaults.primary_button_corner_radius,
-                paddingTop: customStyles.paddingTop || '10px',
-                paddingRight: customStyles.paddingRight || '10px',
-                paddingBottom: customStyles.paddingBottom || '10px',
-                paddingLeft: customStyles.paddingLeft || '10px',
-                fontSize: customStyles.fontSize || '16px',
+                borderRadius: withUnit(customStyles.borderRadius) || themeWithDefaults.primary_button_corner_radius,
+                paddingTop: withUnit(customStyles.paddingTop) || '10px',
+                paddingRight: withUnit(customStyles.paddingRight) || '10px',
+                paddingBottom: withUnit(customStyles.paddingBottom) || '10px',
+                paddingLeft: withUnit(customStyles.paddingLeft) || '10px',
+                fontSize: withUnit(fontSize, fontSizeUnit),
                 textTransform: customStyles.textTransform || themeWithDefaults.primary_button_text_case === 'default' ? 'none' : themeWithDefaults.primary_button_text_case,
                 fontWeight: customStyles.fontWeight || 'normal',
             };
@@ -139,59 +150,69 @@ const ButtonComponent = ({
         else if (buttonType === 'primary') {
             // Usar utilidades del tema
             const themeButtonStyles = getButtonStyles(themeWithDefaults, 'primary', appliedTheme);
-            
+            const fontSize = customStyles.fontSize || themeButtonStyles.fontSize || '16px';
+            const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+
             styles = {
                 ...styles,
                 backgroundColor: themeButtonStyles.backgroundColor || customStyles.backgroundColor,
                 color: themeButtonStyles.color || customStyles.color,
                 borderColor: themeButtonStyles.borderColor || themeButtonStyles.backgroundColor,
-                borderWidth: themeButtonStyles.borderWidth || customStyles.borderWidth,
+                borderWidth: withUnit(themeButtonStyles.borderWidth || customStyles.borderWidth),
                 borderStyle: 'solid',
-                borderRadius: themeButtonStyles.borderRadius || customStyles.borderRadius,
-                fontSize: customStyles.fontSize || '16px',
+                borderRadius: withUnit(themeButtonStyles.borderRadius || customStyles.borderRadius),
+                fontSize: withUnit(fontSize, fontSizeUnit),
                 textTransform: themeButtonStyles.textTransform || customStyles.textTransform,
                 fontWeight: customStyles.fontWeight || 'normal',
-                paddingTop: customStyles.paddingTop || '10px',
-                paddingRight: customStyles.paddingRight || '10px',
-                paddingBottom: customStyles.paddingBottom || '10px',
-                paddingLeft: customStyles.paddingLeft || '10px',
+                paddingTop: withUnit(customStyles.paddingTop || themeButtonStyles.paddingTop || '10px'),
+                paddingRight: withUnit(customStyles.paddingRight || themeButtonStyles.paddingRight || '20px'),
+                paddingBottom: withUnit(customStyles.paddingBottom || themeButtonStyles.paddingBottom || '10px'),
+                paddingLeft: withUnit(customStyles.paddingLeft || themeButtonStyles.paddingLeft || '20px'),
             };
         }
         // ===== ESTILOS PARA TIPO "secondary" =====
         else if (buttonType === 'secondary') {
             // Usar utilidades del tema
             const themeButtonStyles = getButtonStyles(themeWithDefaults, 'secondary', appliedTheme);
-            
+            const fontSize = customStyles.fontSize || themeButtonStyles.fontSize || '16px';
+            const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+
             styles = {
                 ...styles,
                 backgroundColor: themeButtonStyles.backgroundColor || customStyles.backgroundColor,
                 color: themeButtonStyles.color || customStyles.color,
                 borderColor: themeButtonStyles.borderColor || themeButtonStyles.backgroundColor,
-                borderWidth: themeButtonStyles.borderWidth || customStyles.borderWidth,
+                borderWidth: withUnit(themeButtonStyles.borderWidth || customStyles.borderWidth),
                 borderStyle: 'solid',
-                borderRadius: themeButtonStyles.borderRadius || customStyles.borderRadius,
-                fontSize: customStyles.fontSize || '16px',
+                borderRadius: withUnit(themeButtonStyles.borderRadius || customStyles.borderRadius),
+                fontSize: withUnit(fontSize, fontSizeUnit),
                 textTransform: themeButtonStyles.textTransform || customStyles.textTransform,
                 fontWeight: customStyles.fontWeight || 'normal',
-                paddingTop: customStyles.paddingTop || '10px',
-                paddingRight: customStyles.paddingRight || '10px',
-                paddingBottom: customStyles.paddingBottom || '10px',
-                paddingLeft: customStyles.paddingLeft || '10px',
+                paddingTop: withUnit(customStyles.paddingTop || themeButtonStyles.paddingTop || '10px'),
+                paddingRight: withUnit(customStyles.paddingRight || themeButtonStyles.paddingRight || '20px'),
+                paddingBottom: withUnit(customStyles.paddingBottom || themeButtonStyles.paddingBottom || '10px'),
+                paddingLeft: withUnit(customStyles.paddingLeft || themeButtonStyles.paddingLeft || '20px'),
             };
         }
         // ===== ESTILOS POR DEFECTO (si no hay tipo especificado) =====
         else {
+            const fontSize = customStyles.fontSize || '16px';
+            const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+
             styles = {
                 ...styles,
                 backgroundColor: customStyles.backgroundColor || themeWithDefaults.primary_button_background,
                 color: customStyles.color || themeWithDefaults.primary_button_text,
                 border: customStyles.borderWidth
-                    ? `${customStyles.borderWidth} solid ${customStyles.borderColor || themeWithDefaults.primary_button_border}`
-                    : `${themeWithDefaults.primary_button_border_thickness} solid ${themeWithDefaults.primary_button_border}`,
-                borderRadius: customStyles.borderRadius || themeWithDefaults.primary_button_corner_radius,
-                fontSize: customStyles.fontSize || '16px',
+                    ? `${withUnit(customStyles.borderWidth)} solid ${customStyles.borderColor || themeWithDefaults.primary_button_border}`
+                    : `${withUnit(themeWithDefaults.primary_button_border_thickness)} solid ${themeWithDefaults.primary_button_border}`,
+                borderRadius: withUnit(customStyles.borderRadius) || themeWithDefaults.primary_button_corner_radius,
+                fontSize: withUnit(fontSize, fontSizeUnit),
                 fontWeight: customStyles.fontWeight || 'normal',
-                padding: `${customStyles.paddingTop || '10px'} ${customStyles.paddingRight || '20px'} ${customStyles.paddingBottom || '10px'} ${customStyles.paddingLeft || '20px'}`,
+                paddingTop: withUnit(customStyles.paddingTop || '10px'),
+                paddingRight: withUnit(customStyles.paddingRight || '20px'),
+                paddingBottom: withUnit(customStyles.paddingBottom || '10px'),
+                paddingLeft: withUnit(customStyles.paddingLeft || '20px'),
             };
         }
 
@@ -214,7 +235,7 @@ const ButtonComponent = ({
                 const hoverBg = themeButtonStyles['--hover-bg'] || customStyles.hoverBackgroundColor;
                 const hoverBorder = themeButtonStyles['--hover-border'] || hoverBg;
                 const hoverColor = themeButtonStyles['--hover-color'] || styles.color;
-                
+
                 styles.backgroundColor = hoverBg;
                 styles.borderColor = hoverBorder;
                 styles.color = hoverColor;
@@ -223,7 +244,7 @@ const ButtonComponent = ({
                 const hoverBg = themeButtonStyles['--hover-bg'] || customStyles.hoverBackgroundColor;
                 const hoverBorder = themeButtonStyles['--hover-border'] || hoverBg;
                 const hoverColor = themeButtonStyles['--hover-color'] || styles.color;
-                
+
                 styles.backgroundColor = hoverBg;
                 styles.borderColor = hoverBorder;
                 styles.color = hoverColor;
@@ -279,49 +300,49 @@ const ButtonComponent = ({
     };
 
     // ===========================================
-// 6. OBTENER TEXTO DEL BOTÓN
-// ===========================================
-const getButtonText = () => {
-    // Prioridad 1: Texto específico para botón en estilos
-    if (comp.styles?.buttonText && comp.styles.buttonText.trim() !== '') {
-        return String(comp.styles.buttonText);
-    }
-    
-    // Prioridad 2: Contenido directo del componente
-    const content = comp.content;
-    
-    // Si es una URL, devolver texto descriptivo según tipo
-    if (isUrl && typeof content === 'string') {
-        if (content.includes('detalles-del-producto')) {
-            return 'Ver Producto';
-        } else if (content.startsWith('/')) {
-            return 'Ir a Página';
-        } else if (content.startsWith('http')) {
-            return 'Visitar Enlace';
+    // 6. OBTENER TEXTO DEL BOTÓN
+    // ===========================================
+    const getButtonText = () => {
+        // Prioridad 1: Texto específico para botón en estilos
+        if (comp.styles?.buttonText && comp.styles.buttonText.trim() !== '') {
+            return String(comp.styles.buttonText);
         }
-    }
-    
-    // Si el contenido existe y no es una URL, usarlo
-    if (content && typeof content === 'string' && content.trim() !== '') {
-        // Verificar que no sea una URL
-        if (!content.startsWith('/') && !content.startsWith('http')) {
-            return content;
+
+        // Prioridad 2: Contenido directo del componente
+        const content = comp.content;
+
+        // Si es una URL, devolver texto descriptivo según tipo
+        if (isUrl && typeof content === 'string') {
+            if (content.includes('detalles-del-producto')) {
+                return 'Ver Producto';
+            } else if (content.startsWith('/')) {
+                return 'Ir a Página';
+            } else if (content.startsWith('http')) {
+                return 'Visitar Enlace';
+            }
         }
-    }
-    
-    // Si es un objeto con texto
-    if (content && typeof content === 'object') {
-        if (content.text && String(content.text).trim() !== '') {
-            return String(content.text);
+
+        // Si el contenido existe y no es una URL, usarlo
+        if (content && typeof content === 'string' && content.trim() !== '') {
+            // Verificar que no sea una URL
+            if (!content.startsWith('/') && !content.startsWith('http')) {
+                return content;
+            }
         }
-        if (content.content && String(content.content).trim() !== '') {
-            return String(content.content);
+
+        // Si es un objeto con texto
+        if (content && typeof content === 'object') {
+            if (content.text && String(content.text).trim() !== '') {
+                return String(content.text);
+            }
+            if (content.content && String(content.content).trim() !== '') {
+                return String(content.content);
+            }
         }
-    }
-    
-    // Texto por defecto
-    return 'Botón';
-};
+
+        // Texto por defecto
+        return 'Botón';
+    };
 
     // ===========================================
     // 7. OBTENER ESTILOS Y TEXTO
@@ -333,78 +354,78 @@ const getButtonText = () => {
     const align = customStyles.align || 'start';
 
     // ===========================================
-// 8. FUNCIÓN PARA CREAR EL ELEMENTO DEL BOTÓN
-// ===========================================
-const createButtonElement = () => {
-    const buttonTextValue = getButtonText();
-    
-    // Para modo BUILDER sin preview
-    if (mode === 'builder' && !isPreview) {
-        // Siempre usar un <button> en modo builder para mantener consistencia
+    // 8. FUNCIÓN PARA CREAR EL ELEMENTO DEL BOTÓN
+    // ===========================================
+    const createButtonElement = () => {
+        const buttonTextValue = getButtonText();
+
+        // Para modo BUILDER sin preview
+        if (mode === 'builder' && !isPreview) {
+            // Siempre usar un <button> en modo builder para mantener consistencia
+            return (
+                <button
+                    style={buttonStyles}
+                    onClick={handleClick}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className="button-builder"
+                    type="button"
+                >
+                    {buttonTextValue}
+                </button>
+            );
+        }
+
+        // Para modo FRONTEND o PREVIEW
+        if ((mode === 'frontend' || isPreview) && isUrl) {
+            // URL interna -> Link de Inertia
+            if (processedUrl.startsWith('/')) {
+                return (
+                    <Link
+                        href={processedUrl}
+                        style={buttonStyles}
+                        onClick={handleClick}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                        className="button-link-inertia"
+                    >
+                        {buttonTextValue}
+                    </Link>
+                );
+            }
+            // URL externa -> <a> con target="_blank"
+            else if (processedUrl.startsWith('http')) {
+                return (
+                    <a
+                        href={processedUrl}
+                        style={buttonStyles}
+                        onClick={handleClick}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="button-link-external"
+                    >
+                        {buttonTextValue}
+                    </a>
+                );
+            }
+        }
+
+        // Caso por defecto: botón normal sin URL
         return (
             <button
                 style={buttonStyles}
                 onClick={handleClick}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                className="button-builder"
+                className="button-normal"
                 type="button"
             >
                 {buttonTextValue}
             </button>
         );
-    }
-    
-    // Para modo FRONTEND o PREVIEW
-    if ((mode === 'frontend' || isPreview) && isUrl) {
-        // URL interna -> Link de Inertia
-        if (processedUrl.startsWith('/')) {
-            return (
-                <Link
-                    href={processedUrl}
-                    style={buttonStyles}
-                    onClick={handleClick}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    className="button-link-inertia"
-                >
-                    {buttonTextValue}
-                </Link>
-            );
-        }
-        // URL externa -> <a> con target="_blank"
-        else if (processedUrl.startsWith('http')) {
-            return (
-                <a
-                    href={processedUrl}
-                    style={buttonStyles}
-                    onClick={handleClick}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="button-link-external"
-                >
-                    {buttonTextValue}
-                </a>
-            );
-        }
-    }
-    
-    // Caso por defecto: botón normal sin URL
-    return (
-        <button
-            style={buttonStyles}
-            onClick={handleClick}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="button-normal"
-            type="button"
-        >
-            {buttonTextValue}
-        </button>
-    );
-};
+    };
 
     // ===========================================
     // 9. LÓGICA DE RENDERIZADO CON POSICIÓN

@@ -54,42 +54,88 @@ const CheckoutDiscountGiftCardEditDialog = ({
                     />
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="padding">Padding</Label>
-                    <Input
-                        id="padding"
-                        value={editStyles.padding || '16px'}
-                        onChange={(e) => handleStyleChange('padding', e.target.value)}
-                        placeholder="Ej: 16px"
-                    />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="paddingTop">Padding Superior</Label>
+                        <Input
+                            id="paddingTop"
+                            type="number"
+                            value={parseInt(editStyles.paddingTop) || 16}
+                            onChange={(e) => handleStyleChange('paddingTop', e.target.value)}
+                            placeholder="16"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="paddingBottom">Padding Inferior</Label>
+                        <Input
+                            id="paddingBottom"
+                            type="number"
+                            value={parseInt(editStyles.paddingBottom) || 16}
+                            onChange={(e) => handleStyleChange('paddingBottom', e.target.value)}
+                            placeholder="16"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="paddingLeft">Padding Izquierdo</Label>
+                        <Input
+                            id="paddingLeft"
+                            type="number"
+                            value={parseInt(editStyles.paddingLeft) || 16}
+                            onChange={(e) => handleStyleChange('paddingLeft', e.target.value)}
+                            placeholder="16"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="paddingRight">Padding Derecho</Label>
+                        <Input
+                            id="paddingRight"
+                            type="number"
+                            value={parseInt(editStyles.paddingRight) || 16}
+                            onChange={(e) => handleStyleChange('paddingRight', e.target.value)}
+                            placeholder="16"
+                        />
+                    </div>
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="borderRadius">Radio de borde</Label>
                     <Input
                         id="borderRadius"
-                        value={editStyles.borderRadius || '8px'}
+                        type="number"
+                        value={parseInt(editStyles.borderRadius) || 8}
                         onChange={(e) => handleStyleChange('borderRadius', e.target.value)}
-                        placeholder="Ej: 8px"
+                        placeholder="8"
                     />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="titleSize">Tamaño del título</Label>
-                    <Select
-                        value={editStyles.titleSize || '16px'}
-                        onValueChange={(value) => handleStyleChange('titleSize', value)}
-                    >
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="14px">Pequeño (14px)</SelectItem>
-                            <SelectItem value="16px">Mediano (16px)</SelectItem>
-                            <SelectItem value="18px">Grande (18px)</SelectItem>
-                            <SelectItem value="20px">Extra grande (20px)</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                        <Input
+                            id="titleSize"
+                            type="number"
+                            value={parseInt(editStyles.titleSize) || 16}
+                            onChange={(e) => handleStyleChange('titleSize', e.target.value)}
+                            placeholder="16"
+                            className="flex-1"
+                        />
+                        <Select
+                            value={editStyles.titleSizeUnit || (editStyles.titleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                            onValueChange={(value) => handleStyleChange('titleSizeUnit', value)}
+                        >
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="rem">rem</SelectItem>
+                                <SelectItem value="em">em</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
                 <div className="space-y-2">

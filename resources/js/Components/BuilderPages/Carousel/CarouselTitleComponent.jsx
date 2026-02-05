@@ -57,10 +57,18 @@ const CarouselTitleComponent = ({
         finalLineHeight = styles.customLineHeight;
     }
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     const componentStyles = {
         ...getStyles(comp),
         color,
-        fontSize,
+        fontSize: withUnit(fontSize, styles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px')),
         fontWeight,
         lineHeight: finalLineHeight,
         textAlign: styles.alignment || 'center',

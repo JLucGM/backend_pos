@@ -74,16 +74,16 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                 <div>
                     <Label htmlFor="paddingTop">Padding Superior</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingTop || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingTop) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingTop: e.target.value })}
                     />
                 </div>
                 <div>
                     <Label htmlFor="paddingBottom">Padding Inferior</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingBottom || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingBottom) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingBottom: e.target.value })}
                     />
                 </div>
@@ -93,16 +93,16 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                 <div>
                     <Label htmlFor="paddingLeft">Padding Izquierdo</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingLeft || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingLeft) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingLeft: e.target.value })}
                     />
                 </div>
                 <div>
                     <Label htmlFor="paddingRight">Padding Derecho</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingRight || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingRight) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingRight: e.target.value })}
                     />
                 </div>
@@ -116,9 +116,10 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                     <Label htmlFor="borderRadius">Borde redondeado</Label>
                     <Input
                         id="borderRadius"
-                        value={editStyles.borderRadius || '0px'}
+                        type="number"
+                        value={parseInt(editStyles.borderRadius) || 0}
                         onChange={(e) => setEditStyles({ ...editStyles, borderRadius: e.target.value })}
-                        placeholder="Ej: 8px"
+                        placeholder="8"
                     />
                 </div>
 
@@ -126,9 +127,10 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                     <Label htmlFor="borderWidth">Grosor del borde</Label>
                     <Input
                         id="borderWidth"
-                        value={editStyles.borderWidth || '0px'}
+                        type="number"
+                        value={parseInt(editStyles.borderWidth) || 0}
                         onChange={(e) => setEditStyles({ ...editStyles, borderWidth: e.target.value })}
-                        placeholder="Ej: 1px"
+                        placeholder="1"
                     />
                 </div>
                 {editStyles.borderWidth !== '0px' && (
@@ -153,11 +155,28 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
 
             <div>
                 <Label htmlFor="totalFontSize">Tamaño de fuente total</Label>
-                <Input
-                    type="text"
-                    value={editStyles?.totalFontSize || '24px'}
-                    onChange={(e) => setEditStyles({ ...editStyles, totalFontSize: e.target.value })}
-                />
+                <div className="flex gap-2">
+                    <Input
+                        id="totalFontSize"
+                        type="number"
+                        value={parseInt(editStyles?.totalFontSize) || 24}
+                        onChange={(e) => setEditStyles({ ...editStyles, totalFontSize: e.target.value })}
+                        className="flex-1"
+                    />
+                    <Select
+                        value={editStyles.totalFontSizeUnit || (editStyles.totalFontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                        onValueChange={(value) => setEditStyles({ ...editStyles, totalFontSizeUnit: value })}
+                    >
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="rem">rem</SelectItem>
+                            <SelectItem value="em">em</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
         </div>
     );

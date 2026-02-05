@@ -9,25 +9,25 @@ import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const ProductTitleEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, isLiveEdit = true }) => {
     const debouncedContent = useDebounce(editContent, 300);
-        const debouncedStyles = useDebounce(editStyles, 300);
-    
-        useEffect(() => {
-            if (isLiveEdit) {
-                        console.log('Dialog debouncedStyles', debouncedStyles);
+    const debouncedStyles = useDebounce(editStyles, 300);
 
-                // Las actualizaciones se manejan automáticamente
-            }
-        }, [debouncedContent, debouncedStyles, isLiveEdit]);
+    useEffect(() => {
+        if (isLiveEdit) {
+            console.log('Dialog debouncedStyles', debouncedStyles);
+
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
     const updateStyle = (key, value) => {
-            console.log('Dialog updateStyle', key, value);
+        console.log('Dialog updateStyle', key, value);
 
         setEditStyles(prev => ({ ...prev, [key]: value }));
     };
 
     const resetToDefaults = () => {
         const textStyle = editStyles.textStyle || 'heading2';
-        
+
         if (textStyle.startsWith('heading')) {
             const level = textStyle.replace('heading', '');
             setEditStyles(prev => ({
@@ -96,7 +96,7 @@ const ProductTitleEditDialog = ({ editContent, setEditContent, editStyles, setEd
                     value={editStyles.textStyle || 'heading2'}
                     onValueChange={(value) => {
                         updateStyle('textStyle', value);
-                        
+
                         if (value.startsWith('heading') && themeSettings) {
                             const level = value.replace('heading', '');
                             updateStyle('fontSize', themeSettings[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`);
@@ -135,13 +135,29 @@ const ProductTitleEditDialog = ({ editContent, setEditContent, editStyles, setEd
                 <>
                     <div>
                         <Label htmlFor="fontSize">Tamaño de fuente</Label>
-                        <Input
-                            id="fontSize"
-                            value={editStyles.fontSize || '24px'}
-                            onChange={(e) => updateStyle('fontSize', e.target.value)}
-                            placeholder="24px"
-                            className="flex-1"
-                        />
+                        <div className="flex gap-2">
+                            <Input
+                                id="fontSize"
+                                type="number"
+                                value={parseInt(editStyles.fontSize) || 24}
+                                onChange={(e) => updateStyle('fontSize', e.target.value)}
+                                placeholder="24"
+                                className="flex-1"
+                            />
+                            <Select
+                                value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                            >
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div>

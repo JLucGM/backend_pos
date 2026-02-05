@@ -33,15 +33,23 @@ const BentoComponent = ({
         return typeNames[type] || type;
     };
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Configuración del contenedor principal con valores del tema
     const containerStyles = {
         ...getStyles(comp),
         width: '100%',
         backgroundColor: bentoConfig.backgroundColor || themeBentoStyles.backgroundColor,
         padding: '40px 20px',
-        borderRadius: bentoConfig.containerBorderRadius || themeBentoStyles.borderRadius,
+        borderRadius: withUnit(bentoConfig.containerBorderRadius) || themeBentoStyles.borderRadius,
         border: bentoConfig.containerBorder === 'solid'
-            ? `${bentoConfig.containerBorderThickness || '1px'} solid ${bentoConfig.containerBorderColor || '#e5e7eb'}`
+            ? `${withUnit(bentoConfig.containerBorderThickness) || '1px'} solid ${bentoConfig.containerBorderColor || '#e5e7eb'}`
             : 'none',
     };
 
@@ -52,7 +60,7 @@ const BentoComponent = ({
     const gridStyles = {
         display: 'grid',
         gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
-        gap: bentoConfig.gridGap || themeBentoStyles.gap,
+        gap: withUnit(bentoConfig.gridGap) || themeBentoStyles.gap,
         maxWidth: '1200px',
         margin: '0 auto',
     };

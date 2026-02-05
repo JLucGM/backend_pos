@@ -5,25 +5,21 @@ import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/uti
 const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, appliedTheme }) => {
     // Obtener configuración del tema con valores por defecto
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    
+
     // Obtener estilos específicos del componente marquee del tema
     const themeMarqueeStyles = getComponentStyles(themeWithDefaults, 'marquee', appliedTheme);
-    
+
     const [isPaused, setIsPaused] = useState(false);
     const marqueeRef = useRef(null);
     const contentRef = useRef(null);
     const containerRef = useRef(null);
 
-    // Función para obtener la familia de fuentes usando utilidades del tema
-    const getFontFamily = () => {
-        const customStyles = comp.styles || {};
-        
-        if (customStyles.fontFamily) {
-            return customStyles.fontFamily;
-        }
-        
-        const fontType = customStyles.fontType || 'body_font';
-        return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
     };
 
     const getMarqueeStyles = () => {
@@ -42,6 +38,7 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
 
         // Estilos de texto usando valores del tema
         const fontSize = customStyles.fontSize || themeWithDefaults.marquee_fontSize || '16px';
+        const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
         const fontWeight = customStyles.fontWeight || themeWithDefaults.marquee_fontWeight || 'normal';
         const color = customStyles.color || themeWithDefaults.marquee_color || themeWithDefaults.text;
         const backgroundColor = customStyles.backgroundColor || themeWithDefaults.marquee_backgroundColor || 'transparent';
@@ -50,12 +47,12 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
         return {
             ...baseStyles,
             width,
-            paddingTop,
-            paddingRight,
-            paddingBottom,
-            paddingLeft,
-            borderRadius,
-            fontSize,
+            paddingTop: withUnit(paddingTop),
+            paddingRight: withUnit(paddingRight),
+            paddingBottom: withUnit(paddingBottom),
+            paddingLeft: withUnit(paddingLeft),
+            borderRadius: withUnit(borderRadius),
+            fontSize: withUnit(fontSize, fontSizeUnit),
             fontWeight,
             color,
             backgroundColor,
@@ -94,6 +91,23 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
         }
     };
 
+    // Función para obtener la fuente usando utilidades del tema
+    const getFontFamily = () => {
+        const customStyles = comp.styles || {};
+        const fontType = customStyles.fontType;
+
+        // Si el usuario seleccionó "default" o no especificó nada
+        if (fontType === 'default' || !fontType) {
+            return getResolvedFont(themeWithDefaults, 'body_font');
+        }
+
+        if (fontType === 'custom' && customStyles.customFont) {
+            return customStyles.customFont;
+        }
+
+        return getResolvedFont(themeWithDefaults, fontType);
+    };
+
     // Agregar estilos CSS dinámicamente
     useEffect(() => {
         const style = document.createElement('style');
@@ -117,17 +131,17 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
     // EXTRAER EL TEXTO DEL CONTENIDO - ¡ESTO ES LO QUE FALTA!
     const getTextContent = () => {
         if (!comp.content) return 'Texto en movimiento';
-        
+
         // Si content es una cadena, devolverla directamente
         if (typeof comp.content === 'string') {
             return comp.content;
         }
-        
+
         // Si content es un objeto, extraer la propiedad 'text'
         if (typeof comp.content === 'object' && comp.content !== null) {
             return comp.content.text || 'Texto en movimiento';
         }
-        
+
         // Si es otra cosa, convertir a cadena
         return String(comp.content);
     };

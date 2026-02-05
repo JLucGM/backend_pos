@@ -21,6 +21,14 @@ const CartItemsComponent = ({
     const content = comp.content || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Obtener estilos del tema para cart
     const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart');
     const themeCartTitleStyles = getComponentStyles(themeWithDefaults, 'cart-title');
@@ -28,9 +36,14 @@ const CartItemsComponent = ({
     const containerStyles = {
         ...getStyles(comp),
         backgroundColor: styles.backgroundColor || themeCartStyles.backgroundColor || themeWithDefaults.background,
-        padding: `${styles.paddingTop || '20px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '20px'} ${styles.paddingLeft || '20px'}`,
-        borderRadius: styles.borderRadius || themeCartStyles.borderRadius || '0',
-        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || themeWithDefaults.borders}`,
+        paddingTop: withUnit(styles.paddingTop || '20px'),
+        paddingRight: withUnit(styles.paddingRight || '20px'),
+        paddingBottom: withUnit(styles.paddingBottom || '20px'),
+        paddingLeft: withUnit(styles.paddingLeft || '20px'),
+        borderRadius: withUnit(styles.borderRadius || themeCartStyles.borderRadius || '0'),
+        borderWidth: withUnit(styles.borderWidth || '0'),
+        borderStyle: styles.borderStyle || 'solid',
+        borderColor: styles.borderColor || themeWithDefaults.borders,
     };
 
     const handleClick = () => {
@@ -151,8 +164,8 @@ const CartItemsComponent = ({
                                         alt={item.name}
                                         className="rounded-md object-cover"
                                         style={{
-                                            width: styles.imageSize || '80px',
-                                            height: styles.imageSize || '80px',
+                                            width: withUnit(styles.imageSize || '80px'),
+                                            height: withUnit(styles.imageSize || '80px'),
                                         }}
                                     />
                                 </div>

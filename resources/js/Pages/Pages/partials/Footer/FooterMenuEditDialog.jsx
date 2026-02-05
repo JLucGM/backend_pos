@@ -159,12 +159,29 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                 {editStyles.gap === 'custom' && (
                     <div className="mb-3">
                         <Label htmlFor="customGap">Espaciado personalizado</Label>
-                        <Input
-                            id="customGap"
-                            value={editStyles.customGap || ''}
-                            onChange={(e) => updateStyle('customGap', e.target.value)}
-                            placeholder="Ej: 12px, 1rem"
-                        />
+                        <div className="flex gap-2">
+                            <Input
+                                id="customGap"
+                                type="number"
+                                value={parseInt(editStyles.customGap) || ''}
+                                onChange={(e) => updateStyle('customGap', e.target.value)}
+                                placeholder="Ej: 12"
+                                className="flex-1"
+                            />
+                            <Select
+                                value={editStyles.customGapUnit || 'px'}
+                                onValueChange={(value) => updateStyle('customGapUnit', value)}
+                            >
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 )}
             </div>
@@ -199,12 +216,29 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                 {editStyles.fontSize === 'custom' && (
                     <div className="mb-3">
                         <Label htmlFor="customFontSize">Tamaño personalizado</Label>
-                        <Input
-                            id="customFontSize"
-                            value={editStyles.customFontSize || ''}
-                            onChange={(e) => updateStyle('customFontSize', e.target.value)}
-                            placeholder="Ej: 15px, 1rem"
-                        />
+                        <div className="flex gap-2">
+                            <Input
+                                id="customFontSize"
+                                type="number"
+                                value={parseInt(editStyles.customFontSize) || ''}
+                                onChange={(e) => updateStyle('customFontSize', e.target.value)}
+                                placeholder="Ej: 15"
+                                className="flex-1"
+                            />
+                            <Select
+                                value={editStyles.customFontSizeUnit || 'px'}
+                                onValueChange={(value) => updateStyle('customFontSizeUnit', value)}
+                            >
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 )}
 

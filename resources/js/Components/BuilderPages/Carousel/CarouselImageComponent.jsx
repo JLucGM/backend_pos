@@ -43,6 +43,14 @@ const CarouselImageComponent = ({
 
     const containerStyles = getAspectRatioStyles();
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Estilos de imagen con valores del tema
     const imageStyles = {
         position: 'absolute',
@@ -51,9 +59,9 @@ const CarouselImageComponent = ({
         width: '100%',
         height: '100%',
         border: styles.imageBorder === 'solid'
-            ? `${styles.imageBorderThickness || themeImageStyles.borderWidth} solid ${styles.imageBorderColor || themeImageStyles.borderColor}`
+            ? `${withUnit(styles.imageBorderThickness || themeImageStyles.borderWidth)} solid ${styles.imageBorderColor || themeImageStyles.borderColor}`
             : 'none',
-        borderRadius: styles.imageBorderRadius || themeImageStyles.borderRadius,
+        borderRadius: withUnit(styles.imageBorderRadius || themeImageStyles.borderRadius),
         objectFit: styles.objectFit || themeImageStyles.objectFit,
     };
 

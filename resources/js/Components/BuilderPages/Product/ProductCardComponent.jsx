@@ -58,17 +58,25 @@ const ProductCardComponent = ({
         const nameStyles = nameChild?.styles || {};
         const priceStyles = priceChild?.styles || {};
 
+        // Helper para añadir unidad (px) si es solo número
+        const withUnit = (value, unit = 'px') => {
+            if (value === undefined || value === null || value === '') return undefined;
+            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+            if (typeof value === 'string' && isNaN(Number(value))) return value;
+            return `${value}${unit}`;
+        };
+
         // Configuración de la tarjeta con valores del tema
         const cardStyle = {
             // Estilos del contenedor de la tarjeta
-            paddingTop: cardConfig.cardPaddingTop || '0px',
-            paddingRight: cardConfig.cardPaddingRight || '0px',
-            paddingBottom: cardConfig.cardPaddingBottom || '0px',
-            paddingLeft: cardConfig.cardPaddingLeft || '0px',
+            paddingTop: withUnit(cardConfig.cardPaddingTop || '0px'),
+            paddingRight: withUnit(cardConfig.cardPaddingRight || '0px'),
+            paddingBottom: withUnit(cardConfig.cardPaddingBottom || '0px'),
+            paddingLeft: withUnit(cardConfig.cardPaddingLeft || '0px'),
             border: cardConfig.cardBorder === 'solid'
-                ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})`
+                ? `${withUnit(cardConfig.cardBorderThickness || '1px')} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})`
                 : 'none',
-            borderRadius: cardConfig.cardBorderRadius || '0px',
+            borderRadius: withUnit(cardConfig.cardBorderRadius || '0px'),
             backgroundColor: cardConfig.cardBackgroundColor || themeWithDefaults.background,
             cursor: 'pointer',
             transition: 'all 0.3s ease',
@@ -97,16 +105,16 @@ const ProductCardComponent = ({
             height: '100%',
             objectFit: 'cover',
             border: imageStyles.imageBorder === 'solid'
-                ? `${imageStyles.imageBorderThickness || '1px'} solid rgba(0, 0, 0, ${imageStyles.imageBorderOpacity || 1})`
+                ? `${withUnit(imageStyles.imageBorderThickness || '1px')} solid rgba(0, 0, 0, ${imageStyles.imageBorderOpacity || 1})`
                 : imageStyles.imageBorder === 'none' ? 'none' : undefined,
-            borderRadius: imageStyles.imageBorderRadius || '0px',
+            borderRadius: withUnit(imageStyles.imageBorderRadius || '0px'),
             display: 'block',
             transition: 'transform 0.3s ease',
         };
 
         // Estilos del nombre del producto con valores del tema
         const nameStyle = {
-            fontSize: nameStyles.fontSize || '16px',
+            fontSize: withUnit(nameStyles.fontSize || '16px', nameStyles.fontSizeUnit || (nameStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight: nameStyles.fontWeight || '600',
             color: nameStyles.color || themeWithDefaults.text,
             textAlign: nameStyles.alignment || 'left',
@@ -119,7 +127,7 @@ const ProductCardComponent = ({
 
         // Estilos del precio con valores del tema
         const priceStyle = {
-            fontSize: priceStyles.fontSize || '14px',
+            fontSize: withUnit(priceStyles.fontSize || '14px', priceStyles.fontSizeUnit || (priceStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight: priceStyles.fontWeight || 'normal',
             color: priceStyles.color || themeWithDefaults.text,
             textAlign: priceStyles.alignment || 'left',
@@ -201,16 +209,24 @@ const ProductCardComponent = ({
     }
 
     // ==================== RENDERIZADO BUILDER ====================
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Estilos de la carta para builder con valores del tema
     const cardStyles = {
-        paddingTop: cardConfig.cardPaddingTop || '0px',
-        paddingRight: cardConfig.cardPaddingRight || '0px',
-        paddingBottom: cardConfig.cardPaddingBottom || '0px',
-        paddingLeft: cardConfig.cardPaddingLeft || '0px',
+        paddingTop: withUnit(cardConfig.cardPaddingTop || '0px'),
+        paddingRight: withUnit(cardConfig.cardPaddingRight || '0px'),
+        paddingBottom: withUnit(cardConfig.cardPaddingBottom || '0px'),
+        paddingLeft: withUnit(cardConfig.cardPaddingLeft || '0px'),
         border: cardConfig.cardBorder === 'solid'
-            ? `${cardConfig.cardBorderThickness} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity})`
+            ? `${withUnit(cardConfig.cardBorderThickness || '1px')} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || '1'})`
             : 'none',
-        borderRadius: cardConfig.cardBorderRadius || '0px',
+        borderRadius: withUnit(cardConfig.cardBorderRadius || '0px'),
         backgroundColor: cardConfig.cardBackgroundColor || themeWithDefaults.background,
         boxShadow: `0 2px 4px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`,
     };

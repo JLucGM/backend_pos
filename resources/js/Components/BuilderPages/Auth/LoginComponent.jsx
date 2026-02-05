@@ -9,6 +9,13 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const LoginComponent = ({
     comp,
     getStyles,
@@ -55,12 +62,15 @@ const LoginComponent = ({
     const containerStyles = {
         ...getStyles(comp),
         backgroundColor: styles.backgroundColor || themeAuthStyles.backgroundColor || themeWithDefaults.background,
-        padding: styles.padding || '32px',
+        paddingTop: withUnit(styles.paddingTop || styles.padding || '32px'),
+        paddingRight: withUnit(styles.paddingRight || styles.padding || '32px'),
+        paddingBottom: withUnit(styles.paddingBottom || styles.padding || '32px'),
+        paddingLeft: withUnit(styles.paddingLeft || styles.padding || '32px'),
         borderColor: styles.borderColor || themeWithDefaults.borders,
-        borderWidth: styles.borderWidth || '1px',
+        borderWidth: withUnit(styles.borderWidth || '1px'),
         borderStyle: 'solid',
-        borderRadius: styles.borderRadius || '12px',
-        maxWidth: styles.maxWidth || '400px',
+        borderRadius: withUnit(styles.borderRadius || '12px'),
+        maxWidth: withUnit(styles.maxWidth || '400px', styles.maxWidthUnit || (styles.maxWidth?.toString().includes('%') ? '%' : 'px')),
         width: '100%',
         margin: styles.margin || '0',
         boxShadow: `0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`,
@@ -169,7 +179,7 @@ const LoginComponent = ({
 
     // CORRECCIÓN: Usar heading del tema para el título
     const titleStyles = {
-        fontSize: styles.titleSize || themeWithDefaults.heading1_fontSize || '28px',
+        fontSize: withUnit(styles.titleSize || themeWithDefaults.heading1_fontSize || '28px', styles.titleSizeUnit || 'px'),
         color: styles.titleColor || themeWithDefaults.heading, // <-- Usa heading del tema
         fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
         marginBottom: '8px',
@@ -179,7 +189,7 @@ const LoginComponent = ({
 
     // CORRECCIÓN: Usar text del tema para el subtítulo
     const subtitleStyles = {
-        fontSize: styles.subtitleSize || themeWithDefaults.paragraph_fontSize || '16px',
+        fontSize: withUnit(styles.subtitleSize || themeWithDefaults.paragraph_fontSize || '16px', styles.subtitleSizeUnit || 'px'),
         color: styles.subtitleColor || themeWithDefaults.text, // <-- Usa text del tema
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         marginBottom: '24px',
@@ -195,7 +205,7 @@ const LoginComponent = ({
 
     const inputStyles = {
         borderColor: styles.inputBorderColor || themeWithDefaults.input_border,
-        borderRadius: styles.inputBorderRadius || themeWithDefaults.input_corner_radius,
+        borderRadius: withUnit(styles.inputBorderRadius || themeWithDefaults.input_corner_radius),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         color: themeWithDefaults.text, // <-- Color del texto dentro del input
         backgroundColor: styles.inputBackgroundColor || themeWithDefaults.input_background,
@@ -204,7 +214,7 @@ const LoginComponent = ({
     const buttonStyles = {
         backgroundColor: styles.buttonBackgroundColor || themeWithDefaults.primary_button_background,
         color: styles.buttonColor || themeWithDefaults.primary_button_text,
-        borderRadius: styles.buttonBorderRadius || themeWithDefaults.primary_button_corner_radius,
+        borderRadius: withUnit(styles.buttonBorderRadius || themeWithDefaults.primary_button_corner_radius),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         width: '100%'
     };

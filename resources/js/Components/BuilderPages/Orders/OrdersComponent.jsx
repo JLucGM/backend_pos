@@ -3,34 +3,41 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Separator } from '@/Components/ui/separator';
-import { 
-    Package, 
-    Calendar, 
-    MapPin, 
-    CreditCard, 
-    Eye, 
-    ChevronDown, 
-    ChevronUp, 
-    Clock, 
-    Truck, 
-    CheckCircle, 
+import {
+    Package,
+    Calendar,
+    MapPin,
+    CreditCard,
+    Eye,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Truck,
+    CheckCircle,
     XCircle,
     ShoppingCart
 } from 'lucide-react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
-function OrdersComponent({ 
-    comp, 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
+function OrdersComponent({
+    comp,
     themeSettings,
     appliedTheme,
-    isPreview = false, 
+    isPreview = false,
     mode = 'builder',
     companyId,
     orders = null
 }) {
     const [expandedOrder, setExpandedOrder] = useState(null);
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    
+
     // Datos de ejemplo para el builder
     const exampleOrders = [
         {
@@ -151,8 +158,11 @@ function OrdersComponent({
     // 2. Contenedor interno
     const containerStyles = {
         backgroundColor: styles.backgroundColor || themeWithDefaults.background,
-        padding: `${styles.paddingTop || '40px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '40px'} ${styles.paddingLeft || '20px'}`,
-        maxWidth: styles.maxWidth || '1000px',
+        paddingTop: withUnit(styles.paddingTop || '40px'),
+        paddingRight: withUnit(styles.paddingRight || '20px'),
+        paddingBottom: withUnit(styles.paddingBottom || '40px'),
+        paddingLeft: withUnit(styles.paddingLeft || '20px'),
+        maxWidth: withUnit(styles.maxWidth || '1000px', styles.maxWidthUnit || (styles.maxWidth?.toString().includes('%') ? '%' : 'px')),
         width: '100%',
         margin: '0 auto',
         minHeight: mode === 'frontend' ? 'auto' : '100%',
@@ -161,6 +171,7 @@ function OrdersComponent({
     // Estilos para títulos
     const titleStyles = {
         color: styles.titleColor || themeWithDefaults.heading,
+        fontSize: withUnit(styles.titleSize, styles.titleSizeUnit || 'px'),
         fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
     };
 
@@ -226,7 +237,14 @@ function OrdersComponent({
                             {content.subtitle || `Tienes ${currentOrders.length} pedido${currentOrders.length !== 1 ? 's' : ''}`}
                         </p>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent
+                        className="space-y-4"
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: withUnit(styles.gap || '16px', styles.gapUnit || 'px')
+                        }}
+                    >
                         {currentOrders.map((order) => {
                             const statusInfo = getStatusInfo(order.status);
                             const StatusIcon = statusInfo.icon;
@@ -234,7 +252,7 @@ function OrdersComponent({
 
                             // Determinar color del badge según el estado
                             const getStatusBadgeColor = () => {
-                                switch(statusInfo.color) {
+                                switch (statusInfo.color) {
                                     case 'yellow':
                                         return {
                                             background: `${themeWithDefaults.primary_button_background}20`,
@@ -243,26 +261,26 @@ function OrdersComponent({
                                         };
                                     case 'green':
                                         return {
-                                            background: `${{...themeWithDefaults, primary_button_background: '131 98% 40%'}}20`,
-                                            color: {...themeWithDefaults, text: '131 50% 20%'},
+                                            background: `${{ ...themeWithDefaults, primary_button_background: '131 98% 40%' }}20`,
+                                            color: { ...themeWithDefaults, text: '131 50% 20%' },
                                             border: `1px solid ${themeWithDefaults.borders}`
                                         };
                                     case 'red':
                                         return {
-                                            background: `${{...themeWithDefaults, primary_button_background: '0 84% 60%'}}20`,
-                                            color: {...themeWithDefaults, text: '0 72% 51%'},
+                                            background: `${{ ...themeWithDefaults, primary_button_background: '0 84% 60%' }}20`,
+                                            color: { ...themeWithDefaults, text: '0 72% 51%' },
                                             border: `1px solid ${themeWithDefaults.borders}`
                                         };
                                     case 'blue':
                                         return {
-                                            background: `${{...themeWithDefaults, primary_button_background: '221 83% 53%'}}20`,
-                                            color: {...themeWithDefaults, text: '221 83% 53%'},
+                                            background: `${{ ...themeWithDefaults, primary_button_background: '221 83% 53%' }}20`,
+                                            color: { ...themeWithDefaults, text: '221 83% 53%' },
                                             border: `1px solid ${themeWithDefaults.borders}`
                                         };
                                     case 'purple':
                                         return {
-                                            background: `${{...themeWithDefaults, primary_button_background: '262 83% 58%'}}20`,
-                                            color: {...themeWithDefaults, text: '262 83% 58%'},
+                                            background: `${{ ...themeWithDefaults, primary_button_background: '262 83% 58%' }}20`,
+                                            color: { ...themeWithDefaults, text: '262 83% 58%' },
                                             border: `1px solid ${themeWithDefaults.borders}`
                                         };
                                     default:
@@ -295,7 +313,7 @@ function OrdersComponent({
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <div className="flex items-center gap-3">
                                                 <Badge style={badgeStyle}>
                                                     <StatusIcon className="h-3 w-3 mr-1" />

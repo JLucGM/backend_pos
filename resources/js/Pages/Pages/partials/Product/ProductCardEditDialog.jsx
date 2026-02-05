@@ -48,7 +48,7 @@ const ProductCardEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                             id="cardBorderThickness"
                             type="number"
                             value={parseInt(editContent.cardBorderThickness) || 1}
-                            onChange={(e) => updateCardConfig('cardBorderThickness', `${e.target.value}px`)}
+                            onChange={(e) => updateCardConfig('cardBorderThickness', e.target.value)}
                         />
                     </div>
 
@@ -73,7 +73,7 @@ const ProductCardEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                     id="cardBorderRadius"
                     type="number"
                     value={parseInt(editContent.cardBorderRadius) || 0}
-                    onChange={(e) => updateCardConfig('cardBorderRadius', `${e.target.value}px`)}
+                    onChange={(e) => updateCardConfig('cardBorderRadius', e.target.value)}
                 />
             </div>
 
@@ -85,7 +85,7 @@ const ProductCardEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                         id="cardPaddingTop"
                         type="number"
                         value={parseInt(editContent.cardPaddingTop) || 0}
-                        onChange={(e) => updateCardConfig('cardPaddingTop', `${e.target.value}px`)}
+                        onChange={(e) => updateCardConfig('cardPaddingTop', e.target.value)}
                     />
                 </div>
                 <div>
@@ -94,7 +94,7 @@ const ProductCardEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                         id="cardPaddingRight"
                         type="number"
                         value={parseInt(editContent.cardPaddingRight) || 0}
-                        onChange={(e) => updateCardConfig('cardPaddingRight', `${e.target.value}px`)}
+                        onChange={(e) => updateCardConfig('cardPaddingRight', e.target.value)}
                     />
                 </div>
                 <div>
@@ -103,7 +103,7 @@ const ProductCardEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                         id="cardPaddingBottom"
                         type="number"
                         value={parseInt(editContent.cardPaddingBottom) || 0}
-                        onChange={(e) => updateCardConfig('cardPaddingBottom', `${e.target.value}px`)}
+                        onChange={(e) => updateCardConfig('cardPaddingBottom', e.target.value)}
                     />
                 </div>
                 <div>
@@ -112,7 +112,7 @@ const ProductCardEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                         id="cardPaddingLeft"
                         type="number"
                         value={parseInt(editContent.cardPaddingLeft) || 0}
-                        onChange={(e) => updateCardConfig('cardPaddingLeft', `${e.target.value}px`)}
+                        onChange={(e) => updateCardConfig('cardPaddingLeft', e.target.value)}
                     />
                 </div>
             </div>

@@ -5,7 +5,7 @@ import { getTextStyles, getResolvedFont, getThemeWithDefaults } from '@/utils/th
 const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, appliedTheme }) => {
     // Obtener configuración del tema con valores por defecto
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    
+
     const getHeadingStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
@@ -17,21 +17,21 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, a
         // Función para obtener la fuente
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             if (fontType === 'default' || !fontType) {
                 return getResolvedFont(themeWithDefaults, `heading${level}_font`, appliedTheme);
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
+
             return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
         };
 
         // Obtener configuración según el nivel usando utilidades del tema
         let fontSize, fontWeight, lineHeight, textTransform;
-        
+
         if (textStyle === 'custom') {
             fontSize = customStyles.fontSize || themeWithDefaults[`heading${level}_fontSize`];
             fontWeight = customStyles.fontWeight || themeWithDefaults[`heading${level}_fontWeight`];
@@ -67,19 +67,27 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, a
         const alignment = customStyles.alignment || 'left';
         const textAlign = layout === 'fill' ? alignment : 'left';
 
+        // Helper para añadir unidad (px) si es solo número
+        const withUnit = (value, unit = 'px') => {
+            if (value === undefined || value === null || value === '') return undefined;
+            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+            if (typeof value === 'string' && isNaN(Number(value))) return value;
+            return `${value}${unit}`;
+        };
+
         return {
             ...baseStyles,
             width,
             textAlign,
-            paddingTop,
-            paddingRight,
-            paddingBottom,
-            paddingLeft,
+            paddingTop: withUnit(paddingTop),
+            paddingRight: withUnit(paddingRight),
+            paddingBottom: withUnit(paddingBottom),
+            paddingLeft: withUnit(paddingLeft),
             backgroundColor: customStyles.backgroundColor || 'transparent',
-            borderRadius: customStyles.borderRadius || '0px',
+            borderRadius: withUnit(customStyles.borderRadius) || '0px',
             display: layout === 'fit' ? 'inline-block' : 'block',
             fontFamily: getFontFamily(),
-            fontSize,
+            fontSize: withUnit(fontSize, customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform: textTransform === 'default' ? 'none' : textTransform,
@@ -95,16 +103,16 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, a
     // Extraer el texto del contenido (ahora es un string)
     const getTextContent = () => {
         if (!comp.content) return '';
-        
+
         if (typeof comp.content === 'string') {
             return comp.content;
         }
-        
+
         // Compatibilidad con formato antiguo
         if (typeof comp.content === 'object' && comp.content !== null) {
             return comp.content.text || comp.content.title || '';
         }
-        
+
         return String(comp.content);
     };
 
@@ -122,8 +130,8 @@ const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, a
     const textContent = getTextContent();
 
     return (
-        <Tag 
-            style={getHeadingStyles()} 
+        <Tag
+            style={getHeadingStyles()}
             onDoubleClick={isPreview ? undefined : handleDoubleClick}
         >
             {textContent}

@@ -140,11 +140,25 @@ const BentoFeatureTitleEditDialog = ({
                         <div className="flex gap-2">
                             <Input
                                 id="fontSize"
-                                value={editStyles.fontSize || '20px'}
+                                type="number"
+                                value={parseInt(editStyles.fontSize) || 20}
                                 onChange={(e) => updateStyle('fontSize', e.target.value)}
-                                placeholder="20px"
+                                placeholder="20"
                                 className="flex-1"
                             />
+                            <Select
+                                value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                            >
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 

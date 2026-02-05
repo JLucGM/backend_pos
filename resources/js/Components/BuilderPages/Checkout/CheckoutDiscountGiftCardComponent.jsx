@@ -5,6 +5,13 @@ import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getInputStyles } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const CheckoutDiscountGiftCardComponent = ({
     comp,
     getStyles,
@@ -63,13 +70,16 @@ const CheckoutDiscountGiftCardComponent = ({
     const containerStyles = {
         ...getStyles(comp),
         backgroundColor: styles.backgroundColor || themeWithDefaults.background,
-        padding: styles.padding || '16px',
-        borderRadius: styles.borderRadius || '8px',
+        paddingTop: withUnit(styles.paddingTop || '16px'),
+        paddingRight: withUnit(styles.paddingRight || '16px'),
+        paddingBottom: withUnit(styles.paddingBottom || '16px'),
+        paddingLeft: withUnit(styles.paddingLeft || '16px'),
+        borderRadius: withUnit(styles.borderRadius || '8px'),
         border: `1px solid ${themeWithDefaults.borders}`,
     };
 
     const titleStyles = {
-        fontSize: styles.titleSize || themeWithDefaults.heading4_fontSize || '16px',
+        fontSize: withUnit(styles.titleSize || themeWithDefaults.heading4_fontSize || '16px', styles.titleSizeUnit || 'px'),
         color: styles.titleColor || themeWithDefaults.heading,
         fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
         marginBottom: '12px',

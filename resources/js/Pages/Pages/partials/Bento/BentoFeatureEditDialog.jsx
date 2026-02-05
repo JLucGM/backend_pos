@@ -81,10 +81,10 @@ const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEd
                         <Label htmlFor="borderThickness">Grosor del border</Label>
                         <Input
                             id="borderThickness"
-                            type="text"
-                            value={editContent.borderThickness || '1px'}
+                            type="number"
+                            value={parseInt(editContent.borderThickness) || 1}
                             onChange={(e) => handleContentChange('borderThickness', e.target.value)}
-                            placeholder="Ej: 1px"
+                            placeholder="1"
                         />
                     </div>
 
@@ -114,10 +114,10 @@ const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEd
                 <Label htmlFor="borderRadius">Border radius</Label>
                 <Input
                     id="borderRadius"
-                    type="text"
-                    value={editContent.borderRadius || '12px'}
+                    type="number"
+                    value={parseInt(editContent.borderRadius) || 12}
                     onChange={(e) => handleContentChange('borderRadius', e.target.value)}
-                    placeholder="Ej: 12px"
+                    placeholder="12"
                 />
             </div>
 
@@ -126,10 +126,10 @@ const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEd
                 <Label htmlFor="padding">Padding</Label>
                 <Input
                     id="padding"
-                    type="text"
-                    value={editContent.padding || '24px'}
+                    type="number"
+                    value={parseInt(editContent.padding) || 24}
                     onChange={(e) => handleContentChange('padding', e.target.value)}
-                    placeholder="Ej: 24px"
+                    placeholder="24"
                 />
             </div>
 

@@ -47,7 +47,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                             id="cardBorderThickness"
                             type="number"
                             value={parseInt(editContent.cardBorderThickness) || 1}
-                            onChange={(e) => updateCardConfig('cardBorderThickness', `${e.target.value}px`)}
+                            onChange={(e) => updateCardConfig('cardBorderThickness', e.target.value)}
                         />
                     </div>
 
@@ -72,7 +72,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                     id="cardBorderRadius"
                     type="number"
                     value={parseInt(editContent.cardBorderRadius) || 0}
-                    onChange={(e) => updateCardConfig('cardBorderRadius', `${e.target.value}px`)}
+                    onChange={(e) => updateCardConfig('cardBorderRadius', e.target.value)}
                 />
             </div>
 
@@ -84,7 +84,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                         id="cardPaddingTop"
                         type="number"
                         value={parseInt(editContent.cardPaddingTop) || 10}
-                        onChange={(e) => updateCardConfig('cardPaddingTop', `${e.target.value}px`)}
+                        onChange={(e) => updateCardConfig('cardPaddingTop', e.target.value)}
                     />
                 </div>
                 <div>
@@ -93,7 +93,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                         id="cardPaddingRight"
                         type="number"
                         value={parseInt(editContent.cardPaddingRight) || 10}
-                        onChange={(e) => updateCardConfig('cardPaddingRight', `${e.target.value}px`)}
+                        onChange={(e) => updateCardConfig('cardPaddingRight', e.target.value)}
                     />
                 </div>
                 <div>
@@ -102,7 +102,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                         id="cardPaddingBottom"
                         type="number"
                         value={parseInt(editContent.cardPaddingBottom) || 10}
-                        onChange={(e) => updateCardConfig('cardPaddingBottom', `${e.target.value}px`)}
+                        onChange={(e) => updateCardConfig('cardPaddingBottom', e.target.value)}
                     />
                 </div>
                 <div>
@@ -111,7 +111,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                         id="cardPaddingLeft"
                         type="number"
                         value={parseInt(editContent.cardPaddingLeft) || 10}
-                        onChange={(e) => updateCardConfig('cardPaddingLeft', `${e.target.value}px`)}
+                        onChange={(e) => updateCardConfig('cardPaddingLeft', e.target.value)}
                     />
                 </div>
             </div>

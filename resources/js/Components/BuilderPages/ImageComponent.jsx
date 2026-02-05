@@ -87,7 +87,15 @@ const ImageComponent = ({
   };
 
   const containerStyles = getAspectRatioStyles();
-  
+
+  // Helper para añadir unidad (px) si es solo número
+  const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+  };
+
   // Estilos para la imagen que llena el contenedor usando valores del tema
   const imageStyles = {
     position: 'absolute',
@@ -96,17 +104,17 @@ const ImageComponent = ({
     width: '100%',
     height: '100%',
     // Estilos de borde usando valores del tema
-    borderRadius: comp.styles?.borderRadius || baseStyles.borderRadius || '0px',
-    borderWidth: comp.styles?.borderWidth || baseStyles.borderWidth || '0px',
+    borderRadius: withUnit(comp.styles?.borderRadius) || baseStyles.borderRadius || '0px',
+    borderWidth: withUnit(comp.styles?.borderWidth) || baseStyles.borderWidth || '0px',
     borderStyle: comp.styles?.borderStyle || baseStyles.borderStyle || 'solid',
     borderColor: comp.styles?.borderColor || baseStyles.borderColor || themeWithDefaults.borders,
     // Ajuste de imagen
     objectFit: comp.styles?.objectFit || baseStyles.objectFit || 'cover',
     // Márgenes personalizados (para el contenedor, no la imagen)
-    marginTop: comp.styles?.marginTop || baseStyles.marginTop || '0px',
-    marginRight: comp.styles?.marginRight || baseStyles.marginRight || '0px',
-    marginBottom: comp.styles?.marginBottom || baseStyles.marginBottom || '0px',
-    marginLeft: comp.styles?.marginLeft || baseStyles.marginLeft || '0px',
+    marginTop: withUnit(comp.styles?.marginTop) || baseStyles.marginTop || '0px',
+    marginRight: withUnit(comp.styles?.marginRight) || baseStyles.marginRight || '0px',
+    marginBottom: withUnit(comp.styles?.marginBottom) || baseStyles.marginBottom || '0px',
+    marginLeft: withUnit(comp.styles?.marginLeft) || baseStyles.marginLeft || '0px',
   };
 
   // Manejar clic
@@ -197,8 +205,8 @@ const ImageComponent = ({
         marginRight: imageStyles.marginRight,
         marginBottom: imageStyles.marginBottom,
         marginLeft: imageStyles.marginLeft,
-        cursor: (mode === 'builder' && !isPreview) ? 'pointer' : 
-                (hasLink ? 'pointer' : 'default'),
+        cursor: (mode === 'builder' && !isPreview) ? 'pointer' :
+          (hasLink ? 'pointer' : 'default'),
       }}
       className={isPreview ? '' : 'hover:opacity-95 transition-opacity'}
     >
@@ -232,10 +240,10 @@ const ImageComponent = ({
       );
     } else {
       return (
-        <a 
-          href={linkUrl} 
-          target="_blank" 
-          rel="noopener noreferrer" 
+        <a
+          href={linkUrl}
+          target="_blank"
+          rel="noopener noreferrer"
           style={{ display: 'block' }}
         >
           {imageElement}

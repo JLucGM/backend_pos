@@ -4,16 +4,17 @@ import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 const RegisterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
     const debouncedContent = useDebounce(editContent, 300);
-        const debouncedStyles = useDebounce(editStyles, 300);
-    
-        useEffect(() => {
-            if (isLiveEdit) {
-                // Las actualizaciones se manejan automáticamente
-            }
-        }, [debouncedContent, debouncedStyles, isLiveEdit]);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
     return (
         <div className="space-y-4">
@@ -134,11 +135,28 @@ const RegisterEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
 
             <div>
                 <Label htmlFor="maxWidth">Ancho máximo</Label>
-                <Input
-                    type="text"
-                    value={editStyles?.maxWidth || '400px'}
-                    onChange={(e) => setEditStyles({ ...editStyles, maxWidth: e.target.value })}
-                />
+                <div className="flex gap-2">
+                    <Input
+                        id="maxWidth"
+                        type="number"
+                        value={parseInt(editStyles?.maxWidth) || 400}
+                        onChange={(e) => setEditStyles({ ...editStyles, maxWidth: e.target.value })}
+                        placeholder="400"
+                        className="flex-1"
+                    />
+                    <Select
+                        value={editStyles?.maxWidthUnit || (editStyles?.maxWidth?.toString().includes('%') ? '%' : 'px')}
+                        onValueChange={(value) => setEditStyles({ ...editStyles, maxWidthUnit: value })}
+                    >
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="%">%</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <div>
@@ -159,21 +177,107 @@ const RegisterEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <Label htmlFor="padding">Padding</Label>
+                <div className="space-y-2">
+                    <Label htmlFor="paddingTop">Padding Superior</Label>
                     <Input
-                        type="text"
-                        value={editStyles?.padding || '32px'}
-                        onChange={(e) => setEditStyles({ ...editStyles, padding: e.target.value })}
+                        id="paddingTop"
+                        type="number"
+                        value={parseInt(editStyles?.paddingTop) || parseInt(editStyles?.padding) || 32}
+                        onChange={(e) => setEditStyles({ ...editStyles, paddingTop: e.target.value })}
+                        placeholder="32"
                     />
                 </div>
-                <div>
-                    <Label htmlFor="borderRadius">Borde redondeado</Label>
+                <div className="space-y-2">
+                    <Label htmlFor="paddingBottom">Padding Inferior</Label>
                     <Input
-                        type="text"
-                        value={editStyles?.borderRadius || '12px'}
-                        onChange={(e) => setEditStyles({ ...editStyles, borderRadius: e.target.value })}
+                        id="paddingBottom"
+                        type="number"
+                        value={parseInt(editStyles?.paddingBottom) || parseInt(editStyles?.padding) || 32}
+                        onChange={(e) => setEditStyles({ ...editStyles, paddingBottom: e.target.value })}
+                        placeholder="32"
                     />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="paddingLeft">Padding Izquierdo</Label>
+                    <Input
+                        id="paddingLeft"
+                        type="number"
+                        value={parseInt(editStyles?.paddingLeft) || parseInt(editStyles?.padding) || 32}
+                        onChange={(e) => setEditStyles({ ...editStyles, paddingLeft: e.target.value })}
+                        placeholder="32"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="paddingRight">Padding Derecho</Label>
+                    <Input
+                        id="paddingRight"
+                        type="number"
+                        value={parseInt(editStyles?.paddingRight) || parseInt(editStyles?.padding) || 32}
+                        onChange={(e) => setEditStyles({ ...editStyles, paddingRight: e.target.value })}
+                        placeholder="32"
+                    />
+                </div>
+            </div>
+
+            <div>
+                <Label htmlFor="borderRadius">Borde redondeado</Label>
+                <Input
+                    id="borderRadius"
+                    type="number"
+                    value={parseInt(editStyles?.borderRadius) || 12}
+                    onChange={(e) => setEditStyles({ ...editStyles, borderRadius: e.target.value })}
+                    placeholder="12"
+                />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="titleSize">Tamaño del título</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            id="titleSize"
+                            type="number"
+                            value={parseInt(editStyles?.titleSize) || 28}
+                            onChange={(e) => setEditStyles({ ...editStyles, titleSize: e.target.value })}
+                            className="flex-1"
+                        />
+                        <Select
+                            value={editStyles?.titleSizeUnit || (editStyles?.titleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                            onValueChange={(value) => setEditStyles({ ...editStyles, titleSizeUnit: value })}
+                        >
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="rem">rem</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="subtitleSize">Tamaño del subtítulo</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            id="subtitleSize"
+                            type="number"
+                            value={parseInt(editStyles?.subtitleSize) || 16}
+                            onChange={(e) => setEditStyles({ ...editStyles, subtitleSize: e.target.value })}
+                            className="flex-1"
+                        />
+                        <Select
+                            value={editStyles?.subtitleSizeUnit || (editStyles?.subtitleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                            onValueChange={(value) => setEditStyles({ ...editStyles, subtitleSizeUnit: value })}
+                        >
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="rem">rem</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </div>
 

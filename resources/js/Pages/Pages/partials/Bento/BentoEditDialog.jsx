@@ -49,10 +49,10 @@ const BentoEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                 <Label htmlFor="gridGap">Espaciado entre características</Label>
                 <Input
                     id="gridGap"
-                    type="text"
-                    value={editContent.gridGap || '20px'}
+                    type="number"
+                    value={parseInt(editContent.gridGap) || 20}
                     onChange={(e) => handleContentChange('gridGap', e.target.value)}
-                    placeholder="Ej: 20px"
+                    placeholder="20"
                 />
             </div>
 
@@ -81,10 +81,10 @@ const BentoEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                 <Label htmlFor="containerBorderRadius">Border radius del contenedor</Label>
                 <Input
                     id="containerBorderRadius"
-                    type="text"
-                    value={editContent.containerBorderRadius || '0px'}
+                    type="number"
+                    value={parseInt(editContent.containerBorderRadius) || 0}
                     onChange={(e) => handleContentChange('containerBorderRadius', e.target.value)}
-                    placeholder="Ej: 8px"
+                    placeholder="0"
                 />
             </div>
 
@@ -111,10 +111,10 @@ const BentoEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                         <Label htmlFor="containerBorderThickness">Grosor del border</Label>
                         <Input
                             id="containerBorderThickness"
-                            type="text"
-                            value={editContent.containerBorderThickness || '1px'}
+                            type="number"
+                            value={parseInt(editContent.containerBorderThickness) || 1}
                             onChange={(e) => handleContentChange('containerBorderThickness', e.target.value)}
-                            placeholder="Ej: 1px"
+                            placeholder="1"
                         />
                     </div>
 

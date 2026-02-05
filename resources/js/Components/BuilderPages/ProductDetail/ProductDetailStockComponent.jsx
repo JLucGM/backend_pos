@@ -1,6 +1,14 @@
 import React from 'react';
 import { getThemeWithDefaults, getResolvedFont } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const ProductDetailStockComponent = ({
     comp,
     product,
@@ -19,7 +27,7 @@ const ProductDetailStockComponent = ({
 
         return {
             fontFamily,
-            fontSize: styles.fontSize || '14px',
+            fontSize: withUnit(styles.fontSize || '14px', styles.fontSizeUnit || 'px'),
             fontWeight: styles.fontWeight || '500',
         };
     };
@@ -32,9 +40,12 @@ const ProductDetailStockComponent = ({
         return (
             <div className="product-stock" style={{
                 ...comp.styles,
-                padding: comp.styles?.padding || '12px 16px',
-                borderRadius: comp.styles?.borderRadius || '8px',
-                borderWidth: comp.styles?.borderWidth || '1px',
+                paddingTop: withUnit(comp.styles?.paddingTop || '12px'),
+                paddingRight: withUnit(comp.styles?.paddingRight || '16px'),
+                paddingBottom: withUnit(comp.styles?.paddingBottom || '12px'),
+                paddingLeft: withUnit(comp.styles?.paddingLeft || '16px'),
+                borderRadius: withUnit(comp.styles?.borderRadius || '8px'),
+                borderWidth: withUnit(comp.styles?.borderWidth || '1px'),
                 borderStyle: 'solid',
                 backgroundColor: comp.styles?.inStockBgColor || '#dcfce7',
                 color: comp.styles?.inStockColor || '#166534',
@@ -155,9 +166,12 @@ const ProductDetailStockComponent = ({
     return (
         <div className="product-stock" style={{
             ...comp.styles,
-            padding: comp.styles?.padding || '12px 16px',
-            borderRadius: comp.styles?.borderRadius || '8px',
-            borderWidth: comp.styles?.borderWidth || '1px',
+            paddingTop: withUnit(comp.styles?.paddingTop || '12px'),
+            paddingRight: withUnit(comp.styles?.paddingRight || '16px'),
+            paddingBottom: withUnit(comp.styles?.paddingBottom || '12px'),
+            paddingLeft: withUnit(comp.styles?.paddingLeft || '16px'),
+            borderRadius: withUnit(comp.styles?.borderRadius || '8px'),
+            borderWidth: withUnit(comp.styles?.borderWidth || '1px'),
             borderStyle: 'solid',
             ...statusStyles,
             ...fontStyles,
@@ -166,7 +180,7 @@ const ProductDetailStockComponent = ({
             gap: '8px',
         }}>
             <span className="stock-icon" style={{
-                fontSize: comp.styles?.iconSize || '16px',
+                fontSize: withUnit(comp.styles?.iconSize || '16px'),
                 fontWeight: 'bold',
             }}>
                 {getStockIcon()}

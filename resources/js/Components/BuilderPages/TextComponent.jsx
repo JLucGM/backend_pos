@@ -5,7 +5,7 @@ import { getTextStyles as getThemeTextStyles, getResolvedFont, getThemeWithDefau
 const TextComponent = ({ comp, getStyles, themeSettings, appliedTheme, isPreview }) => {
     // Obtener configuración del tema con valores por defecto
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    
+
     const getTextComponentStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
@@ -16,7 +16,7 @@ const TextComponent = ({ comp, getStyles, themeSettings, appliedTheme, isPreview
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
-            
+
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
@@ -25,17 +25,17 @@ const TextComponent = ({ comp, getStyles, themeSettings, appliedTheme, isPreview
                     return getResolvedFont(themeWithDefaults, 'paragraph_font', appliedTheme);
                 }
             }
-            
+
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
-            
+
             return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
         };
 
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
         let fontSize, fontWeight, lineHeight, textTransform, color;
-        
+
         if (textStyle === 'custom') {
             fontSize = customStyles.fontSize || themeWithDefaults.paragraph_fontSize;
             fontWeight = customStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
@@ -73,19 +73,27 @@ const TextComponent = ({ comp, getStyles, themeSettings, appliedTheme, isPreview
         const alignment = customStyles.alignment || 'left';
         const textAlign = layout === 'fill' ? alignment : 'left';
 
+        // Helper para añadir unidad (px) si es solo número
+        const withUnit = (value, unit = 'px') => {
+            if (value === undefined || value === null || value === '') return undefined;
+            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+            if (typeof value === 'string' && isNaN(Number(value))) return value;
+            return `${value}${unit}`;
+        };
+
         return {
             ...baseStyles,
             width,
             textAlign,
-            paddingTop,
-            paddingRight,
-            paddingBottom,
-            paddingLeft,
+            paddingTop: withUnit(paddingTop),
+            paddingRight: withUnit(paddingRight),
+            paddingBottom: withUnit(paddingBottom),
+            paddingLeft: withUnit(paddingLeft),
             backgroundColor: customStyles.backgroundColor || 'transparent',
-            borderRadius: customStyles.borderRadius || '0px',
+            borderRadius: withUnit(customStyles.borderRadius) || '0px',
             display: layout === 'fit' ? 'inline-block' : 'block',
             fontFamily: getFontFamily(),
-            fontSize,
+            fontSize: withUnit(fontSize, customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
@@ -106,17 +114,17 @@ const TextComponent = ({ comp, getStyles, themeSettings, appliedTheme, isPreview
     // comp.content puede ser un objeto {text: '...'} o una cadena directa
     const getTextContent = () => {
         if (!comp.content) return '';
-        
+
         // Si content es una cadena, devolverla directamente
         if (typeof comp.content === 'string') {
             return comp.content;
         }
-        
+
         // Si content es un objeto, extraer la propiedad 'text'
         if (typeof comp.content === 'object' && comp.content !== null) {
             return comp.content.text || '';
         }
-        
+
         // Si es otra cosa, convertir a cadena
         return String(comp.content);
     };

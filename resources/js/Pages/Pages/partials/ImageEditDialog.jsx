@@ -24,16 +24,16 @@ const ImageEditDialog = ({
   const [selectedProduct, setSelectedProduct] = useState('');
   const [customUrl, setCustomUrl] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   const debouncedContent = useDebounce(editContent, 300);
   const debouncedStyles = useDebounce(editStyles, 300);
 
   // 1. INICIALIZACIÓN
   useEffect(() => {
     if (isInitialized) return;
-    
+
     const currentUrl = editStyles?.imageUrl || '';
-    
+
     // Inicializar el tipo de enlace
     if (currentUrl) {
       if (currentUrl.startsWith('/')) {
@@ -68,16 +68,16 @@ const ImageEditDialog = ({
     } else {
       setLinkType('none');
     }
-    
+
     setIsInitialized(true);
   }, [editStyles, dynamicPages, products, isInitialized]);
 
   // 2. ACTUALIZAR LA URL cuando cambian los controles
   useEffect(() => {
     if (!isInitialized) return;
-    
+
     let newUrl = '';
-    
+
     switch (linkType) {
       case 'page':
         if (selectedPage) {
@@ -96,7 +96,7 @@ const ImageEditDialog = ({
         newUrl = '';
         break;
     }
-    
+
     // Actualizar la URL en los estilos
     const currentUrl = editStyles?.imageUrl || '';
     if (newUrl !== currentUrl) {
@@ -241,7 +241,7 @@ const ImageEditDialog = ({
           <p className="text-sm text-gray-500 mb-4">
             Configura dónde navegará el usuario al hacer clic en la imagen
           </p>
-          
+
           <div>
             <Label htmlFor="linkType">Tipo de Enlace</Label>
             <Select
@@ -342,9 +342,9 @@ const ImageEditDialog = ({
                 className="mt-1"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Ejemplos:<br/>
-                • Enlace interno: /contacto<br/>
-                • Enlace externo: https://google.com<br/>
+                Ejemplos:<br />
+                • Enlace interno: /contacto<br />
+                • Enlace externo: https://google.com<br />
                 • Página estática: /inicio
               </p>
             </div>
@@ -362,35 +362,29 @@ const ImageEditDialog = ({
         {/* Pestaña Bordes */}
         <TabsContent value="bordes" className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="borderRadius">Border Radius</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id="borderRadius"
-                type="number"
-                min="0"
-                step="1"
-                value={parseInt(editStyles.borderRadius) || 0}
-                onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
-                placeholder="0"
-                className="flex-1"
-              />
-              <span className="text-gray-500">px</span>
-            </div>
-            <p className="text-xs text-gray-500">
-              Radio del borde en píxeles
-            </p>
+            <Label htmlFor="borderRadius">Radio de Borde</Label>
+            <Input
+              id="borderRadius"
+              type="number"
+              min="0"
+              step="1"
+              value={parseInt(editStyles.borderRadius) || 0}
+              onChange={(e) => updateStyle('borderRadius', e.target.value)}
+              placeholder="0"
+              className="w-full"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="borderWidth">Ancho del Borde (px)</Label>
+              <Label htmlFor="borderWidth">Ancho del Borde</Label>
               <Input
                 id="borderWidth"
                 type="number"
                 min="0"
                 step="1"
                 value={parseInt(editStyles.borderWidth) || 0}
-                onChange={(e) => updateStyle('borderWidth', `${e.target.value}px`)}
+                onChange={(e) => updateStyle('borderWidth', e.target.value)}
               />
             </div>
             <div>

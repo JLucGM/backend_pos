@@ -102,8 +102,9 @@ const CartButtonEditor = ({ buttonConfig, onUpdate }) => {
             id="cart-borderWidth"
             type="number"
             value={parseInt(localStyles.borderWidth) || 0}
-            onChange={(e) => updateStyle('borderWidth', `${e.target.value}px`)}
+            onChange={(e) => updateStyle('borderWidth', e.target.value)}
             className="h-8 text-xs"
+            placeholder="0"
           />
         </div>
 
@@ -134,13 +135,14 @@ const CartButtonEditor = ({ buttonConfig, onUpdate }) => {
 
       {/* Radio de borde */}
       <div>
-        <Label htmlFor="cart-borderRadius" className="text-xs">Radio de borde (px)</Label>
+        <Label htmlFor="cart-borderRadius" className="text-xs">Radio de borde</Label>
         <Input
           id="cart-borderRadius"
           type="number"
           value={parseInt(localStyles.borderRadius) || 50}
-          onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+          onChange={(e) => updateStyle('borderRadius', e.target.value)}
           className="h-8 text-xs"
+          placeholder="50"
         />
       </div>
 
@@ -149,24 +151,26 @@ const CartButtonEditor = ({ buttonConfig, onUpdate }) => {
       {/* Tamaño */}
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <Label htmlFor="cart-width" className="text-xs">Ancho (px)</Label>
+          <Label htmlFor="cart-width" className="text-xs">Ancho</Label>
           <Input
             id="cart-width"
             type="number"
             value={parseInt(localStyles.width) || 36}
-            onChange={(e) => updateStyle('width', `${e.target.value}px`)}
+            onChange={(e) => updateStyle('width', e.target.value)}
             className="h-8 text-xs"
+            placeholder="36"
           />
         </div>
 
         <div>
-          <Label htmlFor="cart-height" className="text-xs">Alto (px)</Label>
+          <Label htmlFor="cart-height" className="text-xs">Alto</Label>
           <Input
             id="cart-height"
             type="number"
             value={parseInt(localStyles.height) || 36}
-            onChange={(e) => updateStyle('height', `${e.target.value}px`)}
+            onChange={(e) => updateStyle('height', e.target.value)}
             className="h-8 text-xs"
+            placeholder="36"
           />
         </div>
 

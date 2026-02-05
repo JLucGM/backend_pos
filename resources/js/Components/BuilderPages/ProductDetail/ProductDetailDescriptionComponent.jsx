@@ -7,6 +7,14 @@ import {
     getComponentStyles
 } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const ProductDetailDescriptionComponent = ({
     comp,
     getStyles,
@@ -107,7 +115,7 @@ const ProductDetailDescriptionComponent = ({
 
             case 'custom':
             default:
-                fontSize = customStyles.fontSize || '16px';
+                fontSize = withUnit(customStyles.fontSize || '16px', customStyles.fontSizeUnit || 'px');
                 fontWeight = customStyles.fontWeight || 'normal';
                 lineHeight = customStyles.lineHeight || '1.6';
                 textTransform = customStyles.textTransform || 'none';
@@ -125,10 +133,10 @@ const ProductDetailDescriptionComponent = ({
 
         // Padding individual (usar valores del tema si existen)
         // ✅ CORRECCIÓN: Usar themeWithDefaults
-        const paddingTop = customStyles.paddingTop || themeWithDefaults?.spacing_small || '0px';
-        const paddingRight = customStyles.paddingRight || themeWithDefaults?.spacing_small || '0px';
-        const paddingBottom = customStyles.paddingBottom || themeWithDefaults?.spacing_small || '0px';
-        const paddingLeft = customStyles.paddingLeft || themeWithDefaults?.spacing_small || '0px';
+        const paddingTop = withUnit(customStyles.paddingTop || themeWithDefaults?.spacing_small || '0px');
+        const paddingRight = withUnit(customStyles.paddingRight || themeWithDefaults?.spacing_small || '0px');
+        const paddingBottom = withUnit(customStyles.paddingBottom || themeWithDefaults?.spacing_small || '0px');
+        const paddingLeft = withUnit(customStyles.paddingLeft || themeWithDefaults?.spacing_small || '0px');
 
         // Layout
         const layout = customStyles.layout || 'fit';
@@ -144,7 +152,7 @@ const ProductDetailDescriptionComponent = ({
 
         // Border radius - usar valores del tema
         // ✅ CORRECCIÓN: Usar themeWithDefaults
-        const borderRadius = customStyles.borderRadius || themeWithDefaults?.border_radius || '0px';
+        const borderRadius = withUnit(customStyles.borderRadius || themeWithDefaults?.border_radius || '0px');
 
         // Margen - usar valores del tema (spacing_medium como valor por defecto)
         // ✅ CORRECCIÓN: Usar themeWithDefaults

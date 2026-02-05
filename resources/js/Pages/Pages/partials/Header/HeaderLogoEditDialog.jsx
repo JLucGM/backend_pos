@@ -55,12 +55,12 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                             onCheckedChange={handleUseCompanyLogoChange}
                         />
                     </div>
-                    
+
                     {isUsingCompanyLogo && (
                         <div className="p-4 bg-gray-50 rounded-lg border">
-                            <img 
-                                src={companyLogo} 
-                                alt="Logo de la compañía" 
+                            <img
+                                src={companyLogo}
+                                alt="Logo de la compañía"
                                 className="max-h-24 mx-auto"
                             />
                             <p className="text-center text-sm text-gray-600 mt-2">
@@ -74,7 +74,7 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
             {/* Sección: Dimensiones del Logo */}
             <div className="space-y-4">
                 <h4 className="font-medium mb-3">Dimensiones del Logo</h4>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="width">Ancho</Label>
@@ -83,14 +83,25 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="width"
                                 type="number"
                                 value={parseInt(editStyles.width) || ''}
-                                onChange={(e) => updateStyle('width', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('width', e.target.value)}
                                 placeholder="Auto"
                             />
-                            <span className="text-sm text-gray-500">px</span>
+                            <Select
+                                value={editStyles.widthUnit || 'px'}
+                                onValueChange={(value) => updateStyle('widthUnit', value)}
+                            >
+                                <SelectTrigger className="w-[70px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="%">%</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">Dejar vacío para automático</p>
                     </div>
-                    
+
                     <div>
                         <Label htmlFor="height">Alto</Label>
                         <div className="flex items-center space-x-2">
@@ -98,10 +109,21 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="height"
                                 type="number"
                                 value={parseInt(editStyles.height) || ''}
-                                onChange={(e) => updateStyle('height', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('height', e.target.value)}
                                 placeholder="Auto"
                             />
-                            <span className="text-sm text-gray-500">px</span>
+                            <Select
+                                value={editStyles.heightUnit || 'px'}
+                                onValueChange={(value) => updateStyle('heightUnit', value)}
+                            >
+                                <SelectTrigger className="w-[70px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="%">%</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <p className="text-xs text-gray-500 mt-1">Dejar vacío para automático</p>
                     </div>
@@ -116,13 +138,12 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="maxWidth"
                                 type="number"
                                 value={parseInt(editStyles.maxWidth) || ''}
-                                onChange={(e) => updateStyle('maxWidth', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('maxWidth', e.target.value)}
                                 placeholder="Sin límite"
                             />
-                            <span className="text-sm text-gray-500">px</span>
                         </div>
                     </div>
-                    
+
                     <div>
                         <Label htmlFor="maxHeight">Alto máximo</Label>
                         <div className="flex items-center space-x-2">
@@ -130,10 +151,9 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="maxHeight"
                                 type="number"
                                 value={parseInt(editStyles.maxHeight) || ''}
-                                onChange={(e) => updateStyle('maxHeight', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('maxHeight', e.target.value)}
                                 placeholder="Sin límite"
                             />
-                            <span className="text-sm text-gray-500">px</span>
                         </div>
                     </div>
                 </div>
@@ -164,7 +184,7 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
 
             {/* Sección: Padding */}
             <div className="space-y-4">
-                <h4 className="font-medium mb-3">Padding del Logo (px)</h4>
+                <h4 className="font-medium mb-3">Padding del Logo</h4>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="paddingTop">Arriba</Label>
@@ -173,9 +193,8 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="paddingTop"
                                 type="number"
                                 value={parseInt(editStyles.paddingTop) || 0}
-                                onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingTop', e.target.value)}
                             />
-                            <span className="text-sm text-gray-500">px</span>
                         </div>
                     </div>
                     <div>
@@ -185,9 +204,8 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="paddingRight"
                                 type="number"
                                 value={parseInt(editStyles.paddingRight) || 0}
-                                onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingRight', e.target.value)}
                             />
-                            <span className="text-sm text-gray-500">px</span>
                         </div>
                     </div>
                     <div>
@@ -197,9 +215,8 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="paddingBottom"
                                 type="number"
                                 value={parseInt(editStyles.paddingBottom) || 0}
-                                onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingBottom', e.target.value)}
                             />
-                            <span className="text-sm text-gray-500">px</span>
                         </div>
                     </div>
                     <div>
@@ -209,9 +226,8 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="paddingLeft"
                                 type="number"
                                 value={parseInt(editStyles.paddingLeft) || 0}
-                                onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingLeft', e.target.value)}
                             />
-                            <span className="text-sm text-gray-500">px</span>
                         </div>
                     </div>
                 </div>
@@ -220,7 +236,7 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
             {/* Sección: Opciones avanzadas */}
             <div className="space-y-4 pt-4 border-t">
                 <h4 className="font-medium">Opciones avanzadas</h4>
-                
+
                 {/* Opacidad */}
                 <div>
                     <Label htmlFor="opacity">Opacidad (%)</Label>
@@ -249,12 +265,11 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="borderWidth"
                                 type="number"
                                 value={parseInt(editStyles.borderWidth) || 0}
-                                onChange={(e) => updateStyle('borderWidth', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('borderWidth', e.target.value)}
                             />
-                            <span className="text-sm text-gray-500">px</span>
                         </div>
                     </div>
-                    
+
                     <div>
                         <Label htmlFor="borderRadius">Radio del borde</Label>
                         <div className="flex items-center space-x-2">
@@ -262,9 +277,8 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 id="borderRadius"
                                 type="number"
                                 value={parseInt(editStyles.borderRadius) || 0}
-                                onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('borderRadius', e.target.value)}
                             />
-                            <span className="text-sm text-gray-500">px</span>
                         </div>
                     </div>
                 </div>

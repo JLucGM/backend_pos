@@ -30,7 +30,7 @@ const CarouselComponent = ({
     const children = carouselConfig.children || [];
     const carouselRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
-    
+
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeCarouselStyles = getComponentStyles(themeWithDefaults, 'carousel', appliedTheme);
 
@@ -87,10 +87,10 @@ const CarouselComponent = ({
     // Encontrar los componentes hijos
     const titleComponent = children.find(child => child.type === 'carouselTitle');
     const cardComponent = children.find(child => child.type === 'carouselCard');
-    
+
     // Filtrar otros componentes (text, heading, button, etc.)
-    const otherComponents = children.filter(child => 
-        child.type !== 'carouselTitle' && 
+    const otherComponents = children.filter(child =>
+        child.type !== 'carouselTitle' &&
         child.type !== 'carouselCard' &&
         // Solo incluir componentes que sabemos cómo renderizar
         ['text', 'heading', 'button', 'image', 'link', 'video'].includes(child.type)
@@ -178,8 +178,13 @@ const CarouselComponent = ({
         }
     };
 
-    // Calculate visible products based on current index
-    const visibleProducts = productsToShow.slice(currentIndex, currentIndex + slidesToShow);
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
 
     return (
         <div
@@ -254,15 +259,15 @@ const CarouselComponent = ({
                     ref={carouselRef}
                     className="flex transition-all duration-300 ease-in-out"
                     style={{
-                        gap: gapX,
-                        padding: `${gapY} 0`,
+                        gap: withUnit(gapX),
+                        padding: `${withUnit(gapY)} 0`,
                     }}
                 >
                     {visibleProducts.map((product, index) => (
                         <div
                             key={product.id}
                             style={{
-                                flex: `0 0 calc(${100 / slidesToShow}% - ${parseInt(gapX) * (slidesToShow - 1) / slidesToShow}px)`,
+                                flex: `0 0 calc(${100 / slidesToShow}% - ${(parseInt(gapX) || 0) * (slidesToShow - 1) / slidesToShow}px)`,
                                 minWidth: 0,
                             }}
                         >

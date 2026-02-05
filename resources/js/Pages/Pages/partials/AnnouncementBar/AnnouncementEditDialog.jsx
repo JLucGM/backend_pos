@@ -288,14 +288,30 @@ const AnnouncementEditDialog = ({
                 <h4 className="font-medium">Tipografía</h4>
 
                 <div>
-                    <Label htmlFor="fontSize">Tamaño de Fuente</Label>
-                    <Input
-                        id="fontSize"
-                        value={editStyles.fontSize || '14px'}
-                        onChange={(e) => updateStyle('fontSize', e.target.value)}
-                        placeholder="14px"
-                        className="mt-1"
-                    />
+                    <Label htmlFor="fontSize">Tamaño de fuente</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            id="fontSize"
+                            type="number"
+                            value={parseInt(editStyles.fontSize) || 14}
+                            onChange={(e) => updateStyle('fontSize', e.target.value)}
+                            placeholder="14"
+                            className="flex-1"
+                        />
+                        <Select
+                            value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                            onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                        >
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="rem">rem</SelectItem>
+                                <SelectItem value="em">em</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
                 <div>

@@ -49,6 +49,14 @@ const ProductImageComponent = ({
         maxWidth: styles.maxWidth || '500px',
     };
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Aplicar estilos del tema con valores por defecto
     const imageStyles = {
         position: 'absolute',
@@ -57,13 +65,13 @@ const ProductImageComponent = ({
         width: '100%',
         height: '100%',
         border: styles.imageBorder === 'solid'
-            ? `${styles.imageBorderThickness || themeImageStyles.borderWidth} solid ${styles.imageBorderColor || themeImageStyles.borderColor}`
+            ? `${withUnit(styles.imageBorderThickness || themeImageStyles.borderWidth)} solid ${styles.imageBorderColor || themeImageStyles.borderColor}`
             : (styles.imageBorder === 'none' ? 'none' :
                 // Si no está definido, usar el tema
                 themeImageStyles.borderWidth !== '0px'
-                    ? `${themeImageStyles.borderWidth} solid ${themeImageStyles.borderColor}`
+                    ? `${withUnit(themeImageStyles.borderWidth)} solid ${themeImageStyles.borderColor}`
                     : 'none'),
-        borderRadius: styles.imageBorderRadius || themeImageStyles.borderRadius,
+        borderRadius: withUnit(styles.imageBorderRadius || themeImageStyles.borderRadius),
         objectFit: styles.objectFit || themeImageStyles.objectFit,
         // Sombra del tema
         boxShadow: themeWithDefaults.shadows ? `0 2px 4px ${themeWithDefaults.shadows}` : 'none',

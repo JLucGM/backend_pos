@@ -28,6 +28,14 @@ const BentoFeatureComponent = ({
         return typeNames[type] || type;
     };
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Estilos de la carta de característica con valores del tema
     const cardStyles = {
         ...getStyles(comp),
@@ -36,10 +44,10 @@ const BentoFeatureComponent = ({
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         border: featureConfig.border === 'solid'
-            ? `${featureConfig.borderThickness || '1px'} solid ${featureConfig.borderColor || themeWithDefaults.borders}`
+            ? `${withUnit(featureConfig.borderThickness) || '1px'} solid ${featureConfig.borderColor || themeWithDefaults.borders}`
             : 'none',
-        borderRadius: featureConfig.borderRadius || '12px',
-        padding: featureConfig.padding || '24px',
+        borderRadius: withUnit(featureConfig.borderRadius) || '12px',
+        padding: withUnit(featureConfig.padding) || '24px',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',

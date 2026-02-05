@@ -9,13 +9,13 @@ import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
     const debouncedContent = useDebounce(editContent, 300);
-        const debouncedStyles = useDebounce(editStyles, 300);
-    
-        useEffect(() => {
-            if (isLiveEdit) {
-                // Las actualizaciones se manejan automáticamente
-            }
-        }, [debouncedContent, debouncedStyles, isLiveEdit]);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
     const updateBannerConfig = (key, value) => {
         setEditContent(prev => ({
@@ -52,21 +52,57 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
 
                 {/* Pestaña Contenedor */}
                 <TabsContent value="contenedor" className="space-y-4">
-                    <Label htmlFor="containerHeight">Altura del Contenedor</Label>
-                    <Input
-                        id="containerHeight"
-                        value={editContent.containerHeight || '400px'}
-                        onChange={(e) => updateBannerConfig('containerHeight', e.target.value)}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="containerHeight">Altura del Contenedor</Label>
+                            <div className="flex items-center space-x-2">
+                                <Input
+                                    id="containerHeight"
+                                    type="number"
+                                    value={parseInt(editContent.containerHeight) || 400}
+                                    onChange={(e) => updateBannerConfig('containerHeight', e.target.value)}
+                                />
+                                <Select
+                                    value={editContent.containerHeightUnit || 'px'}
+                                    onValueChange={(value) => updateBannerConfig('containerHeightUnit', value)}
+                                >
+                                    <SelectTrigger className="w-[70px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="px">px</SelectItem>
+                                        <SelectItem value="vh">vh</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
 
-                    <Label htmlFor="containerWidth">Ancho del Contenedor</Label>
-                    <Input
-                        id="containerWidth"
-                        value={editContent.containerWidth || '100%'}
-                        onChange={(e) => updateBannerConfig('containerWidth', e.target.value)}
-                    />
+                        <div>
+                            <Label htmlFor="containerWidth">Ancho del Contenedor</Label>
+                            <div className="flex items-center space-x-2">
+                                <Input
+                                    id="containerWidth"
+                                    type="number"
+                                    value={parseInt(editContent.containerWidth) || 100}
+                                    onChange={(e) => updateBannerConfig('containerWidth', e.target.value)}
+                                />
+                                <Select
+                                    value={editContent.containerWidthUnit || '%'}
+                                    onValueChange={(value) => updateBannerConfig('containerWidthUnit', value)}
+                                >
+                                    <SelectTrigger className="w-[70px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="px">px</SelectItem>
+                                        <SelectItem value="%">%</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
 
-                    <Label>Márgenes (px)</Label>
+                    <Label>Márgenes</Label>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="marginTop">Superior</Label>
@@ -74,7 +110,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="marginTop"
                                 type="number"
                                 value={parseInt(editContent.marginTop) || 0}
-                                onChange={(e) => updateBannerConfig('marginTop', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('marginTop', e.target.value)}
                             />
                         </div>
                         <div>
@@ -83,7 +119,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="marginRight"
                                 type="number"
                                 value={parseInt(editContent.marginRight) || 0}
-                                onChange={(e) => updateBannerConfig('marginRight', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('marginRight', e.target.value)}
                             />
                         </div>
                         <div>
@@ -92,7 +128,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="marginBottom"
                                 type="number"
                                 value={parseInt(editContent.marginBottom) || 0}
-                                onChange={(e) => updateBannerConfig('marginBottom', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('marginBottom', e.target.value)}
                             />
                         </div>
                         <div>
@@ -101,12 +137,12 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="marginLeft"
                                 type="number"
                                 value={parseInt(editContent.marginLeft) || 0}
-                                onChange={(e) => updateBannerConfig('marginLeft', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('marginLeft', e.target.value)}
                             />
                         </div>
                     </div>
 
-                    <Label>Padding (px)</Label>
+                    <Label>Padding</Label>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="paddingTop">Superior</Label>
@@ -114,7 +150,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="paddingTop"
                                 type="number"
                                 value={parseInt(editContent.paddingTop) || 20}
-                                onChange={(e) => updateBannerConfig('paddingTop', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('paddingTop', e.target.value)}
                             />
                         </div>
                         <div>
@@ -123,7 +159,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="paddingRight"
                                 type="number"
                                 value={parseInt(editContent.paddingRight) || 20}
-                                onChange={(e) => updateBannerConfig('paddingRight', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('paddingRight', e.target.value)}
                             />
                         </div>
                         <div>
@@ -132,7 +168,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="paddingBottom"
                                 type="number"
                                 value={parseInt(editContent.paddingBottom) || 20}
-                                onChange={(e) => updateBannerConfig('paddingBottom', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('paddingBottom', e.target.value)}
                             />
                         </div>
                         <div>
@@ -141,7 +177,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="paddingLeft"
                                 type="number"
                                 value={parseInt(editContent.paddingLeft) || 20}
-                                onChange={(e) => updateBannerConfig('paddingLeft', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('paddingLeft', e.target.value)}
                             />
                         </div>
                     </div>
@@ -171,8 +207,8 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     /> */}
 
                     <Label htmlFor="backgroundSize">Tamaño de Fondo</Label>
-                    <Select 
-                        value={editContent.backgroundSize || 'cover'} 
+                    <Select
+                        value={editContent.backgroundSize || 'cover'}
                         onValueChange={(value) => updateBannerConfig('backgroundSize', value)}
                     >
                         <SelectTrigger>
@@ -189,10 +225,10 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                 {/* Pestaña Posición */}
                 <TabsContent value="posicion" className="space-y-4">
                     <Label>Posición del Contenido en el Contenedor</Label>
-                    
+
                     <Label htmlFor="containerVerticalPosition">Posición Vertical</Label>
-                    <Select 
-                        value={editContent.containerVerticalPosition || 'center'} 
+                    <Select
+                        value={editContent.containerVerticalPosition || 'center'}
                         onValueChange={(value) => updateBannerConfig('containerVerticalPosition', value)}
                     >
                         <SelectTrigger>
@@ -206,8 +242,8 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     </Select>
 
                     <Label htmlFor="containerHorizontalPosition">Posición Horizontal</Label>
-                    <Select 
-                        value={editContent.containerHorizontalPosition || 'center'} 
+                    <Select
+                        value={editContent.containerHorizontalPosition || 'center'}
                         onValueChange={(value) => updateBannerConfig('containerHorizontalPosition', value)}
                     >
                         <SelectTrigger>
@@ -221,8 +257,8 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     </Select>
 
                     <Label htmlFor="contentDirection">Dirección del Contenido</Label>
-                    <Select 
-                        value={editContent.contentDirection || 'vertical'} 
+                    <Select
+                        value={editContent.contentDirection || 'vertical'}
                         onValueChange={(value) => updateBannerConfig('contentDirection', value)}
                     >
                         <SelectTrigger>
@@ -302,16 +338,16 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     <Separator className="my-4" />
 
                     <div>
-                        <Label htmlFor="innerContainerBorderRadius">Border Radius (px)</Label>
+                        <Label htmlFor="innerContainerBorderRadius">Border Radius</Label>
                         <Input
                             id="innerContainerBorderRadius"
                             type="number"
                             value={parseInt(editContent.innerContainerBorderRadius) || 0}
-                            onChange={(e) => updateBannerConfig('innerContainerBorderRadius', `${e.target.value}px`)}
+                            onChange={(e) => updateBannerConfig('innerContainerBorderRadius', e.target.value)}
                         />
                     </div>
 
-                    <Label>Padding del Contenedor Interno (px)</Label>
+                    <Label>Padding del Contenedor Interno</Label>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="innerContainerPaddingTop">Superior</Label>
@@ -319,7 +355,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="innerContainerPaddingTop"
                                 type="number"
                                 value={parseInt(editContent.innerContainerPaddingTop) || 20}
-                                onChange={(e) => updateBannerConfig('innerContainerPaddingTop', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('innerContainerPaddingTop', e.target.value)}
                             />
                         </div>
                         <div>
@@ -328,7 +364,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="innerContainerPaddingRight"
                                 type="number"
                                 value={parseInt(editContent.innerContainerPaddingRight) || 20}
-                                onChange={(e) => updateBannerConfig('innerContainerPaddingRight', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('innerContainerPaddingRight', e.target.value)}
                             />
                         </div>
                         <div>
@@ -337,7 +373,7 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="innerContainerPaddingBottom"
                                 type="number"
                                 value={parseInt(editContent.innerContainerPaddingBottom) || 20}
-                                onChange={(e) => updateBannerConfig('innerContainerPaddingBottom', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('innerContainerPaddingBottom', e.target.value)}
                             />
                         </div>
                         <div>
@@ -346,29 +382,59 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="innerContainerPaddingLeft"
                                 type="number"
                                 value={parseInt(editContent.innerContainerPaddingLeft) || 20}
-                                onChange={(e) => updateBannerConfig('innerContainerPaddingLeft', `${e.target.value}px`)}
+                                onChange={(e) => updateBannerConfig('innerContainerPaddingLeft', e.target.value)}
                             />
                         </div>
                     </div>
 
                     <div>
                         <Label htmlFor="innerContainerWidth">Ancho del Contenedor</Label>
-                        <Input
-                            id="innerContainerWidth"
-                            value={editContent.innerContainerWidth || 'auto'}
-                            onChange={(e) => updateBannerConfig('innerContainerWidth', e.target.value)}
-                            placeholder="auto, 100%, 500px"
-                        />
+                        <div className="flex items-center space-x-2">
+                            <Input
+                                id="innerContainerWidth"
+                                type="number"
+                                value={parseInt(editContent.innerContainerWidth) || ''}
+                                onChange={(e) => updateBannerConfig('innerContainerWidth', e.target.value)}
+                                placeholder="Auto"
+                            />
+                            <Select
+                                value={editContent.innerContainerWidthUnit || 'px'}
+                                onValueChange={(value) => updateBannerConfig('innerContainerWidthUnit', value)}
+                            >
+                                <SelectTrigger className="w-[70px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="%">%</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div>
                         <Label htmlFor="innerContainerMaxWidth">Ancho Máximo</Label>
-                        <Input
-                            id="innerContainerMaxWidth"
-                            value={editContent.innerContainerMaxWidth || '800px'}
-                            onChange={(e) => updateBannerConfig('innerContainerMaxWidth', e.target.value)}
-                            placeholder="800px"
-                        />
+                        <div className="flex items-center space-x-2">
+                            <Input
+                                id="innerContainerMaxWidth"
+                                type="number"
+                                value={parseInt(editContent.innerContainerMaxWidth) || 800}
+                                onChange={(e) => updateBannerConfig('innerContainerMaxWidth', e.target.value)}
+                                placeholder="800"
+                            />
+                            <Select
+                                value={editContent.innerContainerMaxWidthUnit || 'px'}
+                                onValueChange={(value) => updateBannerConfig('innerContainerMaxWidthUnit', value)}
+                            >
+                                <SelectTrigger className="w-[70px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="%">%</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </TabsContent>
             </Tabs>

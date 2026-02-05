@@ -13,25 +13,33 @@ const HeaderLogoComponent = ({
 }) => {
     const styles = getStyles(comp);
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Estilos específicos para el logo
     const logoStyles = {
         ...styles,
-        paddingTop: comp.styles?.paddingTop || '0px',
-        paddingRight: comp.styles?.paddingRight || '0px',
-        paddingBottom: comp.styles?.paddingBottom || '0px',
-        paddingLeft: comp.styles?.paddingLeft || '0px',
+        paddingTop: withUnit(comp.styles?.paddingTop) || '0px',
+        paddingRight: withUnit(comp.styles?.paddingRight) || '0px',
+        paddingBottom: withUnit(comp.styles?.paddingBottom) || '0px',
+        paddingLeft: withUnit(comp.styles?.paddingLeft) || '0px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        height: styles?.height || 'auto',
-        width: styles?.width || 'auto',
-        maxHeight: styles?.maxHeight || 'none',
-        maxWidth: styles?.maxWidth || 'none',
+        height: withUnit(styles?.height, comp.styles?.heightUnit) || 'auto',
+        width: withUnit(styles?.width, comp.styles?.widthUnit) || 'auto',
+        maxHeight: withUnit(styles?.maxHeight) || 'none',
+        maxWidth: withUnit(styles?.maxWidth) || 'none',
         opacity: styles?.opacity ? `${styles.opacity}%` : '100%',
-        borderWidth: styles?.borderWidth || '0px',
+        borderWidth: withUnit(styles?.borderWidth) || '0px',
         borderStyle: styles?.borderStyle || 'solid',
         borderColor: styles?.borderColor || 'transparent',
-        borderRadius: styles?.borderRadius || '0px',
+        borderRadius: withUnit(styles?.borderRadius) || '0px',
     };
 
     // Determinar qué mostrar: logo de la compañía o contenido del componente

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
@@ -148,12 +149,28 @@ export default function ProfileEditDialog({
                         <div className="grid grid-cols-2 gap-4 mt-2">
                             <div>
                                 <Label htmlFor="maxWidth">Ancho máximo</Label>
-                                <Input
-                                    id="maxWidth"
-                                    value={styles.maxWidth || ''}
-                                    onChange={(e) => updateStyle('maxWidth', e.target.value)}
-                                    placeholder="1200px"
-                                />
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="maxWidth"
+                                        type="number"
+                                        value={parseInt(styles.maxWidth) || 1200}
+                                        onChange={(e) => updateStyle('maxWidth', e.target.value)}
+                                        placeholder="1200"
+                                        className="flex-1"
+                                    />
+                                    <Select
+                                        value={styles.maxWidthUnit || (styles.maxWidth?.toString().includes('%') ? '%' : 'px')}
+                                        onValueChange={(value) => updateStyle('maxWidthUnit', value)}
+                                    >
+                                        <SelectTrigger className="w-[80px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="px">px</SelectItem>
+                                            <SelectItem value="%">%</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                             <div>
                                 <Label htmlFor="backgroundColor">Color de fondo</Label>
@@ -176,36 +193,40 @@ export default function ProfileEditDialog({
                                 <Label htmlFor="paddingTop">Superior</Label>
                                 <Input
                                     id="paddingTop"
-                                    value={styles.paddingTop || ''}
+                                    type="number"
+                                    value={parseInt(styles.paddingTop) || 40}
                                     onChange={(e) => updateStyle('paddingTop', e.target.value)}
-                                    placeholder="40px"
+                                    placeholder="40"
                                 />
                             </div>
                             <div>
                                 <Label htmlFor="paddingBottom">Inferior</Label>
                                 <Input
                                     id="paddingBottom"
-                                    value={styles.paddingBottom || ''}
+                                    type="number"
+                                    value={parseInt(styles.paddingBottom) || 40}
                                     onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-                                    placeholder="40px"
+                                    placeholder="40"
                                 />
                             </div>
                             <div>
                                 <Label htmlFor="paddingLeft">Izquierdo</Label>
                                 <Input
                                     id="paddingLeft"
-                                    value={styles.paddingLeft || ''}
+                                    type="number"
+                                    value={parseInt(styles.paddingLeft) || 20}
                                     onChange={(e) => updateStyle('paddingLeft', e.target.value)}
-                                    placeholder="20px"
+                                    placeholder="20"
                                 />
                             </div>
                             <div>
                                 <Label htmlFor="paddingRight">Derecho</Label>
                                 <Input
                                     id="paddingRight"
-                                    value={styles.paddingRight || ''}
+                                    type="number"
+                                    value={parseInt(styles.paddingRight) || 20}
                                     onChange={(e) => updateStyle('paddingRight', e.target.value)}
-                                    placeholder="20px"
+                                    placeholder="20"
                                 />
                             </div>
                         </div>
@@ -227,12 +248,28 @@ export default function ProfileEditDialog({
                             </div>
                             <div>
                                 <Label htmlFor="titleSize">Tamaño</Label>
-                                <Input
-                                    id="titleSize"
-                                    value={styles.titleSize || ''}
-                                    onChange={(e) => updateStyle('titleSize', e.target.value)}
-                                    placeholder="32px"
-                                />
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="titleSize"
+                                        type="number"
+                                        value={parseInt(styles.titleSize) || 32}
+                                        onChange={(e) => updateStyle('titleSize', e.target.value)}
+                                        placeholder="32"
+                                        className="flex-1"
+                                    />
+                                    <Select
+                                        value={styles.titleSizeUnit || (styles.titleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                        onValueChange={(value) => updateStyle('titleSizeUnit', value)}
+                                    >
+                                        <SelectTrigger className="w-[80px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="px">px</SelectItem>
+                                            <SelectItem value="rem">rem</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                             <div>
                                 <Label htmlFor="titleWeight">Peso</Label>
@@ -283,9 +320,10 @@ export default function ProfileEditDialog({
                                 <Label htmlFor="cardBorderRadius">Radio del borde</Label>
                                 <Input
                                     id="cardBorderRadius"
-                                    value={styles.cardBorderRadius || ''}
+                                    type="number"
+                                    value={parseInt(styles.cardBorderRadius) || 12}
                                     onChange={(e) => updateStyle('cardBorderRadius', e.target.value)}
-                                    placeholder="12px"
+                                    placeholder="12"
                                 />
                             </div>
                             <div>
@@ -301,9 +339,10 @@ export default function ProfileEditDialog({
                                 <Label htmlFor="cardPadding">Padding interno</Label>
                                 <Input
                                     id="cardPadding"
-                                    value={styles.cardPadding || ''}
+                                    type="number"
+                                    value={parseInt(styles.cardPadding) || 24}
                                     onChange={(e) => updateStyle('cardPadding', e.target.value)}
-                                    placeholder="24px"
+                                    placeholder="24"
                                 />
                             </div>
                         </div>
@@ -315,9 +354,10 @@ export default function ProfileEditDialog({
                         <Label htmlFor="borderRadius">Radio del borde del contenedor</Label>
                         <Input
                             id="borderRadius"
-                            value={styles.borderRadius || ''}
+                            type="number"
+                            value={parseInt(styles.borderRadius) || 0}
                             onChange={(e) => updateStyle('borderRadius', e.target.value)}
-                            placeholder="0px"
+                            placeholder="0"
                         />
                     </div>
                 </TabsContent>

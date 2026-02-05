@@ -387,6 +387,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                 </Select>
             </div>
 
+
             {/* Solo mostrar opciones de personalización completas si el tipo es "custom" */}
             {editStyles.buttonType === 'custom' && (
                 <>
@@ -399,7 +400,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="paddingTop"
                                 type="number"
                                 value={parseInt(editStyles.paddingTop) || 10}
-                                onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingTop', e.target.value)}
                             />
                         </div>
                         <div>
@@ -408,7 +409,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="paddingRight"
                                 type="number"
                                 value={parseInt(editStyles.paddingRight) || 10}
-                                onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingRight', e.target.value)}
                             />
                         </div>
                         <div>
@@ -417,7 +418,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="paddingBottom"
                                 type="number"
                                 value={parseInt(editStyles.paddingBottom) || 10}
-                                onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingBottom', e.target.value)}
                             />
                         </div>
                         <div>
@@ -426,7 +427,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 id="paddingLeft"
                                 type="number"
                                 value={parseInt(editStyles.paddingLeft) || 10}
-                                onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                                onChange={(e) => updateStyle('paddingLeft', e.target.value)}
                             />
                         </div>
                     </div>
@@ -437,17 +438,34 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         id="borderRadius"
                         type="number"
                         value={parseInt(editStyles.borderRadius) || 4}
-                        onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('borderRadius', e.target.value)}
                     />
 
                     {/* Tamaño de fuente */}
                     <Label htmlFor="fontSize">Tamaño de fuente</Label>
-                    <Input
-                        id="fontSize"
-                        value={editStyles.fontSize || '16px'}
-                        onChange={(e) => updateStyle('fontSize', e.target.value)}
-                        placeholder="16px"
-                    />
+                    <div className="flex gap-2">
+                        <Input
+                            id="fontSize"
+                            type="number"
+                            value={parseInt(editStyles.fontSize) || 16}
+                            onChange={(e) => updateStyle('fontSize', e.target.value)}
+                            placeholder="16"
+                            className="flex-1"
+                        />
+                        <Select
+                            value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                            onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                        >
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="rem">rem</SelectItem>
+                                <SelectItem value="em">em</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
 
                     {/* Color de Texto */}
                     <Label htmlFor="color">Color de Texto</Label>
@@ -499,7 +517,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             type="color"
                             value={editStyles.borderColor || editStyles.backgroundColor || '#007bff'}
                             onChange={(e) => updateStyle('borderColor', e.target.value)}
-                            className="w-12"
+                            className="w-12 h-10 p-1"
                         />
                     </div>
 
@@ -509,7 +527,7 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         id="borderWidth"
                         type="number"
                         value={parseInt(editStyles.borderWidth) || 1}
-                        onChange={(e) => updateStyle('borderWidth', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('borderWidth', e.target.value)}
                     />
 
                     {/* Text Transform */}
@@ -640,19 +658,37 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             <Label htmlFor="borderRadius">Radio de Borde Personalizado</Label>
                             <Input
                                 id="borderRadius"
-                                placeholder="Ej: 8px"
-                                value={editStyles.borderRadius || ''}
+                                type="number"
+                                placeholder="8"
+                                value={parseInt(editStyles.borderRadius) || ''}
                                 onChange={(e) => updateStyle('borderRadius', e.target.value)}
                             />
                         </div>
                         <div>
                             <Label htmlFor="fontSize">Tamaño de Fuente Personalizado</Label>
-                            <Input
-                                id="fontSize"
-                                placeholder="Ej: 18px"
-                                value={editStyles.fontSize || ''}
-                                onChange={(e) => updateStyle('fontSize', e.target.value)}
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    id="fontSize"
+                                    type="number"
+                                    placeholder="18"
+                                    value={parseInt(editStyles.fontSize) || ''}
+                                    onChange={(e) => updateStyle('fontSize', e.target.value)}
+                                    className="flex-1"
+                                />
+                                <Select
+                                    value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                    onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                                >
+                                    <SelectTrigger className="w-[80px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="px">px</SelectItem>
+                                        <SelectItem value="rem">rem</SelectItem>
+                                        <SelectItem value="em">em</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
                 </div>

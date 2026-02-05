@@ -100,19 +100,27 @@ const BannerTitleComponent = ({
             backgroundColor = `rgba(${rgb}, ${backgroundOpacity})`;
         }
 
+        // Helper para añadir unidad (px) si es solo número
+        const withUnit = (value, unit = 'px') => {
+            if (value === undefined || value === null || value === '') return undefined;
+            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+            if (typeof value === 'string' && isNaN(Number(value))) return value;
+            return `${value}${unit}`;
+        };
+
         return {
             ...baseStyles,
             width,
             textAlign,
-            paddingTop,
-            paddingRight,
-            paddingBottom,
-            paddingLeft,
+            paddingTop: withUnit(paddingTop),
+            paddingRight: withUnit(paddingRight),
+            paddingBottom: withUnit(paddingBottom),
+            paddingLeft: withUnit(paddingLeft),
             backgroundColor,
-            borderRadius: customStyles.borderRadius || '0px',
+            borderRadius: withUnit(customStyles.borderRadius) || '0px',
             display: layout === 'fit' ? 'inline-block' : 'block',
             fontFamily: getFontFamily(),
-            fontSize,
+            fontSize: withUnit(fontSize, customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,

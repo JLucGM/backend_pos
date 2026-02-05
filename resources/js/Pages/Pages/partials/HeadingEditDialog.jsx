@@ -25,15 +25,15 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
     // Extraer el texto del contenido (puede ser string u objeto)
     const getTextValue = () => {
         if (!editContent) return '';
-        
+
         if (typeof editContent === 'string') {
             return editContent;
         }
-        
+
         if (typeof editContent === 'object' && editContent !== null) {
             return editContent.text || editContent.title || '';
         }
-        
+
         return String(editContent);
     };
 
@@ -186,18 +186,32 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
             {isCustomStyle && (
                 <>
                     <p>Estilo del encabezado personalizado</p>
-                    
+
                     {/* Tamaño de fuente personalizado */}
                     <div>
                         <Label htmlFor="fontSize">Tamaño de fuente</Label>
                         <div className="flex gap-2">
                             <Input
                                 id="fontSize"
-                                value={editStyles.fontSize || '32px'}
+                                type="number"
+                                value={parseInt(editStyles.fontSize) || 32}
                                 onChange={(e) => updateStyle('fontSize', e.target.value)}
-                                placeholder="32px"
+                                placeholder="32"
                                 className="flex-1"
                             />
+                            <Select
+                                value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                            >
+                                <SelectTrigger className="w-24">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 
@@ -370,7 +384,6 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                 </div>
 
                 {/* Padding */}
-                <Label>Padding (px)</Label>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="paddingTop">Arriba</Label>
@@ -378,7 +391,7 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                             id="paddingTop"
                             type="number"
                             value={parseInt(editStyles.paddingTop) || 0}
-                            onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingTop', e.target.value)}
                         />
                     </div>
                     <div>
@@ -387,7 +400,7 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                             id="paddingRight"
                             type="number"
                             value={parseInt(editStyles.paddingRight) || 0}
-                            onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingRight', e.target.value)}
                         />
                     </div>
                     <div>
@@ -396,7 +409,7 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                             id="paddingBottom"
                             type="number"
                             value={parseInt(editStyles.paddingBottom) || 0}
-                            onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingBottom', e.target.value)}
                         />
                     </div>
                     <div>
@@ -405,7 +418,7 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                             id="paddingLeft"
                             type="number"
                             value={parseInt(editStyles.paddingLeft) || 0}
-                            onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingLeft', e.target.value)}
                         />
                     </div>
                 </div>
@@ -432,12 +445,12 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
 
                 {/* Border-Radius */}
                 <div>
-                    <Label htmlFor="borderRadius">Radio de Borde (px)</Label>
+                    <Label htmlFor="borderRadius">Radio de Borde</Label>
                     <Input
                         id="borderRadius"
                         type="number"
                         value={parseInt(editStyles.borderRadius) || 0}
-                        onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('borderRadius', e.target.value)}
                         className="flex-1"
                     />
                 </div>

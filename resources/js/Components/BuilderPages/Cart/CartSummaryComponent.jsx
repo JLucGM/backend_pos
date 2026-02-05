@@ -32,9 +32,14 @@ const CartSummaryComponent = ({
     const containerStyles = {
         ...getStyles(comp),
         backgroundColor: styles.backgroundColor || themeCartStyles.backgroundColor || themeWithDefaults.background,
-        padding: `${styles.paddingTop || '20px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '20px'} ${styles.paddingLeft || '20px'}`,
-        borderRadius: styles.borderRadius || themeCartStyles.borderRadius || '12px',
-        border: `${styles.borderWidth || '0'} ${styles.borderStyle || 'solid'} ${styles.borderColor || themeWithDefaults.borders}`,
+        paddingTop: withUnit(styles.paddingTop || '20px'),
+        paddingRight: withUnit(styles.paddingRight || '20px'),
+        paddingBottom: withUnit(styles.paddingBottom || '20px'),
+        paddingLeft: withUnit(styles.paddingLeft || '20px'),
+        borderRadius: withUnit(styles.borderRadius || themeCartStyles.borderRadius || '12px'),
+        borderStyle: styles.borderStyle || 'solid',
+        borderWidth: withUnit(styles.borderWidth || '0'),
+        borderColor: styles.borderColor || themeWithDefaults.borders,
     };
 
     const handleClick = () => {
@@ -106,7 +111,7 @@ const CartSummaryComponent = ({
         if (type === 'total') {
             return {
                 fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
-                fontSize: styles.totalFontSize || '24px',
+                fontSize: withUnit(styles.totalFontSize || '24px', styles.totalFontSizeUnit || 'px'),
                 fontWeight: 'bold',
                 color: styles.totalColor || themeWithDefaults.links,
             };

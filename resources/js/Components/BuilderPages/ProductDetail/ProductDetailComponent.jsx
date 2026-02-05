@@ -10,6 +10,14 @@ import ButtonComponent from '../ButtonComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const ProductDetailComponent = ({
     comp,
     getStyles,
@@ -76,10 +84,10 @@ const ProductDetailComponent = ({
         const baseStyles = {
             ...getStyles(comp),
             width: '100%',
-            paddingTop,
-            paddingRight,
-            paddingBottom,
-            paddingLeft,
+            paddingTop: withUnit(paddingTop),
+            paddingRight: withUnit(paddingRight),
+            paddingBottom: withUnit(paddingBottom),
+            paddingLeft: withUnit(paddingLeft),
             backgroundColor,
             maxWidth,
             margin: '0 auto',
@@ -95,7 +103,7 @@ const ProductDetailComponent = ({
                     ...baseStyles,
                     display: 'grid',
                     gridTemplateColumns: imageComponents.length > 0 ? '1fr 1fr' : '1fr',
-                    gap,
+                    gap: withUnit(gap),
                     alignItems: 'start',
                 };
             case 'stack':

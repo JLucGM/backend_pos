@@ -83,9 +83,10 @@ const ProductDetailImageEditDialog = ({
                             </Label>
                             <Input
                                 id="imageBorderThickness"
-                                value={editStyles.imageBorderThickness || theme.image_border_thickness || '1px'}
+                                type="number"
+                                value={parseInt(editStyles.imageBorderThickness) || parseInt(theme.image_border_thickness) || 0}
                                 onChange={(e) => handleStyleChange('imageBorderThickness', e.target.value)}
-                                placeholder="Ej: 2px"
+                                placeholder="1"
                             />
                         </div>
                         <div>
@@ -117,9 +118,10 @@ const ProductDetailImageEditDialog = ({
                 </Label>
                 <Input
                     id="imageBorderRadius"
-                    value={editStyles.imageBorderRadius || theme.image_border_radius || theme.border_radius || '12px'}
+                    type="number"
+                    value={parseInt(editStyles.imageBorderRadius) || parseInt(theme.image_border_radius) || parseInt(theme.border_radius) || 0}
                     onChange={(e) => handleStyleChange('imageBorderRadius', e.target.value)}
-                    placeholder="Ej: 12px"
+                    placeholder="0"
                 />
                 <div className="flex gap-2 mt-1">
                     <button

@@ -59,22 +59,74 @@ const CheckoutEditDialog = ({
 
                 <div className="space-y-2">
                     <Label htmlFor="maxWidth">Ancho máximo</Label>
-                    <Input
-                        id="maxWidth"
-                        value={editStyles.maxWidth || '1200px'}
-                        onChange={(e) => handleStyleChange('maxWidth', e.target.value)}
-                        placeholder="Ej: 1200px"
-                    />
+                    <div className="flex gap-2">
+                        <Input
+                            id="maxWidth"
+                            type="number"
+                            value={parseInt(editStyles.maxWidth) || 1200}
+                            onChange={(e) => handleStyleChange('maxWidth', e.target.value)}
+                            placeholder="1200"
+                            className="flex-1"
+                        />
+                        <Select
+                            value={editStyles.maxWidthUnit || (editStyles.maxWidth?.toString().includes('%') ? '%' : 'px')}
+                            onValueChange={(value) => handleStyleChange('maxWidthUnit', value)}
+                        >
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="%">%</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="padding">Padding</Label>
-                    <Input
-                        id="padding"
-                        value={editStyles.padding || '40px 20px'}
-                        onChange={(e) => handleStyleChange('padding', e.target.value)}
-                        placeholder="Ej: 40px 20px"
-                    />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="paddingTop">Padding Superior</Label>
+                        <Input
+                            id="paddingTop"
+                            type="number"
+                            value={parseInt(editStyles.paddingTop) || 40}
+                            onChange={(e) => handleStyleChange('paddingTop', e.target.value)}
+                            placeholder="40"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="paddingBottom">Padding Inferior</Label>
+                        <Input
+                            id="paddingBottom"
+                            type="number"
+                            value={parseInt(editStyles.paddingBottom) || 40}
+                            onChange={(e) => handleStyleChange('paddingBottom', e.target.value)}
+                            placeholder="40"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="paddingLeft">Padding Izquierdo</Label>
+                        <Input
+                            id="paddingLeft"
+                            type="number"
+                            value={parseInt(editStyles.paddingLeft) || 20}
+                            onChange={(e) => handleStyleChange('paddingLeft', e.target.value)}
+                            placeholder="20"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="paddingRight">Padding Derecho</Label>
+                        <Input
+                            id="paddingRight"
+                            type="number"
+                            value={parseInt(editStyles.paddingRight) || 20}
+                            onChange={(e) => handleStyleChange('paddingRight', e.target.value)}
+                            placeholder="20"
+                        />
+                    </div>
                 </div>
 
                 <div className="space-y-2">
@@ -89,12 +141,29 @@ const CheckoutEditDialog = ({
 
                 <div className="space-y-2">
                     <Label htmlFor="gap">Espacio entre componentes</Label>
-                    <Input
-                        id="gap"
-                        value={editStyles.gap || '40px'}
-                        onChange={(e) => handleStyleChange('gap', e.target.value)}
-                        placeholder="Ej: 40px"
-                    />
+                    <div className="flex gap-2">
+                        <Input
+                            id="gap"
+                            type="number"
+                            value={parseInt(editStyles.gap) || 40}
+                            onChange={(e) => handleStyleChange('gap', e.target.value)}
+                            placeholder="40"
+                            className="flex-1"
+                        />
+                        <Select
+                            value={editStyles.gapUnit || (editStyles.gap?.toString().includes('rem') ? 'rem' : 'px')}
+                            onValueChange={(value) => handleStyleChange('gapUnit', value)}
+                        >
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="rem">rem</SelectItem>
+                                <SelectItem value="em">em</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </div>
         </DialogContent>

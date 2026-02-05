@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
@@ -105,6 +106,17 @@ const QuantitySelectorEditDialog = ({
                 <Label htmlFor="showMax">Mostrar cantidad máxima disponible</Label>
             </div>
 
+            <div>
+                <Label htmlFor="gap">Espacio entre elementos (gap)</Label>
+                <Input
+                    id="gap"
+                    type="number"
+                    value={parseInt(editStyles.gap) || 0}
+                    onChange={(e) => handleStyleChange('gap', e.target.value)}
+                    placeholder="8"
+                />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <Label htmlFor="labelColor">Color de la etiqueta</Label>
@@ -192,16 +204,33 @@ const QuantitySelectorEditDialog = ({
                 <div className="flex gap-2">
                     <Input
                         id="borderRadius"
-                        value={editStyles.borderRadius || getThemeValue('borderRadius') || '6px'}
+                        type="number"
+                        value={parseInt(editStyles.borderRadius) || ''}
                         onChange={(e) => handleStyleChange('borderRadius', e.target.value)}
-                        placeholder="Ej: 6px"
+                        placeholder="6"
                         className="flex-1"
                     />
+                    <Select
+                        value={editStyles.borderRadiusUnit || (editStyles.borderRadius?.toString().includes('rem') ? 'rem' : 'px')}
+                        onValueChange={(value) => handleStyleChange('borderRadiusUnit', value)}
+                    >
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="rem">rem</SelectItem>
+                            <SelectItem value="em">em</SelectItem>
+                        </SelectContent>
+                    </Select>
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => handleStyleChange('borderRadius', getThemeValue('borderRadius') || '6px')}
+                        onClick={() => {
+                            handleStyleChange('borderRadius', parseInt(getThemeValue('borderRadius')) || 6);
+                            handleStyleChange('borderRadiusUnit', getThemeValue('borderRadius')?.toString().includes('rem') ? 'rem' : 'px');
+                        }}
                     >
                         Tema
                     </Button>
@@ -214,19 +243,25 @@ const QuantitySelectorEditDialog = ({
                     <div className="flex gap-2">
                         <Input
                             id="buttonSize"
-                            value={editStyles.buttonSize || getThemeValue('buttonSize') || '16px'}
+                            type="number"
+                            value={parseInt(editStyles.buttonSize) || ''}
                             onChange={(e) => handleStyleChange('buttonSize', e.target.value)}
-                            placeholder="Ej: 16px"
+                            placeholder="16"
                             className="flex-1"
                         />
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleStyleChange('buttonSize', getThemeValue('buttonSize') || '16px')}
+                        <Select
+                            value={editStyles.buttonSizeUnit || (editStyles.buttonSize?.toString().includes('rem') ? 'rem' : 'px')}
+                            onValueChange={(value) => handleStyleChange('buttonSizeUnit', value)}
                         >
-                            Tema
-                        </Button>
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="rem">rem</SelectItem>
+                                <SelectItem value="em">em</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 <div>
@@ -234,19 +269,25 @@ const QuantitySelectorEditDialog = ({
                     <div className="flex gap-2">
                         <Input
                             id="inputSize"
-                            value={editStyles.inputSize || getThemeValue('inputSize') || '16px'}
+                            type="number"
+                            value={parseInt(editStyles.inputSize) || ''}
                             onChange={(e) => handleStyleChange('inputSize', e.target.value)}
-                            placeholder="Ej: 16px"
+                            placeholder="16"
                             className="flex-1"
                         />
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleStyleChange('inputSize', getThemeValue('inputSize') || '16px')}
+                        <Select
+                            value={editStyles.inputSizeUnit || (editStyles.inputSize?.toString().includes('rem') ? 'rem' : 'px')}
+                            onValueChange={(value) => handleStyleChange('inputSizeUnit', value)}
                         >
-                            Tema
-                        </Button>
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="rem">rem</SelectItem>
+                                <SelectItem value="em">em</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
             </div>

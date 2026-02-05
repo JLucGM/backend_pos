@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const DividerEditDialog = ({
@@ -33,21 +34,38 @@ const DividerEditDialog = ({
                 <Label htmlFor="divider-lineWidth">Grosor de la línea</Label>
                 <Input
                     id="divider-lineWidth"
-                    value={editStyles.lineWidth || '1px'}
+                    type="number"
+                    value={parseInt(editStyles.lineWidth) || 1}
                     onChange={(e) => updateStyle('lineWidth', e.target.value)}
-                    placeholder="1px, 2px, 0.5px..."
+                    placeholder="1"
                 />
             </div>
 
             {/* Largo de la línea */}
             <div>
                 <Label htmlFor="divider-lineLength">Largo de la línea</Label>
-                <Input
-                    id="divider-lineLength"
-                    value={editStyles.lineLength || '100%'}
-                    onChange={(e) => updateStyle('lineLength', e.target.value)}
-                    placeholder="100%, 200px, 50%..."
-                />
+                <div className="flex gap-2">
+                    <Input
+                        id="divider-lineLength"
+                        type="number"
+                        value={parseInt(editStyles.lineLength) || 100}
+                        onChange={(e) => updateStyle('lineLength', e.target.value)}
+                        placeholder="100"
+                        className="flex-1"
+                    />
+                    <Select
+                        value={editStyles.lineLengthUnit || (editStyles.lineLength?.toString().includes('px') ? 'px' : '%')}
+                        onValueChange={(value) => updateStyle('lineLengthUnit', value)}
+                    >
+                        <SelectTrigger className="w-20">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="%">%</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             {/* Color de la línea */}
@@ -92,20 +110,21 @@ const DividerEditDialog = ({
                 <Label htmlFor="divider-paddingTop">Padding Superior</Label>
                 <Input
                     id="divider-paddingTop"
-                    value={editStyles.paddingTop || '20px'}
+                    type="number"
+                    value={parseInt(editStyles.paddingTop) || 20}
                     onChange={(e) => updateStyle('paddingTop', e.target.value)}
-                    placeholder="20px"
+                    placeholder="20"
                 />
             </div>
 
-            {/* Padding Bottom */}
             <div>
                 <Label htmlFor="divider-paddingBottom">Padding Inferior</Label>
                 <Input
                     id="divider-paddingBottom"
-                    value={editStyles.paddingBottom || '20px'}
+                    type="number"
+                    value={parseInt(editStyles.paddingBottom) || 20}
                     onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-                    placeholder="20px"
+                    placeholder="20"
                 />
             </div>
         </div>

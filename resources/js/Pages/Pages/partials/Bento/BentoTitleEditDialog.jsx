@@ -8,22 +8,22 @@ import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const BentoTitleEditDialog = ({ 
-    editContent, 
-    setEditContent, 
-    editStyles, 
-    setEditStyles, 
+const BentoTitleEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
     themeSettings,
-    isLiveEdit = true 
+    isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
-        const debouncedStyles = useDebounce(editStyles, 300);
-    
-        useEffect(() => {
-            if (isLiveEdit) {
-                // Las actualizaciones se manejan automáticamente
-            }
-        }, [debouncedContent, debouncedStyles, isLiveEdit]);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
@@ -31,7 +31,7 @@ const BentoTitleEditDialog = ({
 
     const resetToDefaults = () => {
         const textStyle = editStyles.textStyle || 'heading1';
-        
+
         if (textStyle.startsWith('heading')) {
             const level = textStyle.replace('heading', '');
             setEditStyles(prev => ({
@@ -104,7 +104,7 @@ const BentoTitleEditDialog = ({
                     value={editStyles.textStyle || 'heading1'}
                     onValueChange={(value) => {
                         updateStyle('textStyle', value);
-                        
+
                         if (value.startsWith('heading') && themeSettings) {
                             const level = value.replace('heading', '');
                             updateStyle('fontSize', themeSettings[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`);
@@ -146,11 +146,25 @@ const BentoTitleEditDialog = ({
                         <div className="flex gap-2">
                             <Input
                                 id="fontSize"
-                                value={editStyles.fontSize || '32px'}
+                                type="number"
+                                value={parseInt(editStyles.fontSize) || 32}
                                 onChange={(e) => updateStyle('fontSize', e.target.value)}
-                                placeholder="32px"
+                                placeholder="32"
                                 className="flex-1"
                             />
+                            <Select
+                                value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                            >
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 
@@ -194,34 +208,34 @@ const BentoTitleEditDialog = ({
             )}
 
             <div>
-                            <Label htmlFor="fontType">Tipo de Fuente</Label>
-                            <Select
-                                value={editStyles.fontType || 'default'}
-                                onValueChange={(value) => updateStyle('fontType', value)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="default">
-                                        Por defecto (usar fuente del tema para este estilo)
-                                    </SelectItem>
-                                    <SelectItem value="body_font">
-                                        Body Font ({themeSettings?.body_font || 'Inter'})
-                                    </SelectItem>
-                                    <SelectItem value="heading_font">
-                                        Heading Font ({themeSettings?.heading_font || 'Inter'})
-                                    </SelectItem>
-                                    <SelectItem value="subheading_font">
-                                        Subheading Font ({themeSettings?.subheading_font || 'Inter'})
-                                    </SelectItem>
-                                    <SelectItem value="accent_font">
-                                        Accent Font ({themeSettings?.accent_font || 'Inter'})
-                                    </SelectItem>
-                                    <SelectItem value="custom">Personalizada</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                <Label htmlFor="fontType">Tipo de Fuente</Label>
+                <Select
+                    value={editStyles.fontType || 'default'}
+                    onValueChange={(value) => updateStyle('fontType', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="default">
+                            Por defecto (usar fuente del tema para este estilo)
+                        </SelectItem>
+                        <SelectItem value="body_font">
+                            Body Font ({themeSettings?.body_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="heading_font">
+                            Heading Font ({themeSettings?.heading_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="subheading_font">
+                            Subheading Font ({themeSettings?.subheading_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="accent_font">
+                            Accent Font ({themeSettings?.accent_font || 'Inter'})
+                        </SelectItem>
+                        <SelectItem value="custom">Personalizada</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
 
             {editStyles.fontType === 'custom' && (
                 <div>
@@ -292,7 +306,7 @@ const BentoTitleEditDialog = ({
                     </div>
                 </div>
 
-                <Label>Padding (px)</Label>
+                <Label>Padding</Label>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="paddingTop">Arriba</Label>
@@ -300,7 +314,7 @@ const BentoTitleEditDialog = ({
                             id="paddingTop"
                             type="number"
                             value={parseInt(editStyles.paddingTop) || 0}
-                            onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingTop', e.target.value)}
                         />
                     </div>
                     <div>
@@ -309,7 +323,7 @@ const BentoTitleEditDialog = ({
                             id="paddingRight"
                             type="number"
                             value={parseInt(editStyles.paddingRight) || 0}
-                            onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingRight', e.target.value)}
                         />
                     </div>
                     <div>
@@ -318,7 +332,7 @@ const BentoTitleEditDialog = ({
                             id="paddingBottom"
                             type="number"
                             value={parseInt(editStyles.paddingBottom) || 0}
-                            onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingBottom', e.target.value)}
                         />
                     </div>
                     <div>
@@ -327,7 +341,7 @@ const BentoTitleEditDialog = ({
                             id="paddingLeft"
                             type="number"
                             value={parseInt(editStyles.paddingLeft) || 0}
-                            onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingLeft', e.target.value)}
                         />
                     </div>
                 </div>
@@ -352,12 +366,12 @@ const BentoTitleEditDialog = ({
                 </div>
 
                 <div>
-                    <Label htmlFor="borderRadius">Radio de Borde (px)</Label>
+                    <Label htmlFor="borderRadius">Radio de Borde</Label>
                     <Input
                         id="borderRadius"
                         type="number"
                         value={parseInt(editStyles.borderRadius) || 0}
-                        onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('borderRadius', e.target.value)}
                         className="flex-1"
                     />
                 </div>

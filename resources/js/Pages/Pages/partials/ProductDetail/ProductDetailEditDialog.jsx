@@ -116,19 +116,19 @@ const ProductDetailEditDialog = ({
 
             {editStyles.layoutType === 'grid' && (
                 <div>
-                    <Label htmlFor="gap">Espacio entre columnas (px)</Label>
+                    <Label htmlFor="gap">Espacio entre columnas</Label>
                     <Input
                         id="gap"
                         type="number"
                         value={parseInt(editStyles.gap) || 60}
-                        onChange={(e) => handleStyleChange('gap', `${e.target.value}px`)}
-                        placeholder="Ej: 60"
+                        onChange={(e) => handleStyleChange('gap', e.target.value)}
+                        placeholder="60"
                     />
                 </div>
             )}
 
             <div>
-                <Label>Padding del contenedor (px)</Label>
+                <Label>Padding del contenedor</Label>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="paddingTop">Superior</Label>
@@ -136,7 +136,7 @@ const ProductDetailEditDialog = ({
                             id="paddingTop"
                             type="number"
                             value={parseInt(editStyles.paddingTop) || 20}
-                            onChange={(e) => handleStyleChange('paddingTop', `${e.target.value}px`)}
+                            onChange={(e) => handleStyleChange('paddingTop', e.target.value)}
                         />
                     </div>
                     <div>
@@ -145,7 +145,7 @@ const ProductDetailEditDialog = ({
                             id="paddingRight"
                             type="number"
                             value={parseInt(editStyles.paddingRight) || 20}
-                            onChange={(e) => handleStyleChange('paddingRight', `${e.target.value}px`)}
+                            onChange={(e) => handleStyleChange('paddingRight', e.target.value)}
                         />
                     </div>
                     <div>
@@ -154,7 +154,7 @@ const ProductDetailEditDialog = ({
                             id="paddingBottom"
                             type="number"
                             value={parseInt(editStyles.paddingBottom) || 20}
-                            onChange={(e) => handleStyleChange('paddingBottom', `${e.target.value}px`)}
+                            onChange={(e) => handleStyleChange('paddingBottom', e.target.value)}
                         />
                     </div>
                     <div>
@@ -163,7 +163,7 @@ const ProductDetailEditDialog = ({
                             id="paddingLeft"
                             type="number"
                             value={parseInt(editStyles.paddingLeft) || 20}
-                            onChange={(e) => handleStyleChange('paddingLeft', `${e.target.value}px`)}
+                            onChange={(e) => handleStyleChange('paddingLeft', e.target.value)}
                         />
                     </div>
                 </div>

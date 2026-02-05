@@ -11,6 +11,13 @@ import { router } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
 import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const CheckoutComponent = ({
     comp,
     getStyles,
@@ -556,15 +563,18 @@ const CheckoutComponent = ({
     const containerStyles = {
         ...getStyles(comp),
         width: '100%',
-        padding: customStyles.padding || '40px 20px',
+        paddingTop: withUnit(customStyles.paddingTop || '40px'),
+        paddingRight: withUnit(customStyles.paddingRight || '20px'),
+        paddingBottom: withUnit(customStyles.paddingBottom || '40px'),
+        paddingLeft: withUnit(customStyles.paddingLeft || '20px'),
         backgroundColor: customStyles.backgroundColor || themeCheckoutStyles.backgroundColor || themeWithDefaults.background,
-        maxWidth: customStyles.maxWidth || '1200px',
+        maxWidth: withUnit(customStyles.maxWidth || '1200px', customStyles.maxWidthUnit || (customStyles.maxWidth?.toString().includes('%') ? '%' : 'px')),
         margin: '0 auto',
         border: isPreview ? 'none' : '1px none #ccc',
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
-        borderRadius: customStyles.borderRadius || themeCheckoutStyles.borderRadius || '0px',
+        borderRadius: withUnit(customStyles.borderRadius || themeCheckoutStyles.borderRadius || '0px'),
     };
 
     // Determinar layout type
@@ -934,12 +944,15 @@ const CheckoutComponent = ({
     // Layouts personalizados
     const renderCompactLayout = () => {
         return (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
+            <div
+                className="grid grid-cols-1 lg:grid-cols-3"
+                style={{ gap: withUnit(customStyles.gap || '24px', customStyles.gapUnit || 'px') }}
+            >
+                <div className="lg:col-span-2 space-y-6" style={{ gap: withUnit(customStyles.gap || '24px', customStyles.gapUnit || 'px') }}>
                     {customerInfoChildren.map(renderChild)}
                     {paymentChildren.map(renderChild)}
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-6" style={{ gap: withUnit(customStyles.gap || '24px', customStyles.gapUnit || 'px') }}>
                     {discountGiftCardChildren.map(renderChild)}
                     {summaryChildren.map(renderChild)}
                     {otherChildren.map(renderChild)}
@@ -950,7 +963,10 @@ const CheckoutComponent = ({
 
     const renderGridLayout = () => {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+                className="grid grid-cols-1 md:grid-cols-2"
+                style={{ gap: withUnit(customStyles.gap || '24px', customStyles.gapUnit || 'px') }}
+            >
                 <div className="md:col-span-1">
                     {discountGiftCardChildren.map(renderChild)}
                 </div>
@@ -977,7 +993,7 @@ const CheckoutComponent = ({
             ...otherChildren
         ];
         return (
-            <div className="space-y-6">
+            <div className="flex flex-col" style={{ gap: withUnit(customStyles.gap || '24px', customStyles.gapUnit || 'px') }}>
                 {allChildren.map(renderChild)}
             </div>
         );
@@ -985,12 +1001,15 @@ const CheckoutComponent = ({
 
     const renderTwoColumnLayout = () => {
         return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
+            <div
+                className="grid grid-cols-1 lg:grid-cols-2"
+                style={{ gap: withUnit(customStyles.gap || '32px', customStyles.gapUnit || 'px') }}
+            >
+                <div className="space-y-6" style={{ gap: withUnit(customStyles.gap || '24px', customStyles.gapUnit || 'px') }}>
                     {customerInfoChildren.map(renderChild)}
                     {paymentChildren.map(renderChild)}
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-6" style={{ gap: withUnit(customStyles.gap || '24px', customStyles.gapUnit || 'px') }}>
                     {discountGiftCardChildren.map(renderChild)}
                     {summaryChildren.map(renderChild)}
                     {otherChildren.map(renderChild)}

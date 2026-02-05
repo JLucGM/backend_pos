@@ -144,20 +144,29 @@ const CarouselPriceEditDialog = ({
                 <>
                     <div>
                         <Label htmlFor="fontSize">Tamaño de fuente</Label>
-                        <Select
-                            value={editStyles.fontSize || '14px'}
-                            onValueChange={(value) => updateStyle('fontSize', value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="12px">12px</SelectItem>
-                                <SelectItem value="14px">14px</SelectItem>
-                                <SelectItem value="16px">16px</SelectItem>
-                                <SelectItem value="18px">18px</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="flex gap-2">
+                            <Input
+                                id="fontSize"
+                                type="number"
+                                value={parseInt(editStyles.fontSize) || 14}
+                                onChange={(e) => updateStyle('fontSize', e.target.value)}
+                                placeholder="14"
+                                className="flex-1"
+                            />
+                            <Select
+                                value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                            >
+                                <SelectTrigger className="w-24">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div>

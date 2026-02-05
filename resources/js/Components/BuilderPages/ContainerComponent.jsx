@@ -18,18 +18,26 @@ const ContainerComponent = ({
 }) => {
     // Obtener configuración del tema con valores por defecto
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    
+
     // Obtener estilos específicos del componente container del tema
     const themeContainerStyles = getComponentStyles(themeWithDefaults, 'container', appliedTheme);
-    
+
     // Extraer estilos personalizados
     const customStyles = comp.styles || {};
 
-    // Padding individual
-    const paddingTop = customStyles.paddingTop || '0px';
-    const paddingRight = customStyles.paddingRight || '0px';
-    const paddingBottom = customStyles.paddingBottom || '0px';
-    const paddingLeft = customStyles.paddingLeft || '0px';
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
+    // Padding individual - usar withUnit para asegurar px
+    const paddingTop = withUnit(customStyles.paddingTop) || '0px';
+    const paddingRight = withUnit(customStyles.paddingRight) || '0px';
+    const paddingBottom = withUnit(customStyles.paddingBottom) || '0px';
+    const paddingLeft = withUnit(customStyles.paddingLeft) || '0px';
 
     // Alignment 
     const alignment = customStyles.alignment || 'left';
@@ -38,11 +46,11 @@ const ContainerComponent = ({
     const direction = customStyles.direction || 'row';
 
     // Gap entre elementos hijos usando valor del tema
-    const gap = customStyles.gap || themeContainerStyles.gap || '0px';
+    const gap = withUnit(customStyles.gap) || themeContainerStyles.gap || '0px';
 
     // Background y border radius usando valores del tema
     const backgroundColor = customStyles.backgroundColor || themeContainerStyles.backgroundColor || 'transparent';
-    const borderRadius = customStyles.borderRadius || themeContainerStyles.borderRadius || '0px';
+    const borderRadius = withUnit(customStyles.borderRadius) || themeContainerStyles.borderRadius || '0px';
 
     // Determinar alineación basada en dirección
     const getFlexAlignment = () => {

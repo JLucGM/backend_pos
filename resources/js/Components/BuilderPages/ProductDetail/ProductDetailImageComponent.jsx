@@ -1,5 +1,13 @@
 import React from 'react';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const ProductDetailImageComponent = ({
     comp,
     getStyles,
@@ -40,9 +48,9 @@ const ProductDetailImageComponent = ({
         width: '100%',
         height: '100%',
         border: (styles.imageBorder === 'solid' || styles.imageBorder === 'dashed')
-            ? `${styles.imageBorderThickness || '1px'} ${styles.imageBorder} ${styles.imageBorderColor || '#000000'}`
+            ? `${withUnit(styles.imageBorderThickness || '1px')} ${styles.imageBorder} ${styles.imageBorderColor || '#000000'}`
             : 'none',
-        borderRadius: styles.imageBorderRadius || '0px',
+        borderRadius: withUnit(styles.imageBorderRadius || '0px'),
         objectFit: styles.objectFit || 'cover',
     };
 

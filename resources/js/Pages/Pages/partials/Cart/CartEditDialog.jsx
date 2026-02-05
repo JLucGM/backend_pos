@@ -46,17 +46,19 @@ const CartEditDialog = ({ editContent, editStyles, setEditStyles, isLiveEdit = t
                 <div>
                     <Label htmlFor="paddingTop">Padding Superior</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingTop || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingTop) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingTop: e.target.value })}
+                        placeholder="20"
                     />
                 </div>
                 <div>
                     <Label htmlFor="paddingBottom">Padding Inferior</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingBottom || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingBottom) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingBottom: e.target.value })}
+                        placeholder="20"
                     />
                 </div>
             </div>
@@ -65,17 +67,19 @@ const CartEditDialog = ({ editContent, editStyles, setEditStyles, isLiveEdit = t
                 <div>
                     <Label htmlFor="paddingLeft">Padding Izquierdo</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingLeft || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingLeft) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingLeft: e.target.value })}
+                        placeholder="20"
                     />
                 </div>
                 <div>
                     <Label htmlFor="paddingRight">Padding Derecho</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingRight || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingRight) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingRight: e.target.value })}
+                        placeholder="20"
                     />
                 </div>
             </div>
@@ -83,10 +87,10 @@ const CartEditDialog = ({ editContent, editStyles, setEditStyles, isLiveEdit = t
             <div>
                 <Label htmlFor="gap">Espacio entre elementos</Label>
                 <Input
-                    type="text"
-                    value={editStyles.gap || '40px'}
+                    type="number"
+                    value={parseInt(editStyles.gap) || 40}
                     onChange={(e) => setEditStyles({ ...editStyles, gap: e.target.value })}
-                    placeholder="Ej: 40px"
+                    placeholder="40"
                 />
             </div>
 

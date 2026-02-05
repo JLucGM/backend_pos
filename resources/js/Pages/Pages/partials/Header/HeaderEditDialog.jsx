@@ -50,7 +50,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             const newContent = { ...prev };
             if (!newContent.buttons) newContent.buttons = {};
             if (!newContent.buttons[buttonName]) newContent.buttons[buttonName] = {};
-            
+
             newContent.buttons[buttonName] = {
                 ...newContent.buttons[buttonName],
                 ...newConfig
@@ -133,13 +133,29 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                 </div>
 
                 <div>
-                    <Label htmlFor="height">Altura del Header (px)</Label>
-                    <Input
-                        id="height"
-                        type="number"
-                        value={parseInt(editContent?.height) || 70}
-                        onChange={(e) => updateContent('height', `${e.target.value}px`)}
-                    />
+                    <Label htmlFor="height">Altura del Header</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            id="height"
+                            type="number"
+                            value={parseInt(editContent?.height) || 70}
+                            onChange={(e) => updateContent('height', e.target.value)}
+                            placeholder="70"
+                            className="flex-1"
+                        />
+                        <Select
+                            value={editContent?.heightUnit || (editContent?.height?.toString().includes('vh') ? 'vh' : 'px')}
+                            onValueChange={(value) => updateContent('heightUnit', value)}
+                        >
+                            <SelectTrigger className="w-[80px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="px">px</SelectItem>
+                                <SelectItem value="vh">vh</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
                 <div>
@@ -167,7 +183,8 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             id="paddingTop"
                             type="number"
                             value={parseInt(editStyles.paddingTop) || 20}
-                            onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingTop', e.target.value)}
+                            placeholder="20"
                         />
                     </div>
                     <div>
@@ -176,7 +193,8 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             id="paddingBottom"
                             type="number"
                             value={parseInt(editStyles.paddingBottom) || 20}
-                            onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingBottom', e.target.value)}
+                            placeholder="20"
                         />
                     </div>
                 </div>
@@ -202,12 +220,13 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                 </div> */}
 
                 <div>
-                    <Label htmlFor="buttonsGap">Espaciado entre botones (px)</Label>
+                    <Label htmlFor="buttonsGap">Espaciado entre botones</Label>
                     <Input
                         id="buttonsGap"
                         type="number"
                         value={parseInt(editContent?.buttons?.buttonsGap) || 10}
-                        onChange={(e) => updateNestedContent(['buttons'], 'buttonsGap', `${e.target.value}px`)}
+                        onChange={(e) => updateNestedContent(['buttons'], 'buttonsGap', e.target.value)}
+                        placeholder="10"
                     />
                 </div>
 
@@ -228,7 +247,7 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             onUpdate={(newConfig) => updateButtonConfig('search', newConfig)}
                             onUpdateShowSearch={(value) => updateNestedContent(['buttons'], 'showSearch', value)}
                         />
-                        
+
                         <Separator className='my-4' />
                         <ProfileButtonEditor
                             buttonConfig={editContent?.buttons?.profile || {}}

@@ -7,6 +7,13 @@ import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const CustomerInfoComponent = ({
     comp,
     getStyles,
@@ -103,20 +110,23 @@ const CustomerInfoComponent = ({
     // const displayPaymentMethods = mode === 'builder' ? examplePaymentMethods : (paymentMethods || []);
 
     // Direcciones a mostrar
-    const addressesToShow = showAllAddresses 
-        ? displayAddresses 
+    const addressesToShow = showAllAddresses
+        ? displayAddresses
         : displayAddresses.slice(0, 2);
 
     const containerStyles = {
         ...getStyles(comp),
         backgroundColor: styles.backgroundColor || '#ffffff',
-        padding: styles.padding || '24px',
-        borderRadius: styles.borderRadius || '12px',
+        paddingTop: withUnit(styles.paddingTop || '24px'),
+        paddingRight: withUnit(styles.paddingRight || '24px'),
+        paddingBottom: withUnit(styles.paddingBottom || '24px'),
+        paddingLeft: withUnit(styles.paddingLeft || '24px'),
+        borderRadius: withUnit(styles.borderRadius || '12px'),
         border: '1px solid #e5e7eb',
     };
 
     const titleStyles = {
-        fontSize: styles.titleSize || '20px',
+        fontSize: withUnit(styles.titleSize || '20px', styles.titleSizeUnit || 'px'),
         color: styles.titleColor || '#000000',
         fontFamily: themeSettings?.heading_font,
         marginBottom: '20px',
@@ -130,7 +140,7 @@ const CustomerInfoComponent = ({
                 <h2 style={titleStyles}>
                     {content.title || 'Información del Cliente'}
                 </h2>
-                
+
                 <div className="text-center py-8">
                     <UserCircleIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-700 mb-2">
@@ -197,24 +207,20 @@ const CustomerInfoComponent = ({
                     <button
                         type="button"
                         onClick={() => onDeliveryTypeChange('delivery')}
-                        className={`p-4 border rounded-lg text-left transition-all ${
-                            deliveryType === 'delivery' 
-                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' 
+                        className={`p-4 border rounded-lg text-left transition-all ${deliveryType === 'delivery'
+                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
                                 : 'border-gray-300 hover:border-gray-400'
-                        }`}
+                            }`}
                     >
                         <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${
-                                deliveryType === 'delivery' ? 'bg-blue-100' : 'bg-gray-100'
-                            }`}>
-                                <TruckIcon className={`h-6 w-6 ${
-                                    deliveryType === 'delivery' ? 'text-blue-600' : 'text-gray-400'
-                                }`} />
+                            <div className={`p-2 rounded-lg ${deliveryType === 'delivery' ? 'bg-blue-100' : 'bg-gray-100'
+                                }`}>
+                                <TruckIcon className={`h-6 w-6 ${deliveryType === 'delivery' ? 'text-blue-600' : 'text-gray-400'
+                                    }`} />
                             </div>
                             <div>
-                                <div className={`font-medium ${
-                                    deliveryType === 'delivery' ? 'text-blue-700' : 'text-gray-700'
-                                }`}>
+                                <div className={`font-medium ${deliveryType === 'delivery' ? 'text-blue-700' : 'text-gray-700'
+                                    }`}>
                                     Envío a Domicilio
                                 </div>
                                 <div className="text-sm text-gray-500">
@@ -223,28 +229,24 @@ const CustomerInfoComponent = ({
                             </div>
                         </div>
                     </button>
-                    
+
                     <button
                         type="button"
                         onClick={() => onDeliveryTypeChange('pickup')}
-                        className={`p-4 border rounded-lg text-left transition-all ${
-                            deliveryType === 'pickup' 
-                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' 
+                        className={`p-4 border rounded-lg text-left transition-all ${deliveryType === 'pickup'
+                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
                                 : 'border-gray-300 hover:border-gray-400'
-                        }`}
+                            }`}
                     >
                         <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${
-                                deliveryType === 'pickup' ? 'bg-blue-100' : 'bg-gray-100'
-                            }`}>
-                                <StoreIcon className={`h-6 w-6 ${
-                                    deliveryType === 'pickup' ? 'text-blue-600' : 'text-gray-400'
-                                }`} />
+                            <div className={`p-2 rounded-lg ${deliveryType === 'pickup' ? 'bg-blue-100' : 'bg-gray-100'
+                                }`}>
+                                <StoreIcon className={`h-6 w-6 ${deliveryType === 'pickup' ? 'text-blue-600' : 'text-gray-400'
+                                    }`} />
                             </div>
                             <div>
-                                <div className={`font-medium ${
-                                    deliveryType === 'pickup' ? 'text-blue-700' : 'text-gray-700'
-                                }`}>
+                                <div className={`font-medium ${deliveryType === 'pickup' ? 'text-blue-700' : 'text-gray-700'
+                                    }`}>
                                     Recoger en Tienda
                                 </div>
                                 <div className="text-sm text-gray-500">
@@ -282,22 +284,20 @@ const CustomerInfoComponent = ({
                             {addressesToShow.map(address => (
                                 <div
                                     key={address.id}
-                                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                                        selectedAddressId === address.id
+                                    className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedAddressId === address.id
                                             ? 'border-blue-500 bg-blue-50'
                                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                    }`}
+                                        }`}
                                     onClick={() => onAddressSelect(address.id)}
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-start gap-3">
                                                 <div className="flex-shrink-0 mt-1">
-                                                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                                                        selectedAddressId === address.id
+                                                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${selectedAddressId === address.id
                                                             ? 'border-blue-500 bg-blue-500'
                                                             : 'border-gray-300'
-                                                    }`}>
+                                                        }`}>
                                                         {selectedAddressId === address.id && (
                                                             <CheckIcon className="h-3 w-3 text-white" />
                                                         )}
@@ -369,11 +369,10 @@ const CustomerInfoComponent = ({
                         {displayShippingRates.map(rate => (
                             <div
                                 key={rate.id}
-                                className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                                    selectedShippingRate?.id === rate.id 
-                                        ? 'border-blue-500 bg-blue-50' 
+                                className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedShippingRate?.id === rate.id
+                                        ? 'border-blue-500 bg-blue-50'
                                         : 'border-gray-200 hover:border-gray-300'
-                                }`}
+                                    }`}
                                 onClick={() => onShippingRateChange(rate)}
                             >
                                 <div className="flex items-center justify-between">

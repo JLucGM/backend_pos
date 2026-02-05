@@ -112,8 +112,9 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
                 id="search-borderWidth"
                 type="number"
                 value={parseInt(localStyles.borderWidth) || 0}
-                onChange={(e) => updateStyle('borderWidth', `${e.target.value}px`)}
+                onChange={(e) => updateStyle('borderWidth', e.target.value)}
                 className="h-8 text-xs"
+                placeholder="0"
               />
             </div>
 
@@ -144,13 +145,14 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
 
           {/* Radio de borde */}
           <div>
-            <Label htmlFor="search-borderRadius" className="text-xs">Radio de borde (px)</Label>
+            <Label htmlFor="search-borderRadius" className="text-xs">Radio de borde</Label>
             <Input
               id="search-borderRadius"
               type="number"
               value={parseInt(localStyles.borderRadius) || 50}
-              onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+              onChange={(e) => updateStyle('borderRadius', e.target.value)}
               className="h-8 text-xs"
+              placeholder="50"
             />
           </div>
 
@@ -159,35 +161,38 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
           {/* Tamaño */}
           <div className="grid grid-cols-3 gap-2">
             <div>
-              <Label htmlFor="search-width" className="text-xs">Ancho (px)</Label>
+              <Label htmlFor="search-width" className="text-xs">Ancho</Label>
               <Input
                 id="search-width"
                 type="number"
                 value={parseInt(localStyles.width) || 36}
-                onChange={(e) => updateStyle('width', `${e.target.value}px`)}
+                onChange={(e) => updateStyle('width', e.target.value)}
                 className="h-8 text-xs"
+                placeholder="36"
               />
             </div>
 
             <div>
-              <Label htmlFor="search-height" className="text-xs">Alto (px)</Label>
+              <Label htmlFor="search-height" className="text-xs">Alto</Label>
               <Input
                 id="search-height"
                 type="number"
                 value={parseInt(localStyles.height) || 36}
-                onChange={(e) => updateStyle('height', `${e.target.value}px`)}
+                onChange={(e) => updateStyle('height', e.target.value)}
                 className="h-8 text-xs"
+                placeholder="36"
               />
             </div>
 
             <div>
-              <Label htmlFor="search-padding" className="text-xs">Padding (px)</Label>
+              <Label htmlFor="search-padding" className="text-xs">Padding</Label>
               <Input
                 id="search-padding"
                 type="number"
                 value={parseInt(localStyles.padding) || 8}
-                onChange={(e) => updateStyle('padding', `${e.target.value}px`)}
+                onChange={(e) => updateStyle('padding', e.target.value)}
                 className="h-8 text-xs"
+                placeholder="8"
               />
             </div>
           </div>

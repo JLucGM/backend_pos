@@ -48,16 +48,16 @@ const ContainerEditDialog = ({ editStyles, setEditStyles, isLiveEdit = true }) =
             </Select>
 
             {/* Gap entre elementos hijos */}
-            <Label htmlFor="gap">Gap entre elementos (px)</Label>
+            <Label htmlFor="gap">Gap entre elementos</Label>
             <Input
                 id="gap"
                 type="number"
                 value={parseInt(editStyles.gap) || 0}
-                onChange={(e) => updateStyle('gap', `${e.target.value}px`)}
+                onChange={(e) => updateStyle('gap', e.target.value)}
             />
 
             {/* Padding Individual */}
-            <Label>Padding (px)</Label>
+            <Label>Padding</Label>
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <Label htmlFor="paddingTop">Arriba</Label>
@@ -65,7 +65,7 @@ const ContainerEditDialog = ({ editStyles, setEditStyles, isLiveEdit = true }) =
                         id="paddingTop"
                         type="number"
                         value={parseInt(editStyles.paddingTop) || 0}
-                        onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('paddingTop', e.target.value)}
                     />
                 </div>
                 <div>
@@ -74,7 +74,7 @@ const ContainerEditDialog = ({ editStyles, setEditStyles, isLiveEdit = true }) =
                         id="paddingRight"
                         type="number"
                         value={parseInt(editStyles.paddingRight) || 0}
-                        onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('paddingRight', e.target.value)}
                     />
                 </div>
                 <div>
@@ -83,7 +83,7 @@ const ContainerEditDialog = ({ editStyles, setEditStyles, isLiveEdit = true }) =
                         id="paddingBottom"
                         type="number"
                         value={parseInt(editStyles.paddingBottom) || 0}
-                        onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('paddingBottom', e.target.value)}
                     />
                 </div>
                 <div>
@@ -92,7 +92,7 @@ const ContainerEditDialog = ({ editStyles, setEditStyles, isLiveEdit = true }) =
                         id="paddingLeft"
                         type="number"
                         value={parseInt(editStyles.paddingLeft) || 0}
-                        onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('paddingLeft', e.target.value)}
                     />
                 </div>
             </div>
@@ -107,12 +107,12 @@ const ContainerEditDialog = ({ editStyles, setEditStyles, isLiveEdit = true }) =
             />
 
             {/* Border-Radius */}
-            <Label htmlFor="borderRadius">Radio de Borde (px)</Label>
+            <Label htmlFor="borderRadius">Radio de Borde</Label>
             <Input
                 id="borderRadius"
                 type="number"
                 value={parseInt(editStyles.borderRadius) || 0}
-                onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+                onChange={(e) => updateStyle('borderRadius', e.target.value)}
             />
         </div>
     );

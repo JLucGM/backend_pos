@@ -123,13 +123,29 @@ const BannerTextEditDialog = ({
                 <>
                     <div>
                         <Label htmlFor="fontSize">Tamaño de fuente</Label>
-                        <Input
-                            id="fontSize"
-                            value={editStyles.fontSize || '16px'}
-                            onChange={(e) => updateStyle('fontSize', e.target.value)}
-                            placeholder="16px"
-                            className="flex-1"
-                        />
+                        <div className="flex gap-2">
+                            <Input
+                                id="fontSize"
+                                type="number"
+                                value={parseInt(editStyles.fontSize) || 16}
+                                onChange={(e) => updateStyle('fontSize', e.target.value)}
+                                placeholder="16"
+                                className="flex-1"
+                            />
+                            <Select
+                                value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                            >
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div>
@@ -269,7 +285,7 @@ const BannerTextEditDialog = ({
                     </div>
                 </div>
 
-                <Label>Padding (px)</Label>
+                <Label>Padding</Label>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="paddingTop">Arriba</Label>
@@ -277,7 +293,7 @@ const BannerTextEditDialog = ({
                             id="paddingTop"
                             type="number"
                             value={parseInt(editStyles.paddingTop) || 10}
-                            onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingTop', e.target.value)}
                         />
                     </div>
                     <div>
@@ -286,7 +302,7 @@ const BannerTextEditDialog = ({
                             id="paddingRight"
                             type="number"
                             value={parseInt(editStyles.paddingRight) || 10}
-                            onChange={(e) => updateStyle('paddingRight', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingRight', e.target.value)}
                         />
                     </div>
                     <div>
@@ -295,7 +311,7 @@ const BannerTextEditDialog = ({
                             id="paddingBottom"
                             type="number"
                             value={parseInt(editStyles.paddingBottom) || 10}
-                            onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingBottom', e.target.value)}
                         />
                     </div>
                     <div>
@@ -304,7 +320,7 @@ const BannerTextEditDialog = ({
                             id="paddingLeft"
                             type="number"
                             value={parseInt(editStyles.paddingLeft) || 10}
-                            onChange={(e) => updateStyle('paddingLeft', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingLeft', e.target.value)}
                         />
                     </div>
                 </div>
@@ -342,12 +358,12 @@ const BannerTextEditDialog = ({
                 </div> */}
 
                 <div>
-                    <Label htmlFor="borderRadius">Radio de Borde (px)</Label>
+                    <Label htmlFor="borderRadius">Radio de Borde</Label>
                     <Input
                         id="borderRadius"
                         type="number"
                         value={parseInt(editStyles.borderRadius) || 0}
-                        onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+                        onChange={(e) => updateStyle('borderRadius', e.target.value)}
                         className="flex-1"
                     />
                 </div>

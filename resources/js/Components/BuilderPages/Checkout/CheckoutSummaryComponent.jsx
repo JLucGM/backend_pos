@@ -4,6 +4,13 @@ import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const CheckoutSummaryComponent = ({
     comp,
     getStyles,
@@ -92,13 +99,16 @@ const CheckoutSummaryComponent = ({
     const containerStyles = {
         ...getStyles(comp),
         backgroundColor: styles.backgroundColor || '#f9fafb',
-        padding: styles.padding || '24px',
-        borderRadius: styles.borderRadius || '8px',
+        paddingTop: withUnit(styles.paddingTop || '24px'),
+        paddingRight: withUnit(styles.paddingRight || '24px'),
+        paddingBottom: withUnit(styles.paddingBottom || '24px'),
+        paddingLeft: withUnit(styles.paddingLeft || '24px'),
+        borderRadius: withUnit(styles.borderRadius || '8px'),
         border: '1px solid #e5e7eb',
     };
 
     const titleStyles = {
-        fontSize: styles.heading6_fontSize || '20px',
+        fontSize: withUnit(styles.titleSize || styles.heading6_fontSize || '20px', styles.titleSizeUnit || 'px'),
         color: styles.text || '#000000',
         fontFamily: themeSettings?.heading_font,
         marginBottom: '20px',

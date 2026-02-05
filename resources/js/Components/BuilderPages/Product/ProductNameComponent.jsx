@@ -38,11 +38,20 @@ const ProductNameComponent = ({
             return getResolvedFont(themeWithDefaults, fontType);
         };
 
+        // Helper para añadir unidad (px) si es solo número
+        const withUnit = (value, unit = 'px') => {
+            if (value === undefined || value === null || value === '') return undefined;
+            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+            if (typeof value === 'string' && isNaN(Number(value))) return value;
+            return `${value}${unit}`;
+        };
+
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
-        let fontSize, fontWeight, lineHeight, textTransform, color;
+        let fontSize, fontSizeUnit, fontWeight, lineHeight, textTransform, color;
 
         if (textStyle === 'custom') {
             fontSize = customStyles.fontSize || themeWithDefaults.paragraph_fontSize;
+            fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
             fontWeight = customStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
             lineHeight = customStyles.lineHeight || themeWithDefaults.paragraph_lineHeight;
             textTransform = customStyles.textTransform || themeWithDefaults.paragraph_textTransform;
@@ -51,6 +60,7 @@ const ProductNameComponent = ({
             // Usar utilidades del tema para obtener estilos consistentes
             const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
             fontSize = customStyles.fontSize || themeTextStyles.fontSize;
+            fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
             fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
             lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
             textTransform = customStyles.textTransform || themeTextStyles.textTransform;
@@ -78,7 +88,7 @@ const ProductNameComponent = ({
             textAlign,
             display: layout === 'fit' ? 'inline-block' : 'block',
             fontFamily: getFontFamily(),
-            fontSize,
+            fontSize: withUnit(fontSize, fontSizeUnit),
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,

@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const ProductDetailAttributesComponent = ({
     comp,
     product,
@@ -191,12 +199,12 @@ const ProductDetailAttributesComponent = ({
                     // Usar los valores del tema para el nivel correspondiente
                     if (!fontSize) {
                         // Buscar primero en el tema, luego valor por defecto
-                        const themeFontSize = theme?.[`heading${level} _fontSize`] || theme?.[`heading${level} _size`];
-                        fontSize = themeFontSize || `${3.5 - (level * 0.25)} rem`;
+                        const themeFontSize = theme?.[`heading${level}_fontSize`] || theme?.[`heading${level}_size`];
+                        fontSize = themeFontSize || `${3.5 - (level * 0.25)}rem`;
                     }
 
                     if (!fontWeight) {
-                        const themeFontWeight = theme?.[`heading${level} _fontWeight`];
+                        const themeFontWeight = theme?.[`heading${level}_fontWeight`];
                         fontWeight = themeFontWeight || 'bold';
                     }
                 } else if (textStyle === 'paragraph') {
@@ -219,7 +227,7 @@ const ProductDetailAttributesComponent = ({
 
             return {
                 fontFamily,
-                fontSize,
+                fontSize: withUnit(fontSize, styles.titleSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px')),
                 fontWeight,
                 color: styles.titleColor || themeWithDefaults.heading,
                 marginBottom: theme?.spacing_medium || '1rem',
@@ -228,7 +236,7 @@ const ProductDetailAttributesComponent = ({
             // Para etiquetas
             return {
                 fontFamily: theme?.body_font || "'Inter', sans-serif",
-                fontSize: styles.labelSize || theme?.paragraph_fontSize || '14px',
+                fontSize: withUnit(styles.labelSize || theme?.paragraph_fontSize || '14px', styles.labelSizeUnit || 'px'),
                 fontWeight: styles.labelFontWeight || theme?.paragraph_fontWeight || 'normal',
                 color: styles.labelColor || (theme?.text ? theme.text : '#666666'),
                 marginBottom: theme?.spacing_small || '0.5rem',
@@ -251,7 +259,7 @@ const ProductDetailAttributesComponent = ({
 
         const baseStyles = {
             padding: `${theme?.spacing_small || '0.5rem'} ${theme?.spacing_medium || '1rem'} `,
-            borderRadius: styles.buttonBorderRadius || theme?.border_radius || '6px',
+            borderRadius: withUnit(styles.buttonBorderRadius || theme?.border_radius || '6px'),
             fontSize: '14px',
             fontWeight: '500',
             transition: 'all 0.2s',

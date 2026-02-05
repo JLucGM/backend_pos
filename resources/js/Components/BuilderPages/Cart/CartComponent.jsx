@@ -28,6 +28,14 @@ const CartComponent = ({
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart', appliedTheme);
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     const [cartItems, setCartItems] = useState([]);
     const [cartTotal, setCartTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(mode === 'frontend');
@@ -52,10 +60,10 @@ const CartComponent = ({
     const containerStyles = {
         ...getStyles(comp),
         width: '100%',
-        paddingTop,
-        paddingRight,
-        paddingBottom,
-        paddingLeft,
+        paddingTop: withUnit(paddingTop),
+        paddingRight: withUnit(paddingRight),
+        paddingBottom: withUnit(paddingBottom),
+        paddingLeft: withUnit(paddingLeft),
         backgroundColor,
         maxWidth,
         margin: '0 auto',
@@ -94,7 +102,7 @@ const CartComponent = ({
                 return {
                     display: 'grid',
                     gridTemplateColumns: '1fr 400px',
-                    gap,
+                    gap: withUnit(gap),
                     alignItems: 'start',
                 };
             case 'stack':

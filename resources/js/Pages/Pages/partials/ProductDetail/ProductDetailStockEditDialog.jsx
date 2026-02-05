@@ -19,13 +19,13 @@ const ProductDetailStockEditDialog = ({
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
-        const debouncedStyles = useDebounce(editStyles, 300);
-    
-        useEffect(() => {
-            if (isLiveEdit) {
-                // Las actualizaciones se manejan automáticamente
-            }
-        }, [debouncedContent, debouncedStyles, isLiveEdit]);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
     const handleStyleChange = (key, value) => {
         setEditStyles(prev => ({
@@ -44,9 +44,9 @@ const ProductDetailStockEditDialog = ({
     // Función para restablecer a valores por defecto del tema
     const resetToDefaults = () => {
         const textStyle = editStyles.textStyle || 'paragraph';
-        
+
         let defaultStyles = {};
-        
+
         if (textStyle === 'paragraph' && themeSettings) {
             defaultStyles = {
                 fontSize: themeSettings.paragraph_fontSize || '14px',
@@ -91,7 +91,7 @@ const ProductDetailStockEditDialog = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="inStockText">Texto en stock</Label>
-                            <Input 
+                            <Input
                                 id="inStockText"
                                 value={editContent?.inStockText || 'En stock'}
                                 onChange={(e) => handleContentChange('inStockText', e.target.value)}
@@ -100,7 +100,7 @@ const ProductDetailStockEditDialog = ({
                         </div>
                         <div>
                             <Label htmlFor="inStockIcon">Icono en stock</Label>
-                            <Input 
+                            <Input
                                 id="inStockIcon"
                                 value={editContent?.inStockIcon || '✓'}
                                 onChange={(e) => handleContentChange('inStockIcon', e.target.value)}
@@ -112,7 +112,7 @@ const ProductDetailStockEditDialog = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="lowStockText">Texto stock bajo</Label>
-                            <Input 
+                            <Input
                                 id="lowStockText"
                                 value={editContent?.lowStockText || 'Pocas unidades'}
                                 onChange={(e) => handleContentChange('lowStockText', e.target.value)}
@@ -121,7 +121,7 @@ const ProductDetailStockEditDialog = ({
                         </div>
                         <div>
                             <Label htmlFor="lowStockIcon">Icono stock bajo</Label>
-                            <Input 
+                            <Input
                                 id="lowStockIcon"
                                 value={editContent?.lowStockIcon || '⚠'}
                                 onChange={(e) => handleContentChange('lowStockIcon', e.target.value)}
@@ -133,7 +133,7 @@ const ProductDetailStockEditDialog = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="outOfStockText">Texto agotado</Label>
-                            <Input 
+                            <Input
                                 id="outOfStockText"
                                 value={editContent?.outOfStockText || 'Agotado'}
                                 onChange={(e) => handleContentChange('outOfStockText', e.target.value)}
@@ -142,7 +142,7 @@ const ProductDetailStockEditDialog = ({
                         </div>
                         <div>
                             <Label htmlFor="outOfStockIcon">Icono agotado</Label>
-                            <Input 
+                            <Input
                                 id="outOfStockIcon"
                                 value={editContent?.outOfStockIcon || '✗'}
                                 onChange={(e) => handleContentChange('outOfStockIcon', e.target.value)}
@@ -152,7 +152,7 @@ const ProductDetailStockEditDialog = ({
                     </div>
 
                     <div className="flex items-center space-x-2">
-                        <Switch 
+                        <Switch
                             id="showSku"
                             checked={editContent?.showSku || false}
                             onCheckedChange={(checked) => handleContentChange('showSku', checked)}
@@ -165,21 +165,38 @@ const ProductDetailStockEditDialog = ({
                     {/* Estilo de Texto */}
                     <div className="space-y-4">
                         <h4 className="font-medium">Estilo del Texto</h4>
-                        
+
                         <div>
                             <Label htmlFor="fontSize">Tamaño de fuente</Label>
-                            <Input 
-                                id="fontSize"
-                                value={editStyles.fontSize || '14px'}
-                                onChange={(e) => handleStyleChange('fontSize', e.target.value)}
-                                placeholder="Ej: 14px"
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    id="fontSize"
+                                    type="number"
+                                    value={parseInt(editStyles.fontSize) || ''}
+                                    onChange={(e) => handleStyleChange('fontSize', e.target.value)}
+                                    placeholder="14"
+                                    className="flex-1"
+                                />
+                                <Select
+                                    value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                    onValueChange={(value) => handleStyleChange('fontSizeUnit', value)}
+                                >
+                                    <SelectTrigger className="w-[80px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="px">px</SelectItem>
+                                        <SelectItem value="rem">rem</SelectItem>
+                                        <SelectItem value="em">em</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         <div>
                             <Label htmlFor="fontWeight">Peso de fuente</Label>
-                            <Select 
-                                value={editStyles.fontWeight || '500'} 
+                            <Select
+                                value={editStyles.fontWeight || '500'}
                                 onValueChange={(value) => handleStyleChange('fontWeight', value)}
                             >
                                 <SelectTrigger>
@@ -241,24 +258,68 @@ const ProductDetailStockEditDialog = ({
                     <Separator className="my-4" />
 
                     {/* Estilos del Contenedor */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="padding">Padding</Label>
-                            <Input 
-                                id="padding"
-                                value={editStyles.padding || '12px 16px'}
-                                onChange={(e) => handleStyleChange('padding', e.target.value)}
-                                placeholder="Ej: 12px 16px"
-                            />
+                    <div className="space-y-4">
+                        <Label>Padding interno</Label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="paddingTop">Superior</Label>
+                                <Input
+                                    id="paddingTop"
+                                    type="number"
+                                    value={parseInt(editStyles.paddingTop) || 0}
+                                    onChange={(e) => handleStyleChange('paddingTop', e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="paddingRight">Derecha</Label>
+                                <Input
+                                    id="paddingRight"
+                                    type="number"
+                                    value={parseInt(editStyles.paddingRight) || 0}
+                                    onChange={(e) => handleStyleChange('paddingRight', e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="paddingBottom">Inferior</Label>
+                                <Input
+                                    id="paddingBottom"
+                                    type="number"
+                                    value={parseInt(editStyles.paddingBottom) || 0}
+                                    onChange={(e) => handleStyleChange('paddingBottom', e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="paddingLeft">Izquierda</Label>
+                                <Input
+                                    id="paddingLeft"
+                                    type="number"
+                                    value={parseInt(editStyles.paddingLeft) || 0}
+                                    onChange={(e) => handleStyleChange('paddingLeft', e.target.value)}
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <Label htmlFor="borderRadius">Borde redondeado</Label>
-                            <Input 
-                                id="borderRadius"
-                                value={editStyles.borderRadius || '8px'}
-                                onChange={(e) => handleStyleChange('borderRadius', e.target.value)}
-                                placeholder="Ej: 8px"
-                            />
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="borderRadius">Borde redondeado</Label>
+                                <Input
+                                    id="borderRadius"
+                                    type="number"
+                                    value={parseInt(editStyles.borderRadius) || 0}
+                                    onChange={(e) => handleStyleChange('borderRadius', e.target.value)}
+                                    placeholder="0"
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="borderWidth">Grosor de borde</Label>
+                                <Input
+                                    id="borderWidth"
+                                    type="number"
+                                    value={parseInt(editStyles.borderWidth) || 0}
+                                    onChange={(e) => handleStyleChange('borderWidth', e.target.value)}
+                                    placeholder="0"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -267,7 +328,7 @@ const ProductDetailStockEditDialog = ({
                         <div className="grid grid-cols-3 gap-3">
                             <div>
                                 <Label htmlFor="inStockBgColor" className="text-xs">Color fondo</Label>
-                                <Input 
+                                <Input
                                     id="inStockBgColor"
                                     type="color"
                                     value={editStyles.inStockBgColor || '#dcfce7'}
@@ -276,7 +337,7 @@ const ProductDetailStockEditDialog = ({
                             </div>
                             <div>
                                 <Label htmlFor="inStockColor" className="text-xs">Color texto</Label>
-                                <Input 
+                                <Input
                                     id="inStockColor"
                                     type="color"
                                     value={editStyles.inStockColor || '#166534'}
@@ -285,7 +346,7 @@ const ProductDetailStockEditDialog = ({
                             </div>
                             <div>
                                 <Label htmlFor="inStockBorderColor" className="text-xs">Color borde</Label>
-                                <Input 
+                                <Input
                                     id="inStockBorderColor"
                                     type="color"
                                     value={editStyles.inStockBorderColor || '#bbf7d0'}
@@ -300,7 +361,7 @@ const ProductDetailStockEditDialog = ({
                         <div className="grid grid-cols-3 gap-3">
                             <div>
                                 <Label htmlFor="outOfStockBgColor" className="text-xs">Color fondo</Label>
-                                <Input 
+                                <Input
                                     id="outOfStockBgColor"
                                     type="color"
                                     value={editStyles.outOfStockBgColor || '#fee2e2'}
@@ -309,7 +370,7 @@ const ProductDetailStockEditDialog = ({
                             </div>
                             <div>
                                 <Label htmlFor="outOfStockColor" className="text-xs">Color texto</Label>
-                                <Input 
+                                <Input
                                     id="outOfStockColor"
                                     type="color"
                                     value={editStyles.outOfStockColor || '#991b1b'}
@@ -318,7 +379,7 @@ const ProductDetailStockEditDialog = ({
                             </div>
                             <div>
                                 <Label htmlFor="outOfStockBorderColor" className="text-xs">Color borde</Label>
-                                <Input 
+                                <Input
                                     id="outOfStockBorderColor"
                                     type="color"
                                     value={editStyles.outOfStockBorderColor || '#fecaca'}

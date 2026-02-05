@@ -4,6 +4,13 @@ import CanvasItem from '../CanvasItem';
 import { Link, usePage, router } from '@inertiajs/react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const HeaderComponent = ({
     comp,
     getStyles,
@@ -87,14 +94,14 @@ const HeaderComponent = ({
         const baseStyles = {
             ...headerStyles,
             width: content?.fullWidth ? '100%' : customStyles.width || '100%',
-            height: content?.height || '70px',
+            height: withUnit(content?.height || '70px', content?.heightUnit || 'px'),
             display: 'flex',
             alignItems: 'center',
             backgroundColor: customStyles.backgroundColor || themeHeaderStyles.backgroundColor,
-            paddingTop: customStyles.paddingTop || '20px',
-            paddingRight: customStyles.paddingRight || '20px',
-            paddingBottom: customStyles.paddingBottom || '20px',
-            paddingLeft: customStyles.paddingLeft || '20px',
+            paddingTop: withUnit(customStyles.paddingTop || '20px'),
+            paddingRight: withUnit(customStyles.paddingRight || '20px'),
+            paddingBottom: withUnit(customStyles.paddingBottom || '20px'),
+            paddingLeft: withUnit(customStyles.paddingLeft || '20px'),
             borderBottom: customStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
             transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
         };
@@ -163,7 +170,7 @@ const HeaderComponent = ({
     const searchConfig = buttonsConfig.search || { styles: { ...defaultButtonStyles, backgroundColor: 'transparent' } };
     const profileConfig = buttonsConfig.profile || { styles: { ...defaultButtonStyles, backgroundColor: themeWithDefaults.secondary_button_background } };
     const showSearch = buttonsConfig.showSearch !== false; // Por defecto mostrar
-    const buttonsGap = buttonsConfig.buttonsGap || '10px';
+    const buttonsGap = withUnit(buttonsConfig.buttonsGap || '10px');
 
     // Determinar la posición del logo
     const logoPosition = content?.logoPosition || 'left';
@@ -242,13 +249,13 @@ const HeaderComponent = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: styles.borderWidth || '0px',
+            borderWidth: withUnit(styles.borderWidth || '0px'),
             borderStyle: styles.borderStyle || 'solid',
-            borderRadius: styles.borderRadius || '50%',
-            width: styles.width || '36px',
-            height: styles.height || '36px',
-            padding: styles.padding || '8px',
-            fontSize: styles.fontSize || '16px',
+            borderRadius: withUnit(styles.borderRadius || '50%'),
+            width: withUnit(styles.width || '36px'),
+            height: withUnit(styles.height || '36px'),
+            padding: withUnit(styles.padding || '8px'),
+            fontSize: withUnit(styles.fontSize || '16px'),
             cursor: 'pointer',
             transition: 'all 0.2s',
             backgroundColor: bgColor === 'transparent' ? 'transparent' : `rgba(${parseColor(bgColor)}, ${bgOpacity})`,

@@ -66,20 +66,28 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
 
             <div>
                 <Label htmlFor="imageSize">Tamaño de imagen</Label>
-                <Select
-                    value={editStyles?.imageSize || '80px'}
-                    onValueChange={(value) => setEditStyles({ ...editStyles, imageSize: value })}
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar tamaño" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="60px">Pequeño (60px)</SelectItem>
-                        <SelectItem value="80px">Mediano (80px)</SelectItem>
-                        <SelectItem value="100px">Grande (100px)</SelectItem>
-                        <SelectItem value="120px">Extra grande (120px)</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                    <Input
+                        id="imageSize"
+                        type="number"
+                        value={parseInt(editStyles?.imageSize) || 80}
+                        onChange={(e) => setEditStyles({ ...editStyles, imageSize: e.target.value })}
+                        className="flex-1"
+                    />
+                    <Select
+                        value={editStyles.imageSizeUnit || (editStyles.imageSize?.toString().includes('rem') ? 'rem' : 'px')}
+                        onValueChange={(value) => setEditStyles({ ...editStyles, imageSizeUnit: value })}
+                    >
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="rem">rem</SelectItem>
+                            <SelectItem value="em">em</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <div>
@@ -106,17 +114,19 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                 <div>
                     <Label htmlFor="paddingTop">Padding Superior</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingTop || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingTop) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingTop: e.target.value })}
+                        placeholder="20"
                     />
                 </div>
                 <div>
                     <Label htmlFor="paddingBottom">Padding Inferior</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingBottom || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingBottom) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingBottom: e.target.value })}
+                        placeholder="20"
                     />
                 </div>
             </div>
@@ -125,17 +135,19 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                 <div>
                     <Label htmlFor="paddingLeft">Padding Izquierdo</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingLeft || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingLeft) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingLeft: e.target.value })}
+                        placeholder="20"
                     />
                 </div>
                 <div>
                     <Label htmlFor="paddingRight">Padding Derecho</Label>
                     <Input
-                        type="text"
-                        value={editStyles.paddingRight || '20px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingRight) || 20}
                         onChange={(e) => setEditStyles({ ...editStyles, paddingRight: e.target.value })}
+                        placeholder="20"
                     />
                 </div>
             </div>
@@ -148,9 +160,10 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                     <Label htmlFor="borderRadius">Borde redondeado</Label>
                     <Input
                         id="borderRadius"
-                        value={editStyles.borderRadius || '0px'}
+                        type="number"
+                        value={parseInt(editStyles.borderRadius) || 0}
                         onChange={(e) => setEditStyles({ ...editStyles, borderRadius: e.target.value })}
-                        placeholder="Ej: 8px"
+                        placeholder="0"
                     />
                 </div>
 
@@ -158,9 +171,10 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                     <Label htmlFor="borderWidth">Grosor del borde</Label>
                     <Input
                         id="borderWidth"
-                        value={editStyles.borderWidth || '0px'}
+                        type="number"
+                        value={parseInt(editStyles.borderWidth) || 0}
                         onChange={(e) => setEditStyles({ ...editStyles, borderWidth: e.target.value })}
-                        placeholder="Ej: 1px"
+                        placeholder="0"
                     />
                 </div>
                 {editStyles.borderWidth !== '0px' && (

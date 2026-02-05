@@ -80,14 +80,22 @@ const AnnouncementBarComponent = ({
         }
     };
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Estilos del contenedor principal con valores del tema
     const containerStyles = {
         ...getStyles(comp),
         backgroundColor: customStyles.backgroundColor || themeAnnouncementStyles.backgroundColor,
-        paddingTop: customStyles.paddingTop || themeAnnouncementStyles.paddingTop,
-        paddingBottom: customStyles.paddingBottom || themeAnnouncementStyles.paddingBottom,
-        paddingLeft: customStyles.paddingLeft || '20px',
-        paddingRight: customStyles.paddingRight || '20px',
+        paddingTop: withUnit(customStyles.paddingTop) || themeAnnouncementStyles.paddingTop,
+        paddingBottom: withUnit(customStyles.paddingBottom) || themeAnnouncementStyles.paddingBottom,
+        paddingLeft: withUnit(customStyles.paddingLeft || '20px'),
+        paddingRight: withUnit(customStyles.paddingRight || '20px'),
         position: 'relative',
         overflow: 'hidden',
         minHeight: '50px',
@@ -114,10 +122,10 @@ const AnnouncementBarComponent = ({
         transform: 'translateY(-50%)',
         backgroundColor: customStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)',
         opacity: customStyles.arrowOpacity || 1,
-        border: `${customStyles.arrowBorderWidth || '0px'} solid ${customStyles.arrowBorderColor || 'transparent'}`,
-        borderRadius: customStyles.arrowBorderRadius || '50%',
-        width: customStyles.arrowSize || '32px',
-        height: customStyles.arrowSize || '32px',
+        border: `${withUnit(customStyles.arrowBorderWidth) || '0px'} solid ${customStyles.arrowBorderColor || 'transparent'}`,
+        borderRadius: withUnit(customStyles.arrowBorderRadius) || '50%',
+        width: withUnit(customStyles.arrowSize) || '32px',
+        height: withUnit(customStyles.arrowSize) || '32px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

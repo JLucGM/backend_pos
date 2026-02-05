@@ -14,11 +14,18 @@ import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
 import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 
-export default function ProfileComponent({ 
-    comp, 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
+export default function ProfileComponent({
+    comp,
     themeSettings,
     appliedTheme,
-    isPreview = false, 
+    isPreview = false,
     currentUser = null,
     userDeliveryLocations = [],
     userGiftCards = [],
@@ -66,7 +73,7 @@ export default function ProfileComponent({
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeProfileStyles = getComponentStyles(themeWithDefaults, 'profile', appliedTheme);
     const themeProfileCardStyles = getComponentStyles(themeWithDefaults, 'profile-card', appliedTheme);
-    
+
     // 1. Contenedor principal que usa el fondo del tema
     const outerContainerStyles = {
         width: '100%',
@@ -81,18 +88,21 @@ export default function ProfileComponent({
 
     // 2. Contenedor interno del perfil
     const containerStyles = {
-        backgroundColor:  themeWithDefaults.background || themeProfileStyles.backgroundColor || styles.backgroundColor,
-        padding: `${styles.paddingTop || '40px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '40px'} ${styles.paddingLeft || '20px'}`,
-        maxWidth: styles.maxWidth || '1200px',
+        backgroundColor: themeWithDefaults.background || themeProfileStyles.backgroundColor || styles.backgroundColor,
+        paddingTop: withUnit(styles.paddingTop || '40px'),
+        paddingRight: withUnit(styles.paddingRight || '20px'),
+        paddingBottom: withUnit(styles.paddingBottom || '40px'),
+        paddingLeft: withUnit(styles.paddingLeft || '20px'),
+        maxWidth: withUnit(styles.maxWidth || '1200px', styles.maxWidthUnit || (styles.maxWidth?.toString().includes('%') ? '%' : 'px')),
         width: '100%',
         margin: '0 auto',
-        borderRadius: styles.borderRadius || '0px',
+        borderRadius: withUnit(styles.borderRadius || '0px'),
         minHeight: mode === 'frontend' ? 'auto' : '100%',
     };
 
     const titleStyles = {
         color: styles.titleColor || themeWithDefaults.heading,
-        fontSize: styles.titleSize || '32px',
+        fontSize: withUnit(styles.titleSize || '32px', styles.titleSizeUnit || 'px'),
         fontWeight: styles.titleWeight || 'bold',
         marginBottom: '24px',
         textAlign: styles.titleAlignment || 'left',
@@ -100,10 +110,10 @@ export default function ProfileComponent({
     };
 
     const cardStyles = {
-        backgroundColor:  themeWithDefaults.background || styles.cardBackgroundColor || themeProfileCardStyles.backgroundColor || '#ffffff',
-        borderRadius: styles.cardBorderRadius || '12px',
+        backgroundColor: themeWithDefaults.background || styles.cardBackgroundColor || themeProfileCardStyles.backgroundColor || '#ffffff',
+        borderRadius: withUnit(styles.cardBorderRadius || '12px'),
         border: styles.cardBorder || `1px solid ${themeWithDefaults.borders}`,
-        padding: styles.cardPadding || '24px'
+        padding: withUnit(styles.cardPadding || '24px')
     };
 
     // Estilos para etiquetas
@@ -116,7 +126,7 @@ export default function ProfileComponent({
     // Estilos para inputs
     const inputStyles = {
         borderColor: themeWithDefaults.input_border,
-        borderRadius: themeWithDefaults.input_corner_radius || '6px',
+        borderRadius: withUnit(themeWithDefaults.input_corner_radius || '6px'),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         color: themeWithDefaults.text,
         backgroundColor: themeWithDefaults.input_background,
@@ -126,7 +136,7 @@ export default function ProfileComponent({
     const primaryButtonStyles = {
         backgroundColor: themeWithDefaults.primary_button_background,
         color: themeWithDefaults.primary_button_text,
-        borderRadius: themeWithDefaults.primary_button_corner_radius || '8px',
+        borderRadius: withUnit(themeWithDefaults.primary_button_corner_radius || '8px'),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
     };
 
@@ -196,7 +206,7 @@ export default function ProfileComponent({
                         }}>
                             {content.loginRequiredMessage || 'Necesitas iniciar sesión para acceder a tu perfil y gestionar tus datos.'}
                         </p>
-                        <Button 
+                        <Button
                             onClick={() => router.visit('/iniciar-sesion')}
                             style={primaryButtonStyles}
                         >
@@ -211,7 +221,7 @@ export default function ProfileComponent({
     // Modo builder - mostrar vista de ejemplo respetando el layoutType
     if (mode === 'builder') {
         const layoutType = content.layoutType || 'tabs';
-        
+
         // Componentes de ejemplo para el builder
         const exampleProfileSection = (
             <Card style={cardStyles}>
@@ -254,7 +264,7 @@ export default function ProfileComponent({
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="border rounded-lg p-4" style={{ 
+                        <div className="border rounded-lg p-4" style={{
                             borderColor: themeWithDefaults.borders,
                             backgroundColor: themeWithDefaults.background
                         }}>
@@ -288,7 +298,7 @@ export default function ProfileComponent({
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="border rounded-lg p-4" style={{ 
+                        <div className="border rounded-lg p-4" style={{
                             borderColor: themeWithDefaults.borders,
                             backgroundColor: themeWithDefaults.background,
                             background: `linear-gradient(135deg, ${themeWithDefaults.primary_button_background}20, ${themeWithDefaults.secondary_button_background}20)`
@@ -322,7 +332,7 @@ export default function ProfileComponent({
                     <h1 style={titleStyles}>
                         {content.title || 'Mi Perfil'}
                     </h1>
-                    
+
                     {layoutType === 'grid' ? (
                         // Grid Layout - Todo visible a la vez
                         <div className="space-y-6">
@@ -365,7 +375,7 @@ export default function ProfileComponent({
                     ) : (
                         // Tabs Layout - Contenido organizado en pestañas
                         <Tabs defaultValue="profile" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3" style={{ 
+                            <TabsList className="grid w-full grid-cols-3" style={{
                                 backgroundColor: themeWithDefaults.background,
                                 borderBottom: `1px solid ${themeWithDefaults.borders}`
                             }}>
@@ -395,7 +405,7 @@ export default function ProfileComponent({
     // Funciones para manejar el perfil
     const handleProfileUpdate = (e) => {
         e.preventDefault();
-        
+
         router.put('/profile', profileData, {
             onSuccess: () => {
                 toast.success('Perfil actualizado correctamente');
@@ -417,10 +427,10 @@ export default function ProfileComponent({
 
     const handleAddressSubmit = (e) => {
         e.preventDefault();
-        
+
         const url = editingAddress ? `/profile/addresses/${editingAddress.id}` : '/profile/addresses';
         const method = editingAddress ? 'put' : 'post';
-        
+
         router[method](url, addressData, {
             onSuccess: () => {
                 toast.success(editingAddress ? 'Dirección actualizada' : 'Dirección agregada');
@@ -501,7 +511,7 @@ export default function ProfileComponent({
                                     <Input
                                         id="name"
                                         value={profileData.name}
-                                        onChange={(e) => setProfileData(prev => ({...prev, name: e.target.value}))}
+                                        onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
                                         required
                                         style={inputStyles}
                                     />
@@ -512,7 +522,7 @@ export default function ProfileComponent({
                                         id="email"
                                         type="email"
                                         value={profileData.email}
-                                        onChange={(e) => setProfileData(prev => ({...prev, email: e.target.value}))}
+                                        onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
                                         required
                                         style={inputStyles}
                                     />
@@ -522,7 +532,7 @@ export default function ProfileComponent({
                                     <Input
                                         id="phone"
                                         value={profileData.phone}
-                                        onChange={(e) => setProfileData(prev => ({...prev, phone: e.target.value}))}
+                                        onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
                                         style={inputStyles}
                                     />
                                 </div>
@@ -532,7 +542,7 @@ export default function ProfileComponent({
                                         id="current_password"
                                         type="password"
                                         value={profileData.current_password}
-                                        onChange={(e) => setProfileData(prev => ({...prev, current_password: e.target.value}))}
+                                        onChange={(e) => setProfileData(prev => ({ ...prev, current_password: e.target.value }))}
                                         placeholder="Solo si quieres cambiar contraseña"
                                         style={inputStyles}
                                     />
@@ -543,7 +553,7 @@ export default function ProfileComponent({
                                         id="password"
                                         type="password"
                                         value={profileData.password}
-                                        onChange={(e) => setProfileData(prev => ({...prev, password: e.target.value}))}
+                                        onChange={(e) => setProfileData(prev => ({ ...prev, password: e.target.value }))}
                                         placeholder="Solo si quieres cambiar contraseña"
                                         style={inputStyles}
                                     />
@@ -554,7 +564,7 @@ export default function ProfileComponent({
                                         id="password_confirmation"
                                         type="password"
                                         value={profileData.password_confirmation}
-                                        onChange={(e) => setProfileData(prev => ({...prev, password_confirmation: e.target.value}))}
+                                        onChange={(e) => setProfileData(prev => ({ ...prev, password_confirmation: e.target.value }))}
                                         placeholder="Solo si quieres cambiar contraseña"
                                         style={inputStyles}
                                     />
@@ -564,9 +574,9 @@ export default function ProfileComponent({
                                 <Button type="submit" style={primaryButtonStyles}>
                                     Guardar Cambios
                                 </Button>
-                                <Button 
-                                    type="button" 
-                                    variant="outline" 
+                                <Button
+                                    type="button"
+                                    variant="outline"
                                     onClick={() => setIsEditingProfile(false)}
                                     style={outlineButtonStyles}
                                 >
@@ -579,7 +589,7 @@ export default function ProfileComponent({
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <Label style={labelStyles}>Nombre completo</Label>
-                                    <div className="flex items-center gap-2 p-2 rounded" style={{ 
+                                    <div className="flex items-center gap-2 p-2 rounded" style={{
                                         backgroundColor: `${themeWithDefaults.background}50`,
                                         color: themeWithDefaults.text
                                     }}>
@@ -589,7 +599,7 @@ export default function ProfileComponent({
                                 </div>
                                 <div>
                                     <Label style={labelStyles}>Email</Label>
-                                    <div className="flex items-center gap-2 p-2 rounded" style={{ 
+                                    <div className="flex items-center gap-2 p-2 rounded" style={{
                                         backgroundColor: `${themeWithDefaults.background}50`,
                                         color: themeWithDefaults.text
                                     }}>
@@ -599,7 +609,7 @@ export default function ProfileComponent({
                                 </div>
                                 <div>
                                     <Label style={labelStyles}>Teléfono</Label>
-                                    <div className="flex items-center gap-2 p-2 rounded" style={{ 
+                                    <div className="flex items-center gap-2 p-2 rounded" style={{
                                         backgroundColor: `${themeWithDefaults.background}50`,
                                         color: themeWithDefaults.text
                                     }}>
@@ -652,7 +662,7 @@ export default function ProfileComponent({
                                             <Input
                                                 id="address_line_1"
                                                 value={addressData.address_line_1}
-                                                onChange={(e) => setAddressData(prev => ({...prev, address_line_1: e.target.value}))}
+                                                onChange={(e) => setAddressData(prev => ({ ...prev, address_line_1: e.target.value }))}
                                                 required
                                                 style={inputStyles}
                                             />
@@ -662,7 +672,7 @@ export default function ProfileComponent({
                                             <Input
                                                 id="address_line_2"
                                                 value={addressData.address_line_2}
-                                                onChange={(e) => setAddressData(prev => ({...prev, address_line_2: e.target.value}))}
+                                                onChange={(e) => setAddressData(prev => ({ ...prev, address_line_2: e.target.value }))}
                                                 style={inputStyles}
                                             />
                                         </div>
@@ -671,7 +681,7 @@ export default function ProfileComponent({
                                             <Input
                                                 id="postal_code"
                                                 value={addressData.postal_code}
-                                                onChange={(e) => setAddressData(prev => ({...prev, postal_code: e.target.value}))}
+                                                onChange={(e) => setAddressData(prev => ({ ...prev, postal_code: e.target.value }))}
                                                 style={inputStyles}
                                             />
                                         </div>
@@ -680,12 +690,12 @@ export default function ProfileComponent({
                                             <Input
                                                 id="phone_number"
                                                 value={addressData.phone_number}
-                                                onChange={(e) => setAddressData(prev => ({...prev, phone_number: e.target.value}))}
+                                                onChange={(e) => setAddressData(prev => ({ ...prev, phone_number: e.target.value }))}
                                                 style={inputStyles}
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     {/* País, Estado, Ciudad */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
@@ -695,7 +705,7 @@ export default function ProfileComponent({
                                                 id="country_id"
                                                 options={countryOptions}
                                                 value={countryOptions.find(option => option.value === addressData.country_id)}
-                                                onChange={(selectedOption) => setAddressData(prev => ({...prev, country_id: selectedOption?.value || null}))}
+                                                onChange={(selectedOption) => setAddressData(prev => ({ ...prev, country_id: selectedOption?.value || null }))}
                                                 styles={{
                                                     ...customStyles,
                                                     control: (base) => ({
@@ -732,7 +742,7 @@ export default function ProfileComponent({
                                                 id="state_id"
                                                 options={stateOptions}
                                                 value={stateOptions.find(option => option.value === addressData.state_id)}
-                                                onChange={(selectedOption) => setAddressData(prev => ({...prev, state_id: selectedOption?.value || null}))}
+                                                onChange={(selectedOption) => setAddressData(prev => ({ ...prev, state_id: selectedOption?.value || null }))}
                                                 styles={{
                                                     ...customStyles,
                                                     control: (base) => ({
@@ -770,7 +780,7 @@ export default function ProfileComponent({
                                                 id="city_id"
                                                 options={cityOptions}
                                                 value={cityOptions.find(option => option.value === addressData.city_id)}
-                                                onChange={(selectedOption) => setAddressData(prev => ({...prev, city_id: selectedOption?.value || null}))}
+                                                onChange={(selectedOption) => setAddressData(prev => ({ ...prev, city_id: selectedOption?.value || null }))}
                                                 styles={{
                                                     ...customStyles,
                                                     control: (base) => ({
@@ -802,13 +812,13 @@ export default function ProfileComponent({
                                             />
                                         </div>
                                     </div>
-                                    
+
                                     <div>
                                         <Label htmlFor="notes" style={labelStyles}>Notas adicionales</Label>
                                         <Input
                                             id="notes"
                                             value={addressData.notes}
-                                            onChange={(e) => setAddressData(prev => ({...prev, notes: e.target.value}))}
+                                            onChange={(e) => setAddressData(prev => ({ ...prev, notes: e.target.value }))}
                                             style={inputStyles}
                                         />
                                     </div>
@@ -817,7 +827,7 @@ export default function ProfileComponent({
                                             type="checkbox"
                                             id="is_default"
                                             checked={addressData.is_default}
-                                            onChange={(e) => setAddressData(prev => ({...prev, is_default: e.target.checked}))}
+                                            onChange={(e) => setAddressData(prev => ({ ...prev, is_default: e.target.checked }))}
                                             style={{ accentColor: themeWithDefaults.primary_button_background }}
                                         />
                                         <Label htmlFor="is_default" style={labelStyles}>Establecer como dirección principal</Label>
@@ -826,9 +836,9 @@ export default function ProfileComponent({
                                         <Button type="submit" style={primaryButtonStyles}>
                                             {editingAddress ? 'Actualizar' : 'Agregar'}
                                         </Button>
-                                        <Button 
-                                            type="button" 
-                                            variant="outline" 
+                                        <Button
+                                            type="button"
+                                            variant="outline"
                                             onClick={() => setIsAddingAddress(false)}
                                             style={outlineButtonStyles}
                                         >
@@ -849,7 +859,7 @@ export default function ProfileComponent({
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {userDeliveryLocations.map((address) => (
-                                <div key={address.id} className="border rounded-lg p-4" style={{ 
+                                <div key={address.id} className="border rounded-lg p-4" style={{
                                     borderColor: themeWithDefaults.borders,
                                     backgroundColor: themeWithDefaults.background
                                 }}>
@@ -858,16 +868,16 @@ export default function ProfileComponent({
                                             <Badge variant="secondary">Principal</Badge>
                                         )}
                                         <div className="flex gap-1">
-                                            <Button 
-                                                variant="ghost" 
+                                            <Button
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => startEditAddress(address)}
                                                 style={{ color: themeWithDefaults.text }}
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </Button>
-                                            <Button 
-                                                variant="ghost" 
+                                            <Button
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => handleDeleteAddress(address.id)}
                                                 style={{ color: themeWithDefaults.text }}
@@ -912,7 +922,7 @@ export default function ProfileComponent({
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {userGiftCards.map((giftCard) => (
-                                <div key={giftCard.id} className="border rounded-lg p-4" style={{ 
+                                <div key={giftCard.id} className="border rounded-lg p-4" style={{
                                     borderColor: themeWithDefaults.borders,
                                     backgroundColor: themeWithDefaults.background,
                                     background: `linear-gradient(135deg, ${themeWithDefaults.primary_button_background}20, ${themeWithDefaults.secondary_button_background}20)`
@@ -998,7 +1008,7 @@ export default function ProfileComponent({
             // Tabs Layout - Contenido organizado en pestañas
             return (
                 <Tabs defaultValue="profile" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3" style={{ 
+                    <TabsList className="grid w-full grid-cols-3" style={{
                         backgroundColor: themeWithDefaults.background,
                         borderBottom: `1px solid ${themeWithDefaults.borders}`
                     }}>
@@ -1029,7 +1039,7 @@ export default function ProfileComponent({
                 <h1 style={titleStyles}>
                     {content.title || 'Mi Perfil'}
                 </h1>
-                
+
                 {renderProfileContent()}
             </div>
         </div>

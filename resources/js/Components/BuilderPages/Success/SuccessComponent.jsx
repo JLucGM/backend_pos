@@ -8,6 +8,13 @@ import { Button } from '@/Components/ui/button';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const SuccessComponent = ({
     comp,
     getStyles,
@@ -157,10 +164,13 @@ const SuccessComponent = ({
             className="w-full"
             style={{
                 backgroundColor: styles.backgroundColor || 'transparent',
-                padding: `${styles.paddingTop || '40px'} ${styles.paddingRight || '20px'} ${styles.paddingBottom || '40px'} ${styles.paddingLeft || '20px'}`,
-                maxWidth: styles.maxWidth || '1200px',
+                paddingTop: withUnit(styles.paddingTop || '40px'),
+                paddingRight: withUnit(styles.paddingRight || '20px'),
+                paddingBottom: withUnit(styles.paddingBottom || '40px'),
+                paddingLeft: withUnit(styles.paddingLeft || '20px'),
+                maxWidth: withUnit(styles.maxWidth || '1200px', styles.maxWidthUnit || (styles.maxWidth?.toString().includes('%') ? '%' : 'px')),
                 margin: '0 auto',
-                borderRadius: styles.borderRadius || '0px'
+                borderRadius: withUnit(styles.borderRadius || '0px')
             }}
         >
             {/* Header de éxito */}
@@ -177,7 +187,7 @@ const SuccessComponent = ({
                     className="text-3xl font-bold mb-2"
                     style={{
                         color: content.titleColor || styles.titleColor || getThemeWithDefaults(themeSettings.heading),
-                        fontSize: content.titleSize || styles.titleSize || '32px',
+                        fontSize: withUnit(content.titleSize || styles.titleSize || '32px', content.titleSizeUnit || 'px'),
                         fontWeight: content.titleWeight || styles.titleWeight || 'bold'
                     }}
                 >
@@ -188,7 +198,7 @@ const SuccessComponent = ({
                     className="text-lg"
                     style={{
                         color: content.subtitleColor || styles.subtitleColor || '#666666',
-                        fontSize: content.subtitleSize || styles.subtitleSize || '18px'
+                        fontSize: withUnit(content.subtitleSize || styles.subtitleSize || '18px', content.subtitleSizeUnit || 'px')
                     }}
                 >
                     {content.subtitle || 'Tu orden ha sido procesada correctamente'}

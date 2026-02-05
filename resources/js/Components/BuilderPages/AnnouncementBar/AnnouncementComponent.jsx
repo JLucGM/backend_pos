@@ -58,21 +58,21 @@ const AnnouncementComponent = ({
     const getTextStyles = () => {
         const baseStyles = getStyles ? getStyles(comp) : {};
 
-        // Función para obtener la fuente según el tipo seleccionado
-        const getFontFamily = () => {
-            const fontType = customStyles.fontType;
-
-            if (fontType === 'custom' && customStyles.customFont) {
-                return customStyles.customFont;
-            }
-
-            return getResolvedFont(themeWithDefaults, fontType || 'body_font');
+        // Helper para añadir unidad (px) si es solo número
+        const withUnit = (value, unit = 'px') => {
+            if (value === undefined || value === null || value === '') return undefined;
+            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+            if (typeof value === 'string' && isNaN(Number(value))) return value;
+            return `${value}${unit}`;
         };
+
+        const fontSize = customStyles.fontSize || themeAnnouncementStyles.fontSize || themeWithDefaults.paragraph_fontSize || '14px';
+        const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
 
         return {
             ...baseStyles,
             fontFamily: getFontFamily(),
-            fontSize: customStyles.fontSize || themeAnnouncementStyles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
+            fontSize: withUnit(fontSize, fontSizeUnit),
             fontWeight: customStyles.fontWeight || 'normal',
             color: customStyles.color || themeAnnouncementStyles.color || themeWithDefaults.text,
             textTransform: customStyles.textTransform || 'none',
@@ -103,6 +103,22 @@ const AnnouncementComponent = ({
             e.preventDefault();
             return;
         }
+    };
+
+    // Función para obtener la fuente usando utilidades del tema
+    const getFontFamily = () => {
+        const fontType = customStyles.fontType;
+
+        // Si el usuario seleccionó "default" o no especificó nada
+        if (fontType === 'default' || !fontType) {
+            return getResolvedFont(themeWithDefaults, 'paragraph_font');
+        }
+
+        if (fontType === 'custom' && customStyles.customFont) {
+            return customStyles.customFont;
+        }
+
+        return getResolvedFont(themeWithDefaults, fontType);
     };
 
     const textStyles = getTextStyles();

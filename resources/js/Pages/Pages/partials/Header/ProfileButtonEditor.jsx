@@ -88,8 +88,9 @@ const ProfileButtonEditor = ({ buttonConfig, onUpdate }) => {
             id="profile-borderWidth"
             type="number"
             value={parseInt(localStyles.borderWidth) || 0}
-            onChange={(e) => updateStyle('borderWidth', `${e.target.value}px`)}
+            onChange={(e) => updateStyle('borderWidth', e.target.value)}
             className="h-8 text-xs"
+            placeholder="0"
           />
         </div>
 
@@ -120,13 +121,14 @@ const ProfileButtonEditor = ({ buttonConfig, onUpdate }) => {
 
       {/* Radio de borde */}
       <div>
-        <Label htmlFor="profile-borderRadius" className="text-xs">Radio de borde (px)</Label>
+        <Label htmlFor="profile-borderRadius" className="text-xs">Radio de borde</Label>
         <Input
           id="profile-borderRadius"
           type="number"
           value={parseInt(localStyles.borderRadius) || 50}
-          onChange={(e) => updateStyle('borderRadius', `${e.target.value}px`)}
+          onChange={(e) => updateStyle('borderRadius', e.target.value)}
           className="h-8 text-xs"
+          placeholder="50"
         />
       </div>
 
@@ -135,37 +137,28 @@ const ProfileButtonEditor = ({ buttonConfig, onUpdate }) => {
       {/* Tamaño */}
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <Label htmlFor="profile-width" className="text-xs">Ancho (px)</Label>
+          <Label htmlFor="profile-width" className="text-xs">Ancho</Label>
           <Input
             id="profile-width"
             type="number"
             value={parseInt(localStyles.width) || 36}
-            onChange={(e) => updateStyle('width', `${e.target.value}px`)}
+            onChange={(e) => updateStyle('width', e.target.value)}
             className="h-8 text-xs"
+            placeholder="36"
           />
         </div>
 
         <div>
-          <Label htmlFor="profile-height" className="text-xs">Alto (px)</Label>
+          <Label htmlFor="profile-height" className="text-xs">Alto</Label>
           <Input
             id="profile-height"
             type="number"
             value={parseInt(localStyles.height) || 36}
-            onChange={(e) => updateStyle('height', `${e.target.value}px`)}
+            onChange={(e) => updateStyle('height', e.target.value)}
             className="h-8 text-xs"
+            placeholder="36"
           />
         </div>
-
-        {/* <div>
-          <Label htmlFor="profile-padding" className="text-xs">Padding (px)</Label>
-          <Input
-            id="profile-padding"
-            type="number"
-            value={parseInt(localStyles.padding) || 8}
-            onChange={(e) => updateStyle('padding', `${e.target.value}px`)}
-            className="h-8 text-xs"
-          />
-        </div> */}
       </div>
     </div>
   );

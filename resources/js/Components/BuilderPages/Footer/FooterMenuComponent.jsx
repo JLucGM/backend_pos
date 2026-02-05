@@ -18,6 +18,14 @@ const FooterMenuComponent = ({
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeFooterStyles = getComponentStyles(themeWithDefaults, 'footer', appliedTheme);
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // OBTENER LOS ITEMS DEL MENÚ DINÁMICAMENTE
     useEffect(() => {
         if (!comp.content?.menuId) {
@@ -89,7 +97,10 @@ const FooterMenuComponent = ({
         ...styles,
         display: 'flex',
         flexDirection: displayStyle === 'column' ? 'column' : 'row',
-        gap: comp.styles?.gap || '8px',
+        gap: withUnit(
+            comp.styles?.gap === 'custom' ? comp.styles?.customGap : (comp.styles?.gap || '8px'),
+            comp.styles?.gap === 'custom' ? comp.styles?.customGapUnit : (comp.styles?.gapUnit || 'px')
+        ),
         alignItems: displayStyle === 'column' ? 'flex-start' : 'center',
     };
 
@@ -109,7 +120,10 @@ const FooterMenuComponent = ({
                                 style={{
                                     color: comp.styles?.color || themeWithDefaults.text,
                                     textDecoration: 'none',
-                                    fontSize: comp.styles?.fontSize || '14px',
+                                    fontSize: withUnit(
+                                        comp.styles?.fontSize === 'custom' ? comp.styles?.customFontSize : (comp.styles?.fontSize || '14px'),
+                                        comp.styles?.fontSize === 'custom' ? comp.styles?.customFontSizeUnit : (comp.styles?.fontSizeUnit || 'px')
+                                    ),
                                     textTransform: comp.styles?.textTransform || 'none',
                                     display: 'block',
                                     padding: '4px 0',
@@ -125,7 +139,10 @@ const FooterMenuComponent = ({
                                 style={{
                                     color: comp.styles?.color || themeWithDefaults.text,
                                     textDecoration: 'none',
-                                    fontSize: comp.styles?.fontSize || '14px',
+                                    fontSize: withUnit(
+                                        comp.styles?.fontSize === 'custom' ? comp.styles?.customFontSize : (comp.styles?.fontSize || '14px'),
+                                        comp.styles?.fontSize === 'custom' ? comp.styles?.customFontSizeUnit : (comp.styles?.fontSizeUnit || 'px')
+                                    ),
                                     textTransform: comp.styles?.textTransform || 'none',
                                     display: 'block',
                                     padding: '4px 0',

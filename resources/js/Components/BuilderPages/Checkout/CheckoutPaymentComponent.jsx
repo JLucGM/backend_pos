@@ -3,6 +3,13 @@ import React from 'react';
 import { Button } from '@/Components/ui/button';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const CheckoutPaymentComponent = ({
     comp,
     getStyles,
@@ -52,13 +59,16 @@ const CheckoutPaymentComponent = ({
     const containerStyles = {
         ...getStyles(comp),
         backgroundColor: styles.backgroundColor || themeCheckoutStyles.backgroundColor || themeWithDefaults.background,
-        padding: styles.padding || '24px',
-        borderRadius: styles.borderRadius || themeCheckoutStyles.borderRadius || '8px',
+        paddingTop: withUnit(styles.paddingTop || '24px'),
+        paddingRight: withUnit(styles.paddingRight || '24px'),
+        paddingBottom: withUnit(styles.paddingBottom || '24px'),
+        paddingLeft: withUnit(styles.paddingLeft || '24px'),
+        borderRadius: withUnit(styles.borderRadius || themeCheckoutStyles.borderRadius || '8px'),
         border: `1px solid ${themeWithDefaults.borders}`,
     };
 
     const titleStyles = {
-        fontSize: styles.titleSize || themeCheckoutTitleStyles.fontSize || themeWithDefaults.heading3_fontSize || '20px',
+        fontSize: withUnit(styles.titleSize || themeCheckoutTitleStyles.fontSize || themeWithDefaults.heading3_fontSize || '20px', styles.titleSizeUnit || 'px'),
         color: styles.titleColor || themeCheckoutTitleStyles.color || themeWithDefaults.heading,
         fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
         marginBottom: '20px',
@@ -94,8 +104,8 @@ const CheckoutPaymentComponent = ({
                         <div
                             key={method.id}
                             className={`p-4 border rounded-lg cursor-pointer ${selectedPaymentMethod === method.id
-                                    ? 'border-blue-500 bg-blue-50'
-                                    : 'border-gray-200'
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-200'
                                 }`}
                             onClick={() => setSelectedPaymentMethod(method.id)}
                         >

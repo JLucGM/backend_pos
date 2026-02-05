@@ -141,7 +141,7 @@ const OrdersEditDialog = ({
 
                     <div className="space-y-3">
                         <h4 className="font-medium">Elementos a mostrar</h4>
-                        
+
                         <div className="flex items-center justify-between">
                             <Label htmlFor="showOrderStatus">Mostrar estado del pedido</Label>
                             <Switch
@@ -206,9 +206,10 @@ const OrdersEditDialog = ({
                             <Label htmlFor="borderRadius">Radio del borde</Label>
                             <Input
                                 id="borderRadius"
-                                value={editStyles.borderRadius || '8px'}
+                                type="number"
+                                value={parseInt(editStyles.borderRadius) || 8}
                                 onChange={(e) => updateStyles('borderRadius', e.target.value)}
-                                placeholder="8px"
+                                placeholder="8"
                             />
                         </div>
                     </div>
@@ -221,7 +222,7 @@ const OrdersEditDialog = ({
                                 id="paddingTop"
                                 type="number"
                                 value={parseInt(editStyles.paddingTop) || 40}
-                                onChange={(e) => updateStyles('paddingTop', `${e.target.value}px`)}
+                                onChange={(e) => updateStyles('paddingTop', e.target.value)}
                             />
                         </div>
                         <div>
@@ -230,7 +231,7 @@ const OrdersEditDialog = ({
                                 id="paddingRight"
                                 type="number"
                                 value={parseInt(editStyles.paddingRight) || 20}
-                                onChange={(e) => updateStyles('paddingRight', `${e.target.value}px`)}
+                                onChange={(e) => updateStyles('paddingRight', e.target.value)}
                             />
                         </div>
                         <div>
@@ -239,7 +240,7 @@ const OrdersEditDialog = ({
                                 id="paddingBottom"
                                 type="number"
                                 value={parseInt(editStyles.paddingBottom) || 40}
-                                onChange={(e) => updateStyles('paddingBottom', `${e.target.value}px`)}
+                                onChange={(e) => updateStyles('paddingBottom', e.target.value)}
                             />
                         </div>
                         <div>
@@ -248,26 +249,42 @@ const OrdersEditDialog = ({
                                 id="paddingLeft"
                                 type="number"
                                 value={parseInt(editStyles.paddingLeft) || 20}
-                                onChange={(e) => updateStyles('paddingLeft', `${e.target.value}px`)}
+                                onChange={(e) => updateStyles('paddingLeft', e.target.value)}
                             />
                         </div>
                     </div>
 
                     <div>
                         <Label htmlFor="maxWidth">Ancho máximo</Label>
-                        <Input
-                            id="maxWidth"
-                            value={editStyles.maxWidth || '1000px'}
-                            onChange={(e) => updateStyles('maxWidth', e.target.value)}
-                            placeholder="1000px"
-                        />
+                        <div className="flex gap-2">
+                            <Input
+                                id="maxWidth"
+                                type="number"
+                                value={parseInt(editStyles.maxWidth) || 1000}
+                                onChange={(e) => updateStyles('maxWidth', e.target.value)}
+                                placeholder="1000"
+                                className="flex-1"
+                            />
+                            <Select
+                                value={editStyles.maxWidthUnit || (editStyles.maxWidth?.toString().includes('%') ? '%' : 'px')}
+                                onValueChange={(value) => updateStyles('maxWidthUnit', value)}
+                            >
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="%">%</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <Separator className="my-4" />
 
                     <div className="space-y-4">
                         <h4 className="font-medium">Estilos de Tarjetas</h4>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="cardBackgroundColor">Color de fondo de tarjetas</Label>
@@ -292,12 +309,27 @@ const OrdersEditDialog = ({
 
                         <div>
                             <Label htmlFor="gap">Espaciado entre tarjetas</Label>
-                            <Input
-                                id="gap"
-                                value={editStyles.gap || '16px'}
-                                onChange={(e) => updateStyles('gap', e.target.value)}
-                                placeholder="16px"
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    id="gap"
+                                    type="number"
+                                    value={parseInt(editStyles.gap) || 16}
+                                    onChange={(e) => updateStyles('gap', e.target.value)}
+                                    placeholder="16"
+                                    className="flex-1"
+                                />
+                                <Select
+                                    value={editStyles.gapUnit || 'px'}
+                                    onValueChange={(value) => updateStyles('gapUnit', value)}
+                                >
+                                    <SelectTrigger className="w-[80px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="px">px</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
 
@@ -305,7 +337,7 @@ const OrdersEditDialog = ({
 
                     <div className="space-y-4">
                         <h4 className="font-medium">Tipografía</h4>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="titleColor">Color del título</Label>
@@ -319,12 +351,28 @@ const OrdersEditDialog = ({
 
                             <div>
                                 <Label htmlFor="titleSize">Tamaño del título</Label>
-                                <Input
-                                    id="titleSize"
-                                    value={editStyles.titleSize || '24px'}
-                                    onChange={(e) => updateStyles('titleSize', e.target.value)}
-                                    placeholder="24px"
-                                />
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="titleSize"
+                                        type="number"
+                                        value={parseInt(editStyles.titleSize) || 24}
+                                        onChange={(e) => updateStyles('titleSize', e.target.value)}
+                                        placeholder="24"
+                                        className="flex-1"
+                                    />
+                                    <Select
+                                        value={editStyles.titleSizeUnit || (editStyles.titleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                        onValueChange={(value) => updateStyles('titleSizeUnit', value)}
+                                    >
+                                        <SelectTrigger className="w-[80px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="px">px</SelectItem>
+                                            <SelectItem value="rem">rem</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         </div>
                     </div>

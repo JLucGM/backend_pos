@@ -58,16 +58,24 @@ const CarouselCardComponent = ({
         const nameStyles = nameChild?.styles || {};
         const priceStyles = priceChild?.styles || {};
 
+        // Helper para añadir unidad (px) si es solo número
+        const withUnit = (value, unit = 'px') => {
+            if (value === undefined || value === null || value === '') return undefined;
+            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+            if (typeof value === 'string' && isNaN(Number(value))) return value;
+            return `${value}${unit}`;
+        };
+
         // Configuración de la tarjeta para frontend con valores del tema
         const cardStyle = {
-            paddingTop: cardConfig.cardPaddingTop || '10px',
-            paddingRight: cardConfig.cardPaddingRight || '10px',
-            paddingBottom: cardConfig.cardPaddingBottom || '10px',
-            paddingLeft: cardConfig.cardPaddingLeft || '10px',
+            paddingTop: withUnit(cardConfig.cardPaddingTop || '10px'),
+            paddingRight: withUnit(cardConfig.cardPaddingRight || '10px'),
+            paddingBottom: withUnit(cardConfig.cardPaddingBottom || '10px'),
+            paddingLeft: withUnit(cardConfig.cardPaddingLeft || '10px'),
             border: cardConfig.cardBorder === 'solid'
-                ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})`
+                ? `${withUnit(cardConfig.cardBorderThickness || '1px')} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || 1})`
                 : 'none',
-            borderRadius: cardConfig.cardBorderRadius || '0px',
+            borderRadius: withUnit(cardConfig.cardBorderRadius || '0px'),
             backgroundColor: cardConfig.cardBackgroundColor || themeWithDefaults.background,
             cursor: 'pointer',
             transition: 'all 0.3s ease',
@@ -96,16 +104,16 @@ const CarouselCardComponent = ({
             height: '100%',
             objectFit: 'cover',
             border: imageStyles.imageBorder === 'solid'
-                ? `${imageStyles.imageBorderThickness || '1px'} solid rgba(0, 0, 0, ${imageStyles.imageBorderOpacity || 1})`
+                ? `${withUnit(imageStyles.imageBorderThickness || '1px')} solid rgba(0, 0, 0, ${imageStyles.imageBorderOpacity || 1})`
                 : imageStyles.imageBorder === 'none' ? 'none' : undefined,
-            borderRadius: imageStyles.imageBorderRadius || '0px',
+            borderRadius: withUnit(imageStyles.imageBorderRadius || '0px'),
             display: 'block',
             transition: 'transform 0.3s ease',
         };
 
         // Estilos del nombre del producto con valores del tema
         const nameStyle = {
-            fontSize: nameStyles.fontSize || '14px',
+            fontSize: withUnit(nameStyles.fontSize || '14px', nameStyles.fontSizeUnit || (nameStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight: nameStyles.fontWeight || '600',
             color: nameStyles.color || themeWithDefaults.text,
             textAlign: nameStyles.alignment || 'left',
@@ -118,7 +126,7 @@ const CarouselCardComponent = ({
 
         // Estilos del precio con valores del tema
         const priceStyle = {
-            fontSize: priceStyles.fontSize || '12px',
+            fontSize: withUnit(priceStyles.fontSize || '12px', priceStyles.fontSizeUnit || (priceStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight: priceStyles.fontWeight || 'normal',
             color: priceStyles.color || themeWithDefaults.text,
             textAlign: priceStyles.alignment || 'left',
@@ -238,17 +246,25 @@ const CarouselCardComponent = ({
         return typeNames[type] || type;
     };
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // Estilos de la carta para builder con valores del tema
     const cardStyles = {
         ...getStyles(comp),
-        paddingTop: cardConfig.cardPaddingTop || '10px',
-        paddingRight: cardConfig.cardPaddingRight || '10px',
-        paddingBottom: cardConfig.cardPaddingBottom || '10px',
-        paddingLeft: cardConfig.cardPaddingLeft || '10px',
+        paddingTop: withUnit(cardConfig.cardPaddingTop || '10px'),
+        paddingRight: withUnit(cardConfig.cardPaddingRight || '10px'),
+        paddingBottom: withUnit(cardConfig.cardPaddingBottom || '10px'),
+        paddingLeft: withUnit(cardConfig.cardPaddingLeft || '10px'),
         border: cardConfig.cardBorder === 'solid'
-            ? `${cardConfig.cardBorderThickness || '1px'} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || '1'})`
+            ? `${withUnit(cardConfig.cardBorderThickness || '1px')} solid rgba(0, 0, 0, ${cardConfig.cardBorderOpacity || '1'})`
             : 'none',
-        borderRadius: cardConfig.cardBorderRadius || '0px',
+        borderRadius: withUnit(cardConfig.cardBorderRadius || '0px'),
         backgroundColor: cardConfig.cardBackgroundColor || themeWithDefaults.background,
         boxShadow: `0 2px 4px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`,
         height: '100%',

@@ -75,7 +75,7 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
                         id="gapX"
                         type="number"
                         value={parseInt(editContent.gapX) || 10}
-                        onChange={(e) => updateCarouselConfig('gapX', `${e.target.value}px`)}
+                        onChange={(e) => updateCarouselConfig('gapX', e.target.value)}
                     />
                 </div>
                 <div>
@@ -84,7 +84,7 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
                         id="gapY"
                         type="number"
                         value={parseInt(editContent.gapY) || 10}
-                        onChange={(e) => updateCarouselConfig('gapY', `${e.target.value}px`)}
+                        onChange={(e) => updateCarouselConfig('gapY', e.target.value)}
                     />
                 </div>
             </div>

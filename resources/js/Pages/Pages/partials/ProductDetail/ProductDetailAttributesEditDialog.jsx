@@ -195,12 +195,29 @@ const ProductDetailAttributesEditDialog = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="titleSize">Tamaño del título</Label>
-                            <Input
-                                id="titleSize"
-                                value={editStyles.titleSize || '18px'}
-                                onChange={(e) => handleStyleChange('titleSize', e.target.value)}
-                                placeholder="Ej: 18px"
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    id="titleSize"
+                                    type="number"
+                                    value={parseInt(editStyles.titleSize) || ''}
+                                    onChange={(e) => handleStyleChange('titleSize', e.target.value)}
+                                    placeholder="18"
+                                    className="flex-1"
+                                />
+                                <Select
+                                    value={editStyles.titleSizeUnit || (editStyles.titleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                    onValueChange={(value) => handleStyleChange('titleSizeUnit', value)}
+                                >
+                                    <SelectTrigger className="w-[80px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="px">px</SelectItem>
+                                        <SelectItem value="rem">rem</SelectItem>
+                                        <SelectItem value="em">em</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         <div>
                             <Label htmlFor="titleFontWeight">Peso del título</Label>
@@ -364,16 +381,34 @@ const ProductDetailAttributesEditDialog = ({
                         <div className="flex gap-2">
                             <Input
                                 id="labelSize"
-                                value={editStyles.labelSize || '14px'}
+                                type="number"
+                                value={parseInt(editStyles.labelSize) || ''}
                                 onChange={(e) => handleStyleChange('labelSize', e.target.value)}
-                                placeholder="Ej: 14px"
+                                placeholder="14"
                                 className="flex-1"
                             />
+                            <Select
+                                value={editStyles.labelSizeUnit || (editStyles.labelSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                onValueChange={(value) => handleStyleChange('labelSizeUnit', value)}
+                            >
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleStyleChange('labelSize', themeSettings?.paragraph_fontSize || '14px')}
+                                onClick={() => {
+                                    const themeVal = themeSettings?.paragraph_fontSize || '14px';
+                                    handleStyleChange('labelSize', parseInt(themeVal) || 14);
+                                    handleStyleChange('labelSizeUnit', themeVal.toString().includes('rem') ? 'rem' : 'px');
+                                }}
                                 className="whitespace-nowrap"
                             >
                                 Tema
@@ -487,9 +522,10 @@ const ProductDetailAttributesEditDialog = ({
                     <div className="flex gap-2">
                         <Input
                             id="buttonBorderRadius"
-                            value={editStyles.buttonBorderRadius || (themeSettings?.border_radius || '6px')}
+                            type="number"
+                            value={parseInt(editStyles.buttonBorderRadius) || 0}
                             onChange={(e) => handleStyleChange('buttonBorderRadius', e.target.value)}
-                            placeholder="Ej: 6px"
+                            placeholder="6"
                             className="flex-1"
                         />
                         <Button

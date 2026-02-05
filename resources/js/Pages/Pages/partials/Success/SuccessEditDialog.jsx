@@ -6,6 +6,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { Switch } from '@/Components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
@@ -158,22 +159,54 @@ const SuccessEditDialog = ({
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="titleSize">Tamaño del Título</Label>
-                                <Input
-                                    id="titleSize"
-                                    value={editContent.titleSize || '32px'}
-                                    onChange={(e) => updateContent('titleSize', e.target.value)}
-                                    placeholder="32px"
-                                />
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="titleSize"
+                                        type="number"
+                                        value={parseInt(editContent.titleSize) || 32}
+                                        onChange={(e) => updateContent('titleSize', e.target.value)}
+                                        placeholder="32"
+                                        className="flex-1"
+                                    />
+                                    <Select
+                                        value={editContent.titleSizeUnit || (editContent.titleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                        onValueChange={(value) => updateContent('titleSizeUnit', value)}
+                                    >
+                                        <SelectTrigger className="w-[80px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="px">px</SelectItem>
+                                            <SelectItem value="rem">rem</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
 
                             <div>
                                 <Label htmlFor="subtitleSize">Tamaño del Subtítulo</Label>
-                                <Input
-                                    id="subtitleSize"
-                                    value={editContent.subtitleSize || '18px'}
-                                    onChange={(e) => updateContent('subtitleSize', e.target.value)}
-                                    placeholder="18px"
-                                />
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="subtitleSize"
+                                        type="number"
+                                        value={parseInt(editContent.subtitleSize) || 18}
+                                        onChange={(e) => updateContent('subtitleSize', e.target.value)}
+                                        placeholder="18"
+                                        className="flex-1"
+                                    />
+                                    <Select
+                                        value={editContent.subtitleSizeUnit || (editContent.subtitleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                        onValueChange={(value) => updateContent('subtitleSizeUnit', value)}
+                                    >
+                                        <SelectTrigger className="w-[80px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="px">px</SelectItem>
+                                            <SelectItem value="rem">rem</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         </div>
                     </CardContent>
@@ -250,55 +283,86 @@ const SuccessEditDialog = ({
 
                             <div>
                                 <Label htmlFor="maxWidth">Ancho Máximo</Label>
-                                <Input
-                                    id="maxWidth"
-                                    value={editStyles.maxWidth || '1200px'}
-                                    onChange={(e) => updateStyle('maxWidth', e.target.value)}
-                                    placeholder="1200px"
-                                />
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="maxWidth"
+                                        type="number"
+                                        value={parseInt(editStyles.maxWidth) || 1200}
+                                        onChange={(e) => updateStyle('maxWidth', e.target.value)}
+                                        placeholder="1200"
+                                        className="flex-1"
+                                    />
+                                    <Select
+                                        value={editStyles.maxWidthUnit || (editStyles.maxWidth?.toString().includes('%') ? '%' : 'px')}
+                                        onValueChange={(value) => updateStyle('maxWidthUnit', value)}
+                                    >
+                                        <SelectTrigger className="w-[80px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="px">px</SelectItem>
+                                            <SelectItem value="%">%</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-4 gap-4">
                             <div>
-                                <Label htmlFor="paddingTop">Padding Superior</Label>
+                                <Label htmlFor="paddingTop">Superior</Label>
                                 <Input
                                     id="paddingTop"
-                                    value={editStyles.paddingTop || '40px'}
+                                    type="number"
+                                    value={parseInt(editStyles.paddingTop) || 40}
                                     onChange={(e) => updateStyle('paddingTop', e.target.value)}
-                                    placeholder="40px"
+                                    placeholder="40"
                                 />
                             </div>
 
                             <div>
-                                <Label htmlFor="paddingRight">Padding Derecho</Label>
+                                <Label htmlFor="paddingRight">Derecho</Label>
                                 <Input
                                     id="paddingRight"
-                                    value={editStyles.paddingRight || '20px'}
+                                    type="number"
+                                    value={parseInt(editStyles.paddingRight) || 20}
                                     onChange={(e) => updateStyle('paddingRight', e.target.value)}
-                                    placeholder="20px"
+                                    placeholder="20"
                                 />
                             </div>
 
                             <div>
-                                <Label htmlFor="paddingBottom">Padding Inferior</Label>
+                                <Label htmlFor="paddingBottom">Inferior</Label>
                                 <Input
                                     id="paddingBottom"
-                                    value={editStyles.paddingBottom || '40px'}
+                                    type="number"
+                                    value={parseInt(editStyles.paddingBottom) || 40}
                                     onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-                                    placeholder="40px"
+                                    placeholder="40"
                                 />
                             </div>
 
                             <div>
-                                <Label htmlFor="paddingLeft">Padding Izquierdo</Label>
+                                <Label htmlFor="paddingLeft">Izquierdo</Label>
                                 <Input
                                     id="paddingLeft"
-                                    value={editStyles.paddingLeft || '20px'}
+                                    type="number"
+                                    value={parseInt(editStyles.paddingLeft) || 20}
                                     onChange={(e) => updateStyle('paddingLeft', e.target.value)}
-                                    placeholder="20px"
+                                    placeholder="20"
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <Label htmlFor="borderRadius">Radio de Borde</Label>
+                            <Input
+                                id="borderRadius"
+                                type="number"
+                                value={parseInt(editStyles.borderRadius) || 0}
+                                onChange={(e) => updateStyle('borderRadius', e.target.value)}
+                                placeholder="0"
+                            />
                         </div>
                     </CardContent>
                 </Card>

@@ -70,7 +70,7 @@ const CarouselImageEditDialog = ({ editContent, setEditContent, editStyles, setE
                             id="imageBorderThickness"
                             type="number"
                             value={parseInt(editStyles.imageBorderThickness) || 1}
-                            onChange={(e) => updateStyle('imageBorderThickness', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('imageBorderThickness', e.target.value)}
                         />
                     </div>
 
@@ -95,7 +95,7 @@ const CarouselImageEditDialog = ({ editContent, setEditContent, editStyles, setE
                     id="imageBorderRadius"
                     type="number"
                     value={parseInt(editStyles.imageBorderRadius) || 0}
-                    onChange={(e) => updateStyle('imageBorderRadius', `${e.target.value}px`)}
+                    onChange={(e) => updateStyle('imageBorderRadius', e.target.value)}
                 />
             </div>
         </div>

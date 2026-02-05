@@ -59,6 +59,8 @@ const BentoFeatureTextComponent = ({
             color = customStyles.color || themeTextStyles.color;
         }
 
+        const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+
         // Calcular line-height si es personalizado
         let finalLineHeight = lineHeight;
         if (lineHeight === 'tight') finalLineHeight = '1.2';
@@ -74,16 +76,24 @@ const BentoFeatureTextComponent = ({
         const alignment = customStyles.alignment || 'left';
         const textAlign = layout === 'fill' ? alignment : 'left';
 
+        // Helper para añadir unidad (px) si es solo número
+        const withUnit = (value, unit = 'px') => {
+            if (value === undefined || value === null || value === '') return undefined;
+            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+            if (typeof value === 'string' && isNaN(Number(value))) return value;
+            return `${value}${unit}`;
+        };
+
         return {
             ...baseStyles,
             width,
             textAlign,
             margin: '0',
             backgroundColor: customStyles.backgroundColor || 'transparent',
-            borderRadius: customStyles.borderRadius || '0px',
+            borderRadius: withUnit(customStyles.borderRadius) || '0px',
             display: layout === 'fit' ? 'inline-block' : 'block',
             fontFamily: getFontFamily(),
-            fontSize,
+            fontSize: withUnit(fontSize, fontSizeUnit),
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,

@@ -14,7 +14,7 @@ const ProductImageEditDialog = ({ editContent, setEditContent, editStyles, setEd
             // Las actualizaciones se manejan automáticamente
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
-    
+
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({
             ...prev,
@@ -71,7 +71,7 @@ const ProductImageEditDialog = ({ editContent, setEditContent, editStyles, setEd
                             id="imageBorderThickness"
                             type="number"
                             value={parseInt(editStyles.imageBorderThickness) || 1}
-                            onChange={(e) => updateStyle('imageBorderThickness', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('imageBorderThickness', e.target.value)}
                         />
                     </div>
 
@@ -96,7 +96,7 @@ const ProductImageEditDialog = ({ editContent, setEditContent, editStyles, setEd
                     id="imageBorderRadius"
                     type="number"
                     value={parseInt(editStyles.imageBorderRadius) || 0}
-                    onChange={(e) => updateStyle('imageBorderRadius', `${e.target.value}px`)}
+                    onChange={(e) => updateStyle('imageBorderRadius', e.target.value)}
                 />
             </div>
         </div>

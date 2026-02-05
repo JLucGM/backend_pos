@@ -137,12 +137,29 @@ const MarqueeEditDialog = ({
             {/* Tamaño de texto */}
             <div>
                 <Label htmlFor="marquee-fontSize">Tamaño de texto</Label>
-                <Input
-                    id="marquee-fontSize"
-                    value={editStyles.fontSize || '16px'}
-                    onChange={(e) => updateStyle('fontSize', e.target.value)}
-                    placeholder="ej: 16px, 1rem, 2em"
-                />
+                <div className="flex gap-2">
+                    <Input
+                        id="marquee-fontSize"
+                        type="number"
+                        value={parseInt(editStyles.fontSize) || 16}
+                        onChange={(e) => updateStyle('fontSize', e.target.value)}
+                        placeholder="16"
+                        className="flex-1"
+                    />
+                    <Select
+                        value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                        onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                    >
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="rem">rem</SelectItem>
+                            <SelectItem value="em">em</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             {/* Grosor de texto */}
@@ -208,48 +225,53 @@ const MarqueeEditDialog = ({
                     <Label htmlFor="marquee-paddingTop">Padding Superior</Label>
                     <Input
                         id="marquee-paddingTop"
-                        value={editStyles.paddingTop || '10px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingTop) || 0}
                         onChange={(e) => updateStyle('paddingTop', e.target.value)}
-                        placeholder="10px"
+                        placeholder="0"
                     />
                 </div>
                 <div>
                     <Label htmlFor="marquee-paddingBottom">Padding Inferior</Label>
                     <Input
                         id="marquee-paddingBottom"
-                        value={editStyles.paddingBottom || '10px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingBottom) || 0}
                         onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-                        placeholder="10px"
+                        placeholder="0"
                     />
                 </div>
                 <div>
                     <Label htmlFor="marquee-paddingLeft">Padding Izquierdo</Label>
                     <Input
                         id="marquee-paddingLeft"
-                        value={editStyles.paddingLeft || '0px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingLeft) || 0}
                         onChange={(e) => updateStyle('paddingLeft', e.target.value)}
-                        placeholder="0px"
+                        placeholder="0"
                     />
                 </div>
                 <div>
                     <Label htmlFor="marquee-paddingRight">Padding Derecho</Label>
                     <Input
                         id="marquee-paddingRight"
-                        value={editStyles.paddingRight || '0px'}
+                        type="number"
+                        value={parseInt(editStyles.paddingRight) || 0}
                         onChange={(e) => updateStyle('paddingRight', e.target.value)}
-                        placeholder="0px"
+                        placeholder="0"
                     />
                 </div>
             </div>
 
             {/* Border Radius */}
             <div>
-                <Label htmlFor="marquee-borderRadius">Border Radius</Label>
+                <Label htmlFor="marquee-borderRadius">Radio de Borde</Label>
                 <Input
                     id="marquee-borderRadius"
-                    value={editStyles.borderRadius || '0px'}
+                    type="number"
+                    value={parseInt(editStyles.borderRadius) || 0}
                     onChange={(e) => updateStyle('borderRadius', e.target.value)}
-                    placeholder="0px"
+                    placeholder="0"
                 />
             </div>
 

@@ -3,7 +3,7 @@ import { Label } from "@/Components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/Components/ui/select";
 import { Textarea } from "@/Components/ui/textarea";
 import { useDebounce } from "@/hooks/Builder/useDebounce";
-import { Switch } from "@headlessui/react";
+import { Switch } from "@/Components/ui/switch";
 import { useEffect } from "react";
 
 const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
@@ -203,25 +203,84 @@ const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             onChange={(e) => updateStyle('borderTop', e.target.value)}
                         />
                     </div>
+
+                    <div>
+                        <Label htmlFor="maxWidth">Ancho Máximo</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                id="maxWidth"
+                                type="number"
+                                value={parseInt(editStyles.maxWidth) || 1200}
+                                onChange={(e) => updateStyle('maxWidth', e.target.value)}
+                                placeholder="1200"
+                                className="flex-1"
+                            />
+                            <Select
+                                value={editStyles.maxWidthUnit || (editStyles.maxWidth?.toString().includes('%') ? '%' : 'px')}
+                                onValueChange={(value) => updateStyle('maxWidthUnit', value)}
+                            >
+                                <SelectTrigger className="w-[80px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="%">%</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <Label htmlFor="gap">Espaciado (Gap)</Label>
+                        <Input
+                            id="gap"
+                            type="number"
+                            value={parseInt(editStyles.gap) || 40}
+                            onChange={(e) => updateStyle('gap', e.target.value)}
+                            placeholder="40"
+                        />
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                     <div>
-                        <Label htmlFor="paddingTop">Padding Superior (px)</Label>
+                        <Label htmlFor="paddingTop">Superior</Label>
                         <Input
                             id="paddingTop"
                             type="number"
                             value={parseInt(editStyles.paddingTop) || 40}
-                            onChange={(e) => updateStyle('paddingTop', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingTop', e.target.value)}
+                            placeholder="40"
                         />
                     </div>
                     <div>
-                        <Label htmlFor="paddingBottom">Padding Inferior (px)</Label>
+                        <Label htmlFor="paddingRight">Derecho</Label>
+                        <Input
+                            id="paddingRight"
+                            type="number"
+                            value={parseInt(editStyles.paddingRight) || 20}
+                            onChange={(e) => updateStyle('paddingRight', e.target.value)}
+                            placeholder="20"
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingBottom">Inferior</Label>
                         <Input
                             id="paddingBottom"
                             type="number"
                             value={parseInt(editStyles.paddingBottom) || 40}
-                            onChange={(e) => updateStyle('paddingBottom', `${e.target.value}px`)}
+                            onChange={(e) => updateStyle('paddingBottom', e.target.value)}
+                            placeholder="40"
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingLeft">Izquierdo</Label>
+                        <Input
+                            id="paddingLeft"
+                            type="number"
+                            value={parseInt(editStyles.paddingLeft) || 20}
+                            onChange={(e) => updateStyle('paddingLeft', e.target.value)}
+                            placeholder="20"
                         />
                     </div>
                 </div>

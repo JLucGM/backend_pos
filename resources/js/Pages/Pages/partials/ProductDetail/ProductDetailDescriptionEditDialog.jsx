@@ -155,26 +155,43 @@ const ProductDetailDescriptionEditDialog = ({
                             <div className="flex gap-2">
                                 <Input
                                     id="fontSize"
-                                    value={editStyles.fontSize || '16px'}
+                                    type="number"
+                                    value={parseInt(editStyles.fontSize) || ''}
                                     onChange={(e) => handleStyleChange('fontSize', e.target.value)}
-                                    placeholder="Ej: 16px"
+                                    placeholder="16"
                                     className="flex-1"
                                 />
+                                <Select
+                                    value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                    onValueChange={(value) => handleStyleChange('fontSizeUnit', value)}
+                                >
+                                    <SelectTrigger className="w-[80px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="px">px</SelectItem>
+                                        <SelectItem value="rem">rem</SelectItem>
+                                        <SelectItem value="em">em</SelectItem>
+                                    </SelectContent>
+                                </Select>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
+                                        let themeVal = '16px';
                                         if (editStyles.textStyle === 'paragraph') {
-                                            handleStyleChange('fontSize', themeSettings?.paragraph_fontSize || '16px');
+                                            themeVal = themeSettings?.paragraph_fontSize || '16px';
                                         } else if (editStyles.textStyle?.startsWith('heading')) {
                                             const level = editStyles.textStyle.replace('heading', '');
-                                            handleStyleChange('fontSize', themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`);
+                                            themeVal = themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
                                         }
+                                        handleStyleChange('fontSize', parseInt(themeVal) || 16);
+                                        handleStyleChange('fontSizeUnit', themeVal.toString().includes('rem') ? 'rem' : 'px');
                                     }}
                                     className="whitespace-nowrap"
                                 >
-                                    Por defecto
+                                    Tema
                                 </Button>
                             </div>
                         </div>
@@ -383,15 +400,45 @@ const ProductDetailDescriptionEditDialog = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <Label htmlFor="padding">Padding interno</Label>
-                    <Input
-                        id="padding"
-                        value={editStyles.padding || '0'}
-                        onChange={(e) => handleStyleChange('padding', e.target.value)}
-                        placeholder="Ej: 10px"
-                    />
+            <div className="space-y-4">
+                <Label>Padding interno</Label>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="paddingTop">Superior</Label>
+                        <Input
+                            id="paddingTop"
+                            type="number"
+                            value={parseInt(editStyles.paddingTop) || 0}
+                            onChange={(e) => handleStyleChange('paddingTop', e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingRight">Derecha</Label>
+                        <Input
+                            id="paddingRight"
+                            type="number"
+                            value={parseInt(editStyles.paddingRight) || 0}
+                            onChange={(e) => handleStyleChange('paddingRight', e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingBottom">Inferior</Label>
+                        <Input
+                            id="paddingBottom"
+                            type="number"
+                            value={parseInt(editStyles.paddingBottom) || 0}
+                            onChange={(e) => handleStyleChange('paddingBottom', e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="paddingLeft">Izquierda</Label>
+                        <Input
+                            id="paddingLeft"
+                            type="number"
+                            value={parseInt(editStyles.paddingLeft) || 0}
+                            onChange={(e) => handleStyleChange('paddingLeft', e.target.value)}
+                        />
+                    </div>
                 </div>
 
                 <div>
@@ -420,9 +467,10 @@ const ProductDetailDescriptionEditDialog = ({
                     <Label htmlFor="borderRadius">Borde redondeado</Label>
                     <Input
                         id="borderRadius"
-                        value={editStyles.borderRadius || '0px'}
+                        type="number"
+                        value={parseInt(editStyles.borderRadius) || 0}
                         onChange={(e) => handleStyleChange('borderRadius', e.target.value)}
-                        placeholder="Ej: 8px"
+                        placeholder="0"
                     />
                 </div>
 
@@ -430,9 +478,10 @@ const ProductDetailDescriptionEditDialog = ({
                     <Label htmlFor="borderWidth">Grosor del borde</Label>
                     <Input
                         id="borderWidth"
-                        value={editStyles.borderWidth || '0px'}
+                        type="number"
+                        value={parseInt(editStyles.borderWidth) || 0}
                         onChange={(e) => handleStyleChange('borderWidth', e.target.value)}
-                        placeholder="Ej: 1px"
+                        placeholder="0"
                     />
                 </div>
             </div>

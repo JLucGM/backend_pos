@@ -1,8 +1,15 @@
 // components/BuilderPages/FooterComponent.jsx
 import React from 'react';
 import FooterMenuComponent from './FooterMenuComponent';
-import TextComponent from '../TextComponent'; 
+import TextComponent from '../TextComponent';
 import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
 
 const FooterComponent = ({
     comp,
@@ -31,7 +38,10 @@ const FooterComponent = ({
         ...styles,
         width: '100%',
         backgroundColor: styles.backgroundColor || themeFooterStyles.backgroundColor,
-        padding: '40px 20px',
+        paddingTop: withUnit(styles.paddingTop || '40px'),
+        paddingRight: withUnit(styles.paddingRight || '20px'),
+        paddingBottom: withUnit(styles.paddingBottom || '40px'),
+        paddingLeft: withUnit(styles.paddingLeft || '20px'),
     };
 
     // Obtener los hijos del footer
@@ -45,10 +55,11 @@ const FooterComponent = ({
         >
             {/* Grid de columnas */}
             <div style={{
-                display: 'grid',
-                gridTemplateColumns: `repeat(${content.columns || 3}, 1fr)`,
-                gap: '40px',
-                maxWidth: '1200px',
+                display: content.layout === 'flex' ? 'flex' : 'grid',
+                flexWrap: 'wrap',
+                gridTemplateColumns: content.layout === 'flex' ? 'none' : `repeat(${content.columns || 3}, 1fr)`,
+                gap: withUnit(styles.gap || '40px'),
+                maxWidth: withUnit(styles.maxWidth || '1200px'),
                 margin: '0 auto'
             }}>
                 {children.map(child => {

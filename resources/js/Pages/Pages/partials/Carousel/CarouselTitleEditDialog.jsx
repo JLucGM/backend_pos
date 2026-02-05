@@ -7,22 +7,22 @@ import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
 
-const CarouselTitleEditDialog = ({ 
-    editContent, 
-    setEditContent, 
-    editStyles, 
+const CarouselTitleEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
     setEditStyles,
     themeSettings,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
-        const debouncedStyles = useDebounce(editStyles, 300);
-    
-        useEffect(() => {
-            if (isLiveEdit) {
-                // Las actualizaciones se manejan automáticamente
-            }
-        }, [debouncedContent, debouncedStyles, isLiveEdit]);
+    const debouncedStyles = useDebounce(editStyles, 300);
+
+    useEffect(() => {
+        if (isLiveEdit) {
+            // Las actualizaciones se manejan automáticamente
+        }
+    }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
     const updateStyle = (key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
@@ -93,7 +93,7 @@ const CarouselTitleEditDialog = ({
                     value={editStyles.textStyle || 'heading2'}
                     onValueChange={(value) => {
                         updateStyle('textStyle', value);
-                        
+
                         if (value.startsWith('heading') && themeSettings) {
                             const level = value.replace('heading', '');
                             updateStyle('fontSize', themeSettings[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`);
@@ -135,13 +135,29 @@ const CarouselTitleEditDialog = ({
                 <>
                     <div>
                         <Label htmlFor="fontSize">Tamaño de fuente</Label>
-                        <Input
-                            id="fontSize"
-                            value={editStyles.fontSize || '32px'}
-                            onChange={(e) => updateStyle('fontSize', e.target.value)}
-                            placeholder="32px"
-                            className="flex-1"
-                        />
+                        <div className="flex gap-2">
+                            <Input
+                                id="fontSize"
+                                type="number"
+                                value={parseInt(editStyles.fontSize) || 32}
+                                onChange={(e) => updateStyle('fontSize', e.target.value)}
+                                placeholder="32"
+                                className="flex-1"
+                            />
+                            <Select
+                                value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
+                                onValueChange={(value) => updateStyle('fontSizeUnit', value)}
+                            >
+                                <SelectTrigger className="w-24">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="px">px</SelectItem>
+                                    <SelectItem value="rem">rem</SelectItem>
+                                    <SelectItem value="em">em</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div>
@@ -213,22 +229,24 @@ const CarouselTitleEditDialog = ({
                 </Select>
             </div>
 
-            {editStyles.fontType === 'custom' && (
-                <div>
-                    <Label htmlFor="customFont">Fuente Personalizada</Label>
-                    <Input
-                        id="customFont"
-                        value={editStyles.customFont || ''}
-                        onChange={(e) => updateStyle('customFont', e.target.value)}
-                        placeholder="'Roboto', sans-serif"
-                    />
-                </div>
-            )}
+            {
+                editStyles.fontType === 'custom' && (
+                    <div>
+                        <Label htmlFor="customFont">Fuente Personalizada</Label>
+                        <Input
+                            id="customFont"
+                            value={editStyles.customFont || ''}
+                            onChange={(e) => updateStyle('customFont', e.target.value)}
+                            placeholder="'Roboto', sans-serif"
+                        />
+                    </div>
+                )
+            }
 
             <div>
                 <Label htmlFor="layout">Layout</Label>
-                <Select 
-                    value={editStyles.layout || 'fit'} 
+                <Select
+                    value={editStyles.layout || 'fit'}
                     onValueChange={(value) => updateStyle('layout', value)}
                 >
                     <SelectTrigger>
@@ -243,8 +261,8 @@ const CarouselTitleEditDialog = ({
 
             <div>
                 <Label htmlFor="alignment">Alineación</Label>
-                <Select 
-                    value={editStyles.alignment || 'center'} 
+                <Select
+                    value={editStyles.alignment || 'center'}
                     onValueChange={(value) => updateStyle('alignment', value)}
                 >
                     <SelectTrigger>
@@ -267,7 +285,7 @@ const CarouselTitleEditDialog = ({
                     onChange={(e) => updateStyle('color', e.target.value)}
                 />
             </div>
-        </div>
+        </div >
     );
 };
 

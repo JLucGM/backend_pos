@@ -8,6 +8,14 @@ const DividerComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, a
     // Obtener estilos específicos del componente divider del tema
     const themeDividerStyles = getComponentStyles(themeWithDefaults, 'divider', appliedTheme);
 
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     const getDividerStyles = () => {
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
@@ -17,19 +25,18 @@ const DividerComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, a
         const paddingBottom = customStyles.paddingBottom || themeWithDefaults.divider_paddingBottom || '20px';
 
         // Propiedades específicas del divider usando valores del tema
-        const lineWidth = customStyles.lineWidth || themeWithDefaults.divider_lineWidth || '1px';
         const lineLength = customStyles.lineLength || themeWithDefaults.divider_lineLength || '100%';
-        const lineColor = customStyles.lineColor || themeWithDefaults.divider_lineColor || '#000000';
+        const lineLengthUnit = customStyles.lineLengthUnit || (lineLength.toString().includes('px') ? 'px' : '%');
 
         // Layout: fit (ancho natural) o fill (ancho 100%)
         const layout = customStyles.layout || 'fill';
-        const width = layout === 'fill' ? '100%' : lineLength;
+        const width = layout === 'fill' ? '100%' : withUnit(lineLength, lineLengthUnit);
 
         return {
             ...baseStyles,
             width,
-            paddingTop,
-            paddingBottom,
+            paddingTop: withUnit(paddingTop),
+            paddingBottom: withUnit(paddingBottom),
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -42,17 +49,21 @@ const DividerComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, a
         // Usar valores del tema como fallback
         const lineWidth = customStyles.lineWidth || themeWithDefaults.divider_lineWidth || '1px';
         const lineLength = customStyles.lineLength || themeWithDefaults.divider_lineLength || '100%';
+        const lineLengthUnit = customStyles.lineLengthUnit || (lineLength.toString().includes('px') ? 'px' : '%');
         const lineColor = customStyles.lineColor || themeWithDefaults.divider_lineColor || '#000000';
         const opacity = customStyles.opacity || themeWithDefaults.divider_opacity || '1';
         const lineStyle = customStyles.lineStyle || 'solid';
 
+        const finalLineWidth = withUnit(lineWidth);
+        const finalLineLength = withUnit(lineLength, lineLengthUnit);
+
         return {
-            width: lineLength,
-            height: lineWidth,
+            width: finalLineLength,
+            height: finalLineWidth,
             backgroundColor: lineColor,
             opacity: opacity,
             border: 'none',
-            borderTop: `${lineWidth} ${lineStyle} ${lineColor}`,
+            borderTop: `${finalLineWidth} ${lineStyle} ${lineColor}`,
         };
     };
 

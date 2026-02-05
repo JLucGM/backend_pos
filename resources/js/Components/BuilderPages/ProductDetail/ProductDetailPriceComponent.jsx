@@ -3,6 +3,14 @@ import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, getTextStyles, getResolvedFont, getComponentStyles } from '@/utils/themeUtils';
 
+// Helper para añadir unidad (px) si es solo número
+const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+};
+
 const ProductDetailPriceComponent = ({
     comp,
     getStyles,
@@ -103,7 +111,7 @@ const ProductDetailPriceComponent = ({
 
             case 'custom':
             default:
-                fontSize = customStyles.fontSize || themeWithDefaults.productDetail_priceSize || '24px';
+                fontSize = withUnit(customStyles.fontSize || themeWithDefaults.productDetail_priceSize || '24px', customStyles.fontSizeUnit || 'px');
                 fontWeight = customStyles.fontWeight || 'bold';
                 lineHeight = customStyles.lineHeight || '1.4';
                 textTransform = customStyles.textTransform || 'none';
@@ -143,12 +151,12 @@ const ProductDetailPriceComponent = ({
             textTransform,
             color: customStyles.color || themeComponentStyles.color || themeWithDefaults.text,
             margin: customStyles.margin || '0 0 1rem 0',
-            paddingTop,
-            paddingRight,
-            paddingBottom,
-            paddingLeft,
+            paddingTop: withUnit(paddingTop),
+            paddingRight: withUnit(paddingRight),
+            paddingBottom: withUnit(paddingBottom),
+            paddingLeft: withUnit(paddingLeft),
             backgroundColor: customStyles.backgroundColor || 'transparent',
-            borderRadius: customStyles.borderRadius || '0px',
+            borderRadius: withUnit(customStyles.borderRadius || '0px'),
         };
     };
 
@@ -180,7 +188,7 @@ const ProductDetailPriceComponent = ({
                         className="line-through mr-2"
                         style={{
                             color: customStyles.originalPriceColor || themeWithDefaults.text,
-                            fontSize: customStyles.originalPriceSize || '0.8em',
+                            fontSize: withUnit(customStyles.originalPriceSize || '0.8em'),
                             opacity: 0.7,
                         }}
                     >
@@ -189,7 +197,7 @@ const ProductDetailPriceComponent = ({
                     <span
                         style={{
                             color: customStyles.discountPriceColor || themeWithDefaults.links,
-                            fontSize: customStyles.discountPriceSize || '1.2em',
+                            fontSize: withUnit(customStyles.discountPriceSize || '1.2em'),
                             fontWeight: 'bold',
                         }}
                     >
