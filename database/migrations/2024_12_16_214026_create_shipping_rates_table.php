@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name', 255); // Nombre de la tarifa, e.g., "Estandar"
             $table->string('slug')->unique();
-            $table->decimal('price', 10, 2); // Precio de la tarifa, e.g., 2.00
+            $table->decimal('price', 10, 2)->default(0.00); // Precio de la tarifa, e.g., 2.00
             $table->text('description')->nullable(); // Descripción, e.g., "Cubre zonas urbanas y suburbs"
             $table->boolean('is_active')->default(false);
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade'); // Asignado a empresa, como en products
+            $table->foreignId('store_id')->nullable()->constrained()->onDelete('cascade');
+
             $table->timestamps();
             // Restricciones para unicidad por empresa
             $table->unique(['name', 'company_id']);

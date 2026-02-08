@@ -32,8 +32,8 @@ export default function Register({ subscriptionPlans = [] }) {
         password_confirmation: '',
         avatar: null,
         company_name: '',
-        company_phone: '',
-        company_address: '',
+        // company_phone: '',
+        // company_address: '',
         selected_plan_id: null,
         billing_cycle: 'monthly',
     });
@@ -184,7 +184,7 @@ export default function Register({ subscriptionPlans = [] }) {
                             <InputError message={errors.company_name} className="mt-2" />
                         </div>
 
-                        <div>
+                        {/* <div>
                             <InputLabel htmlFor="company_phone" value="Teléfono de la Empresa" />
                             <TextInput
                                 id="company_phone"
@@ -208,7 +208,7 @@ export default function Register({ subscriptionPlans = [] }) {
                                 onChange={(e) => setData('company_address', e.target.value)}
                             />
                             <InputError message={errors.company_address} className="mt-2" />
-                        </div>
+                        </div> */}
                     </div>
                 );
 
@@ -308,8 +308,8 @@ export default function Register({ subscriptionPlans = [] }) {
                                 <h3 className="font-semibold text-lg mb-2">Datos de la Empresa</h3>
                                 <div className="space-y-2 text-sm">
                                     <p><span className="font-medium">Nombre:</span> {data.company_name}</p>
-                                    <p><span className="font-medium">Teléfono:</span> {data.company_phone || 'No especificado'}</p>
-                                    <p><span className="font-medium">Dirección:</span> {data.company_address || 'No especificada'}</p>
+                                    {/* <p><span className="font-medium">Teléfono:</span> {data.company_phone || 'No especificado'}</p>
+                                    <p><span className="font-medium">Dirección:</span> {data.company_address || 'No especificada'}</p> */}
                                 </div>
                             </div>
 

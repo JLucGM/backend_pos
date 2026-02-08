@@ -24,7 +24,8 @@ class StoreRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'price' => 'nullable|numeric|min:0',
-            'product_description' => 'nullable|string',
+            'description' => 'nullable|string',
+            'store_id' => 'required|exists:stores,id',
         ];
     }
 
@@ -32,7 +33,12 @@ class StoreRequest extends FormRequest
     {
         return [
             'name.required' => 'The name is required.',
-            'price.numeric' => 'The price is numeric'
+            'name.string' => 'The name must be a string.',
+            'name.max' => 'The name may not be greater than 255 characters.',
+            'price.numeric' => 'The price must be a number.',
+            'price.min' => 'The price must be at least 0.',
+            'store_id.required' => 'Debe seleccionar una tienda para la tarifa de envío.',
+            'store_id.exists' => 'La tienda seleccionada no existe.',
         ];
     }
 }

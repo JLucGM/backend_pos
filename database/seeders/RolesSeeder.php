@@ -68,10 +68,10 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.cities.edit', 'description' => 'Editar estados'])->syncRoles([$rolSuperAdmin]);
         Permission::create(['name' => 'admin.cities.delete', 'description' => 'Eliminar estados'])->syncRoles([$rolSuperAdmin]);
         
-        // Permission::create(['name' => 'admin.stores.index', 'description' => 'Ver lista de tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        // Permission::create(['name' => 'admin.stores.create', 'description' => 'Crear tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        // Permission::create(['name' => 'admin.stores.edit', 'description' => 'Editar tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
-        // Permission::create(['name' => 'admin.stores.delete', 'description' => 'Eliminar tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.stores.index', 'description' => 'Ver lista de tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.stores.create', 'description' => 'Crear tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.stores.edit', 'description' => 'Editar tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        Permission::create(['name' => 'admin.stores.delete', 'description' => 'Eliminar tiendas'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
 
         Permission::create(['name' => 'admin.products.index', 'description' => 'Ver lista de productos'])->syncRoles([$rolSuperAdmin, $rolAdmin, $rolOwner]);
         Permission::create(['name' => 'admin.products.create', 'description' => 'Crear productos'])->syncRoles([$rolSuperAdmin, $rolAdmin, $rolOwner]);

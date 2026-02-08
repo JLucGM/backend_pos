@@ -15,6 +15,7 @@ class Stock extends Model
         'product_id',
         'combination_id',
         'company_id',
+        'store_id',
     ];
 
     protected static function booted()
@@ -31,5 +32,10 @@ class Stock extends Model
     public function combination()
     {
         return $this->belongsTo(Combination::class);
+    }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
     }
 }

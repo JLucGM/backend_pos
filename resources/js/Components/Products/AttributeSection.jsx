@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -8,6 +8,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { PlusCircle } from 'lucide-react';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { calculateTotalStock } from '@/utils/calculateTotalStock';
+import Select from 'react-select';
 
 export default function AttributeSection({
     data,
@@ -21,12 +22,47 @@ export default function AttributeSection({
     addAttributeValue,
     removeAttributeValue,
     handlePriceChange,
-    handleStockChange,
-    handleBarcodeChange,
-    handleSkuChange,
+    // handleStoreStockChange,
+    // handleStoreBarcodeChange,
+    // handleStoreSkuChange,
+    handleCombinationStoreStockChange,
+    handleCombinationStoreBarcodeChange,
+    handleCombinationStoreSkuChange,
+
     localErrors,
-    setData
+    setData,
+    stores
 }) {
+    const [selectedStore, setSelectedStore] = useState(
+        stores.find(store => store.is_ecommerce_active) || stores[0]
+    );
+
+    // Actualizar store seleccionado cuando cambia data.current_store_id
+    useEffect(() => {
+        if (data.current_store_id) {
+            const store = stores.find(s => s.id === data.current_store_id);
+            if (store) setSelectedStore(store);
+        }
+    }, [data.current_store_id, stores]);
+
+    const handleStoreChange = (storeId) => {
+        setSelectedStore(stores.find(s => s.id === storeId));
+        setData('current_store_id', storeId);
+    };
+
+    // Calcular stock total para la tienda seleccionada
+    const calculateStoreTotalStock = () => {
+        if (!data.prices || !selectedStore) return 0;
+
+        return data.prices.reduce((total, combo) => {
+            const storeStock = combo.stocks_by_store?.[selectedStore.id]?.stock || 0;
+            return total + parseInt(storeStock || 0);
+        }, 0);
+    };
+
+    // Si solo hay una tienda, mantener la interfaz actual
+    const isSingleStore = stores.length === 1;
+
     return (
         <DivSection className='space-y-4'>
             <div className="borders rounded-xl mb-4">
@@ -110,17 +146,43 @@ export default function AttributeSection({
                 </div>
             </div>
 
-            {showAttributes && data.prices && data.prices.length > 0 ? (
+            {showAttributes && !isSingleStore && (
+                <DivSection>
+                    <div className="mb-4">
+                        <InputLabel htmlFor="store_select" value="Seleccionar Tienda" />
+                        <select
+                            id="store_select"
+                            value={selectedStore?.id || ''}
+                            onChange={(e) => handleStoreChange(parseInt(e.target.value))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        >
+                            {stores.map(store => (
+                                <option key={store.id} value={store.id}>
+                                    {store.name} {store.is_ecommerce_active && '(E-commerce)'}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                        Configura los precios y stock para la tienda: <strong>{selectedStore?.name}</strong>
+                    </p>
+                </DivSection>
+            )}
 
+            {showAttributes && data.prices && data.prices.length > 0 ? (
                 <Table>
                     <TableCaption>
-                        Inventario total en la ubicación de la tienda: {calculateTotalStock(data.prices)} disponibles
+                        {isSingleStore
+                            ? `Inventario total en ${stores[0].name}: ${calculateStoreTotalStock(data.prices, stores[0].id)} disponibles`
+                            : `Inventario en ${selectedStore?.name}: ${calculateStoreTotalStock(data.prices, selectedStore?.id)} disponibles`
+                        }
                     </TableCaption>
                     <TableHeader className="bg-gray-100 dark:bg-gray-800">
                         <TableRow>
                             <TableHead className="w-[100px]">Combinaciones</TableHead>
                             <TableHead>Precio</TableHead>
                             <TableHead>Stock</TableHead>
+                            {/* {!isSingleStore && <TableHead>Tienda</TableHead>} */}
                             <TableHead>Código de Barras</TableHead>
                             <TableHead>SKU</TableHead>
                         </TableRow>
@@ -128,9 +190,15 @@ export default function AttributeSection({
                     <TableBody>
                         {data.prices.map((combinationObject) => {
                             const combinationDisplay = combinationObject.combination_attribute_value
-                                .map(attrVal => attrVal.attribute_value.attribute_value_name)
-                                .join(", ");
+                                ?.map(attrVal => attrVal.attribute_value?.attribute_value_name)
+                                .join(", ") || combinationObject._key || '';
+
                             const rowKey = combinationObject.id || combinationObject._key;
+
+                            // Para múltiples tiendas, usar datos de la tienda seleccionada
+                            // Para una sola tienda, usar datos directos
+                            const storeId = isSingleStore ? stores[0].id : selectedStore?.id;
+                            const storeData = combinationObject.stocks_by_store?.[storeId] || {};
 
                             return (
                                 <TableRow key={rowKey}>
@@ -138,7 +206,7 @@ export default function AttributeSection({
                                     <TableCell className="p-1">
                                         <TextInput
                                             type="number"
-                                            value={combinationObject.combination_price}
+                                            value={combinationObject.combination_price || '0'}
                                             onChange={(e) => handlePriceChange(rowKey, e.target.value)}
                                         />
                                         {localErrors[`price_${rowKey}`] && <InputError message={localErrors[`price_${rowKey}`]} />}
@@ -146,23 +214,28 @@ export default function AttributeSection({
                                     <TableCell className="p-1">
                                         <TextInput
                                             type="number"
-                                            value={combinationObject.stock}
-                                            onChange={(e) => handleStockChange(rowKey, e.target.value)}
+                                            value={storeData.stock || '0'}
+                                            onChange={(e) => handleCombinationStoreStockChange(rowKey, storeId, e.target.value)}
                                         />
-                                        {localErrors[`stock_${rowKey}`] && <InputError message={localErrors[`stock_${rowKey}`]} />}
+                                        {localErrors[`stock_${rowKey}_${storeId}`] && <InputError message={localErrors[`stock_${rowKey}_${storeId}`]} />}
+                                    </TableCell>
+                                    {/* {!isSingleStore && (
+                                        <TableCell className="p-1">
+                                            <span className="text-sm">{selectedStore?.name}</span>
+                                        </TableCell>
+                                    )} */}
+                                    <TableCell className="p-1">
+                                        <TextInput
+                                            type="text"
+                                            value={storeData.product_barcode || ''}
+                                            onChange={(e) => handleCombinationStoreBarcodeChange(rowKey, storeId, e.target.value)}
+                                        />
                                     </TableCell>
                                     <TableCell className="p-1">
                                         <TextInput
                                             type="text"
-                                            value={combinationObject.product_barcode || ''}
-                                            onChange={(e) => handleBarcodeChange(rowKey, e.target.value)}
-                                        />
-                                    </TableCell>
-                                    <TableCell className="p-1">
-                                        <TextInput
-                                            type="text"
-                                            value={combinationObject.product_sku || ''}
-                                            onChange={(e) => handleSkuChange(rowKey, e.target.value)}
+                                            value={storeData.product_sku || ''}
+                                            onChange={(e) => handleCombinationStoreSkuChange(rowKey, storeId, e.target.value)}
                                         />
                                     </TableCell>
                                 </TableRow>

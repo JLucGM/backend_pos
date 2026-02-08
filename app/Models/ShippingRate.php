@@ -18,7 +18,7 @@ class ShippingRate extends Model
         'price',
         'description',
         'company_id',
-        // 'is_active',
+        'store_id',
     ];
 
     // protected $casts = [
@@ -42,6 +42,12 @@ class ShippingRate extends Model
         static::addGlobalScope(new CompanyScope);
     }
 
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
+    
+    
     public function company()
     {
         return $this->belongsTo(Company::class, 'company_id');

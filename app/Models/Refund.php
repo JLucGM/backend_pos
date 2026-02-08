@@ -16,6 +16,7 @@ class Refund extends Model
         'user_id',
         'company_id',
         // 'payment_method_id',
+        'store_id',
     ];
 
     protected $casts = [

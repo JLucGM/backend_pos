@@ -5,7 +5,7 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import Select from 'react-select';
 import { toast } from 'sonner';
-import { Terminal, TriangleAlert } from 'lucide-react';
+import { TriangleAlert, Store } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function RefundForm({ order, onClose }) {
@@ -79,8 +79,11 @@ export default function RefundForm({ order, onClose }) {
         });
     };
 
+    // AGREGAR: Mostrar información de la tienda
+    const showStoreInfo = order.store_id && data.restock_items;
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 ">
+        <form onSubmit={handleSubmit} className="space-y-4">
             <Alert variant="warning">
                 <TriangleAlert />
                 <AlertTitle>Ten en cuenta</AlertTitle>
@@ -88,6 +91,18 @@ export default function RefundForm({ order, onClose }) {
                     En caso de haber recibido el pago, deberás devolver el dinero desde el medio de pago utilizado.
                 </AlertDescription>
             </Alert>
+
+            {/* AGREGAR: Información de la tienda */}
+            {showStoreInfo && (
+                <Alert variant="info">
+                    <Store />
+                    <AlertTitle>Tienda de destino</AlertTitle>
+                    <AlertDescription>
+                        Los productos serán devueltos a la tienda: <strong>{order.store?.store_name || `ID: ${order.store_id}`}</strong>
+                        {order.store?.is_ecommerce_active && ' (E-commerce activo)'}
+                    </AlertDescription>
+                </Alert>
+            )}
 
             <div className="flex flex-col gap-4">
                 <div>
@@ -141,6 +156,18 @@ export default function RefundForm({ order, onClose }) {
 
             {data.restock_items && (
                 <div className="mt-4 space-y-4">
+                    {/* AGREGAR: Información de la tienda para restock */}
+                    {order.store_id && (
+                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                            <p className="text-sm text-blue-800 dark:text-blue-300">
+                                <strong>Tienda de destino:</strong> {order.store?.store_name || `ID: ${order.store_id}`}
+                            </p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                Los productos seleccionados para "Reponer" serán devueltos al inventario de esta tienda.
+                            </p>
+                        </div>
+                    )}
+
                     <h4 className="font-medium">Productos a devolver</h4>
                     {data.items.map((item, index) => (
                         <div key={item.order_item_id} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center border p-3 rounded">

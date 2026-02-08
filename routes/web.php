@@ -26,6 +26,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingRateController;
 use App\Http\Controllers\StatesController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UserController;
@@ -241,12 +242,12 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::post('cities/{city}', [CitiesController::class, 'update'])->name('cities.update');
     Route::delete('cities/{city}', [CitiesController::class, 'destroy'])->name('cities.destroy');
 
-    // Route::get('stores', [StoreController::class, 'index'])->name('stores.index');
-    // Route::get('stores/create', [StoreController::class, 'create'])->name('stores.create');
-    // Route::post('stores', [StoreController::class, 'store'])->name('stores.store');
-    // Route::get('stores/{store}/edit', [StoreController::class, 'edit'])->name('stores.edit');
-    // Route::post('stores/{store}', [StoreController::class, 'update'])->name('stores.update');
-    // Route::delete('stores/{store}', [StoreController::class, 'destroy'])->name('stores.destroy');
+    Route::get('stores', [StoreController::class, 'index'])->name('stores.index');
+    Route::get('stores/create', [StoreController::class, 'create'])->name('stores.create');
+    Route::post('stores', [StoreController::class, 'store'])->name('stores.store');
+    Route::get('stores/{store}/edit', [StoreController::class, 'edit'])->name('stores.edit');
+    Route::post('stores/{store}', [StoreController::class, 'update'])->name('stores.update');
+    Route::delete('stores/{store}', [StoreController::class, 'destroy'])->name('stores.destroy');
 
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::get('products/create', [ProductController::class, 'create'])->middleware('subscription:products.create')->name('products.create');

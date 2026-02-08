@@ -17,7 +17,8 @@ return new class extends Migration
             // $table->integer('reserved_quantity')->default(0)->comment('Cantidad reservada para pedidos pendientes');
             $table->string('product_barcode')->nullable();
             $table->string('product_sku')->nullable();
-
+            
+            $table->foreignId('store_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->nullable()->constrained(); //id del producto
             $table->foreignId('combination_id')->nullable()->constrained()->onDelete('cascade'); //id del producto
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');

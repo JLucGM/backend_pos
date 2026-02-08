@@ -50,36 +50,36 @@ export default function StoresForm({ data, countries, states, cities, setData, e
                 Estos datos podrían estar disponibles públicamente. No utilice su información personal.
             </TextDescription>
             <div>
-                <InputLabel htmlFor="store_name" value="Nombre" />
+                <InputLabel htmlFor="name" value="Nombre" />
                 <TextInput
-                    id="store_name"
+                    id="name"
                     type="text"
-                    name="store_name"
-                    value={data.store_name}
+                    name="name"
+                    value={data.name}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('store_name', e.target.value)}
+                    onChange={(e) => setData('name', e.target.value)}
                 />
                 <TextDescription>
                     Asegúrate de que sea claro y representativo de tu negocio.
                 </TextDescription>
-                <InputError message={errors.store_name} className="mt-2" />
+                <InputError message={errors.name} className="mt-2" />
             </div>
             <div>
-                <InputLabel htmlFor="store_phone" value="Teléfono" />
+                <InputLabel htmlFor="phone" value="Teléfono" />
                 <TextInput
-                    id="store_phone"
+                    id="phone"
                     type="text"
-                    name="store_phone"
-                    value={data.store_phone}
+                    name="phone"
+                    value={data.phone}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('store_phone', e.target.value)}
+                    onChange={(e) => setData('phone', e.target.value)}
                 />
                 {/* <TextDescription>
                     Asegúrate de que sea claro y representativo de tu negocio.
                 </TextDescription> */}
-                <InputError message={errors.store_phone} className="mt-2" />
+                <InputError message={errors.phone} className="mt-2" />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -124,17 +124,69 @@ export default function StoresForm({ data, countries, states, cities, setData, e
             </div>
 
             <div>
-                <InputLabel htmlFor="store_direction" value="Dirección" />
+                <InputLabel htmlFor="address" value="Dirección" />
                 <TextInput
-                    id="store_direction"
+                    id="address"
                     type="text"
-                    name="store_direction"
-                    value={data.store_direction}
+                    name="address"
+                    value={data.address}
                     className="mt-1 block w-full"
                     isFocused={true}
-                    onChange={(e) => setData('store_direction', e.target.value)}
+                    onChange={(e) => setData('address', e.target.value)}
                 />
-                <InputError message={errors.store_direction} className="mt-2" />
+                <InputError message={errors.address} className="mt-2" />
+            </div>
+
+            <div className="flex items-center space-x-2">
+                <InputLabel htmlFor="is_ecommerce_active" value="Tienda en línea activa" />
+                <input
+                    id="is_ecommerce_active"
+                    type="checkbox"
+                    name="is_ecommerce_active"
+                    checked={data.is_ecommerce_active}
+                    onChange={(e) => setData('is_ecommerce_active', e.target.checked)}
+                    className="mt-1 block h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <InputError message={errors.is_ecommerce_active} className="mt-2" />
+            </div>
+
+            <div className="flex items-center space-x-2">
+                <InputLabel htmlFor="allow_delivery" value="Permitir entrega a domicilio" />
+                <input
+                    id="allow_delivery"
+                    type="checkbox"
+                    name="allow_delivery"
+                    checked={data.allow_delivery}
+                    onChange={(e) => setData('allow_delivery', e.target.checked)}
+                    className="mt-1 block h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <InputError message={errors.allow_delivery} className="mt-2" />
+            </div>
+
+            <div className="flex items-center space-x-2">
+                <InputLabel htmlFor="allow_pickup" value="Permitir recogida en tienda" />
+                <input
+                    id="allow_pickup"
+                    type="checkbox"
+                    name="allow_pickup"
+                    checked={data.allow_pickup}
+                    onChange={(e) => setData('allow_pickup', e.target.checked)}
+                    className="mt-1 block h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <InputError message={errors.allow_pickup} className="mt-2" />
+            </div>
+
+            <div className="flex items-center space-x-2">
+                <InputLabel htmlFor="allow_shipping" value="Permitir envíos" />
+                <input
+                    id="allow_shipping"
+                    type="checkbox"
+                    name="allow_shipping"
+                    checked={data.allow_shipping}
+                    onChange={(e) => setData('allow_shipping', e.target.checked)}
+                    className="mt-1 block h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <InputError message={errors.allow_shipping} className="mt-2" />
             </div>
         </>
     );

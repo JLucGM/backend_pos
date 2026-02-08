@@ -6,49 +6,73 @@ import { toast } from 'sonner';
 import { ArrowLongLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/Components/ui/badge';
 import Loader from '@/Components/ui/loader';
+
 // Lazy load ProductsForm
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
-
-export default function Edit({ product, categories, taxes }) {
+export default function Edit({ product, categories, taxes, stores, combinationsData }) {
     const selectedCategories = product.categories.map(category => category.id);
 
-    const attributeMap = {};
-    product.combinations.forEach(combination => {
-        combination.combination_attribute_value.forEach(attrValue => {
-            if (attrValue.attribute_value && attrValue.attribute_value.attribute) {
-                const attributeName = attrValue.attribute_value.attribute.attribute_name;
-                const valueName = attrValue.attribute_value.attribute_value_name;
+    // Encontrar la tienda con ecommerce activo por defecto
+    const defaultStore = stores.find(store => store.is_ecommerce_active) || stores[0];
 
-                if (!attributeMap[attributeName]) {
-                    attributeMap[attributeName] = [];
-                }
+    // Preparar datos de stocks por tienda para productos simples
+    // Filtrar stocks simples (sin combination_id)
+    const simpleStocks = product.stocks.filter(stock => stock.combination_id === null);
 
-                if (!attributeMap[attributeName].includes(valueName)) {
-                    attributeMap[attributeName].push(valueName);
-                }
+    // Crear objeto stores_data con los datos de stocks existentes
+    const initialStoresData = {};
+    stores.forEach(store => {
+        // Buscar stock para esta tienda - ahora buscamos por store_id
+        // Si no encuentra por store_id, asignamos valores por defecto
+        const stock = simpleStocks.find(s => s.store_id === store.id);
+
+        initialStoresData[store.id] = {
+            quantity: stock ? stock.quantity : 0,
+            product_barcode: stock ? stock.product_barcode : '',
+            product_sku: stock ? stock.product_sku : '',
+        };
+    });
+
+    // Si no se encontraron stocks con store_id, pero tenemos stocks, asignamos el primero a la primera tienda
+    // Esto es un fallback temporal hasta que los datos se corrijan
+    if (simpleStocks.length > 0 && Object.values(initialStoresData).every(data => data.quantity === 0)) {
+        // console.log('Usando fallback: asignando stocks existentes a tiendas');
+        stores.forEach((store, index) => {
+            if (simpleStocks[index]) {
+                initialStoresData[store.id] = {
+                    quantity: simpleStocks[index].quantity,
+                    product_barcode: simpleStocks[index].product_barcode || '',
+                    product_sku: simpleStocks[index].product_sku || '',
+                };
             }
         });
-    });
+    }
 
-    const stockMap = {};
-    product.stocks.forEach(stock => {
-        stockMap[stock.combination_id] = {
-            quantity: stock.quantity,
-            product_barcode: stock.product_barcode,
-            product_sku: stock.product_sku,
-        };
-    });
+    // Extraer atributos de las combinaciones si existen
+    let attributeNames = [];
+    let attributeValues = [];
 
-    const mergedCombinationsData = product.combinations.map(combination => {
-        const stockData = stockMap[combination.id] || { quantity: "0", product_barcode: '', product_sku: '' };
-        return {
-            ...combination, // Spread existing combination properties
-            stock: stockData.quantity, // Add stock quantity
-            product_barcode: stockData.product_barcode, // Add product barcode
-            product_sku: stockData.product_sku, // Add product SKU
-        };
-    });
+    if (combinationsData.length > 0) {
+        const attributeMap = {};
+        combinationsData.forEach(combination => {
+            combination.combination_attribute_value.forEach(attrVal => {
+                const attributeName = attrVal.attribute_value.attribute.attribute_name;
+                const valueName = attrVal.attribute_value.attribute_value_name;
+
+                if (!attributeMap[attributeName]) {
+                    attributeMap[attributeName] = new Set();
+                }
+                attributeMap[attributeName].add(valueName);
+            });
+        });
+
+        attributeNames = Object.keys(attributeMap);
+        attributeValues = Object.values(attributeMap).map(set => Array.from(set));
+    }
+
+    // Para productos simples, usar el primer stock como datos base (para compatibilidad con formulario)
+    const firstSimpleStock = simpleStocks.length > 0 ? simpleStocks[0] : null;
 
     const initialValues = {
         product_name: product.product_name,
@@ -57,43 +81,32 @@ export default function Edit({ product, categories, taxes }) {
         product_price_discount: product.product_price_discount,
         is_active: product.is_active,
         product_status_pos: product.product_status_pos,
-        product_sku: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].product_sku : '',
-        product_barcode: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].product_barcode : '',
         categories: selectedCategories,
-        quantity: (product.stocks.length > 0 && product.stocks[0].combination_id == null) ? product.stocks[0].quantity : 0,
-        attribute_names: Object.keys(attributeMap),
-        attribute_values: Object.values(attributeMap),
-        prices: mergedCombinationsData.map(c => ({
-            id: c.id,
-            combination_price: c.combination_price,
-            stock: c.stock,
-            product_barcode: c.product_barcode,
-            product_sku: c.product_sku,
-            combination_attribute_value: c.combination_attribute_value // Keep original attribute values for display
-        })),
-        stocks: {},
-        barcodes: {},
-        skus: {},
+        // Para productos simples: datos por tienda
+        stores_data: initialStoresData,
+        // Para compatibilidad con campos antiguos (se usarán solo si hay una sola tienda)
+        product_sku: firstSimpleStock ? firstSimpleStock.product_sku : '',
+        product_barcode: firstSimpleStock ? firstSimpleStock.product_barcode : '',
+        quantity: firstSimpleStock ? firstSimpleStock.quantity : 0,
+        // Para productos con atributos
+        attribute_names: attributeNames,
+        attribute_values: attributeValues,
+        prices: combinationsData,
+        current_store_id: defaultStore?.id || null,
         tax_id: product.tax_id || null,
     };
-
-    mergedCombinationsData.forEach(combination => {
-        initialValues.stocks[combination.id] = combination.stock;
-        initialValues.barcodes[combination.id] = combination.product_barcode;
-        initialValues.skus[combination.id] = combination.product_sku;
-    });
 
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-
+        console.log('Datos enviados:', data);
         post(route('products.update', product), {
             onSuccess: () => {
                 toast("Producto actualizado con éxito.");
             },
             onError: (error) => {
-                console.error("Error updating product:", error); // Log detailed error
+                console.error("Error updating product:", error);
                 toast.error("Error al actualizar el producto.");
             }
         });
@@ -102,10 +115,10 @@ export default function Edit({ product, categories, taxes }) {
     const handleDuplicate = () => {
         post(route('products.duplicate', product), {
             onSuccess: () => {
-                toast("Producto duplicado con éxito."); // Updated toast message for duplication
+                toast("Producto duplicado con éxito.");
             },
             onError: (error) => {
-                console.error("Error duplicating product:", error); // Log detailed error
+                console.error("Error duplicating product:", error);
                 toast.error("Error al duplicar el producto.");
             }
         });
@@ -153,9 +166,9 @@ export default function Edit({ product, categories, taxes }) {
                                 setData={setData}
                                 errors={errors}
                                 categories={categories}
-                                combinationsWithPrices={mergedCombinationsData}
-                                product={product}
                                 taxes={taxes}
+                                stores={stores}
+                                product={product}
                             />
                         </div>
 

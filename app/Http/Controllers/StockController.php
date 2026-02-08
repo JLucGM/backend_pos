@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Stock;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -21,25 +22,44 @@ class StockController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $user = Auth::user();
+
+        // Obtener todas las tiendas de la compañía
+        $stores = Store::where('company_id', $user->company_id)->get();
+
+        // Obtener el store_id del request (si no hay, usar null para mostrar todas)
+        $selectedStoreId = $request->input('store_id', null);
+
         $productsWithCombinations = Product::whereHas('combinations')->pluck('id');
 
-        // Obtener los registros de stock, excluyendo aquellos con combination_id nulo para productos con combinaciones
-        $stock = Stock::with(['product', 'combination.combinationAttributeValue.attributeValue.attribute'])
+        // Obtener los registros de stock
+        $stockQuery = Stock::with([
+            'product',
+            'combination.combinationAttributeValue.attributeValue.attribute',
+            'store'
+        ])
             ->where(function ($query) use ($productsWithCombinations) {
                 $query->whereNotNull('combination_id')
                     ->orWhereNotIn('product_id', $productsWithCombinations);
             })
-            ->get();
+            ->when($selectedStoreId, function ($query) use ($selectedStoreId) {
+                return $query->where('store_id', $selectedStoreId);
+            });
 
-        // $products = Product::all();
+        $stock = $stockQuery->get();
 
-        $user = Auth::user();
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
-        return Inertia::render('Stocks/Index', compact('stock', 'role', 'permission'));
+        return Inertia::render('Stocks/Index', compact(
+            'stock',
+            'role',
+            'permission',
+            'stores',
+            'selectedStoreId'
+        ));
     }
 
     /**
@@ -83,10 +103,29 @@ class StockController extends Controller
      */
     public function update(Request $request, Stock $stock)
     {
+        $user = Auth::user();
+
+        // Verificar que el stock pertenece a la compañía del usuario
+        if ($stock->company_id !== $user->company_id) {
+            return response()->json([
+                'success' => false,
+                'error' => 'No tienes permiso para actualizar este stock'
+            ], 403);
+        }
+
+        $request->validate([
+            'quantity' => 'required|integer|min:0',
+        ]);
+
         $data = $request->only('quantity');
 
         $stock->update($data);
 
+        // Devolver una respuesta simple para Inertia
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Stock actualizado correctamente'
+        // ]);
     }
 
     /**

@@ -2250,23 +2250,23 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 content = null;
             }
 
-            // const newItem = {
-            //     id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
-            //     type: selectedType,
-            //     content,
-            //     styles: {
-            //         // Aplicar estilos por defecto del tema según el tipo de componente
-            //         color: selectedType === 'text' ? themeWithDefaults.text : undefined,
-            //         fontSize: selectedType === 'text' ? themeWithDefaults.paragraph_fontSize : undefined,
-            //         fontWeight: selectedType === 'text' ? themeWithDefaults.paragraph_fontWeight : undefined,
-            //         lineHeight: selectedType === 'text' ? themeWithDefaults.paragraph_lineHeight : undefined,
-            //         paddingTop: '10px',
-            //         paddingRight: '10px',
-            //         paddingBottom: '10px',
-            //         paddingLeft: '10px',
-            //         backgroundColor: 'transparent'
-            //     }
-            // };
+            const newItem = {
+                id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
+                type: selectedType,
+                content,
+                styles: {
+                    // Aplicar estilos por defecto del tema según el tipo de componente
+                    color: selectedType === 'text' ? themeWithDefaults.text : undefined,
+                    fontSize: selectedType === 'text' ? themeWithDefaults.paragraph_fontSize : undefined,
+                    fontWeight: selectedType === 'text' ? themeWithDefaults.paragraph_fontWeight : undefined,
+                    lineHeight: selectedType === 'text' ? themeWithDefaults.paragraph_lineHeight : undefined,
+                    paddingTop: '10px',
+                    paddingRight: '10px',
+                    paddingBottom: '10px',
+                    paddingLeft: '10px',
+                    backgroundColor: 'transparent'
+                }
+            };
 
             setComponents((prev) => {
                 const newComponents = [...prev, newItem];

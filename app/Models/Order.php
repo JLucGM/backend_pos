@@ -25,6 +25,7 @@ class Order extends Model
         'delivery_location_id',
         'company_id',
         'shipping_rate_id',
+        'store_id',
     ];
 
     // protected $casts = [
@@ -80,6 +81,9 @@ class Order extends Model
         return $this->hasMany(GiftCardUsage::class);
     }
 
-    
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
     
 }

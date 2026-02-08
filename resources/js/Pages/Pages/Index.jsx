@@ -20,13 +20,13 @@ export default function Index({ pages, permission }) {
                     </h2>
                     {permission.some(perm => perm.name === 'admin.pages.create') && (
                         <div className="flex gap-2">
-                            <Link
+                            {/* <Link
                                 className={buttonVariants({ variant: "outline", size: "sm" })}
                                 href={route('pages.themes')}
                             >
                                 <Palette className="w-4 h-4 mr-2" />
                                 Temas
-                            </Link>
+                            </Link> */}
                             <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('pages.create')}
                             >
                                 Crear Página

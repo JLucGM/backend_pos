@@ -16,17 +16,17 @@ class CompaniesSeeder extends Seeder
         $companies = [
             [
                 'name' => 'My Store',
-                'email' => 'mystore@example.com',
-                'phone' => '123456789',
-                'address' => 'Direccion 1',
+                // 'email' => 'mystore@example.com',
+                // 'phone' => '123456789',
+                // 'address' => 'Direccion 1',
                 'subdomain' => 'my-store',
                 'domain' => 'mystore.test',
             ],
             [
                 'name' => 'Pepsi',
-                'email' => 'pepsi@example.com',
-                'phone' => '123456789',
-                'address' => 'Direccion 1',
+                // 'email' => 'pepsi@example.com',
+                // 'phone' => '123456789',
+                // 'address' => 'Direccion 1',
                 'subdomain' => 'pepsi',
                 'domain' => 'pepsi.test',
             ],

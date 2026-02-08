@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('set null');
             // $table->foreignId('payment_method_id')->nullable()->constrained('payments_methods')->onDelete('set null');
+            $table->foreignId('store_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamp('refunded_at')->nullable();
             $table->timestamps();
         });

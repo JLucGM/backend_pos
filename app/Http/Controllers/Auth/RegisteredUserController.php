@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\PaymentMethod;
 use App\Models\Setting;
+use App\Models\ShippingRate;
+use App\Models\Store;
 use App\Models\SubscriptionPlan;
 use App\Models\Subscription;
+use App\Models\Tax;
 use App\Models\User;
 use App\Services\DefaultMenuService; // <-- Agregar esta línea
 use App\Services\DefaultPageService;
@@ -52,8 +56,6 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'avatar' => 'nullable|image|max:2048',
             'company_name' => 'required|string|max:255|unique:companies,name',
-            'company_phone' => 'nullable|string|max:20',
-            'company_address' => 'nullable|string|max:255',
             'selected_plan_id' => 'nullable|exists:subscription_plans,id',
             'billing_cycle' => 'nullable|in:monthly,yearly',
         ]);
@@ -76,11 +78,17 @@ class RegisteredUserController extends Controller
             // Crear la empresa con configuración de prueba por defecto
             $company = Company::create([
                 'name' => $request->company_name,
-                'phone' => $request->company_phone,
-                'address' => $request->company_address,
-                'email' => $request->email,
                 'is_trial' => true,
                 'trial_ends_at' => Carbon::now()->addDays(14), // 14 días de prueba
+            ]);
+
+            $store = Store::create([
+                'name' => 'Default Store',
+                'company_id' => $company->id,
+                'is_ecommerce_active' => true,
+                'allow_delivery' => true,
+                'allow_pickup' => true,
+                'allow_shipping' => true
             ]);
 
             // Crear configuración por defecto
@@ -89,10 +97,34 @@ class RegisteredUserController extends Controller
                 'currency_id' => 1,
             ]);
 
+            ShippingRate::create([
+                'name' => 'Tarifa Estándar',
+                'company_id' => $company->id,
+                'store_id' => $store->id,
+                'is_active' => true,
+                'price' => 0.00,
+                'description' => 'Tarifa estándar para envíos locales.',
+            ]);
+
+            PaymentMethod::create([
+                'payment_method_name' => 'Efectivo',
+                'company_id' => $company->id,
+                'is_active' => true,
+                'description' => 'Método de pago en efectivo para transacciones presenciales.',
+            ]);
+
+            Tax::create([
+                'tax_name' => 'IVA',
+                'company_id' => $company->id,
+                // 'is_active' => true,
+                'tax_rate' => 16.00,
+                'tax_description' => 'Impuesto sobre el valor agregado del producto.',
+            ]);
+
             // Crear menú por defecto (exactamente como tu ejemplo)
             DefaultMenuService::createForCompany($company);
 
-            // Crear páginas por defecto para la empresa <-- Agregar esta línea
+            // Crear páginas por defecto para la empresa <-- Agregar esta línead
             DefaultPageService::createForCompany($company);
 
             // Asociar la empresa al usuario

@@ -54,26 +54,33 @@ class StoreController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'store_name' => 'required|string|max:255',
-            'store_phone' => 'required|string|max:255',
-            'store_direction' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'is_ecommerce_active' => 'boolean',
+            'allow_delivery' => 'boolean',
+            'allow_pickup' => 'boolean',
+            'allow_shipping' => 'boolean',
             'country_id' => 'required|exists:countries,id',
             'state_id' => 'required|exists:states,id',
             'city_id' => 'required|exists:cities,id',
         ]);
 
         $user = Auth::user();
+        $data = $request->only('name', 'phone', 'address', 'is_ecommerce_active', 'allow_delivery', 'allow_pickup', 'allow_shipping', 'country_id', 'state_id', 'city_id');
+        $data['company_id'] = $user->company_id;
 
-        // Asegúrate de que el modelo Store tenga un campo company_id
-        $data = $request->only('store_name', 'store_phone', 'store_direction', 'country_id', 'state_id', 'city_id');
-
-        // Agregar el company_id del usuario logueado
-        $data['company_id'] = $user->company_id; // Asignar el company_id del usuario
+        // Si se está creando un store con is_ecommerce_active = true
+        if (isset($data['is_ecommerce_active']) && $data['is_ecommerce_active'] == true) {
+            // Primero, actualizar todos los stores de la misma compañía a false
+            Store::where('company_id', $user->company_id)
+                ->update(['is_ecommerce_active' => false]);
+        }
 
         // Crear la nueva tienda
         Store::create($data);
 
-        return to_route('stores.index'); // Redirigir a la lista de tiendas
+        return to_route('stores.index');
     }
 
 
@@ -116,19 +123,31 @@ class StoreController extends Controller
         }
 
         $request->validate([
-            'store_name' => 'required|string|max:255',
-            'store_phone' => 'required|string|max:255',
-            'store_direction' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'is_ecommerce_active' => 'boolean',
+            'allow_delivery' => 'boolean',
+            'allow_pickup' => 'boolean',
+            'allow_shipping' => 'boolean',
             'country_id' => 'required|exists:countries,id',
             'state_id' => 'required|exists:states,id',
             'city_id' => 'required|exists:cities,id',
         ]);
 
-        $data = $request->only('store_name', 'store_phone', 'store_direction', 'country_id', 'state_id', 'city_id');
+        $data = $request->only('name', 'phone', 'address', 'is_ecommerce_active', 'allow_delivery', 'allow_pickup', 'allow_shipping', 'country_id', 'state_id', 'city_id');
 
-        $store->update($data); // Actualizar la tienda con los nuevos datos
+        // Si se está actualizando a is_ecommerce_active = true
+        if (isset($data['is_ecommerce_active']) && $data['is_ecommerce_active'] == true) {
+            // Actualizar todos los stores de la misma compañía a false (excepto el actual)
+            Store::where('company_id', $user->company_id)
+                ->where('id', '!=', $store->id)
+                ->update(['is_ecommerce_active' => false]);
+        }
 
-        return to_route('stores.edit', $store); // Redirigir a la edición de la tienda
+        $store->update($data);
+
+        return to_route('stores.edit', $store);
     }
 
 

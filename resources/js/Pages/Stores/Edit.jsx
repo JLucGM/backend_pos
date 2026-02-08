@@ -12,9 +12,13 @@ const StoresForm = lazy(() => import('@/Pages/Stores/StoresForm'));
 
 export default function Edit({ store, countries, states, cities, }) {
     const initialValues = {
-        store_name: store.store_name,
-        store_phone: store.store_phone,
-        store_direction: store.store_direction,
+        name: store.name,
+        phone: store.phone,
+        address: store.address,
+        is_ecommerce_active: store.is_ecommerce_active,
+        allow_delivery: store.allow_delivery,
+        allow_pickup: store.allow_pickup,
+        allow_shipping: store.allow_shipping,
         country_id: store.country_id,
         state_id: store.state_id,
         city_id: store.city_id,
@@ -43,7 +47,7 @@ export default function Edit({ store, countries, states, cities, }) {
                             <ArrowLongLeftIcon className='size-6' />
                         </Link>
                         <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            Actualizar {store.store_name}
+                            Actualizar {store.name}
                         </h2>
                     </div>
                 </div>

@@ -2,32 +2,40 @@ import { useMemo } from 'react';
 import { mapToSelectOptions } from '@/utils/mapToSelectOptions';
 import { usePage } from '@inertiajs/react';
 
-export const useSelectOptions = (categories = [], taxes = [], products = [], states = [], users = [], countries = []) => {
+export const useSelectOptions = (
+    categories = [],
+    taxes = [],
+    products = [],
+    states = [],
+    users = [],
+    countries = [],
+    stores = []  // Agregar stores como parámetro
+) => {
     const settings = usePage().props.settings;
-    // Opciones de categorías (centralizadas aquí)
-    const categoryOptions = useMemo(() => 
-        categories.length > 0 ? mapToSelectOptions(categories, 'id', 'category_name') : [], 
+
+    // Opciones de categorías
+    const categoryOptions = useMemo(() =>
+        categories.length > 0 ? mapToSelectOptions(categories, 'id', 'category_name') : [],
         [categories]
     );
 
-    // Opciones de impuestos (ya estaban)
-    const taxOptions = useMemo(() => 
-        taxes.length > 0 ? mapToSelectOptions(taxes, 'id', tax => `${tax.tax_name} (${tax.tax_rate}%)`, true) : [], 
+    // Opciones de impuestos
+    const taxOptions = useMemo(() =>
+        taxes.length > 0 ? mapToSelectOptions(taxes, 'id', tax => `${tax.tax_name} (${tax.tax_rate}%)`, true) : [],
         [taxes]
     );
 
-    // Opciones de estado (ya estaban, para discounts)
+    // Opciones de estado
     const statusOptions = useMemo(() => [
         { value: 0, label: 'Borrador' },
         { value: 1, label: 'Publicar' }
     ], []);
 
-    // Opciones de productos (mover la lógica del componente aquí)
+    // Opciones de productos
     const productOptions = useMemo(() => {
         const options = [];
 
         products.forEach(product => {
-            // Simple (sin combinations)
             if (!product.combinations || product.combinations.length === 0) {
                 options.push({
                     value: `simple_${product.id}`,
@@ -36,7 +44,6 @@ export const useSelectOptions = (categories = [], taxes = [], products = [], sta
                     combination_id: null,
                 });
             } else {
-                // Variables: Cada combination individual
                 product.combinations.forEach(comb => {
                     let attributes = '';
                     if (comb.combination_attribute_value && Array.isArray(comb.combination_attribute_value)) {
@@ -58,49 +65,71 @@ export const useSelectOptions = (categories = [], taxes = [], products = [], sta
         });
 
         return options;
-    }, [products]);
+    }, [products, settings.currency]);
 
-    // Opciones para "Aplica a" (nuevo)
+    // Opciones para "Aplica a"
     const appliesToOptions = useMemo(() => [
         { value: 'product', label: 'Producto' },
         { value: 'category', label: 'Categoría' },
         { value: 'order_total', label: 'Total del pedido' },
     ], []);
 
-    // Opciones para "Método" (nuevo)
+    // Opciones para "Método"
     const automaticOptions = useMemo(() => [
         { value: true, label: 'Descuento Automático' },
         { value: false, label: 'Descuento por código' },
     ], []);
 
-    // Opciones de estados (nuevo, movido de CitiesForm)
-    const stateOptions = useMemo(() => 
-        states.length > 0 ? mapToSelectOptions(states, 'id', 'state_name') : [], 
+    // Opciones de estados
+    const stateOptions = useMemo(() =>
+        states.length > 0 ? mapToSelectOptions(states, 'id', 'state_name') : [],
         [states]
     );
 
-    // Opciones de usuarios (nuevo, movido de GiftCardsForm)
-    const userOptions = useMemo(() => 
-        users.length > 0 ? mapToSelectOptions(users, 'id', 'name') : [], 
+    // Opciones de usuarios
+    const userOptions = useMemo(() =>
+        users.length > 0 ? mapToSelectOptions(users, 'id', 'name') : [],
         [users]
     );
 
-    // Opciones de países (nuevo, movido de StatesForm)
-    const countryOptions = useMemo(() => 
-        countries.length > 0 ? mapToSelectOptions(countries, 'id', 'country_name') : [], 
+    // Opciones de países
+    const countryOptions = useMemo(() =>
+        countries.length > 0 ? mapToSelectOptions(countries, 'id', 'country_name') : [],
         [countries]
     );
 
+    // Opciones de tiendas
+    const storeOptions = useMemo(() => {
+        if (stores.length === 0) return [];
+
+        // Ordenar tiendas: primero las con ecommerce activo
+        const sortedStores = [...stores].sort((a, b) => {
+            // Si a tiene ecommerce activo y b no, a va primero
+            if (a.is_ecommerce_active && !b.is_ecommerce_active) return -1;
+            // Si b tiene ecommerce activo y a no, b va primero
+            if (!a.is_ecommerce_active && b.is_ecommerce_active) return 1;
+            // Si ambos tienen el mismo estado, ordenar por nombre
+            return a.name.localeCompare(b.name);
+        });
+
+        return sortedStores.map(store => ({
+            value: store.id,
+            label: `${store.name}${store.is_ecommerce_active ? ' (E-commerce)' : ''}`,
+            store: store // Opcional: mantener el objeto completo para acceso rápido
+        }));
+    }, [stores]);
+
     // Devuelve todas las opciones
-    return { 
-        categoryOptions, 
-        taxOptions, 
-        statusOptions, 
-        productOptions, 
-        appliesToOptions, 
+    return {
+        categoryOptions,
+        taxOptions,
+        statusOptions,
+        productOptions,
+        appliesToOptions,
         automaticOptions,
         stateOptions,
         userOptions,
-        countryOptions  // Agregado
+        countryOptions,
+        storeOptions  // Agregado
     };
 };

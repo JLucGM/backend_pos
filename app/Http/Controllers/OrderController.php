@@ -80,9 +80,12 @@ class OrderController extends Controller
             ->active()
             ->get();
 
-        $shippingRates = ShippingRate::all();
+            $shippingRates = ShippingRate::with('store')->get();
 
-        return Inertia::render('Orders/Create', compact('paymentMethods', 'products', 'users', 'discounts', 'shippingRates'));
+        // AGREGAR: Cargar las tiendas de la compañía
+        $stores = Store::where('company_id', $userAuth->company_id)->get();
+
+        return Inertia::render('Orders/Create', compact('paymentMethods', 'products', 'users', 'discounts', 'shippingRates', 'stores'));
     }
 
     /**
@@ -91,11 +94,16 @@ class OrderController extends Controller
 
     public function store(StoreRequest $request)
     {
-        dd($request->all());
+        // dd($request->all());
         $userAuth = Auth::user();
 
         if ($userAuth->company_id !== $request->input('company_id', $userAuth->company_id)) {
             abort(403, 'No tienes permiso para esta operación.');
+        }
+
+        // Validar que se seleccione una tienda
+        if (!$request->has('store_id') || !$request->store_id) {
+            throw ValidationException::withMessages(['store_id' => 'Debes seleccionar una tienda para el inventario.']);
         }
 
         // DEBUG: Log para ver qué llega
@@ -103,7 +111,8 @@ class OrderController extends Controller
             'order_items_count' => count($request['order_items'] ?? []),
             'order_items' => $request['order_items'] ?? [],
             'user_id' => $request->user_id,
-            'company_id' => $userAuth->company_id
+            'company_id' => $userAuth->company_id,
+            'store_id' => $request->store_id
         ]);
 
         // Cargar descuentos activos
@@ -183,7 +192,7 @@ class OrderController extends Controller
             ]);
 
             // Validar stock por combination_id
-            $stock = $this->getProductStock($product, $combinationId);
+            $stock = $this->getProductStock($product, $combinationId, $request->store_id);
 
             \Log::info('Stock verificado:', [
                 'product_id' => $productId,
@@ -521,6 +530,7 @@ class OrderController extends Controller
                 'totalshipping' => $totalShipping,
                 'gift_card_id' => $giftCardId,
                 'gift_card_amount' => $giftCardAmount,
+                'store_id' => $request->store_id,
             ]);
 
             \Log::info('Orden creada:', ['order_id' => $order->id]);
@@ -573,7 +583,8 @@ class OrderController extends Controller
             foreach ($orderItemsData as $itemData) {
                 $product = Product::find($itemData['product_id']);
                 if ($product) {
-                    $this->decrementStock($product, $itemData['quantity'], $itemData['combination_id'] ?? null);
+                    // $this->decrementStock($product, $itemData['quantity'], $itemData['combination_id'] ?? null);
+                    $this->decrementStock($product, $itemData['quantity'], $itemData['combination_id'] ?? null, $request->store_id);
                 }
             }
 
@@ -707,17 +718,30 @@ class OrderController extends Controller
     }
 
     // Obtener stock del producto por combination_id
-    private function getProductStock($product, $combinationId = null)
+    private function getProductStock($product, $combinationId = null, $storeId = null)
     {
         if (!$product->stocks || $product->stocks->isEmpty()) return 0;
-        $stock = $product->stocks->firstWhere('combination_id', $combinationId);
+
+        $stock = $product->stocks
+            ->where('combination_id', $combinationId)
+            ->when($storeId, function ($query) use ($storeId) {
+                return $query->where('store_id', $storeId);
+            })
+            ->first();
+
         return $stock ? (int) $stock->quantity : 0;
     }
 
     // Decrementar stock por combination_id
-    private function decrementStock($product, $quantity, $combinationId = null)
+    private function decrementStock($product, $quantity, $combinationId = null, $storeId = null)
     {
-        $stock = $product->stocks->firstWhere('combination_id', $combinationId);
+        $stock = $product->stocks
+            ->where('combination_id', $combinationId)
+            ->when($storeId, function ($query) use ($storeId) {
+                return $query->where('store_id', $storeId);
+            })
+            ->first();
+
         if ($stock) {
             $stock->decrement('quantity', $quantity);
         }
@@ -743,7 +767,7 @@ class OrderController extends Controller
         }
 
         // Carga las relaciones necesarias para la orden
-        $orders->load('user', 'orderItems.product.taxes', 'paymentMethod', 'deliveryLocation');
+        $orders->load('user', 'orderItems.product.taxes', 'paymentMethod', 'deliveryLocation', 'store'); // Agregar 'store'
 
         // FIX: Carga descuentos activos (como en store, para recálculos en frontend)
         $discounts = Discount::where('is_active', true)
@@ -758,15 +782,15 @@ class OrderController extends Controller
             'stocks',
             'taxes',
             'combinations.combinationAttributeValue.attributeValue.attribute',
-            'discounts' // FIX: Carga descuentos del producto para frontend
+            'discounts'
         )
             ->get();
 
-        // MODIFICADO: Carga usuarios con giftCards activas (igual que en create)
+        // MODIFICADO: Carga usuarios con giftCards activas
         $users = User::with([
             'deliveryLocations',
             'giftCards' => function ($query) {
-                $query->where('is_active', true); // Solo giftcards activas
+                $query->where('is_active', true);
             }
         ])
             ->where('is_active', true)
@@ -775,13 +799,16 @@ class OrderController extends Controller
             })
             ->get();
 
-        $paymentMethods = PaymentMethod::all(); // Asume modelo PaymentMethod
-        $shippingRates = ShippingRate::all();  // <-- Agrega esto para pasar a la vista
+        $paymentMethods = PaymentMethod::all();
+        $shippingRates = ShippingRate::all();
+
+        // AGREGAR: Cargar las tiendas de la compañía
+        $stores = Store::where('company_id', $userAuth->company_id)->get();
 
         $appliedGiftCard = null;
         if ($orders->giftCardUsages->isNotEmpty()) {
-            $usage = $orders->giftCardUsages->first(); // Asume una por orden
-            $giftCard = $usage->giftCard; // Carga la gift card relacionada
+            $usage = $orders->giftCardUsages->first();
+            $giftCard = $usage->giftCard;
             $appliedGiftCard = [
                 'id' => $giftCard->id,
                 'code' => $giftCard->code,
@@ -791,12 +818,13 @@ class OrderController extends Controller
 
         return Inertia::render('Orders/Edit', [
             'orders' => $orders,
-            'appliedGiftCard' => $appliedGiftCard, // NUEVO: Pasa datos de gift card aplicada
+            'appliedGiftCard' => $appliedGiftCard,
             'shippingRates' => $shippingRates,
             'paymentMethods' => $paymentMethods,
             'products' => $products,
             'users' => $users,
-            'discounts' => $discounts, // FIX: Pasa discounts para OrdersForm
+            'discounts' => $discounts,
+            'stores' => $stores, // AGREGAR: Pasar tiendas a la vista
         ]);
     }
 

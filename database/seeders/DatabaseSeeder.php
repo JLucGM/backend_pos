@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             'price' => 2.00,
             'description' => 'Envío básico a zonas locales',
             'company_id' => 1, // ID de una empresa de prueba
+            'store_id' => 1, // ID de una tienda de prueba
             'created_at' => now(),
             'updated_at' => now(),
         ]);

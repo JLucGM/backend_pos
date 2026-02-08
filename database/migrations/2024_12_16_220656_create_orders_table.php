@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('total', 10, 2)->default(0.00);
             $table->decimal('tax_amount', 10, 2)->default(0.00); // Nuevo campo para el monto de impuestos
             $table->string('order_origin')->nullable();
+            $table->foreignId('store_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('payments_method_id')->nullable()->constrained();
             $table->foreignId('user_id')->nullable()->constrained();

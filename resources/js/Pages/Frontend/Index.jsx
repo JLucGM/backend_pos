@@ -282,6 +282,7 @@ export default function Index({
     states = [],
     cities = [],
 }) {
+    console.log(shippingRates);
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
     if (typeof page.layout === 'string' && page.layout.trim() !== '') {

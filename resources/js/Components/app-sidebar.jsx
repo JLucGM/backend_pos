@@ -19,15 +19,17 @@ import {
   // Settings2,
   ShoppingBag,
   ShoppingBasket,
+  Wallpaper,
   // SquareTerminal,
 } from "lucide-react"
 
 // import { NavMain } from "@/components/nav-main"
-// import { NavProjects } from "@/components/nav-projects"
+import { NavProjects } from "@/components/nav-projects"
 // import { NavUser } from "@/components/nav-user"
-// import { TeamSwitcher } from "@/components/team-switcher"
+import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
+  SidebarHeader,
   SidebarContent,
   SidebarFooter,
   SidebarRail,
@@ -43,7 +45,7 @@ export function AppSidebar({
   const user = usePage().props.auth.user;
   const userRoles = user.roles || [];
   const isSuperAdmin = userRoles.some(role => role.name === 'super admin');
-  
+
   // This is sample data.d
   const data = {
     user: {
@@ -51,23 +53,23 @@ export function AppSidebar({
       email: user.email,
       avatar: user.avatar,
     },
-    teams: [
-      {
-        name: "Acme Inc",
-        logo: GalleryVerticalEnd,
-        plan: "Enterprise",
-      },
-      {
-        name: "Acme Corp.",
-        logo: AudioWaveform,
-        plan: "Startup",
-      },
-      {
-        name: "Evil Corp.",
-        logo: Command,
-        plan: "Free",
-      },
-    ],
+    // teams: [
+    //   {
+    //     name: "Acme Inc",
+    //     logo: GalleryVerticalEnd,
+    //     plan: "Enterprise",
+    //   },
+    //   {
+    //     name: "Acme Corp.",
+    //     logo: AudioWaveform,
+    //     plan: "Startup",
+    //   },
+    //   {
+    //     name: "Evil Corp.",
+    //     logo: Command,
+    //     plan: "Free",
+    //   },
+    // ],
     navMain: [
       {
         title: "Productos",
@@ -108,22 +110,24 @@ export function AppSidebar({
         ],
       },
       {
-        title: "Locaciones",
-        url: "#",
-        icon: MapPinned,
+        title: "Tienda Online",
+        url: "",
+        icon: Wallpaper,
+        // isActive: true,
         items: [
           {
-            title: "Paises",
-            url: "countries.index",
+            title: "Tema",
+            url: "pages.themes",
           },
           {
-            title: "Estados",
-            url: "states.index",
+            title: "Menus",
+            url: "menus.index",
           },
           {
-            title: "Ciudades",
-            url: "cities.index",
+            title: "Políticas",
+            url: "pages.index",
           },
+
         ],
       },
       {
@@ -136,18 +140,14 @@ export function AppSidebar({
             title: "Configuración",
             url: "setting.index",
           },
-          {
-            title: "Menus",
-            url: "menus.index",
-          },
-          {
-            title: "Políticas",
-            url: "pages.index",
-          },
           // {
-          //   title: "Tiendas",
-          //   url: "stores.index",
+          //   title: "Políticas",
+          //   url: "pages.index",
           // },
+          {
+            title: "Tiendas",
+            url: "stores.index",
+          },
           {
             title: "Metodo de pago",
             url: "paymentmethod.index",
@@ -177,29 +177,7 @@ export function AppSidebar({
           },
         ],
       },
-      // {
-      //   title: "Settings",
-      //   url: "#",
-      //   icon: Settings2,
-      //   items: [
-      //     {
-      //       title: "General",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Team",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Billing",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Limits",
-      //       url: "#",
-      //     },
-      //   ],
-      // },
+
     ],
     projects: [
       {
@@ -240,7 +218,26 @@ export function AppSidebar({
           url: "admin.subscriptions.analytics",
         },
       ],
-    });
+    },
+      {
+        title: "Locaciones",
+        url: "#",
+        icon: MapPinned,
+        items: [
+          {
+            title: "Paises",
+            url: "countries.index",
+          },
+          {
+            title: "Estados",
+            url: "states.index",
+          },
+          {
+            title: "Ciudades",
+            url: "cities.index",
+          },
+        ],
+      },);
   }
 
   const datasingle = {
@@ -271,10 +268,14 @@ export function AppSidebar({
 
   return (
     (<Sidebar collapsible="icon" {...props}>
-      {/* <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-        LOGO
-      </SidebarHeader> */}
+      <SidebarHeader>
+        {/* <TeamSwitcher 
+        teams={data.teams} 
+        /> */}
+        <div className="mx-auto">
+        <h1 className="text-xl font-bold">RUBICON</h1>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <NavSingle items={datasingle.navMain} />
         <NavMain items={data.navMain} />

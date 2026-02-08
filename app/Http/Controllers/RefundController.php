@@ -17,7 +17,7 @@ class RefundController extends Controller
             'amount' => 'required|numeric|min:0',
             'reason' => 'nullable|string',
             'restock_items' => 'boolean',
-            'refund_money' => 'boolean', // Nuevo: Para el checkbox
+            'refund_money' => 'boolean',
             'payment_method_id' => 'nullable|exists:payment_methods,id',
             'items' => 'array',
             'items.*.order_item_id' => 'required|exists:order_items,id',
@@ -33,6 +33,10 @@ class RefundController extends Controller
         $orderId = OrderItem::find($validated['items'][0]['order_item_id'])->order_id;
         $order = Order::find($orderId);
 
+        // AGREGAR: Obtener el store_id de la orden
+        $storeId = $order->store_id;
+
+        // Crear el reembolso con store_id
         $refund = Refund::create([
             'order_id' => $orderId,
             'amount' => $validated['amount'],
@@ -42,6 +46,7 @@ class RefundController extends Controller
             'company_id' => $order->company_id ?? Auth::user()->company_id,
             'payment_method_id' => $validated['payment_method_id'] ?? null,
             'refunded_at' => now(),
+            'store_id' => $storeId, // AGREGAR: Guardar el store_id
         ]);
 
         $order->update(['status' => 'refunded']);
@@ -66,6 +71,7 @@ class RefundController extends Controller
                         $product = $orderItem->product;
                         $combinationId = $orderItem->combination_id;
 
+                        // MODIFICADO: Buscar stock por tienda (store_id) específica
                         $stockQuery = $product->stocks();
                         if ($combinationId) {
                             $stockQuery->where('combination_id', $combinationId);
@@ -73,30 +79,50 @@ class RefundController extends Controller
                             $stockQuery->whereNull('combination_id');
                         }
 
+                        // AGREGAR: Filtrar por store_id de la orden
+                        $stockQuery->where('store_id', $storeId);
+
                         $stock = $stockQuery->first();
 
                         try {
                             if ($stock) {
                                 $stock->increment('quantity', $item['quantity']);
+                                \Log::info('Stock incrementado en reembolso:', [
+                                    'product_id' => $product->id,
+                                    'combination_id' => $combinationId,
+                                    'store_id' => $storeId,
+                                    'quantity_added' => $item['quantity'],
+                                    'new_quantity' => $stock->quantity
+                                ]);
                             } else {
+                                // Si no existe stock para esta tienda, crear uno nuevo
                                 $product->stocks()->create([
                                     'quantity' => $item['quantity'],
                                     'status' => 'available',
                                     'product_id' => $product->id,
                                     'combination_id' => $combinationId,
                                     'company_id' => $product->company_id,
+                                    'store_id' => $storeId, // AGREGAR: Asignar store_id
+                                ]);
+                                \Log::info('Nuevo stock creado en reembolso:', [
+                                    'product_id' => $product->id,
+                                    'combination_id' => $combinationId,
+                                    'store_id' => $storeId,
+                                    'quantity' => $item['quantity']
                                 ]);
                             }
                         } catch (\Exception $e) {
                             \Log::error('Error en restock: ' . $e->getMessage(), [
                                 'order_item_id' => $item['order_item_id'],
                                 'combination_id' => $combinationId,
+                                'store_id' => $storeId,
                             ]);
                         }
                     } elseif ($item['restock_action'] === 'discard') {
                         \Log::info('Producto descartado en reembolso', [
                             'order_item_id' => $item['order_item_id'],
                             'quantity' => $item['quantity'],
+                            'store_id' => $storeId,
                         ]);
                     }
                 }

@@ -1,3 +1,4 @@
+// En Edit.jsx
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
@@ -11,7 +12,7 @@ import OrderStatusButtons from '@/Components/Orders/OrderStatusButtons';
 
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
-export default function Edit({ orders, paymentMethods, products, users, discounts, shippingRates, appliedGiftCard }) {
+export default function Edit({ orders, paymentMethods, products, users, discounts, shippingRates, appliedGiftCard, stores }) {
     console.log(orders)
     const { flash } = usePage().props;
     if (flash?.success) toast.success(flash.success);
@@ -30,19 +31,19 @@ export default function Edit({ orders, paymentMethods, products, users, discount
         payments_method_id: orders.payments_method_id || null,
         manual_discount_code: orders.manual_discount_code || null,
         manual_discount_amount: parseFloat(orders.manual_discount_amount) || 0,
-            delivery_location_id: orders.delivery_type === 'delivery' ? orders.delivery_location_id : null,
-        gift_card_id: appliedGiftCard?.id || null, // NUEVO: Desde appliedGiftCard
-        gift_card_amount: parseFloat(appliedGiftCard?.amount_used) || 0, // NUEVO: Desde appliedGiftCard
+        delivery_location_id: orders.delivery_type === 'delivery' ? orders.delivery_location_id : null,
+        gift_card_id: appliedGiftCard?.id || null,
+        gift_card_amount: parseFloat(appliedGiftCard?.amount_used) || 0,
         shipping_rate_id: orders.shipping_rate_id || null,
+        store_id: orders.store_id || null, // AGREGAR: store_id de la orden
         order_items: orders.order_items ? orders.order_items.map((item, index) => {
             const quantity = parseInt(item.quantity || 1);
-            const originalPrice = parseFloat(item.price_product || 0); // FIX: Original de DB price_product ($10)
-            const discountedPrice = parseFloat(item.discounted_price || originalPrice); // Post-descuento ($9)
+            const originalPrice = parseFloat(item.price_product || 0);
+            const discountedPrice = parseFloat(item.discounted_price || originalPrice);
             const taxRate = item.product && item.product.taxes ? parseFloat(item.product.taxes.tax_rate) : 0;
-            const calculatedSubtotal = parseFloat(item.subtotal || (quantity * discountedPrice)); // Preserva $9 post
+            const calculatedSubtotal = parseFloat(item.subtotal || (quantity * discountedPrice));
             const calculatedTaxAmount = parseFloat(item.tax_amount || (calculatedSubtotal * (taxRate / 100)));
 
-            // FIX: Parse product_details JSON para attributes_display (muestra variaciones)
             let attributesDisplay = null;
             if (item.product_details) {
                 try {
@@ -57,23 +58,23 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                 id: String(item.id),
                 product_id: item.product_id || null,
                 name_product: item.name_product || '',
-                product_price: originalPrice, // FIX CRÍTICO: Original $10 para columna "Precio Unitario" (tachado)
-                original_price: originalPrice, // Opcional para recálculos
-                discounted_price: discountedPrice, // $9 para post/tachado en columnas
+                product_price: originalPrice,
+                original_price: originalPrice,
+                discounted_price: discountedPrice,
                 quantity: quantity,
-                subtotal: calculatedSubtotal, // $9 post para "Subtotal"
+                subtotal: calculatedSubtotal,
                 tax_rate: taxRate,
-                tax_amount: calculatedTaxAmount, // $1.62
+                tax_amount: calculatedTaxAmount,
                 discount_id: item.discount_id || null,
-                discount_amount: parseFloat(item.discount_amount || 0), // $1 – Preserva de DB
+                discount_amount: parseFloat(item.discount_amount || 0),
                 discount_type: item.discount_type || null,
                 combination_id: item.combination_id || null,
                 product_details: item.product_details || null,
-                attributes_display: attributesDisplay, // FIX: Para mostrar "Talla S, Color Rojo" en DataTable
+                attributes_display: attributesDisplay,
                 categories: item.categories || (item.product?.categories || []),
                 is_combination: item.combination_id !== null,
                 product: item.product || null,
-                index: index, // FIX: Agrega index para DataTable (qty/actions)
+                index: index,
             };
 
             return mappedItem;
@@ -85,15 +86,11 @@ export default function Edit({ orders, paymentMethods, products, users, discount
     const submit = (e) => {
         e.preventDefault();
 
-        // Preparar datos para enviar
         const formData = { ...data };
 
-        // Si es pickup, no enviar delivery_location_id
         if (formData.delivery_type === 'pickup') {
             delete formData.delivery_location_id;
         }
-
-        // console.log('Enviando datos:', formData); // Para depuración
 
         post(route('orders.update', orders), {
             _method: 'put',
@@ -135,12 +132,16 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                         </div>
                         <OrderStatusButtons orders={orders} />
                     </div>
-                    {/* <div className="flex items-center justify-start space-x-1 ps-7 mt-1">
-                        <WalletCards className='size-4 text-gray-700' />
-                        <p className='capitalize text-sm font-medium text-gray-700 dark:text-gray-300'>
-                            {orders.order_origin} - {(orders.stores && orders.stores.length > 0 ? orders.stores[0].store_name : "Sin tienda")}
-                        </p>
-                    </div> */}
+                    {/* Mostrar información de la tienda en el header */}
+                    {orders.store && (
+                        <div className="flex items-center justify-start space-x-1 mt-1">
+                            <WalletCards className='size-4 text-gray-700' />
+                            <p className='capitalize text-sm font-medium text-gray-700 dark:text-gray-300'>
+                                Tienda: {orders.store.name} 
+                                {orders.store.is_ecommerce_active && ' (E-commerce activo)'}
+                            </p>
+                        </div>
+                    )}
                 </div>
             }
         >
@@ -157,8 +158,10 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                             users={users}
                             discounts={discounts}
                             shippingRates={shippingRates}
+                            stores={stores} // Pasar stores al componente
                             setData={setData}
                             errors={errors}
+                            isEdit={true} // AGREGAR: Indicar que estamos en modo edición
                         />
                     </div>
 

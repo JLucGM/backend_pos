@@ -9,7 +9,10 @@ import Loader from '@/Components/ui/loader';
 // Lazy load ProductsForm
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
-export default function Create({ categories, taxes }) {
+export default function Create({ categories, taxes, stores }) {
+    // Encontrar la tienda con ecommerce activo por defecto
+    const defaultStore = stores.find(store => store.is_ecommerce_active) || stores[0];
+
     const { data, setData, errors, post, processing } = useForm({
         product_name: "",
         product_description: "",
@@ -17,23 +20,31 @@ export default function Create({ categories, taxes }) {
         product_price_discount: "",
         product_sku: "",
         product_barcode: "",
-        barcodes: {}, // Nuevo campo para almacenar códigos de barras por combinación
-        skus: {}, // Nuevo campo para almacenar SKUs por combinación
         is_active: false,
         product_status_pos: 0,
         categories: categories.length > 0 ? [categories[0].id] : [],
         attribute_names: [""],
         attribute_values: [[]],
         quantity: 0,
-        prices: {},
-        stocks: {},
+        // Para productos simples: datos por tienda
+        stores_data: stores.reduce((acc, store) => ({
+            ...acc,
+            [store.id]: {
+                quantity: 0,
+                product_barcode: "",
+                product_sku: ""
+            }
+        }), {}),
+        // Para productos con atributos
+        prices: [],
+        current_store_id: defaultStore?.id || null,
         images: [],
         tax_id: taxes.length > 0 ? taxes[0].id : null,
     });
 
     const submit = (e) => {
         e.preventDefault();
-// console.log(data)
+        console.log('Enviando datos del nuevo producto:', data);
         post(route('products.store'), {
             onSuccess: () => {
                 toast("Producto creado con éxito.");
@@ -70,6 +81,7 @@ export default function Create({ categories, taxes }) {
                                 errors={errors}
                                 categories={categories}
                                 taxes={taxes}
+                                stores={stores}
                             />
                         </div>
 

@@ -6,10 +6,12 @@ import { generateCombinations } from "./generateCombinations";
  * @param {Array} attributeValues - Valores de atributos.
  * @param {Array} currentPrices - Precios actuales.
  * @param {string} basePrice - Precio base del producto.
+ * @param {Array} stores - Lista de tiendas.
  * @returns {Object} - { newPricesArray, newStocksObj, newBarcodesObj, newSkusObj }
  */
-export const calculateAndMergeCombinations = (attributeNames, attributeValues, currentPrices, basePrice) => {
-    const generatedCombinations = generateCombinations(attributeNames, attributeValues);  // Asume que importas generateCombinations aquí
+
+export const calculateAndMergeCombinations = (attributeNames, attributeValues, currentPrices, basePrice, stores = []) => {
+    const generatedCombinations = generateCombinations(attributeNames, attributeValues);
     const newPricesArray = [];
     const basePriceNum = parseFloat(basePrice) || 0;
 
@@ -28,12 +30,20 @@ export const calculateAndMergeCombinations = (attributeNames, attributeValues, c
         if (existingCombination) {
             newPricesArray.push(existingCombination);
         } else {
+            // Inicializar stocks_by_store para cada tienda
+            const stocksByStore = {};
+            stores.forEach(store => {
+                stocksByStore[store.id] = {
+                    stock: "0",
+                    product_barcode: "",
+                    product_sku: ""
+                };
+            });
+
             newPricesArray.push({
                 id: null,
-                combination_price: basePriceNum.toString(),
-                stock: "0",
-                product_barcode: "",
-                product_sku: "",
+                combination_price: basePriceNum.toString(), // Cada combinación inicia con el precio base
+                stocks_by_store: stocksByStore,
                 combination_attribute_value: comboValues.map((val, idx) => ({
                     attribute_value: {
                         attribute_value_name: val,
@@ -47,15 +57,5 @@ export const calculateAndMergeCombinations = (attributeNames, attributeValues, c
         }
     });
 
-    const newStocksObj = {};
-    const newBarcodesObj = {};
-    const newSkusObj = {};
-    newPricesArray.forEach(combo => {
-        const identifier = combo.id || combo._key;
-        newStocksObj[identifier] = combo.stock;
-        newBarcodesObj[identifier] = combo.product_barcode;
-        newSkusObj[identifier] = combo.product_sku;
-    });
-
-    return { newPricesArray, newStocksObj, newBarcodesObj, newSkusObj };
+    return { newPricesArray };
 };

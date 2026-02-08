@@ -22,7 +22,14 @@ const CartSummaryComponent = ({
     const styles = comp.styles || {};
     const content = comp.content || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    console.log(styles)
+    
+    // Helper para añadir unidad (px) si es solo número
+    const withUnit = (value, unit = 'px') => {
+        if (value === undefined || value === null || value === '') return undefined;
+        if (typeof value === 'string' && isNaN(Number(value))) return value;
+        return `${value}${unit}`;
+    };
+
     // console.log(content)
     // console.log(themeWithDefaults)
     // Obtener estilos del tema para cart

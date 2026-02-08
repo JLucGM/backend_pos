@@ -53,6 +53,7 @@ class StoreRequest extends FormRequest
             'totalshipping' => 'nullable|numeric',  // Valida que exista en la tabla shipping_rates
             'gift_card_code' => 'nullable|string|exists:gift_cards,code',
             'gift_card_amount' => 'nullable|numeric|min:0',
+            'store_id' => 'nullable|exists:stores,id',
         ];
     }
 

@@ -7,12 +7,12 @@ use App\Models\Company;
 use App\Models\Page;
 use App\Models\Scopes\CompanyScope;
 use App\Models\Setting;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class FrontendController extends Controller
 {
-    // Modificar el método show del FrontendController
     public function show(Request $request)
     {
         $company = $request->attributes->get('company');
@@ -57,19 +57,44 @@ class FrontendController extends Controller
         $states = \App\Models\State::all();
         $cities = \App\Models\City::all();
 
-        // Obtener productos activos con TODAS las relaciones necesarias
+        // AGREGAR: Obtener la tienda principal con e-commerce activo
+        $mainStore = Store::where('company_id', $company->id)
+            ->where('is_ecommerce_active', true)
+            ->first();
+
+        // Si no hay tienda con e-commerce activo, tomar la primera tienda
+        if (!$mainStore) {
+            $mainStore = Store::where('company_id', $company->id)->first();
+        }
+
+        // Obtener productos activos con relaciones y filtrar por stock en la tienda principal
         $products = $company->products()
             ->where('is_active', true)
             ->with([
                 'categories',
                 'media',
-                'stocks',
+                'stocks' => function ($query) use ($mainStore) {
+                    // Filtrar stocks solo de la tienda principal
+                    if ($mainStore) {
+                        $query->where('store_id', $mainStore->id);
+                    }
+                },
                 'taxes',
                 'combinations.combinationAttributeValue.attributeValue.attribute',
                 'discounts'
             ])
             ->get()
-            ->map(function ($product) {
+            ->map(function ($product) use ($mainStore) {
+                // Filtrar combinaciones que tengan stock en la tienda principal
+                if ($product->combinations && $product->combinations->isNotEmpty() && $mainStore) {
+                    $product->combinations = $product->combinations->filter(function ($combination) use ($mainStore) {
+                        $stock = $combination->stocks->where('store_id', $mainStore->id)
+                            ->where('quantity', '>', 0)
+                            ->first();
+                        return $stock !== null;
+                    });
+                }
+
                 return [
                     'id' => $product->id,
                     'product_name' => $product->product_name,
@@ -98,10 +123,17 @@ class FrontendController extends Controller
                             'thumb_url' => $media->getUrl('thumb')
                         ];
                     }),
-                    'combinations' => $product->combinations->map(function ($combination) {
+                    'combinations' => $product->combinations->map(function ($combination) use ($mainStore) {
+                        // Obtener stock de esta combinación en la tienda principal
+                        $stock = null;
+                        if ($mainStore && $combination->stocks) {
+                            $stock = $combination->stocks->where('store_id', $mainStore->id)->first();
+                        }
+
                         return [
                             'id' => $combination->id,
                             'price' => $combination->combination_price,
+                            'stock' => $stock ? $stock->quantity : 0,
                             'attribute_values' => $combination->combinationAttributeValue->map(function ($cav) {
                                 return [
                                     'attribute_id' => $cav->attributeValue->attribute->id,
@@ -135,20 +167,34 @@ class FrontendController extends Controller
                         ];
                     })
                 ];
-            });
+            })
+            // Filtrar productos que tengan stock en la tienda principal (ya sea simple o con combinaciones)
+            ->filter(function ($product) use ($mainStore) {
+                if (!$mainStore) return true;
 
-        // Datos del usuario autenticado (igual que antes)
+                // Para productos simples, verificar stock
+                if (empty($product['combinations'])) {
+                    $stock = collect($product['stocks'])->where('store_id', $mainStore->id)
+                        ->where('quantity', '>', 0)
+                        ->first();
+                    return $stock !== null;
+                }
+
+                // Para productos con combinaciones, verificar que al menos una combinación tenga stock
+                return !empty($product['combinations']) && count($product['combinations']) > 0;
+            })
+            ->values();
+
+        // Datos del usuario autenticado
         $userData = $this->getUserData();
 
-        // Datos del checkout CON TODOS LOS DESCUENTOS
-        $checkoutData = $this->getCheckoutData($company);
+        // Datos del checkout
+        $checkoutData = $this->getCheckoutData($company, $mainStore);
 
         // Datos de producto actual (si es página de detalles)
-        $productData = $this->getProductData($company, $slug, $request);
-
-        // Obtener TODOS los usuarios/clientes (similar al backend)
-        // $usersData = $this->getAllUsersData($company);
-        // dd($availableMenus);
+        $productData = $this->getProductData($company, $slug, $request, $mainStore);
+// dd($checkoutData);
+        // AGREGAR: Pasar la tienda principal a la vista
         return Inertia::render('Frontend/Index', array_merge(
             [
                 'page' => $page,
@@ -158,15 +204,22 @@ class FrontendController extends Controller
                 'companyId' => $company->id,
                 'companyLogo' => $logoUrl,
                 'companyFavicon' => $faviconUrl,
-                'settings' => $setting, // Agregar settings con currency
+                'settings' => $setting,
                 'countries' => $countries,
                 'states' => $states,
                 'cities' => $cities,
+                'mainStore' => $mainStore ? [ // Pasar información de la tienda principal
+                    'id' => $mainStore->id,
+                    'store_name' => $mainStore->store_name,
+                    'is_ecommerce_active' => $mainStore->is_ecommerce_active,
+                    'address' => $mainStore->address,
+                    'phone' => $mainStore->phone,
+                    'email' => $mainStore->email,
+                ] : null,
             ],
             $userData,
             $checkoutData,
-            $productData,
-            // $usersData
+            $productData
         ));
     }
 
@@ -254,66 +307,73 @@ class FrontendController extends Controller
     /**
      * Modificar getCheckoutData para incluir TODOS los descuentos (no solo order_total)
      */
-    private function getCheckoutData($company)
-    {
-        return [
-            'paymentMethods' => $company->paymentMethods()
-                ->where('is_active', true)
-                ->get()
-                ->map(function ($method) {
-                    return [
-                        'id' => $method->id,
-                        'name' => $method->payment_method_name,
-                        'description' => $method->description,
-                        'type' => $method->payment_type,
-                        'icon' => $method->icon,
-                    ];
-                }),
-            'shippingRates' => $company->shippingRates()
-                ->get()
-                ->map(function ($rate) {
-                    return [
-                        'id' => $rate->id,
-                        'name' => $rate->name,
-                        'price' => $rate->price,
-                        'description' => $rate->description,
-                        'estimated_days' => $rate->estimated_days,
-                    ];
-                }),
-            'discounts' => $company->discounts()
-                ->where('is_active', true)
-                ->with(['products', 'categories'])
-                ->withCount('usages')
-                ->get()
-                ->map(function ($discount) {
-                    return [
-                        'id' => $discount->id,
-                        'name' => $discount->name,
-                        'code' => $discount->code,
-                        'description' => $discount->description,
-                        'discount_type' => $discount->discount_type,
-                        'value' => $discount->value,
-                        'applies_to' => $discount->applies_to,
-                        'automatic' => $discount->automatic,
-                        'minimum_order_amount' => $discount->minimum_order_amount,
-                        'usage_limit' => $discount->usage_limit,
-                        'usages_count' => $discount->usages_count,
-                        'products' => $discount->products->map(function ($product) {
-                            return [
-                                'id' => $product->id,
-                                'combination_id' => $product->pivot->combination_id ?? null
-                            ];
-                        }),
-                        'categories' => $discount->categories->pluck('id')
-                    ];
-                }),
-        ];
-    }
+   private function getCheckoutData($company, $mainStore = null)
+{
+    // Obtener tarifas de envío de la TIENDA específica si existe
+    // Si no hay tienda, obtener de la compañía como fallback
+    $shippingRatesQuery = $mainStore ? 
+        $mainStore->shippingRate() : 
+        $company->shippingRates();
+    
+    return [
+        'paymentMethods' => $company->paymentMethods()
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($method) {
+                return [
+                    'id' => $method->id,
+                    'name' => $method->payment_method_name,
+                    'description' => $method->description,
+                    'type' => $method->payment_type,
+                    'icon' => $method->icon,
+                ];
+            }),
+        'shippingRates' => $shippingRatesQuery
+        ->where('is_active', true)
+            ->get()
+            ->map(function ($rate) {
+                return [
+                    'id' => $rate->id,
+                    'name' => $rate->name,
+                    'price' => $rate->price,
+                    'description' => $rate->description,
+                    'estimated_days' => $rate->estimated_days,
+                ];
+            }),
+        'discounts' => $company->discounts()
+            ->where('is_active', true)
+            ->with(['products', 'categories'])
+            ->withCount('usages')
+            ->get()
+            ->map(function ($discount) {
+                return [
+                    'id' => $discount->id,
+                    'name' => $discount->name,
+                    'code' => $discount->code,
+                    'description' => $discount->description,
+                    'discount_type' => $discount->discount_type,
+                    'value' => $discount->value,
+                    'applies_to' => $discount->applies_to,
+                    'automatic' => $discount->automatic,
+                    'minimum_order_amount' => $discount->minimum_order_amount,
+                    'usage_limit' => $discount->usage_limit,
+                    'usages_count' => $discount->usages_count,
+                    'products' => $discount->products->map(function ($product) {
+                        return [
+                            'id' => $product->id,
+                            'combination_id' => $product->pivot->combination_id ?? null
+                        ];
+                    }),
+                    'categories' => $discount->categories->pluck('id')
+                ];
+            }),
+    ];
+}
 
     /**
      * Modificar getProductData para incluir TODAS las relaciones
      */
-    private function getProductData($company, $slug, $request)
+    private function getProductData($company, $slug, $request, $mainStore = null)
     {
         $isProductDetailPage = $slug === 'detalles-del-producto';
 
@@ -337,7 +397,12 @@ class FrontendController extends Controller
             ->with([
                 'categories',
                 'media',
-                'stocks',
+                'stocks' => function ($query) use ($mainStore) {
+                    // Filtrar stocks solo de la tienda principal
+                    if ($mainStore) {
+                        $query->where('store_id', $mainStore->id);
+                    }
+                },
                 'taxes',
                 'combinations.combinationAttributeValue.attributeValue.attribute',
                 'discounts'
@@ -349,6 +414,16 @@ class FrontendController extends Controller
                 'currentProduct' => null,
                 'isProductDetailPage' => true,
             ];
+        }
+
+        // Filtrar combinaciones que tengan stock en la tienda principal
+        if ($currentProduct->combinations && $currentProduct->combinations->isNotEmpty() && $mainStore) {
+            $currentProduct->combinations = $currentProduct->combinations->filter(function ($combination) use ($mainStore) {
+                $stock = $combination->stocks->where('store_id', $mainStore->id)
+                    ->where('quantity', '>', 0)
+                    ->first();
+                return $stock !== null;
+            });
         }
 
         return [
@@ -380,10 +455,17 @@ class FrontendController extends Controller
                         'thumb_url' => $media->getUrl('thumb')
                     ];
                 }),
-                'combinations' => $currentProduct->combinations->map(function ($combination) {
+                'combinations' => $currentProduct->combinations->map(function ($combination) use ($mainStore) {
+                    // Obtener stock de esta combinación en la tienda principal
+                    $stock = null;
+                    if ($mainStore && $combination->stocks) {
+                        $stock = $combination->stocks->where('store_id', $mainStore->id)->first();
+                    }
+
                     return [
                         'id' => $combination->id,
                         'price' => $combination->combination_price,
+                        'stock' => $stock ? $stock->quantity : 0,
                         'attribute_values' => $combination->combinationAttributeValue->map(function ($cav) {
                             return [
                                 'attribute_id' => $cav->attributeValue->attribute->id,
@@ -510,8 +592,12 @@ class FrontendController extends Controller
     private function getUserOrders($user)
     {
         return $user->orders()
-            ->with(['items.product', 'paymentMethod', 'shippingRate', 'deliveryLocation',
-            // 'giftCardUsages'
+            ->with([
+                'items.product',
+                'paymentMethod',
+                'shippingRate',
+                'deliveryLocation',
+                // 'giftCardUsages'
             ])
             ->orderBy('created_at', 'desc')
             ->limit(10) // Limitar a las últimas 10 órdenes para performances
@@ -534,7 +620,7 @@ class FrontendController extends Controller
                             'quantity' => $item->quantity,
                             'price_product' => $item->price_product,
                             'subtotal' => $item->subtotal,
-                            
+
                             'tax_amount' => $item->tax_amount,
                             'discount_amount' => $item->discount_amount,
                             'discounted_price' => $item->discounted_price,

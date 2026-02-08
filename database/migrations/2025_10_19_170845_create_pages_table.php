@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title')->comment('Título de la página');
             $table->string('slug')->comment('URL amigable de la página');
             $table->longText('content')->comment('Contenido de la página');
-            $table->longText('layout')->nullable()->comment('Diseño de la página en JSON (Craft.js)');
+            $table->longText('layout')->nullable()->comment('Diseño de la página en JSON');
             $table->boolean('is_default')->default(false)->comment('Página protegida si es true');
             $table->boolean('is_published')->default(true)->comment('Estado de publicación');
             $table->boolean('is_homepage')->default(false)->comment('Página de inicio');

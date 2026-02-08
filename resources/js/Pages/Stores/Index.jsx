@@ -10,16 +10,20 @@ import DivSection from '@/Components/ui/div-section';
 import { StoresColumns } from './Columns';
 import Loader from '@/Components/ui/loader';
 
-// Define DataTable and StoresForm as lazy components
+// Define DataTable and StoresForm as lsazy components
 const DataTable = lazy(() => import('@/Components/DataTable'));
 const StoresForm = lazy(() => import('@/Pages/Stores/StoresForm'));
 
 export default function Index({ stores, countries, states, cities, permission }) {
     let [isOpen, setIsOpen] = useState(false)
     const { data, setData, errors, post } = useForm({
-        store_name: "",
-        store_phone: "",
-        store_direction: "",
+        name: "",
+        phone: "",
+        address: "",
+        is_ecommerce_active: false,
+        allow_delivery: false,
+        allow_pickup: false,
+        allow_shipping: false,
         country_id: countries[0].id,
         state_id: states[0].id,
         city_id: cities[0].id,
@@ -32,9 +36,9 @@ export default function Index({ stores, countries, states, cities, permission })
                 toast.success("Tienda creada con éxito");
                 setIsOpen(false); // Close dialog on success
                 setData({ // Reset form data
-                    store_name: "",
-                    store_phone: "",
-                    store_direction: "",
+                    name: "",
+                    phone: "",
+                    address: "",
                     country_id: countries[0].id,
                     state_id: states[0].id,
                     city_id: cities[0].id,
@@ -64,8 +68,8 @@ export default function Index({ stores, countries, states, cities, permission })
         >
             <Head className="capitalize" title="Tiendas" />
 
-                <Suspense fallback={<Loader />}>
-            <DivSection>
+            <Suspense fallback={<Loader />}>
+                <DivSection>
                     {stores.length > 0 ? (
                         <DataTable
                             columns={StoresColumns}
@@ -79,8 +83,8 @@ export default function Index({ stores, countries, states, cities, permission })
                     ) : (
                         <p>No hay tiendas registradas.</p>
                     )}
-            </DivSection>
-                </Suspense>
+                </DivSection>
+            </Suspense>
 
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">

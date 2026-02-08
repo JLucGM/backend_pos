@@ -12,6 +12,7 @@ use App\Models\DiscountUsage;
 use App\Models\GiftCard;
 use App\Models\GiftCardUsage;
 use App\Models\ShippingRate;
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -92,18 +93,39 @@ class CheckoutController extends Controller
                 throw new \Exception('Usuario no autenticado o no coincide');
             }
 
+            // ==================== OBTENER TIENDA PRINCIPAL ====================
+            // AGREGAR: Obtener la tienda principal con e-commerce activo
+            $mainStore = Store::where('company_id', $validated['company_id'])
+                ->where('is_ecommerce_active', true)
+                ->first();
+
+            // Si no hay tienda con e-commerce activo, tomar la primera tienda
+            if (!$mainStore) {
+                $mainStore = Store::where('company_id', $validated['company_id'])->first();
+            }
+
+            if (!$mainStore) {
+                throw new \Exception('No se encontró una tienda válida para procesar la orden');
+            }
+
+            $storeId = $mainStore->id;
+
             // ==================== VALIDACIONES Y PREPARACIÓN ====================
 
             // 1. Validar stock de todos los productos
             $stockErrors = [];
             foreach ($validated['cart_items'] as $item) {
-                $product = Product::find($item['product_id']);
+                $product = Product::with(['stocks' => function ($query) use ($storeId) {
+                    $query->where('store_id', $storeId);
+                }])->find($item['product_id']);
+
                 if (!$product) {
                     $stockErrors[] = "Producto ID {$item['product_id']} no encontrado";
                     continue;
                 }
 
-                $stock = $this->getProductStock($product, $item['combination_id'] ?? null);
+                // MODIFICADO: Pasar storeId a getProductStock
+                $stock = $this->getProductStock($product, $item['combination_id'] ?? null, $storeId);
                 if ($stock < $item['quantity']) {
                     $stockErrors[] = "Stock insuficiente para {$item['product_name']}. Disponible: {$stock}, Solicitado: {$item['quantity']}";
                 }
@@ -232,6 +254,7 @@ class CheckoutController extends Controller
                 'gift_card_amount' => $giftCardAmountUsed,
                 'notes' => $request->input('notes', null),
                 'order_number' => $this->generateOrderNumber($validated['company_id']),
+                'store_id' => $storeId,
             ];
 
             // Crear la orden
@@ -285,7 +308,7 @@ class CheckoutController extends Controller
                 $orderItem = $order->orderItems()->create($orderItemData);
 
                 // Actualizar stock
-                $this->updateProductStock($product, $item['quantity'], $item['combination_id'] ?? null);
+                $this->updateProductStock($product, $item['quantity'], $item['combination_id'] ?? null, $storeId);
 
                 // Registrar uso de descuento por item si aplica
                 if ($itemDiscount) {
@@ -426,35 +449,90 @@ class CheckoutController extends Controller
     /**
      * Obtener stock del producto
      */
-    private function getProductStock($product, $combinationId = null)
+    private function getProductStock($product, $combinationId = null, $storeId = null)
     {
-        if ($combinationId) {
-            $stock = $product->stocks()->where('combination_id', $combinationId)->first();
-            return $stock ? $stock->quantity : 0;
+        if ($storeId) {
+            // Filtrar por tienda específica
+            if ($combinationId) {
+                $stock = $product->stocks()
+                    ->where('combination_id', $combinationId)
+                    ->where('store_id', $storeId)
+                    ->first();
+                return $stock ? $stock->quantity : 0;
+            } else {
+                $stock = $product->stocks()
+                    ->whereNull('combination_id')
+                    ->where('store_id', $storeId)
+                    ->first();
+                return $stock ? $stock->quantity : 0;
+            }
         } else {
-            $stock = $product->stocks()->whereNull('combination_id')->first();
-            return $stock ? $stock->quantity : 0;
+            // Sin tienda específica (compatibilidad con versiones anteriores)
+            if ($combinationId) {
+                $stock = $product->stocks()->where('combination_id', $combinationId)->first();
+                return $stock ? $stock->quantity : 0;
+            } else {
+                $stock = $product->stocks()->whereNull('combination_id')->first();
+                return $stock ? $stock->quantity : 0;
+            }
         }
     }
 
     /**
      * Actualizar stock del producto
      */
-    private function updateProductStock($product, $quantity, $combinationId = null)
+    private function updateProductStock($product, $quantity, $combinationId = null, $storeId = null)
     {
-        if ($combinationId) {
-            $stock = $product->stocks()->where('combination_id', $combinationId)->first();
-            if ($stock) {
-                $stock->decrement('quantity', $quantity);
-                // Opcional: registrar movimiento de stock
-                $this->recordStockMovement($product, $stock, $quantity, 'sale', $combinationId);
+        if ($storeId) {
+            // Buscar stock en tienda específica
+            if ($combinationId) {
+                $stock = $product->stocks()
+                    ->where('combination_id', $combinationId)
+                    ->where('store_id', $storeId)
+                    ->first();
+                if ($stock) {
+                    $stock->decrement('quantity', $quantity);
+                } else {
+                    // Si no existe stock para esta combinación y tienda, crearlo (aunque no debería pasar si validamos stock)
+                    $product->stocks()->create([
+                        'quantity' => -$quantity, // Como se decrementó, el stock sería negativo
+                        'status' => 'available',
+                        'product_id' => $product->id,
+                        'combination_id' => $combinationId,
+                        'company_id' => $product->company_id,
+                        'store_id' => $storeId,
+                    ]);
+                }
+            } else {
+                $stock = $product->stocks()
+                    ->whereNull('combination_id')
+                    ->where('store_id', $storeId)
+                    ->first();
+                if ($stock) {
+                    $stock->decrement('quantity', $quantity);
+                } else {
+                    $product->stocks()->create([
+                        'quantity' => -$quantity,
+                        'status' => 'available',
+                        'product_id' => $product->id,
+                        'combination_id' => null,
+                        'company_id' => $product->company_id,
+                        'store_id' => $storeId,
+                    ]);
+                }
             }
         } else {
-            $stock = $product->stocks()->whereNull('combination_id')->first();
-            if ($stock) {
-                $stock->decrement('quantity', $quantity);
-                // Opcional: registrar movimiento de stock
-                $this->recordStockMovement($product, $stock, $quantity, 'sale');
+            // Sin tienda específica (compatibilidad con versiones anteriores)
+            if ($combinationId) {
+                $stock = $product->stocks()->where('combination_id', $combinationId)->first();
+                if ($stock) {
+                    $stock->decrement('quantity', $quantity);
+                }
+            } else {
+                $stock = $product->stocks()->whereNull('combination_id')->first();
+                if ($stock) {
+                    $stock->decrement('quantity', $quantity);
+                }
             }
         }
     }

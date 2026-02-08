@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\Store;
 use App\Models\Template;
 use App\Models\Theme;
 use Illuminate\Http\Request;
@@ -150,10 +151,56 @@ class PageController extends RoutingController
         $user = Auth::user();
         $companyId = $user->company_id;
 
-        $products = Product::with('stocks', 'combinations.combinationAttributeValue.attributeValue.attribute', 'categories', 'media')
+        // Obtener la tienda principal (con e-commerce activo)
+        $mainStore = Store::where('company_id', $companyId)
+            ->where('is_ecommerce_active', true)
+            ->first();
+
+        // Si no hay tienda principal, obtenemos la primera tienda como fallback
+        if (!$mainStore) {
+            $mainStore = Store::where('company_id', $companyId)->first();
+        }
+
+        // Filtrar productos que tengan stock en la tienda principal
+        $products = Product::with([
+            'stocks' => function ($query) use ($mainStore) {
+                // Filtrar stocks solo de la tienda principal
+                if ($mainStore) {
+                    $query->where('store_id', $mainStore->id);
+                }
+            },
+            'combinations.combinationAttributeValue.attributeValue.attribute',
+            'categories',
+            'media'
+        ])
             ->where('company_id', $companyId)
             ->where('is_active', true)
+            // Solo productos que tengan stock en la tienda principal
+            ->whereHas('stocks', function ($query) use ($mainStore) {
+                if ($mainStore) {
+                    $query->where('store_id', $mainStore->id)
+                        ->where('quantity', '>', 0);
+                }
+            })
             ->get();
+
+        // Filtrar las combinaciones que también tengan stock en la tienda principal
+        $products = $products->map(function ($product) use ($mainStore) {
+            // Filtrar combinaciones que tengan stock en la tienda principal
+            if ($product->combinations) {
+                $product->combinations = $product->combinations->filter(function ($combination) use ($mainStore) {
+                    if ($mainStore) {
+                        $stock = $combination->stocks->where('store_id', $mainStore->id)
+                            ->where('quantity', '>', 0)
+                            ->first();
+                        return $stock !== null;
+                    }
+                    return true;
+                });
+            }
+
+            return $product;
+        });
 
         $availableTemplates = Template::where('is_global', true)
             ->orWhere('company_id', $companyId)
@@ -207,6 +254,7 @@ class PageController extends RoutingController
             'countries' => $countries,
             'states' => $states,
             'cities' => $cities,
+            'mainStore' => $mainStore, // Pasar también la tienda principal a la vista por si se necesita
         ]);
     }
 

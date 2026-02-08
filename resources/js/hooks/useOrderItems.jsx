@@ -19,7 +19,6 @@ import { usePage } from '@inertiajs/react';
 export const useOrderItems = (data, discounts, setData, isDisabled, findApplicableDiscount, products = []) => {
     const settings = usePage().props.settings;
 
-    // handleQuantityChange: Recalcula ítem con descuento/stock (FIX: Stock SIEMPRE dinámico de products)
     const handleQuantityChange = useCallback((index, newQuantity) => {
         if (!data.order_items || !Array.isArray(data.order_items) || index < 0 || index >= data.order_items.length) {
             console.warn('Invalid quantity change:', { index, length: data.order_items?.length });
@@ -38,22 +37,19 @@ export const useOrderItems = (data, discounts, setData, isDisabled, findApplicab
         const newDiscountAmount = discount ? calculateDiscount(discount, originalPrice, quantity) : 0;
         const originalSubtotal = originalPrice * quantity;
 
-        // **CORRECCIÓN: Calcular subtotal después de descuentos**
         const itemSubtotalAfterDiscounts = originalSubtotal - newDiscountAmount;
-
-        // **CORRECCIÓN: Calcular impuesto sobre el subtotal después de descuentos**
         const newTaxAmount = itemSubtotalAfterDiscounts * taxRate;
         const newDiscountedPrice = calculateDiscountedPrice(discount, originalPrice, quantity);
 
-        // FIX: Stock SIEMPRE dinámico de products (no usa item.stock – valida contra real actual)
+        // MODIFICADO: Calcular stock con storeId
         let currentStock = 0;
         if (products.length > 0) {
             const product = products.find(p => p.id === item.product_id);
             if (product) {
-                currentStock = calculateStock(product, item.combination_id);
+                currentStock = calculateStock(product, item.combination_id, data.store_id); // Pasar store_id
             }
         } else {
-            currentStock = item.stock || 0; // Fallback si no products
+            currentStock = item.stock || 0;
         }
 
         if (quantity > currentStock) {
@@ -61,7 +57,6 @@ export const useOrderItems = (data, discounts, setData, isDisabled, findApplicab
             return;
         }
 
-        // Map con refresh de index
         const updatedItems = data.order_items.map((it, i) => {
             if (i === index) {
                 return {
@@ -70,20 +65,19 @@ export const useOrderItems = (data, discounts, setData, isDisabled, findApplicab
                     original_price: originalPrice,
                     discount_amount: newDiscountAmount,
                     discounted_price: newDiscountedPrice,
-                    subtotal: itemSubtotalAfterDiscounts, // ← Subtotal después de descuentos
-                    tax_amount: newTaxAmount, // ← Impuesto sobre subtotal después de descuentos
+                    subtotal: itemSubtotalAfterDiscounts,
+                    tax_amount: newTaxAmount,
                     discount_id: discount ? discount.id : it.discount_id,
                     discount_type: discount ? discount.discount_type : it.discount_type,
-                    stock: currentStock, // Actualiza stock en item para consistencia
+                    stock: currentStock,
                     index: i,
                 };
             }
             return { ...it, index: i };
         });
         setData('order_items', updatedItems);
-    }, [data.order_items, findApplicableDiscount, setData, products]);
+    }, [data.order_items, findApplicableDiscount, setData, products, data.store_id]); // Agregar data.store_id a dependencias
 
-    // handleRemoveItem: Intacto (no afecta stock)
     const handleRemoveItem = useCallback((index) => {
         if (!data.order_items || !Array.isArray(data.order_items) || index < 0 || index >= data.order_items.length) {
             console.warn('Invalid remove index:', index);
@@ -97,7 +91,6 @@ export const useOrderItems = (data, discounts, setData, isDisabled, findApplicab
         toast.success('Producto removido del pedido');
     }, [data.order_items, setData]);
 
-    // orderItemsColumns: Intacto
     const orderItemsColumns = useMemo(() => getOrderItemsColumns({
         handleQuantityChange,
         handleRemoveItem,

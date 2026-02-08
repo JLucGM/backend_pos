@@ -11,14 +11,14 @@ export default function Themes({ themes, currentThemeId }) {
             header={
                 <div className='flex justify-between items-center'>
                     <div className="flex items-center gap-4">
-                        <Link
+                        {/* <Link
                             href={route('pages.index')}
                             className={buttonVariants({ variant: "ghost", size: "icon" })}
                         >
                             <ArrowLeft className="h-4 w-4" />
-                        </Link>
+                        </Link> */}
                         <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center gap-2">
-                            <Palette className="h-5 w-5" />
+                            {/* <Palette className="h-5 w-5" /> */}
                             Galería de Temas
                         </h2>
                     </div>

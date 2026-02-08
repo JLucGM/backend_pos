@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique(); // Nombre de la empresa, debe ser único
             $table->string('slug')->unique()->nullable(); // Para subdominios, opcional
-            $table->string('email');
-            $table->string('phone')->nullable();
-            $table->string('address')->nullable();
+            // $table->string('email');
+            // $table->string('phone')->nullable();
+            // $table->string('address')->nullable();
             $table->string('subdomain')->nullable();
             $table->string('domain')->nullable();
             $table->string('is_status')->nullable();

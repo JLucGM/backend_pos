@@ -1,5 +1,5 @@
 // src/hooks/useProductOptions.js
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react'; // Agregar useEffect
 import { toast } from 'sonner';
 import { Percent } from 'lucide-react';
 import { calculateStock } from '@/utils/stockUtils';
@@ -19,83 +19,91 @@ import {
  */
 export const useProductOptions = (products, data, setData, findApplicableDiscount) => {
     const [selectedProductToAdd, setSelectedProductToAdd] = useState(null);
-    const [selectedProductsBulk, setSelectedProductsBulk] = useState([]); // Nuevo: Array de opciones seleccionadas para bulk
+    const [selectedProductsBulk, setSelectedProductsBulk] = useState([]);
+    const [productOptions, setProductOptions] = useState([]);
+    const [prevStoreId, setPrevStoreId] = useState(null);
 
-    // productOptions: Flat options para simples + variaciones (igual que antes)
-    const productOptions = useMemo(() => {
-        const options = [];
-        products.forEach(product => {
-            // **CORRECCIÓN: Asegurar que cada producto incluya su tasa de impuesto**
-            const productTaxRate = product.taxes ? parseFloat(product.taxes.tax_rate) : 0;
-            
-            // Simple (sin combinations)
-            if (!product.combinations || product.combinations.length === 0) {
-                // MODIFICADO: Usar product_price_discount si existe, de lo contrario product_price
-                const originalPrice = product.product_price_discount && parseFloat(product.product_price_discount) > 0
-                    ? parseFloat(product.product_price_discount)
-                    : parseFloat(product.product_price);
+    // Efecto para actualizar productOptions cuando cambie la tienda (store_id)
+    useEffect(() => {
+        const selectedStoreId = data.store_id;
 
-                const discount = findApplicableDiscount(product.id, null);
-                const effectivePrice = discount ? calculateDiscountedPrice(discount, originalPrice, 1) : originalPrice;
-                const productStock = calculateStock(product, null);
+        // Solo recalcular si realmente cambió el store_id o es la primera vez
+        if (selectedStoreId !== prevStoreId || productOptions.length === 0) {
+            const options = [];
+            products.forEach(product => {
+                const productTaxRate = product.taxes ? parseFloat(product.taxes.tax_rate) : 0;
 
-                if (productStock >= 0) {
-                    const barcode = getBarcode(product, null);
-                    options.push({
-                        value: `simple_${product.id}`,
-                        label: `${product.product_name} ${barcode ? `(${barcode})` : ''} - $${originalPrice.toFixed(2)}`,
-                        product_id: product.id,
-                        combination_id: null,
-                        original_price: originalPrice,
-                        effective_price: effectivePrice,
-                        discount,
-                        is_combination: false,
-                        stock: productStock,
-                        tax_rate: productTaxRate, // ← CORRECCIÓN: Usar productTaxRate
-                        product_name: product.product_name,
-                        attributes_display: null,
-                        barcode,
-                    });
-                }
-            } else {
-                // Variable: Cada combination como option
-                product.combinations.forEach(combination => {
-                    // MODIFICADO: Para combinaciones, usar combination_price (no hay product_price_discount para combinaciones)
-                    const originalPrice = parseFloat(combination.combination_price);
-                    const discount = findApplicableDiscount(product.id, combination.id);
+                // Simple (sin combinations)
+                if (!product.combinations || product.combinations.length === 0) {
+                    const originalPrice = product.product_price_discount && parseFloat(product.product_price_discount) > 0
+                        ? parseFloat(product.product_price_discount)
+                        : parseFloat(product.product_price);
+
+                    const discount = findApplicableDiscount(product.id, null);
                     const effectivePrice = discount ? calculateDiscountedPrice(discount, originalPrice, 1) : originalPrice;
-                    const combinationStock = calculateStock(product, combination.id);
 
-                    if (combinationStock >= 0) {
-                        const attributesDisplay = formatAttributesDisplay(combination, true);
-                        const attributes = formatAttributesDisplay(combination, false);
-                        const barcode = getBarcode(product, combination.id);
+                    const productStock = calculateStock(product, null, selectedStoreId);
 
+                    if (productStock >= 0) {
+                        const barcode = getBarcode(product, null);
                         options.push({
-                            value: `comb_${combination.id}`,
-                            label: `${product.product_name}${attributesDisplay} ${barcode ? `(${barcode})` : ''} - $${originalPrice.toFixed(2)}`,
+                            value: `simple_${product.id}`,
+                            label: `${product.product_name} ${barcode ? `(${barcode})` : ''} - $${originalPrice.toFixed(2)} (Stock: ${productStock})`,
                             product_id: product.id,
-                            combination_id: combination.id,
+                            combination_id: null,
                             original_price: originalPrice,
                             effective_price: effectivePrice,
                             discount,
-                            is_combination: true,
-                            stock: combinationStock,
-                            tax_rate: productTaxRate, // ← CORRECCIÓN: Usar productTaxRate
+                            is_combination: false,
+                            stock: productStock,
+                            tax_rate: productTaxRate,
                             product_name: product.product_name,
-                            attributes_display: attributesDisplay,
-                            attributes,
+                            attributes_display: null,
                             barcode,
-                            combination_details: combination,
                         });
                     }
-                });
-            }
-        });
-        return options;
-    }, [products, findApplicableDiscount]);
+                } else {
+                    // Variable: Cada combination como option
+                    product.combinations.forEach(combination => {
+                        const originalPrice = parseFloat(combination.combination_price);
+                        const discount = findApplicableDiscount(product.id, combination.id);
+                        const effectivePrice = discount ? calculateDiscountedPrice(discount, originalPrice, 1) : originalPrice;
 
-    // formatProductOptionLabel: JSX para label con strike si descuento (igual)
+                        const combinationStock = calculateStock(product, combination.id, selectedStoreId);
+
+                        if (combinationStock >= 0) {
+                            const attributesDisplay = formatAttributesDisplay(combination, true);
+                            const attributes = formatAttributesDisplay(combination, false);
+                            const barcode = getBarcode(product, combination.id);
+
+                            options.push({
+                                value: `comb_${combination.id}`,
+                                label: `${product.product_name}${attributesDisplay} ${barcode ? `(${barcode})` : ''} - $${originalPrice.toFixed(2)} (Stock: ${combinationStock})`,
+                                product_id: product.id,
+                                combination_id: combination.id,
+                                original_price: originalPrice,
+                                effective_price: effectivePrice,
+                                discount,
+                                is_combination: true,
+                                stock: combinationStock,
+                                tax_rate: productTaxRate,
+                                product_name: product.product_name,
+                                attributes_display: attributesDisplay,
+                                attributes,
+                                barcode,
+                                combination_details: combination,
+                            });
+                        }
+                    });
+                }
+            });
+
+            setProductOptions(options);
+            setPrevStoreId(selectedStoreId); // Actualizar store_id anterior
+        }
+    }, [products, findApplicableDiscount, data.store_id, prevStoreId, productOptions.length]);
+
+    // formatProductOptionLabel: JSX para label con strike si descuento
     const formatProductOptionLabel = useCallback((option) => (
         <div className="flex flex-col">
             <span className="font-medium">
@@ -104,7 +112,6 @@ export const useProductOptions = (products, data, setData, findApplicableDiscoun
                 {option.barcode && <span className="text-xs text-gray-500">({option.barcode})</span>}
             </span>
             <span className="text-sm text-gray-500">
-                {/* MODIFICADO: Mostrar precio original si product_price_discount aplica */}
                 {option.original_price < parseFloat(option.product?.product_price || option.original_price) && (
                     <span className="line-through mr-1">${parseFloat(option.product?.product_price || option.original_price).toFixed(2)}</span>
                 )}
@@ -114,11 +121,14 @@ export const useProductOptions = (products, data, setData, findApplicableDiscoun
                         <Percent className="inline w-3 h-3 mr-1" /> {option.discount.value}% off
                     </span>
                 )}
+                <span className="ml-2 text-blue-600 text-xs">
+                    Stock: {option.stock}
+                </span>
             </span>
         </div>
     ), []);
 
-    // handleAddProduct: Single add (igual, pero sin el toast final para bulk compat)
+    // handleAddProduct: Single add
     const handleAddProduct = useCallback(() => {
         if (!selectedProductToAdd) return;
 
@@ -210,7 +220,7 @@ export const useProductOptions = (products, data, setData, findApplicableDiscoun
         setSelectedProductToAdd(null);
     }, [selectedProductToAdd, data.order_items, products, setData]);
 
-    // Nuevo: handleAddBulkProducts - Agrega múltiples, maneja duplicados y validaciones en batch
+    // handleAddBulkProducts - Agrega múltiples, maneja duplicados y validaciones en batch
     const handleAddBulkProducts = useCallback(() => {
         if (!selectedProductsBulk || selectedProductsBulk.length === 0) {
             toast.warning('Selecciona al menos un producto.');

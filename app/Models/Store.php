@@ -13,14 +13,25 @@ class Store extends Model
     use HasFactory, HasSlug;
 
     protected $fillable = [
-        'store_name',
+        'name',
         'slug',
-        'store_phone',
-        'store_direction',
+        'phone',
+        'address',
         'country_id',
         'state_id',
         'city_id',
         'company_id',
+        'is_ecommerce_active',
+        'allow_delivery',
+        'allow_pickup',
+        'allow_shipping'
+    ];
+
+    protected $casts = [
+        'is_ecommerce_active' => 'boolean',
+        'allow_delivery' => 'boolean',
+        'allow_pickup' => 'boolean',
+        'allow_shipping' => 'boolean',
     ];
 
     public function getRouteKeyName()
@@ -31,7 +42,7 @@ class Store extends Model
     public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
-            ->generateSlugsFrom('store_name')
+            ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
     }
 
@@ -72,8 +83,12 @@ class Store extends Model
     }
 
     public function orders()
-{
-    return $this->belongsToMany(Order::class, 'store_orders');
-}
-    
+    {
+        return $this->belongsToMany(Order::class, 'store_orders');
+    }
+
+    public function shippingRate()
+    {
+                return $this->hasMany(ShippingRate::class);
+    }
 }

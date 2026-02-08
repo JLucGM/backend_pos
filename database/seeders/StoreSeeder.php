@@ -18,9 +18,23 @@ class StoreSeeder extends Seeder
     {
         $stores = [
             [
-                'store_name' => 'MyStore',
-                'store_phone' => "04125549950",
-                'store_direction' => "Calle 1, Av 2, Casa 3",
+                'name' => 'MyStore',
+                'phone' => "04125549950",
+                'address' => "Calle 1, Av 2, Casa 3",
+                'is_ecommerce_active' => true,
+                'allow_delivery' => true,
+                'allow_pickup' => true,
+                'allow_shipping' => true,
+                // 'is_active' => true,
+                'country_id' => Country::where('country_name', 'Venezuela')->first()->id,
+                'state_id' => State::where('state_name', 'Amazonas')->first()->id,
+                'city_id' => City::where('city_name', 'Puerto Ayacucho')->first()->id,
+                'company_id' => 1,
+            ],            
+            [
+                'name' => 'tienda2',
+                'phone' => "04125549950",
+                'address' => "Calle 1, Av 2, Casa 3",
                 'country_id' => Country::where('country_name', 'Venezuela')->first()->id,
                 'state_id' => State::where('state_name', 'Amazonas')->first()->id,
                 'city_id' => City::where('city_name', 'Puerto Ayacucho')->first()->id,

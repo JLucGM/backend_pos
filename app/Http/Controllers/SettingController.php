@@ -70,9 +70,9 @@ class SettingController extends Controller
         $request->validate([
             'currency_id' => 'required|exists:currencies,id',
             'name' => 'required|string|max:255', // Validación para el nombre de la compañía
-            'email' => 'required|email|max:255', // Validación para el correo de la compañía
-            'phone' => 'required|string|max:255', // Validación para el teléfono de la compañía
-            'address' => 'required|string|max:255', // Validación para la dirección de la compañía
+            // 'email' => 'required|email|max:255', // Validación para el correo de la compañía
+            // 'phone' => 'required|string|max:255', // Validación para el teléfono de la compañía
+            // 'address' => 'required|string|max:255', // Validación para la dirección de la compañía
         ]);
 
         $user = Auth::user();
@@ -88,9 +88,9 @@ class SettingController extends Controller
         $company = $setting->company; // Obtener la compañía asociada
         $company->update($request->only(
             'name',
-            'email',
-            'phone',
-            'address'
+            // 'email',
+            // 'phone',
+            // 'address'
         ));
 
         // Verificar si se ha subido un nuevo logo

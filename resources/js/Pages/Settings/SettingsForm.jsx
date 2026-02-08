@@ -26,7 +26,7 @@ export default function SettingsForm({ data, setting, setData, errors, currencie
                 <InputError message={errors.name} className="mt-2" />
             </div>
             
-            <div>
+            {/* <div>
                 <InputLabel htmlFor="email" value="Correo" />
                 <TextInput
                     id="email"
@@ -50,7 +50,7 @@ export default function SettingsForm({ data, setting, setData, errors, currencie
                     onChange={(e) => setData('phone', e.target.value)}
                 />
                 <InputError message={errors.phone} className="mt-2" />
-            </div>
+            </div> 
             
             <div>
                 <InputLabel htmlFor="address" value="Dirección" />
@@ -63,7 +63,7 @@ export default function SettingsForm({ data, setting, setData, errors, currencie
                     onChange={(e) => setData('address', e.target.value)}
                 />
                 <InputError message={errors.address} className="mt-2" />
-            </div>
+            </div> */}
 
             <div>
                 <InputLabel htmlFor="currency_id" value="Moneda" />

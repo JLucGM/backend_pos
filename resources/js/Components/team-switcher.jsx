@@ -18,13 +18,15 @@ import {
 } from "@/components/ui/sidebar"
 
 export function TeamSwitcher({
-  teams
+  teams,
 }) {
   const { isMobile } = useSidebar()
   const [activeTeam, setActiveTeam] = React.useState(teams[0])
 
   return (
-    (<SidebarMenu>
+    (
+      // <h1>Team Switcher Component</h1>
+    <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -72,6 +74,7 @@ export function TeamSwitcher({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
-    </SidebarMenu>)
+    </SidebarMenu>
+    )
   );
 }

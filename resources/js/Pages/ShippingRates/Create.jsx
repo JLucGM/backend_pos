@@ -9,25 +9,26 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 const ShippingRatesForm = lazy(() => import('../ShippingRates/ShippingRatesForm'));
 
-export default function Create({ }) {
+export default function Create({ stores }) {
+    // Encontrar la tienda con ecommerce activo por defecto
+    const defaultStore = stores.find(store => store.is_ecommerce_active) || stores[0];
 
     const initialValues = {
         name: "",
         price: 0,
-        description:"",
-        
+        description: "",
+        store_id: defaultStore?.id || null,
     };
 
-    const { data, setData, errors, post } = useForm(initialValues);
+    const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-        // console.log('Submit con selections:', data); // Debug array
         post(route('shippingrate.store'), {
-            onSuccess: () => toast.success("Tarifa de envio creado con éxito."),
+            onSuccess: () => toast.success("Tarifa de envío creada con éxito."),
             onError: (error) => {
                 console.error('Error:', error);
-                toast.error("Error al crear el Tarifa de envio.");
+                toast.error("Error al crear la tarifa de envío.");
             }
         });
     };
@@ -40,36 +41,35 @@ export default function Create({ }) {
                         <ArrowLongLeftIcon className='size-6' />
                     </Link>
                     <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Crear tarifa de envio
+                        Crear tarifa de envío
                     </h2>
                 </div>
             </div>
         }>
-            <Head title="Tarifa de envio" />
+            <Head title="Crear Tarifa de Envío" />
 
-            <div className="max-w-7xl mx-auto">
-                <div className="text-gray-900 dark:text-gray-100">
+            {/* <div className="max-w-7xl mx-auto">
+                <div className="text-gray-900 dark:text-gray-100"> */}
                     <form onSubmit={submit} className='space-y-4'>
-                        <div className="grid grid-cols-1 gap-4">
-                            <DivSection>
+                        {/* <div className="grid grid-cols-3 gap-4"> */}
                                 <Suspense fallback={<Loader />}>
                                     <ShippingRatesForm
                                         data={data}
                                         setData={setData}
                                         errors={errors}
+                                        stores={stores}
                                     />
                                 </Suspense>
-                            </DivSection>
-                        </div>
+                        {/* </div> */}
 
                         <div className="flex justify-end p-2.5">
-                            <Button variant="default" type="submit">
-                                Guardar
+                            <Button variant="default" type="submit" disabled={processing}>
+                                {processing ? "Guardando..." : "Guardar"}
                             </Button>
                         </div>
                     </form>
-                </div>
-            </div>
+                {/* </div>
+            </div> */}
         </AuthenticatedLayout>
     );
 }
