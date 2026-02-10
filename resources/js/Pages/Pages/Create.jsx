@@ -4,7 +4,6 @@ import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
-import DivSection from '@/Components/ui/div-section';
 import Loader from '@/Components/ui/loader';
 
 // Define PagesForm como un componente cargado de forma lazy

@@ -9,7 +9,9 @@ export const useSelectOptions = (
     states = [],
     users = [],
     countries = [],
-    stores = []  // Agregar stores como parámetro
+    stores = [],  // Agregar stores como parámetro
+    pages = [],  // Agregar páginas como parámetro
+    currentPageSlug = ''
 ) => {
     const settings = usePage().props.settings;
 
@@ -119,6 +121,33 @@ export const useSelectOptions = (
         }));
     }, [stores]);
 
+     const pageOptions = useMemo(() => {
+        if (pages.length === 0) return [];
+
+        // Ordenar: primero homepage, luego alfabéticamente
+        const sortedPages = [...pages].sort((a, b) => {
+            // Primero por homepage
+            if (a.is_homepage && !b.is_homepage) return -1;
+            if (!a.is_homepage && b.is_homepage) return 1;
+            
+            // Luego por publicación
+            if (a.is_published && !b.is_published) return -1;
+            if (!a.is_published && b.is_published) return 1;
+            
+            // Finalmente alfabético
+            return a.title.localeCompare(b.title);
+        });
+
+        return sortedPages.map(page => ({
+            value: page.slug,
+            label: page.title,
+            // isHomepage: page.is_homepage,
+            // isPublished: page.is_published,
+            // isCurrent: page.slug === currentPageSlug,
+            // rawPage: page // Para acceder a todos los datos si es necesario
+        }));
+    }, [pages, currentPageSlug]);
+
     // Devuelve todas las opciones
     return {
         categoryOptions,
@@ -130,6 +159,7 @@ export const useSelectOptions = (
         stateOptions,
         userOptions,
         countryOptions,
-        storeOptions  // Agregado
+        storeOptions,
+        pageOptions  
     };
 };

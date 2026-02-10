@@ -21,7 +21,9 @@ class Page extends Model implements HasMedia
         'slug',
         'content',
         'layout',
-        'is_default',
+        'is_deletable',
+        'is_editable',
+        'page_type',
         'is_published',
         'is_homepage',
         'sort_order',
@@ -34,7 +36,9 @@ class Page extends Model implements HasMedia
 
     protected $casts = [
         // 'content' => 'array', // Eliminar comentario luego
-        'is_default' => 'boolean',
+        'is_deletable' => 'boolean',
+        'is_editable' => 'boolean',
+        'page_type' => 'string',
         'is_published' => 'boolean',
         'is_homepage' => 'boolean',
         // 'template_overrides' => 'array',

@@ -29,7 +29,10 @@ class PageController extends RoutingController
      */
     public function index()
     {
-        $pages = Page::all();
+        $pages = Page::where('page_type',  'custom')
+            // ->where('page_type', '!=', 'policy')
+
+            ->get();
 
         $user = Auth::user();
         $role = $user->getRoleNames();
@@ -38,13 +41,34 @@ class PageController extends RoutingController
         return Inertia::render('Pages/Index', compact('pages', 'role', 'permission'));
     }
 
+    public function indexPolicy()
+    {
+        $pages = Page::where('page_type', 'policy')
+            ->get();
+
+        $user = Auth::user();
+        $role = $user->getRoleNames();
+        $permission = $user->getAllPermissions();
+
+        return Inertia::render('Pages/Policy', compact('pages', 'role', 'permission'));
+    }
+
     public function themes()
     {
         $user = Auth::user();
         $themes = Theme::all();
         $currentThemeId = Page::where('company_id', $user->company_id)->first()?->theme_id;
+        $homepage = Page::where('company_id', Auth::user()->company_id)
+            ->where('is_homepage', true) // Si tienes este campo
+            ->orWhere('slug', 'inicio') // O si usas slug específico
+            ->orWhere('slug', 'home')
+            ->orWhere('slug', 'index')
+            ->first();
 
-        return Inertia::render('Pages/Themes', compact('themes', 'currentThemeId'));
+        $role = $user->getRoleNames();
+        $permission = $user->getAllPermissions();
+
+        return Inertia::render('Pages/Themes', compact('themes', 'currentThemeId', 'homepage', 'role', 'permission'));
     }
 
     /**
@@ -74,7 +98,13 @@ class PageController extends RoutingController
                 'is_published',
                 // 'is_homepage',
             ),
-            ['company_id' => $user->company_id]
+            [
+                'company_id' => $user->company_id,
+                'page_type' => 'custom',
+                'is_deletable' => true,
+                'is_editable' => true,
+
+            ]
         ));
 
         return to_route('pages.index');
@@ -212,14 +242,14 @@ class PageController extends RoutingController
         $page->load('template.theme', 'theme', 'company.setting.media', 'company.setting.currency');
 
         $dynamicPages = $page->company->pages()
-            ->select('title', 'slug')
-            ->where('is_published', true)
-            ->where('id', '!=', $page->id) // Excluir la página actual
+            ->select('title', 'slug', 'id')
+            // ->where('is_published', true)
             ->get()
-            ->map(function ($page) {
+            ->map(function ($pageItem) {
                 return [
-                    'title' => $page->title,
-                    'slug' => $page->slug,
+                    'id' => $pageItem->id,
+                    'title' => $pageItem->title,
+                    'slug' => $pageItem->slug,
                 ];
             });
 

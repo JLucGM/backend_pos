@@ -6,7 +6,7 @@ import { Head, router } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { toast } from 'sonner';
-import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical, Palette, Dot } from 'lucide-react';
+import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical, Palette, Dot, Home } from 'lucide-react';
 import ComponentTree from '@/Components/BuilderPages/ComponentTree';
 import Canvas from '@/Components/BuilderPages/Canvas';
 import { addToHistory } from '@/utils/Builder/builderUtils';
@@ -15,6 +15,7 @@ import ApplyTemplate from '@/Components/ApplyTemplate';
 import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
 import { Badge } from '@/Components/ui/badge';
 import { getThemeWithDefaults } from '@/utils/themeUtils';
+import Select from 'react-select';
 
 // Importar todos los diálogos
 import TextEditDialog from './partials/TextEditDialog';
@@ -79,6 +80,8 @@ import SuccessEditDialog from './partials/Success/SuccessEditDialog';
 import AnnouncementBarEditDialog from './partials/AnnouncementBar/AnnouncementBarEditDialog';
 import AnnouncementEditDialog from './partials/AnnouncementBar/AnnouncementEditDialog';
 import AddComponentDropdown from '@/Components/BuilderPages/AddComponentDropdown';
+import { customStyles } from '@/hooks/custom-select';
+import { useSelectOptions } from '@/hooks/useSelectOptions';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -228,6 +231,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
     const [hasCopiedTheme, setHasCopiedTheme] = useState(!!page.theme_settings);
     const [expandedItems, setExpandedItems] = useState(new Set());
+
+    const { pageOptions } = useSelectOptions([], [], [], [], [], [], [], dynamicPages || [], page.slug);
 
     // Función para obtener el tema aplicado
     const getAppliedTheme = () => {
@@ -2779,7 +2784,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         <div ref={toolbarRef} className="flex justify-between items-center px-4 py-2 border-b bg-white shadow-sm">
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" onClick={() => router.visit(route('pages.index'))}>
+                                    <Button variant="ghost" size="icon" onClick={() => router.visit(route('pages.themes'))}>
                                         <ArrowLeftToLine size={16} />
                                     </Button>
                                 </TooltipTrigger>
@@ -2796,9 +2801,46 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 <TooltipContent>Tema actual</TooltipContent>
                             </Tooltip>
                             <div className="mx-auto">
-                                <Button variant="ghost" disabled size="icon">
-                                    {page.title}
-                                </Button>
+                                <Select
+                                    options={pageOptions}
+                                    value={pageOptions.find(option => option.value === page.slug) || null}
+                                    onChange={(selectedOption) => {
+                                        if (selectedOption && selectedOption.value !== page.slug) {
+                                            // Confirmar si hay cambios sin guardar
+                                            if (hasUnsavedChanges) {
+                                                const confirm = window.confirm(
+                                                    'Tienes cambios sin guardar en esta página. ¿Estás seguro de que quieres cambiar de página? Se perderán los cambios no guardados.'
+                                                );
+                                                if (!confirm) return;
+                                            }
+                                            router.visit(route('pages.builder', selectedOption.value));
+                                        }
+                                    }}
+                                    isSearchable
+                                    styles={customStyles}
+                                    formatOptionLabel={(option, { context }) => (
+                                        <div className="flex items-center justify-between w-full">
+                                            <div className="flex items-center">
+                                                {option.isHomepage && (
+                                                    <Home size={14} className="mr-2 text-green-600" />
+                                                )}
+                                                <span className="truncate">{option.label}</span>
+                                            </div>
+                                            {/* <div className="flex items-center space-x-1 ml-2">
+                                                {option.isCurrent && (
+                                                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                                        Actual
+                                                    </span>
+                                                )}
+                                            </div> */}
+                                        </div>
+                                    )}
+                                    menuPortalTarget={document.body}
+                                    menuPosition="fixed"
+                                    noOptionsMessage={({ inputValue }) =>
+                                        inputValue ? `No se encontraron páginas para "${inputValue}"` : 'No hay páginas disponibles'
+                                    }
+                                />
                             </div>
                             <div className="flex gap-2">
                                 <Tooltip>

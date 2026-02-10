@@ -16,7 +16,8 @@ export const pagesColumns = [
         header: "Acciones",
         accessorKey: "actions",
         cell: ({ row }) => {
-            const isDefault = row.original.is_default; // Asumiendo que is_default es un booleano
+            const isDeletable = row.original.is_deletable; // Asumiendo que is_default es un booleano
+            const isEditable = row.original.is_editable; // Asumiendo que is_editable es un booleano
 
             return (
                 <DropdownMenu>
@@ -29,17 +30,19 @@ export const pagesColumns = [
                                 <Eye /> Ver
                             </Link>
                         </DropdownMenuItem> */}
+                        {!isEditable == false && ( // Solo mostrar "Editar" si NO es por defecto}
                         <DropdownMenuItem>
                             <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.edit', row.original)}>
                                 <Pen /> Editar
                             </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.builder', row.original)}> {/* Nueva ruta para el builder */}
+                            )}
+                        {/* <DropdownMenuItem>
+                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.builder', row.original)}>
                                 <Palette /> Personalizar
                             </Link>
-                        </DropdownMenuItem>
-                        {!isDefault && ( // Solo mostrar "Eliminar" si NO es por defecto
+                        </DropdownMenuItem> */}
+                        {!isDeletable == false && ( // Solo mostrar "Eliminar" si NO es por defecto
                             <DropdownMenuItem>
                                 <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.destroy', [row.original])} method="delete">
                                     <Trash /> Eliminar

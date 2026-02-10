@@ -14,7 +14,7 @@ class PageSeeder extends Seeder
         $temaAzul = Theme::where('slug', 'tema-azul')->first();
         $temaOscuro = Theme::where('slug', 'tema-oscuro')->first();
         $temaVerde = Theme::where('slug', 'tema-verde')->first();
-        
+
         // Usar tema azul por defecto si no se encuentran otros
         $defaultTheme = $temaAzul ?? Theme::first();
 
@@ -23,7 +23,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Inicio',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'is_homepage' => true,
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
@@ -34,7 +34,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Tienda',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -44,7 +44,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Detalles del producto',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -54,7 +54,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Carrito de compras',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -64,7 +64,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Checkout',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -74,7 +74,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Iniciar sesión',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -84,7 +84,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Registrarse',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -94,7 +94,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Perfil de usuario',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -104,7 +104,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Pedidos',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -112,41 +112,9 @@ class PageSeeder extends Seeder
                 'theme_settings' => null,
             ],
             [
-                'title' => 'Politicas de privacidad',
-                'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
-                'theme_id' => $defaultTheme?->id ?? 1,
-                'company_id' => 1,
-                'theme_settings' => null,
-            ],
-            [
-                'title' => 'Terminos de servicio',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
-                'is_default' => true,
-                'theme_id' => $defaultTheme?->id ?? 1,
-                'company_id' => 1,
-                'theme_settings' => null,
-            ],
-            [
-                'title' => 'Politicas de envio',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
-                'is_default' => true,
-                'theme_id' => $defaultTheme?->id ?? 1,
-                'company_id' => 1,
-                'theme_settings' => null,
-            ],
-            [
-                'title' => 'Información de contacto',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
-                'is_default' => true,
-                'theme_id' => $defaultTheme?->id ?? 1,
-                'company_id' => 1,
-                'theme_settings' => null,
-            ],
-            [
                 'title' => 'Orden exitosa',
                 'content' => '<p>Tu orden ha sido procesada exitosamente.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => false,
                 'template_id' => null,
@@ -181,12 +149,68 @@ class PageSeeder extends Seeder
                 'company_id' => 1,
                 'theme_settings' => null,
             ],
-            
+            [
+                'title' => 'Politicas de privacidad',
+                'content' => '<p>Explora nuestros productos destacados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $defaultTheme?->id ?? 1,
+                'company_id' => 1,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Terminos de servicio',
+                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $defaultTheme?->id ?? 1,
+                'company_id' => 1,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Politicas de envio',
+                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $defaultTheme?->id ?? 1,
+                'company_id' => 1,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Política de devolución y reembolso',
+                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $defaultTheme?->id ?? 1,
+                'company_id' => 1,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Información de contacto',
+                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $defaultTheme?->id ?? 1,
+                'company_id' => 1,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Bio',
+                'content' => '<p>Explora nuestros productos destacados.</p>',
+                'page_type' => 'link_bio',
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
+                'uses_template' => true,
+                'template_id' => 3,
+                'company_id' => 1,
+                'theme_settings' => null,
+            ],
+
+
             // Páginas para Company 2 - Tema Oscuro (ejemplo de variación)
             [
                 'title' => 'Inicio',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'is_homepage' => true,
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
@@ -197,7 +221,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Tienda',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -207,7 +231,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Detalles del producto',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -217,7 +241,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Carrito de compras',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -227,7 +251,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Checkout',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -237,7 +261,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Iniciar sesión',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -247,7 +271,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Registrarse',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -257,7 +281,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Perfil de usuario',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -267,7 +291,7 @@ class PageSeeder extends Seeder
             [
                 'title' => 'Pedidos',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'essential',
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'uses_template' => true,
                 'template_id' => 3,
@@ -275,42 +299,20 @@ class PageSeeder extends Seeder
                 'theme_settings' => null,
             ],
             [
-                'title' => 'Politicas de privacidad',
+                'title' => 'Bio',
                 'content' => '<p>Explora nuestros productos destacados.</p>',
-                'is_default' => true,
+                'page_type' => 'link_bio',
                 'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
-                'company_id' => 2,
-                'theme_settings' => null,
-            ],
-            [
-                'title' => 'Terminos de servicio',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
-                'is_default' => true,
-                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
-                'company_id' => 2,
-                'theme_settings' => null,
-            ],
-            [
-                'title' => 'Politicas de envio',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
-                'is_default' => true,
-                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
-                'company_id' => 2,
-                'theme_settings' => null,
-            ],
-            [
-                'title' => 'Información de contacto',
-                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
-                'is_default' => true,
-                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
+                'uses_template' => true,
+                'template_id' => 3,
                 'company_id' => 2,
                 'theme_settings' => null,
             ],
             [
                 'title' => 'Orden exitosa',
                 'content' => '<p>Tu orden ha sido procesada exitosamente.</p>',
-                'is_default' => true,
-                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
+                'page_type' => 'essential',
+                'theme_id' => $defaultTheme?->id ?? 1,
                 'uses_template' => false,
                 'template_id' => null,
                 'layout' => json_encode([
@@ -321,9 +323,9 @@ class PageSeeder extends Seeder
                             'title' => '¡Orden Exitosa!',
                             'subtitle' => 'Tu orden ha sido procesada correctamente',
                             'iconColor' => '#10b981',
-                            'titleColor' => '#ffffff',
+                            'titleColor' => '#000000',
                             'titleSize' => '32px',
-                            'subtitleColor' => '#cccccc',
+                            'subtitleColor' => '#666666',
                             'subtitleSize' => '18px',
                             'showContinueShoppingButton' => true,
                             'continueButtonText' => 'Continuar Comprando',
@@ -332,7 +334,7 @@ class PageSeeder extends Seeder
                             'additionalMessage' => 'Recibirás un email de confirmación con los detalles de tu pedido.'
                         ],
                         'styles' => [
-                            'backgroundColor' => '#1a1a1a',
+                            'backgroundColor' => '#ffffff',
                             'paddingTop' => '40px',
                             'paddingRight' => '20px',
                             'paddingBottom' => '40px',
@@ -341,6 +343,51 @@ class PageSeeder extends Seeder
                         ]
                     ]
                 ]),
+                'company_id' => 2,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Politicas de privacidad',
+                'content' => '<p>Explora nuestros productos destacados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
+                'company_id' => 2,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Terminos de servicio',
+                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
+                'company_id' => 2,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Politicas de envio',
+                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
+                'company_id' => 2,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Política de devolución y reembolso',
+                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $defaultTheme?->id ?? 1,
+                'company_id' => 1,
+                'theme_settings' => null,
+            ],
+            [
+                'title' => 'Información de contacto',
+                'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
+                'page_type' => 'policy',
+                'is_editable' => true,
+                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? 1,
                 'company_id' => 2,
                 'theme_settings' => null,
             ],

@@ -2,26 +2,28 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react'; // Add Link import
 import { buttonVariants } from '@/Components/ui/button';
 import ThemeGallery from './partials/ThemeGallery';
-import { Palette, ArrowLeft } from 'lucide-react';
 import DivSection from '@/Components/ui/div-section';
 
-export default function Themes({ themes, currentThemeId }) {
+export default function Themes({ themes, role, permission, currentThemeId, homepage }) {
     return (
         <AuthenticatedLayout
             header={
                 <div className='flex justify-between items-center'>
-                    <div className="flex items-center gap-4">
-                        {/* <Link
-                            href={route('pages.index')}
-                            className={buttonVariants({ variant: "ghost", size: "icon" })}
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link> */}
-                        <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center gap-2">
-                            {/* <Palette className="h-5 w-5" /> */}
-                            Galería de Temas
-                        </h2>
-                    </div>
+
+                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center gap-2">
+                        Galería de Temas
+                    </h2>
+
+                    {homepage && permission.some(perm => perm.name === 'admin.pages.edit') && (
+                        <div className="flex gap-2">
+                            <Link
+                                className={buttonVariants({ size: "sm" })}
+                                href={route('pages.builder', homepage)}
+                            >
+                                Editar Tema
+                            </Link>
+                        </div>
+                    )}
                 </div>
             }
         >

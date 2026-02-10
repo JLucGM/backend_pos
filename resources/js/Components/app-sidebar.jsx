@@ -116,7 +116,7 @@ export function AppSidebar({
         // isActive: true,
         items: [
           {
-            title: "Tema",
+            title: "Temas",
             url: "pages.themes",
           },
           {
@@ -124,7 +124,7 @@ export function AppSidebar({
             url: "menus.index",
           },
           {
-            title: "Políticas",
+            title: "Paginas",
             url: "pages.index",
           },
 
@@ -140,10 +140,10 @@ export function AppSidebar({
             title: "Configuración",
             url: "setting.index",
           },
-          // {
-          //   title: "Políticas",
-          //   url: "pages.index",
-          // },
+          {
+            title: "Políticas",
+            url: "policy.index",
+          },
           {
             title: "Tiendas",
             url: "stores.index",
