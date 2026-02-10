@@ -273,7 +273,7 @@ export function AppSidebar({
         teams={data.teams} 
         /> */}
         <div className="mx-auto">
-        <h1 className="text-xl font-bold">RUBICON</h1>
+          <h1 className="text-xl font-bold">RUBICON</h1>
         </div>
       </SidebarHeader>
       <SidebarContent>

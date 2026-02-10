@@ -206,6 +206,13 @@ const ALL_COMPONENTS = [
     icon: <CheckCircle className="h-4 w-4" />,
     description: 'Confirmación de éxito'
   },
+  {
+    type: 'linkBio',
+    label: 'Link Bio',
+    category: 'layouts',
+    icon: <LinkIcon className="h-4 w-4" />,
+    description: 'Página de enlaces tipo "link in bio"'
+  },
 ];
 
 // Categorías para agrupar

@@ -263,7 +263,7 @@ const CarouselComponent = ({
                         padding: `${withUnit(gapY)} 0`,
                     }}
                 >
-                    {visibleProducts.map((product, index) => (
+                    {products.map((product, index) => (
                         <div
                             key={product.id}
                             style={{

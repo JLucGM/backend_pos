@@ -65,10 +65,14 @@ class PageController extends RoutingController
             ->orWhere('slug', 'index')
             ->first();
 
+        $biopage = Page::where('company_id', Auth::user()->company_id)
+            ->where('page_type', 'link_bio') // Si tienes este campo
+            ->first();
+
         $role = $user->getRoleNames();
         $permission = $user->getAllPermissions();
 
-        return Inertia::render('Pages/Themes', compact('themes', 'currentThemeId', 'homepage', 'role', 'permission'));
+        return Inertia::render('Pages/Themes', compact('themes', 'currentThemeId', 'homepage', 'biopage', 'role', 'permission'));
     }
 
     /**

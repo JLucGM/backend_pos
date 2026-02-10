@@ -55,6 +55,7 @@ import OrdersComponent from './Orders/OrdersComponent';
 import SuccessComponent from './Success/SuccessComponent';
 import AnnouncementBarComponent from './AnnouncementBar/AnnouncementBarComponent';
 import AnnouncementComponent from './AnnouncementBar/AnnouncementComponent';
+import LinkBioComponent from './LinkBio/LinkBioComponent';
 
 const CanvasItem = ({
     comp,
@@ -937,6 +938,22 @@ const CanvasItem = ({
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
                         mode={isPreview ? 'frontend' : 'builder'}
+                    />
+                );
+            case 'linkBio':
+                return (
+                    <LinkBioComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        onEdit={onEditComponent}
+                        onDelete={onDeleteComponent}
+                        themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
+                        isPreview={isPreview}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
                     />
                 );
             default:

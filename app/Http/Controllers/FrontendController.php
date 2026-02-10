@@ -66,126 +66,149 @@ class FrontendController extends Controller
         if (!$mainStore) {
             $mainStore = Store::where('company_id', $company->id)->first();
         }
-
+        // dd($company->products);
         // Obtener productos activos con relaciones y filtrar por stock en la tienda principal
         $products = $company->products()
-            ->where('is_active', true)
-            ->with([
-                'categories',
-                'media',
-                'stocks' => function ($query) use ($mainStore) {
-                    // Filtrar stocks solo de la tienda principal
-                    if ($mainStore) {
-                        $query->where('store_id', $mainStore->id);
-                    }
-                },
-                'taxes',
-                'combinations.combinationAttributeValue.attributeValue.attribute',
-                'discounts'
-            ])
-            ->get()
-            ->map(function ($product) use ($mainStore) {
-                // Filtrar combinaciones que tengan stock en la tienda principal
-                if ($product->combinations && $product->combinations->isNotEmpty() && $mainStore) {
-                    $product->combinations = $product->combinations->filter(function ($combination) use ($mainStore) {
-                        $stock = $combination->stocks->where('store_id', $mainStore->id)
-                            ->where('quantity', '>', 0)
-                            ->first();
-                        return $stock !== null;
-                    });
+        ->where('is_active', true)
+        ->with([
+            'categories',
+            'media',
+            'taxes',
+            'discounts',
+            'stocks' => function ($query) use ($mainStore) {
+                if ($mainStore) {
+                    $query->where('store_id', $mainStore->id);
                 }
-
-                return [
-                    'id' => $product->id,
-                    'product_name' => $product->product_name,
-                    'slug' => $product->slug,
-                    'product_price' => $product->product_price,
-                    'product_price_discount' => $product->product_price_discount,
-                    'product_description' => $product->product_description,
-                    'tax_id' => $product->tax_id,
-                    'tax' => $product->taxes ? [
-                        'id' => $product->taxes->id,
-                        'tax_name' => $product->taxes->tax_name,
-                        'tax_rate' => $product->taxes->tax_rate,
-                        'slug' => $product->taxes->slug,
-                    ] : null,
-                    'categories' => $product->categories->map(function ($category) {
-                        return [
-                            'id' => $category->id,
-                            'category_name' => $category->category_name,
-                            'slug' => $category->slug,
-                        ];
-                    }),
-                    'media' => $product->media->map(function ($media) {
-                        return [
-                            'id' => $media->id,
-                            'original_url' => $media->original_url,
-                            'thumb_url' => $media->getUrl('thumb')
-                        ];
-                    }),
-                    'combinations' => $product->combinations->map(function ($combination) use ($mainStore) {
-                        // Obtener stock de esta combinación en la tienda principal
-                        $stock = null;
-                        if ($mainStore && $combination->stocks) {
-                            $stock = $combination->stocks->where('store_id', $mainStore->id)->first();
-                        }
-
-                        return [
-                            'id' => $combination->id,
-                            'price' => $combination->combination_price,
-                            'stock' => $stock ? $stock->quantity : 0,
-                            'attribute_values' => $combination->combinationAttributeValue->map(function ($cav) {
-                                return [
-                                    'attribute_id' => $cav->attributeValue->attribute->id,
-                                    'attribute_name' => $cav->attributeValue->attribute->attribute_name,
-                                    'value_id' => $cav->attributeValue->id,
-                                    'value_name' => $cav->attributeValue->attribute_value_name,
-                                ];
-                            })
-                        ];
-                    }),
-                    'stocks' => $product->stocks->map(function ($stock) {
-                        return [
-                            'id' => $stock->id,
-                            'quantity' => $stock->quantity,
-                            'combination_id' => $stock->combination_id,
-                            'barcode' => $stock->product_barcode,
-                            'sku' => $stock->product_sku,
-                        ];
-                    }),
-                    'discounts' => $product->discounts->map(function ($discount) {
-                        return [
-                            'id' => $discount->id,
-                            'name' => $discount->name,
-                            'code' => $discount->code,
-                            'discount_type' => $discount->discount_type,
-                            'value' => $discount->value,
-                            'applies_to' => $discount->applies_to,
-                            'pivot' => [
-                                'combination_id' => $discount->pivot->combination_id ?? null
-                            ]
-                        ];
-                    })
-                ];
-            })
-            // Filtrar productos que tengan stock en la tienda principal (ya sea simple o con combinaciones)
-            ->filter(function ($product) use ($mainStore) {
-                if (!$mainStore) return true;
-
-                // Para productos simples, verificar stock
-                if (empty($product['combinations'])) {
-                    $stock = collect($product['stocks'])->where('store_id', $mainStore->id)
-                        ->where('quantity', '>', 0)
-                        ->first();
-                    return $stock !== null;
+            },
+            'combinations.combinationAttributeValue.attributeValue.attribute',
+            'combinations.stocks' => function ($query) use ($mainStore) {
+                if ($mainStore) {
+                    $query->where('store_id', $mainStore->id);
                 }
+            }
+        ])
+        ->get();
+        
+        // $products = $company->products()
+        //     ->where('is_active', true)
+        //     ->with([
+        //         'categories',
+        //         'media',
+        //         'stocks' => function ($query) use ($mainStore) {
+        //             // Filtrar stocks solo de la tienda principal
+        //             if ($mainStore) {
+        //                 $query->where('store_id', $mainStore->id);
+        //             }
+        //         },
+        //         'taxes',
+        //         'combinations.combinationAttributeValue.attributeValue.attribute',
+        //         'discounts'
+        //     ])
+        //     ->get()
+        //     ->map(function ($product) use ($mainStore) {
+        //         // Filtrar combinaciones que tengan stock en la tienda principal
+        //         if ($product->combinations && $product->combinations->isNotEmpty() && $mainStore) {
+        //             $product->combinations = $product->combinations->filter(function ($combination) use ($mainStore) {
+        //                 $stock = $combination->stocks->where('store_id', $mainStore->id)
+        //                     ->where('quantity', '>', 0)
+        //                     ->first();
+        //                 return $stock !== null;
+        //             });
+        //         }
 
-                // Para productos con combinaciones, verificar que al menos una combinación tenga stock
-                return !empty($product['combinations']) && count($product['combinations']) > 0;
-            })
-            ->values();
+        //         return [
+        //             'id' => $product->id,
+        //             'product_name' => $product->product_name,
+        //             'slug' => $product->slug,
+        //             'product_price' => $product->product_price,
+        //             'product_price_discount' => $product->product_price_discount,
+        //             'product_description' => $product->product_description,
+        //             'tax_id' => $product->tax_id,
+        //             'tax' => $product->taxes ? [
+        //                 'id' => $product->taxes->id,
+        //                 'tax_name' => $product->taxes->tax_name,
+        //                 'tax_rate' => $product->taxes->tax_rate,
+        //                 'slug' => $product->taxes->slug,
+        //             ] : null,
+        //             'categories' => $product->categories->map(function ($category) {
+        //                 return [
+        //                     'id' => $category->id,
+        //                     'category_name' => $category->category_name,
+        //                     'slug' => $category->slug,
+        //                 ];
+        //             }),
+        //             'media' => $product->media->map(function ($media) {
+        //                 return [
+        //                     'id' => $media->id,
+        //                     'original_url' => $media->original_url,
+        //                     'thumb_url' => $media->getUrl('thumb')
+        //                 ];
+        //             }),
+        //             'combinations' => $product->combinations->map(function ($combination) use ($mainStore) {
+        //                 // Obtener stock de esta combinación en la tienda principal
+        //                 $stock = null;
+        //                 if ($mainStore && $combination->stocks) {
+        //                     $stock = $combination->stocks->where('store_id', $mainStore->id)->first();
+        //                 }
 
-        // Datos del usuario autenticado
+        //                 return [
+        //                     'id' => $combination->id,
+        //                     'price' => $combination->combination_price,
+        //                     'stock' => $stock ? $stock->quantity : 0,
+        //                     'attribute_values' => $combination->combinationAttributeValue->map(function ($cav) {
+        //                         return [
+        //                             'attribute_id' => $cav->attributeValue->attribute->id,
+        //                             'attribute_name' => $cav->attributeValue->attribute->attribute_name,
+        //                             'value_id' => $cav->attributeValue->id,
+        //                             'value_name' => $cav->attributeValue->attribute_value_name,
+        //                         ];
+        //                     })
+        //                 ];
+        //             }),
+        //             'stocks' => $product->stocks->map(function ($stock) {
+        //                 return [
+        //                     'id' => $stock->id,
+        //                     'quantity' => $stock->quantity,
+        //                     'combination_id' => $stock->combination_id,
+        //                     'barcode' => $stock->product_barcode,
+        //                     'sku' => $stock->product_sku,
+        //                 ];
+        //             }),
+        //             'discounts' => $product->discounts->map(function ($discount) {
+        //                 return [
+        //                     'id' => $discount->id,
+        //                     'name' => $discount->name,
+        //                     'code' => $discount->code,
+        //                     'discount_type' => $discount->discount_type,
+        //                     'value' => $discount->value,
+        //                     'applies_to' => $discount->applies_to,
+        //                     'pivot' => [
+        //                         'combination_id' => $discount->pivot->combination_id ?? null
+        //                     ]
+        //                 ];
+        //             })
+        //         ];
+        //     })
+        //     // Filtrar productos que tengan stock en la tienda principal (ya sea simple o con combinaciones)
+        //     ->filter(function ($product) use ($mainStore) {
+        //         if (!$mainStore) return true;
+
+        //         // Para productos simples, verificar stock
+        //         if (empty($product['combinations'])) {
+        //             $stock = collect($product['stocks'])->where('store_id', $mainStore->id)
+        //                 ->where('quantity', '>', 0)
+        //                 ->first();
+        //             return $stock !== null;
+        //         }
+
+        //         // Para productos con combinaciones, verificar que al menos una combinación tenga stock
+        //         return !empty($product['combinations']) && count($product['combinations']) > 0;
+        //     })
+        //     ->values();
+
+        
+        
+            // Datos del usuario autenticado
         $userData = $this->getUserData();
 
         // Datos del checkout
@@ -193,7 +216,7 @@ class FrontendController extends Controller
 
         // Datos de producto actual (si es página de detalles)
         $productData = $this->getProductData($company, $slug, $request, $mainStore);
-// dd($checkoutData);
+        // dd($products);
         // AGREGAR: Pasar la tienda principal a la vista
         return Inertia::render('Frontend/Index', array_merge(
             [
@@ -307,68 +330,68 @@ class FrontendController extends Controller
     /**
      * Modificar getCheckoutData para incluir TODOS los descuentos (no solo order_total)
      */
-   private function getCheckoutData($company, $mainStore = null)
-{
-    // Obtener tarifas de envío de la TIENDA específica si existe
-    // Si no hay tienda, obtener de la compañía como fallback
-    $shippingRatesQuery = $mainStore ? 
-        $mainStore->shippingRate() : 
-        $company->shippingRates();
-    
-    return [
-        'paymentMethods' => $company->paymentMethods()
-            ->where('is_active', true)
-            ->get()
-            ->map(function ($method) {
-                return [
-                    'id' => $method->id,
-                    'name' => $method->payment_method_name,
-                    'description' => $method->description,
-                    'type' => $method->payment_type,
-                    'icon' => $method->icon,
-                ];
-            }),
-        'shippingRates' => $shippingRatesQuery
-        ->where('is_active', true)
-            ->get()
-            ->map(function ($rate) {
-                return [
-                    'id' => $rate->id,
-                    'name' => $rate->name,
-                    'price' => $rate->price,
-                    'description' => $rate->description,
-                    'estimated_days' => $rate->estimated_days,
-                ];
-            }),
-        'discounts' => $company->discounts()
-            ->where('is_active', true)
-            ->with(['products', 'categories'])
-            ->withCount('usages')
-            ->get()
-            ->map(function ($discount) {
-                return [
-                    'id' => $discount->id,
-                    'name' => $discount->name,
-                    'code' => $discount->code,
-                    'description' => $discount->description,
-                    'discount_type' => $discount->discount_type,
-                    'value' => $discount->value,
-                    'applies_to' => $discount->applies_to,
-                    'automatic' => $discount->automatic,
-                    'minimum_order_amount' => $discount->minimum_order_amount,
-                    'usage_limit' => $discount->usage_limit,
-                    'usages_count' => $discount->usages_count,
-                    'products' => $discount->products->map(function ($product) {
-                        return [
-                            'id' => $product->id,
-                            'combination_id' => $product->pivot->combination_id ?? null
-                        ];
-                    }),
-                    'categories' => $discount->categories->pluck('id')
-                ];
-            }),
-    ];
-}
+    private function getCheckoutData($company, $mainStore = null)
+    {
+        // Obtener tarifas de envío de la TIENDA específica si existe
+        // Si no hay tienda, obtener de la compañía como fallback
+        $shippingRatesQuery = $mainStore ?
+            $mainStore->shippingRate() :
+            $company->shippingRates();
+
+        return [
+            'paymentMethods' => $company->paymentMethods()
+                ->where('is_active', true)
+                ->get()
+                ->map(function ($method) {
+                    return [
+                        'id' => $method->id,
+                        'name' => $method->payment_method_name,
+                        'description' => $method->description,
+                        'type' => $method->payment_type,
+                        'icon' => $method->icon,
+                    ];
+                }),
+            'shippingRates' => $shippingRatesQuery
+                ->where('is_active', true)
+                ->get()
+                ->map(function ($rate) {
+                    return [
+                        'id' => $rate->id,
+                        'name' => $rate->name,
+                        'price' => $rate->price,
+                        'description' => $rate->description,
+                        'estimated_days' => $rate->estimated_days,
+                    ];
+                }),
+            'discounts' => $company->discounts()
+                ->where('is_active', true)
+                ->with(['products', 'categories'])
+                ->withCount('usages')
+                ->get()
+                ->map(function ($discount) {
+                    return [
+                        'id' => $discount->id,
+                        'name' => $discount->name,
+                        'code' => $discount->code,
+                        'description' => $discount->description,
+                        'discount_type' => $discount->discount_type,
+                        'value' => $discount->value,
+                        'applies_to' => $discount->applies_to,
+                        'automatic' => $discount->automatic,
+                        'minimum_order_amount' => $discount->minimum_order_amount,
+                        'usage_limit' => $discount->usage_limit,
+                        'usages_count' => $discount->usages_count,
+                        'products' => $discount->products->map(function ($product) {
+                            return [
+                                'id' => $product->id,
+                                'combination_id' => $product->pivot->combination_id ?? null
+                            ];
+                        }),
+                        'categories' => $discount->categories->pluck('id')
+                    ];
+                }),
+        ];
+    }
 
     /**
      * Modificar getProductData para incluir TODAS las relaciones

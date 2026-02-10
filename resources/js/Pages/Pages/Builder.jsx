@@ -82,6 +82,7 @@ import AnnouncementEditDialog from './partials/AnnouncementBar/AnnouncementEditD
 import AddComponentDropdown from '@/Components/BuilderPages/AddComponentDropdown';
 import { customStyles } from '@/hooks/custom-select';
 import { useSelectOptions } from '@/hooks/useSelectOptions';
+import LinkBioEditDialog from './partials/LinkBio/LinkBioEditDialog';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -146,6 +147,7 @@ const componentDialogMap = {
     success: SuccessEditDialog,
     announcementBar: AnnouncementBarEditDialog,
     announcement: AnnouncementEditDialog,
+    linkBio: LinkBioEditDialog,
 };
 
 // Componente para renderizar el diálogo apropiado
@@ -368,6 +370,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     const found = findComponentType(item.content.children, targetId);
                     if (found) return found;
                 }
+                if (item.type === 'linkBio' && item.content && item.content.children) {
+                    const found = findComponentType(item.content.children, targetId);
+                    if (found) return found;
+                }
             }
             return null;
         };
@@ -395,7 +401,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const typesWithChildren = [
                     'banner', 'product', 'productList', 'productCard', 'carousel',
                     'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                    'productDetail', 'checkout', 'cart', 'announcementBar'
+                    'productDetail', 'checkout', 'cart', 'announcementBar', 'linkBio'
                 ];
 
                 if (typesWithChildren.includes(item.type) &&
@@ -481,7 +487,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         const typesWithChildren = [
                             'banner', 'product', 'productList', 'productCard', 'carousel',
                             'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                            'productDetail', 'cart', 'checkout', 'login', 'register', 'announcementBar'
+                            'productDetail', 'cart', 'checkout', 'login', 'register', 'announcementBar', 'linkBio'
                         ];
 
                         if (typesWithChildren.includes(component.type) &&
@@ -2255,6 +2261,111 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 content = null;
             }
 
+            if (selectedType === 'linkBio') {
+                const linkBioId = Date.now();
+                const headingId = linkBioId + 1;
+                const button1Id = linkBioId + 2;
+                const button2Id = linkBioId + 3;
+                const textId = linkBioId + 4;
+
+                content = {
+                    backgroundType: 'color',
+                    backgroundColor: themeWithDefaults.background || '#ffffff',
+                    maxWidth: '400',
+                    buttonsGap: '16',
+                    alignment: 'center',
+                    children: [
+                        {
+                            id: headingId,
+                            type: 'heading',
+                            content: 'Mis Enlaces',
+                            styles: {
+                                textStyle: 'heading1',
+                                layout: 'fit',
+                                alignment: 'center',
+                                color: themeWithDefaults.heading,
+                                fontSize: themeWithDefaults.heading1_fontSize || '32px',
+                                fontWeight: themeWithDefaults.heading1_fontWeight || 'bold',
+                                paddingBottom: '20px'
+                            }
+                        },
+                        {
+                            id: textId,
+                            type: 'text',
+                            content: 'Encuéntrame en todas mis redes sociales',
+                            styles: {
+                                color: themeWithDefaults.text,
+                                fontSize: themeWithDefaults.paragraph_fontSize || '16px',
+                                fontWeight: themeWithDefaults.paragraph_fontWeight || 'normal',
+                                textAlign: 'center',
+                                paddingBottom: '10px'
+                            }
+                        },
+                        {
+                            id: button1Id,
+                            type: 'button',
+                            content: 'Mi Sitio Web',
+                            styles: {
+                                buttonType: 'primary',
+                                layout: 'fill',
+                                buttonUrl: 'https://ejemplo.com',
+                                buttonText: 'Visita mi sitio',
+                                paddingTop: '12px',
+                                paddingBottom: '12px',
+                                paddingLeft: '24px',
+                                paddingRight: '24px',
+                                borderRadius: themeWithDefaults.primary_button_corner_radius || '8px',
+                                backgroundColor: themeWithDefaults.primary_button_background,
+                                color: themeWithDefaults.primary_button_text
+                            }
+                        },
+                        {
+                            id: button2Id,
+                            type: 'button',
+                            content: 'Instagram',
+                            styles: {
+                                buttonType: 'secondary',
+                                layout: 'fill',
+                                buttonUrl: 'https://instagram.com/usuario',
+                                buttonText: 'Sígueme en Instagram',
+                                paddingTop: '12px',
+                                paddingBottom: '12px',
+                                paddingLeft: '24px',
+                                paddingRight: '24px',
+                                borderRadius: themeWithDefaults.secondary_button_corner_radius || '8px',
+                                backgroundColor: themeWithDefaults.secondary_button_background,
+                                color: themeWithDefaults.secondary_button_text
+                            }
+                        }
+                    ]
+                };
+
+                const newItem = {
+                    id: linkBioId,
+                    type: 'linkBio',
+                    content,
+                    styles: {
+                        paddingTop: '40px',
+                        paddingRight: '20px',
+                        paddingBottom: '40px',
+                        paddingLeft: '20px',
+                        backgroundColor: themeWithDefaults.background || '#ffffff',
+                        minHeight: '600px'
+                    }
+                };
+
+                setComponents((prev) => {
+                    const newComponents = [...prev, newItem];
+                    addToHistory(newComponents, history, setHistory, historyIndex, setHistoryIndex);
+                    setHasUnsavedChanges(true);
+                    return newComponents;
+                });
+
+                setIsAddDialogOpen(false);
+                setSelectedType('');
+                return;
+            }
+
             const newItem = {
                 id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
                 type: selectedType,
@@ -2410,7 +2521,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         }
                         // Componentes con estructura children
                         else if (
-                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'].includes(items[i].type) &&
+                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout','linkBio'].includes(items[i].type) &&
                             items[i].content?.children
                         ) {
                             childArray = items[i].content.children;
@@ -2462,7 +2573,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Buscar en componentes con estructura children
                 if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
@@ -2508,7 +2619,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 }
                 // Componentes con estructura children
                 else if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
@@ -2643,7 +2754,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Buscar en componentes con estructura children
                 if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {

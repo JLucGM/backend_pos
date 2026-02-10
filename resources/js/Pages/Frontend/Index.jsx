@@ -38,6 +38,7 @@ import OrdersComponent from '@/Components/BuilderPages/Orders/OrdersComponent';
 import SuccessComponent from '@/Components/BuilderPages/Success/SuccessComponent';
 import AnnouncementBarComponent from '@/Components/BuilderPages/AnnouncementBar/AnnouncementBarComponent';
 import ProductListComponent from '@/Components/BuilderPages/Product/ProductListComponent';
+import LinkBioComponent from '@/Components/BuilderPages/LinkBio/LinkBioComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -75,6 +76,7 @@ const componentMap = {
     'orders': OrdersComponent, // ← Agregado OrdersComponent
     'success': SuccessComponent, // ← Agregado SuccessComponent
     'announcementBar': AnnouncementBarComponent,
+    'linkBio': LinkBioComponent, // ← Agregado LinkBioComponent
 };
 
 // ==============================================================

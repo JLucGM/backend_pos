@@ -21,7 +21,7 @@ const INDENTATION_WIDTH = 40;
 
 // Lista de componentes que pueden tener hijos y ser colapsados
 const COLLAPSIBLE_TYPES = [
-    'container', 'product', 'carousel', 'banner', 'footer', 'header',
+    'container', 'product', 'carousel', 'banner', 'footer', 'header', 'linkBio',
     'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail','cart', 'checkout','checkoutDiscountGiftCard', 'announcementBar', 'productList'
 ];
 

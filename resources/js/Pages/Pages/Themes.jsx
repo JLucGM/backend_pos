@@ -4,7 +4,8 @@ import { buttonVariants } from '@/Components/ui/button';
 import ThemeGallery from './partials/ThemeGallery';
 import DivSection from '@/Components/ui/div-section';
 
-export default function Themes({ themes, role, permission, currentThemeId, homepage }) {
+export default function Themes({ themes, role, permission, currentThemeId, homepage, biopage }) {
+    console.log(biopage)
     return (
         <AuthenticatedLayout
             header={
@@ -13,17 +14,29 @@ export default function Themes({ themes, role, permission, currentThemeId, homep
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight flex items-center gap-2">
                         Galería de Temas
                     </h2>
+                    <div className="flex gap-4 items-center">
 
-                    {homepage && permission.some(perm => perm.name === 'admin.pages.edit') && (
-                        <div className="flex gap-2">
-                            <Link
-                                className={buttonVariants({ size: "sm" })}
-                                href={route('pages.builder', homepage)}
-                            >
-                                Editar Tema
-                            </Link>
-                        </div>
-                    )}
+                        {biopage && permission.some(perm => perm.name === 'admin.pages.edit') && (
+                            <div className="flex gap-2">
+                                <Link
+                                    className={buttonVariants({ size: "sm" })}
+                                    href={route('pages.builder', biopage)}
+                                >
+                                    Link in Bio
+                                </Link>
+                            </div>
+                        )}
+                        {homepage && permission.some(perm => perm.name === 'admin.pages.edit') && (
+                            <div className="flex gap-2">
+                                <Link
+                                    className={buttonVariants({ size: "sm" })}
+                                    href={route('pages.builder', homepage)}
+                                >
+                                    Editar Tema
+                                </Link>
+                            </div>
+                        )}
+                    </div>
                 </div>
             }
         >

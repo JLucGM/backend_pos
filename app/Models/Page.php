@@ -45,6 +45,7 @@ class Page extends Model implements HasMedia
         'theme_settings' => 'array',
         'uses_template' => 'boolean',
         // 'layout' => 'array',
+        // 'page_type' => 'enum:essential,policy,custom,link_bio',
     ];
 
     public function getRouteKeyName()

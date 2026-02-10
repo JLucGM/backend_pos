@@ -89,44 +89,46 @@ const ALL_COMPONENT_OPTIONS = [
 const ALLOWED_CHILD_TYPES = {
     // Contenedor: permite casi todos los componentes
     container: ['text', 'heading', 'button', 'image', 'video', 'link', 'marquee', 'divider', 'productList'],
-    
+
     // Producto: permite componentes básicos pero no video
     product: ['text', 'heading', 'button', 'link'],
-    
+
     // Carrusel: permite componentes básicos pero no video
     carousel: ['text', 'heading', 'button', 'link'],
-    
+
     // Banner: permite componentes básicos incluyendo video
     banner: ['text', 'heading', 'button', 'link', 'image', 'marquee'],
-    
+
     // Bento: solo permite bentoFeature
-    bento: ['bentoFeature','text'],
+    bento: ['bentoFeature', 'text'],
 
     // AnnouncementBar: solo permite announcement
     announcementBar: ['announcement'],
 
-    cart: ['cartItems', 'cartSummary', ],
-    
+    cart: ['cartItems', 'cartSummary',],
+
     // Header y Footer: no permiten agregar hijos desde este menú
     header: [],
     footer: ['text', 'footerMenu'],
 
     image: ['link', 'button', 'text'],
-    
+
+    linkBio: ['heading', 'button', 'text', 'image', 'divider'],
+
     // ProductCard, CarouselCard, BentoFeature: no permiten agregar hijos
     productCard: [],
     carouselCard: [],
     bentoFeature: [],
-    
+
     // Por defecto (si no está en la lista): permite todos los básicos
     default: ['text', 'heading', 'button', 'image', 'link', 'video', 'marquee', 'divider', 'productList']
 };
 
-export default function ChildComponentOptions({ 
-    parentId, 
+export default function ChildComponentOptions({
+    parentId,
     parentType,
     onAddChild,
-    isExpanded 
+    isExpanded
 }) {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -139,9 +141,9 @@ export default function ChildComponentOptions({
 
     // Obtener los tipos permitidos para este padre
     const allowedTypes = ALLOWED_CHILD_TYPES[parentType] || ALLOWED_CHILD_TYPES.default;
-    
+
     // Filtrar las opciones basadas en los tipos permitidos
-    const filteredOptions = ALL_COMPONENT_OPTIONS.filter(option => 
+    const filteredOptions = ALL_COMPONENT_OPTIONS.filter(option =>
         allowedTypes.includes(option.type)
     );
 
@@ -165,8 +167,8 @@ export default function ChildComponentOptions({
                         </span>
                     </Button>
                 </DropdownMenuTrigger>
-                
-                <DropdownMenuContent 
+
+                <DropdownMenuContent
                     className="w-64 max-h-80 overflow-y-auto"
                     align="start"
                 >
