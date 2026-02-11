@@ -217,6 +217,10 @@ export function AppSidebar({
           title: "Analytics",
           url: "admin.subscriptions.analytics",
         },
+        {
+          title: "Planes de suscripción",
+          url: "admin.subscriptionPlan.index",
+        },
       ],
     },
       {

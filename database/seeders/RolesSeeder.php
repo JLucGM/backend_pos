@@ -117,6 +117,11 @@ class RolesSeeder extends Seeder
         Permission::create(['name' => 'admin.menus.create', 'description' => 'Crear menus'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.menus.edit', 'description' => 'Editar menus'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
         Permission::create(['name' => 'admin.menus.delete', 'description' => 'Eliminar menus'])->syncRoles([$rolSuperAdmin, $rolAdmin]);
+        
+        Permission::create(['name' => 'admin.subscriptionPlan.index', 'description' => 'Ver lista de planes de suscripción'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.subscriptionPlan.create', 'description' => 'Crear planes de suscripción'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.subscriptionPlan.edit', 'description' => 'Editar planes de suscripción'])->syncRoles([$rolSuperAdmin]);
+        Permission::create(['name' => 'admin.subscriptionPlan.delete', 'description' => 'Eliminar planes de suscripción'])->syncRoles([$rolSuperAdmin]);
 
     }
 }

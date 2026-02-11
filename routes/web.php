@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\SubscriptionPlanAdminController;
 use App\Http\Controllers\AttributeController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CitiesController;
@@ -70,7 +71,7 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
             ->name('frontend.profile.edit');
         Route::put('/profile', [FrontendProfileController::class, 'update'])
             ->name('frontend.profile.update');
-        
+
         // Direcciones de entrega
         Route::post('/profile/addresses', [FrontendProfileController::class, 'storeAddress'])
             ->name('frontend.profile.addresses.store');
@@ -141,7 +142,7 @@ Route::group([
             ->name('frontend.profile.edit.custom');
         Route::put('/profile', [FrontendProfileController::class, 'update'])
             ->name('frontend.profile.update.custom');
-        
+
         // Direcciones de entrega
         Route::post('/profile/addresses', [FrontendProfileController::class, 'storeAddress'])
             ->name('frontend.profile.addresses.store.custom');
@@ -319,10 +320,10 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::post('/pages/{page}/update-theme-settings', [PageController::class, 'updateThemeSettings'])->name('pages.updateThemeSettings');
     Route::post('/pages/{page}/reset-theme-settings', [PageController::class, 'resetThemeSettings'])->name('pages.resetThemeSettings');
     Route::post('/pages/{page}/copy-image', [PageController::class, 'copyImage'])->name('pages.copy-image')->middleware(['auth', 'backend.company']);
-Route::post('/pages/{page}/upload-image', [PageController::class, 'uploadImage'])
-    ->name('pages.upload-image');
-Route::delete('/pages/{page}/images/{media}', [PageController::class, 'deleteImage'])
-    ->name('pages.delete-image');
+    Route::post('/pages/{page}/upload-image', [PageController::class, 'uploadImage'])
+        ->name('pages.upload-image');
+    Route::delete('/pages/{page}/images/{media}', [PageController::class, 'deleteImage'])
+        ->name('pages.delete-image');
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
@@ -355,7 +356,17 @@ Route::delete('/pages/{page}/images/{media}', [PageController::class, 'deleteIma
         Route::post('/{subscription}/update-status', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'updateStatus'])->name('update-status');
         Route::post('/payment/{payment}/approve', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'approvePayment'])->name('approve-payment');
         Route::post('/payment/{payment}/reject', [\App\Http\Controllers\Admin\SubscriptionAdminController::class, 'rejectPayment'])->name('reject-payment');
-    });
+
+        });
+        
+        Route::prefix('admin/subscriptionPlan')->name('admin.subscriptionPlan.')->middleware('super.admin')->group(function () {
+            Route::get('subscription-plans', [SubscriptionPlanAdminController::class, 'index'])->name('index');
+            Route::get('subscription-plans/create', [SubscriptionPlanAdminController::class, 'create'])->name('create');
+            Route::post('subscription-plans', [SubscriptionPlanAdminController::class, 'store'])->name('store');
+            Route::get('subscription-plans/{subscriptionPlan}/edit', [SubscriptionPlanAdminController::class, 'edit'])->name('edit');
+            Route::post('subscription-plans/{subscriptionPlan}', [SubscriptionPlanAdminController::class, 'update'])->name('update');
+            Route::delete('subscription-plans/{subscriptionPlan}', [SubscriptionPlanAdminController::class, 'destroy'])->name('destroy');
+            });
 });
 
 
