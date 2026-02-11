@@ -76,8 +76,8 @@ class Page extends Model implements HasMedia
     {
         $this->addMediaCollection('page_images')
             ->useDisk('public')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-            ->singleFile(); // O multiple según necesites
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+            // ->singleFile(); // O multiple según necesites
     }
 
     // Conversiones de medios

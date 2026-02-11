@@ -319,6 +319,10 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::post('/pages/{page}/update-theme-settings', [PageController::class, 'updateThemeSettings'])->name('pages.updateThemeSettings');
     Route::post('/pages/{page}/reset-theme-settings', [PageController::class, 'resetThemeSettings'])->name('pages.resetThemeSettings');
     Route::post('/pages/{page}/copy-image', [PageController::class, 'copyImage'])->name('pages.copy-image')->middleware(['auth', 'backend.company']);
+Route::post('/pages/{page}/upload-image', [PageController::class, 'uploadImage'])
+    ->name('pages.upload-image');
+Route::delete('/pages/{page}/images/{media}', [PageController::class, 'deleteImage'])
+    ->name('pages.delete-image');
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');

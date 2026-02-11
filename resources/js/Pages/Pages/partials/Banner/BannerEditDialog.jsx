@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -6,10 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { ImageIcon, X } from 'lucide-react';
+import ImageSelector from '@/Components/BuilderPages/ImageSelector';
+import { Button } from '@/Components/ui/button';
 
-const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true, page, allImages = [] }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+  const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -24,22 +28,31 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         }));
     };
 
-    // Estado para controlar si se muestra el fondo del contenedor interno
-    const hasInnerContainerBackground = editContent.innerContainerHasBackground !== false;
-    const innerContainerBackgroundColor = editContent.innerContainerBackgroundColor || '#ffffff';
+      // ✅ Manejar selección de imagen de fondo
+  const handleBackgroundImageSelect = (imageData) => {
+    updateBannerConfig('backgroundImage', imageData.src);
+    setIsImageSelectorOpen(false);
+  };
 
-    // Función para manejar el cambio del switch
-    const handleBackgroundToggle = (checked) => {
-        updateBannerConfig('innerContainerHasBackground', checked);
-        // Si se desactiva el fondo, establecer transparent
-        if (!checked) {
-            updateBannerConfig('innerContainerBackgroundColor', 'transparent');
-            updateBannerConfig('innerContainerBackgroundOpacity', 1);
-        } else if (innerContainerBackgroundColor === 'transparent') {
-            // Si se activa y actualmente es transparent, establecer un color por defecto
-            updateBannerConfig('innerContainerBackgroundColor', '#ffffff');
-        }
-    };
+  // ✅ Limpiar imagen de fondo
+  const handleClearBackgroundImage = () => {
+    updateBannerConfig('backgroundImage', '');
+  };
+
+  // Estado para controlar si se muestra el fondo del contenedor interno
+  const hasInnerContainerBackground = editContent.innerContainerHasBackground !== false;
+  const innerContainerBackgroundColor = editContent.innerContainerBackgroundColor || '#ffffff';
+
+  // Función para manejar el cambio del switch
+  const handleBackgroundToggle = (checked) => {
+    updateBannerConfig('innerContainerHasBackground', checked);
+    if (!checked) {
+      updateBannerConfig('innerContainerBackgroundColor', 'transparent');
+      updateBannerConfig('innerContainerBackgroundOpacity', 1);
+    } else if (innerContainerBackgroundColor === 'transparent') {
+      updateBannerConfig('innerContainerBackgroundColor', '#ffffff');
+    }
+  };
 
     return (
         <div className="space-y-4">
@@ -190,13 +203,62 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         onChange={(e) => updateBannerConfig('backgroundColor', e.target.value)}
                     />
 
-                    <Label htmlFor="backgroundImage">Imagen de Fondo (URL)</Label>
-                    <Input
-                        id="backgroundImage"
-                        value={editContent.backgroundImage || ''}
-                        onChange={(e) => updateBannerConfig('backgroundImage', e.target.value)}
-                        placeholder="https://ejemplo.com/imagen.jpg"
-                    />
+                    <div className="space-y-2">
+            <Label>Imagen de Fondo</Label>
+            
+            {editContent.backgroundImage ? (
+              <div className="relative border rounded-md overflow-hidden">
+                <img
+                  src={editContent.backgroundImage}
+                  alt="Fondo del banner"
+                  className="w-full h-32 object-cover"
+                />
+                <div className="absolute top-2 right-2 flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="w-8 h-8 bg-white/90 hover:bg-white"
+                    onClick={() => setIsImageSelectorOpen(true)}
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="w-8 h-8"
+                    onClick={handleClearBackgroundImage}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsImageSelectorOpen(true)}
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Seleccionar imagen de fondo
+                </Button>
+              </div>
+            )}
+            
+            {/* Input de respaldo (por si quieres pegar una URL manualmente) */}
+            <div className="mt-2">
+              <Label htmlFor="backgroundImageUrl" className="text-xs text-gray-500">
+                O ingresa una URL manualmente
+              </Label>
+              <Input
+                id="backgroundImageUrl"
+                value={editContent.backgroundImage || ''}
+                onChange={(e) => updateBannerConfig('backgroundImage', e.target.value)}
+                placeholder="https://ejemplo.com/imagen.jpg"
+                className="mt-1"
+              />
+            </div>
+          </div>
 
                     {/* <Label htmlFor="backgroundVideo">Video de Fondo (URL)</Label>
                     <Input
@@ -438,6 +500,13 @@ const BannerEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     </div>
                 </TabsContent>
             </Tabs>
+            <ImageSelector
+        open={isImageSelectorOpen}
+        onOpenChange={setIsImageSelectorOpen}
+        onSelectImage={handleBackgroundImageSelect}
+        allImages={allImages}
+        page={page}
+      />
         </div>
     );
 };

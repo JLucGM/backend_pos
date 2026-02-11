@@ -161,6 +161,8 @@ const EditDialogRenderer = ({
     availableMenus,
     products,
     dynamicPages, // Agregar esto
+    allImages,
+    page,
 }) => {
     if (!editingComponent?.type) return null;
 
@@ -179,6 +181,8 @@ const EditDialogRenderer = ({
         setEditStyles,
         themeSettings,
         isLiveEdit: true,
+        allImages,
+        page,
     };
 
     // Props específicas para ciertos diálogos
@@ -191,7 +195,19 @@ const EditDialogRenderer = ({
 
     if (editingComponent.type === 'image') {
         additionalProps.products = products;
-        additionalProps.dynamicPages = dynamicPages; // ¡Agregar esta línea!
+        additionalProps.dynamicPages = dynamicPages;
+        additionalProps.allImages = allImages;
+        additionalProps.page = page;
+    }
+
+    if (editingComponent.type === 'banner') {
+        additionalProps.allImages = allImages;
+        additionalProps.page = page;
+    }
+
+    if (editingComponent.type === 'linkBio') {
+        additionalProps.allImages = allImages;
+        additionalProps.page = page;
     }
 
     if (editingComponent.type === 'button') {
@@ -207,7 +223,7 @@ const EditDialogRenderer = ({
     return <DialogComponent {...baseProps} {...additionalProps} />;
 };
 
-export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo, dynamicPages, countries, states, cities }) {
+export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo, dynamicPages, countries, states, cities, allImages }) {
     const [components, setComponents] = useState([]);
     const toolbarRef = useRef(null);
     const [contentHeight, setContentHeight] = useState('calc(100vh - 64px)');
@@ -399,7 +415,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Componentes con estructura children
                 const typesWithChildren = [
-                    'banner', 'product', 'productList', 'productCard', 'carousel',
+                    'container', 'banner', 'product', 'productList', 'productCard', 'carousel',
                     'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
                     'productDetail', 'checkout', 'cart', 'announcementBar', 'linkBio'
                 ];
@@ -485,7 +501,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                         // Buscar en banners, products, carousels, etc.
                         const typesWithChildren = [
-                            'banner', 'product', 'productList', 'productCard', 'carousel',
+                            'container', 'banner', 'product', 'productList', 'productCard', 'carousel',
                             'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
                             'productDetail', 'cart', 'checkout', 'login', 'register', 'announcementBar', 'linkBio'
                         ];
@@ -2521,7 +2537,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         }
                         // Componentes con estructura children
                         else if (
-                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout','linkBio'].includes(items[i].type) &&
+                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio','container'].includes(items[i].type) &&
                             items[i].content?.children
                         ) {
                             childArray = items[i].content.children;
@@ -3053,6 +3069,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 availableMenus={availableMenus}
                                                 products={products}
                                                 dynamicPages={dynamicPages}
+                                                allImages={allImages}
+                                                page={page}
                                             />
                                         </div>
                                     </ScrollArea>

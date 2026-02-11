@@ -88,7 +88,7 @@ const ALL_COMPONENT_OPTIONS = [
 // Definir qué componentes pueden tener qué tipos de hijos
 const ALLOWED_CHILD_TYPES = {
     // Contenedor: permite casi todos los componentes
-    container: ['text', 'heading', 'button', 'image', 'video', 'link', 'marquee', 'divider', 'productList'],
+    container: ['text', 'heading', 'button', 'link', 'marquee', 'divider'],
 
     // Producto: permite componentes básicos pero no video
     product: ['text', 'heading', 'button', 'link'],
@@ -121,7 +121,7 @@ const ALLOWED_CHILD_TYPES = {
     bentoFeature: [],
 
     // Por defecto (si no está en la lista): permite todos los básicos
-    default: ['text', 'heading', 'button', 'image', 'link', 'video', 'marquee', 'divider', 'productList']
+    default: ['text', 'heading', 'button', 'image', 'link', 'video', 'marquee', 'divider']
 };
 
 export default function ChildComponentOptions({

@@ -276,6 +276,38 @@ class PageController extends RoutingController
         $states = \App\Models\State::all();
         $cities = \App\Models\City::all();
 
+                // ----- 1. Imágenes de productos -----
+    $productImages = [];
+    foreach ($products as $product) {
+        foreach ($product->media as $media) {
+            $productImages[] = [
+                'id'               => 'product-' . $product->id . '-' . $media->id,
+                'src'              => $media->original_url ?? $media->url,
+                'alt'              => $product->product_name,
+                'product_id'       => $product->id,
+                'media_id'         => $media->id,
+                'is_from_product'  => true,
+                'is_page_image'    => false,
+                'product_name'     => $product->product_name,
+            ];
+        }
+    }
+
+    // ----- 2. Imágenes de la página (colección 'page_images') -----
+    $pageImages = $page->getMedia('page_images')->map(function ($media) {
+        return [
+            'id'              => 'page-' . $media->id,
+            'src'             => $media->getUrl(),
+            'alt'             => $media->name,
+            'media_id'        => $media->id,
+            'is_from_product' => false,
+            'is_page_image'   => true,
+        ];
+    })->toArray();
+
+    // ----- 3. Unificar (puedes ordenar como quieras) -----
+    $allImages = array_merge($pageImages, $productImages);
+
         return Inertia::render('Pages/Builder', [
             'page' => $page,
             'products' => $products,
@@ -289,6 +321,7 @@ class PageController extends RoutingController
             'states' => $states,
             'cities' => $cities,
             'mainStore' => $mainStore, // Pasar también la tienda principal a la vista por si se necesita
+            'allImages' => $allImages,
         ]);
     }
 
@@ -550,4 +583,80 @@ class PageController extends RoutingController
 
         return back()->with('success', 'Tema actualizado para todas las páginas');
     }
+
+    // En PageController.php (dentro de la clase)
+
+/**
+ * Obtener todas las imágenes de la página (productos + página)
+ */
+public function getPageImages(Page $page)
+{
+    // Imágenes de la colección 'page_images' de la página
+    $pageMedia = $page->getMedia('page_images')->map(function ($media) {
+        return [
+            'id' => $media->id,
+            'src' => $media->getUrl(),
+            'alt' => $media->name,
+            'media_id' => $media->id,
+            'is_from_product' => false,
+            'is_page_image' => true,
+        ];
+    });
+
+    // Imágenes de productos (ya se pasan en el builder)
+    // Las combinaremos en el frontend
+
+    return response()->json($pageMedia); // Opcional, pero no usaremos Axios
+}
+
+/**
+ * Subir una imagen directamente a la página
+ */
+public function uploadImage(Request $request, Page $page)
+{
+    $request->validate([
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB máx
+    ]);
+
+    try {
+        $media = $page->addMedia($request->file('image'))
+            ->usingFileName($request->file('image')->hashName())
+            ->withCustomProperties(['uploaded_via' => 'builder'])
+            ->toMediaCollection('page_images');
+
+        // Retornar respuesta Inertia con el nuevo medio
+        return back()->with([
+            'success' => 'Imagen subida correctamente',
+            'new_page_image' => [
+                'id' => $media->id,
+                'src' => $media->getUrl(),
+                'alt' => $media->name,
+                'media_id' => $media->id,
+                'is_from_product' => false,
+                'is_page_image' => true,
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return back()->withErrors(['upload' => 'Error al subir la imagen: ' . $e->getMessage()]);
+    }
+}
+
+/**
+ * Eliminar una imagen de la página
+ */
+public function deleteImage(Page $page, $mediaId)
+{
+    $media = $page->media()->find($mediaId);
+
+    if (!$media) {
+        return back()->withErrors(['delete' => 'La imagen no existe']);
+    }
+
+    try {
+        $media->delete();
+        return back()->with('success', 'Imagen eliminada correctamente');
+    } catch (\Exception $e) {
+        return back()->withErrors(['delete' => 'Error al eliminar la imagen: ' . $e->getMessage()]);
+    }
+}
 }

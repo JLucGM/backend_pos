@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+// components/BuilderPages/partials/ImageEditDialog.jsx
+
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Separator } from '@/Components/ui/separator';
-import ImageSelector from '@/Components/BuilderPages/ImageSelector';
 import { Button } from '@/Components/ui/button';
-import { ImageIcon } from 'lucide-react';
+import { ImageIcon, X } from 'lucide-react';
+import ImageSelector from '@/Components/BuilderPages/ImageSelector';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
 
 const ImageEditDialog = ({
@@ -17,6 +19,8 @@ const ImageEditDialog = ({
   products = [],
   isLiveEdit = true,
   dynamicPages = [],
+  allImages = [],        // ✅ nuevas props
+  page,                  // ✅ nuevas props
 }) => {
   const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
   const [linkType, setLinkType] = useState('none');
@@ -118,13 +122,26 @@ const ImageEditDialog = ({
     });
   };
 
+  // ✅ Manejador para seleccionar imagen desde el selector
   const handleImageSelect = (imageData) => {
     setEditContent({
       src: imageData.src,
       alt: imageData.alt,
       product_id: imageData.product_id,
       media_id: imageData.media_id,
-      is_from_product: true
+      is_from_product: imageData.is_from_product,
+    });
+    setIsImageSelectorOpen(false);
+  };
+
+  // ✅ Limpiar la imagen actual
+  const handleClearImage = () => {
+    setEditContent({
+      src: '',
+      alt: '',
+      product_id: null,
+      media_id: null,
+      is_from_product: false,
     });
   };
 
@@ -143,104 +160,75 @@ const ImageEditDialog = ({
     }
   };
 
+  const imageUrl = normalizedContent.src;
+
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="contenido" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="contenido">Contenido</TabsTrigger>
-          <TabsTrigger value="enlace">Enlace</TabsTrigger>
-          <TabsTrigger value="bordes">Bordes</TabsTrigger>
-        </TabsList>
-
-        {/* Pestaña Contenido */}
-        <TabsContent value="contenido" className="space-y-4">
+      
+          {/* ✅ SECCIÓN MEJORADA PARA LA IMAGEN */}
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label htmlFor="imageUrl">URL de la Imagen</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsImageSelectorOpen(true)}
-              >
-                <ImageIcon className="h-4 w-4 mr-2" />
-                Seleccionar de Productos
-              </Button>
-            </div>
-            <Input
-              id="imageUrl"
-              value={normalizedContent.src || ''}
-              onChange={(e) => updateContent('src', e.target.value)}
-              placeholder="URL de la imagen o selecciona de productos"
-              className="w-full"
-            />
-            {normalizedContent.product_id && (
-              <p className="text-xs text-green-600 mt-1">
-                ✓ Imagen seleccionada del producto: {normalizedContent.alt}
-              </p>
+            <Label>Imagen</Label>
+
+            {imageUrl ? (
+              <div className="relative border rounded-md overflow-hidden">
+                <img
+                  src={imageUrl}
+                  alt={normalizedContent.alt || 'Vista previa'}
+                  className="w-full h-40 object-cover"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="w-8 h-8 bg-white/90 hover:bg-white"
+                      onClick={() => setIsImageSelectorOpen(true)}
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="w-8 h-8"
+                      onClick={handleClearImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                {normalizedContent.is_from_product && (
+                  <div className="absolute top-2 left-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                    Imagen de producto
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsImageSelectorOpen(true)}
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Seleccionar imagen
+                </Button>
+              </div>
             )}
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="imageAlt">Texto Alternativo (Alt)</Label>
-            <Input
-              id="imageAlt"
-              value={normalizedContent.alt || ''}
-              onChange={(e) => updateContent('alt', e.target.value)}
-              placeholder="Descripción de la imagen"
-              className="w-full"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Texto que se muestra si la imagen no carga
-            </p>
+            {/* Input de respaldo para URL manual (opcional) */}
+            <div className="mt-2">
+              <Label htmlFor="imageUrl" className="text-xs text-gray-500">
+                O ingresa una URL manualmente
+              </Label>
+              <Input
+                id="imageUrl"
+                value={imageUrl || ''}
+                onChange={(e) => updateContent('src', e.target.value)}
+                placeholder="https://ejemplo.com/imagen.jpg"
+                className="mt-1"
+              />
+            </div>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="aspectRatio">Aspect Ratio</Label>
-            <Select
-              value={editStyles.aspectRatio || 'square'}
-              onValueChange={(value) => updateStyle('aspectRatio', value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="landscape">Landscape (16:9)</SelectItem>
-                <SelectItem value="square">Square (1:1)</SelectItem>
-                <SelectItem value="portrait">Portrait (4:5)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-gray-500">
-              Controla la proporción de la imagen
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="objectFit">Ajuste de Imagen</Label>
-            <select
-              id="objectFit"
-              value={editStyles.objectFit || 'cover'}
-              onChange={(e) => updateStyle('objectFit', e.target.value)}
-              className="w-full px-3 py-2 border rounded-md"
-            >
-              <option value="cover">Cover (Cubrir contenedor)</option>
-              <option value="contain">Contain (Mantener proporción)</option>
-              <option value="fill">Fill (Estirar completamente)</option>
-              <option value="none">None (Tamaño original)</option>
-              <option value="scale-down">Scale-down (Reducir si es necesario)</option>
-            </select>
-            <p className="text-xs text-gray-500">
-              Controla cómo se ajusta la imagen al contenedor
-            </p>
-          </div>
-        </TabsContent>
-
-        {/* Pestaña Enlace */}
-        <TabsContent value="enlace" className="space-y-4">
-          <h3 className="font-medium">Enlace de la Imagen</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Configura dónde navegará el usuario al hacer clic en la imagen
-          </p>
 
           <div>
             <Label htmlFor="linkType">Tipo de Enlace</Label>
@@ -350,30 +338,45 @@ const ImageEditDialog = ({
             </div>
           )}
 
-          {linkType === 'none' && (
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
-              <p className="text-sm text-gray-700">
-                La imagen no tendrá enlace. Los usuarios verán la imagen sin poder hacer clic.
-              </p>
-            </div>
-          )}
-        </TabsContent>
+          <Separator />
 
-        {/* Pestaña Bordes */}
-        <TabsContent value="bordes" className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="borderRadius">Radio de Borde</Label>
-            <Input
-              id="borderRadius"
-              type="number"
-              min="0"
-              step="1"
-              value={parseInt(editStyles.borderRadius) || 0}
-              onChange={(e) => updateStyle('borderRadius', e.target.value)}
-              placeholder="0"
-              className="w-full"
-            />
+            <Label htmlFor="aspectRatio">Aspect Ratio</Label>
+            <Select
+              value={editStyles.aspectRatio || 'square'}
+              onValueChange={(value) => updateStyle('aspectRatio', value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="landscape">Landscape (16:9)</SelectItem>
+                <SelectItem value="square">Square (1:1)</SelectItem>
+                <SelectItem value="portrait">Portrait (4:5)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="objectFit">Ajuste de Imagen</Label>
+            <Select
+              value={editStyles.objectFit || 'cover'}
+              onValueChange={(value) => updateStyle('objectFit', value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cover">Cover (Cubrir contenedor)</SelectItem>
+                <SelectItem value="contain">Contain (Mantener proporción)</SelectItem>
+                <SelectItem value="fill">Fill (Estirar completamente)</SelectItem>
+                <SelectItem value="none">None (Tamaño original)</SelectItem>
+                <SelectItem value="scale-down">Scale-down (Reducir si es necesario)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+<Separator />
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -414,70 +417,30 @@ const ImageEditDialog = ({
               className="w-full h-10 p-1"
             />
           </div>
-        </TabsContent>
-      </Tabs>
 
-      {/* Selector de imágenes de productos */}
+          <div className="space-y-2">
+            <Label htmlFor="borderRadius">Radio de Borde</Label>
+            <Input
+              id="borderRadius"
+              type="number"
+              min="0"
+              step="1"
+              value={parseInt(editStyles.borderRadius) || 0}
+              onChange={(e) => updateStyle('borderRadius', e.target.value)}
+              placeholder="0"
+              className="w-full"
+            />
+          </div>
+        
+
+      {/* ✅ Selector de imágenes unificado */}
       <ImageSelector
         open={isImageSelectorOpen}
         onOpenChange={setIsImageSelectorOpen}
         onSelectImage={handleImageSelect}
-        products={products}
+        allImages={allImages}
+        page={page}
       />
-
-      {/* Vista previa rápida */}
-      <div className="mt-6 pt-4 border-t">
-        <Label className="mb-2 block">Vista Previa</Label>
-        <div className="flex justify-center">
-          <div
-            className="border rounded p-4 bg-gray-50"
-            style={{
-              width: '200px',
-              overflow: 'hidden',
-              position: 'relative'
-            }}
-          >
-            {normalizedContent.src ? (
-              <div style={{
-                width: '100%',
-                height: '0',
-                paddingBottom: editStyles.aspectRatio === 'landscape' ? '56.25%' :
-                  editStyles.aspectRatio === 'portrait' ? '125%' : '100%',
-                position: 'relative'
-              }}>
-                <img
-                  src={normalizedContent.src}
-                  alt="Vista previa"
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: editStyles.borderRadius || '0px',
-                    borderWidth: editStyles.borderWidth || '0px',
-                    borderStyle: editStyles.borderStyle || 'solid',
-                    borderColor: editStyles.borderColor || '#000000',
-                    objectFit: editStyles.objectFit || 'cover',
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="text-center text-gray-400 py-8">
-                Ingresa una URL para ver la vista previa
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="text-xs text-gray-500 text-center mt-2">
-          Aspect ratio: {editStyles.aspectRatio || 'square'}
-          {editStyles.imageUrl && (
-            <div className="mt-1 text-blue-600">
-              ✓ Enlace configurado
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/Components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Button } from '@/Components/ui/button';
-import { Plus, Trash2 } from 'lucide-react';
+import { ImageIcon, Plus, Trash2, X } from 'lucide-react';
+import ImageSelector from '@/Components/BuilderPages/ImageSelector';
 
 const LinkBioEditDialog = ({
     editContent,
@@ -14,10 +15,13 @@ const LinkBioEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
-    isLiveEdit = true
+    isLiveEdit = true,
+    allImages = [],
+    page
 }) => {
     const [localContent, setLocalContent] = useState(editContent || {});
     const [localStyles, setLocalStyles] = useState(editStyles || {});
+    const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
 
     // Estados para gradiente - con valores por defecto
     const [gradientColors, setGradientColors] = useState(['#667eea', '#764ba2']);
@@ -125,6 +129,17 @@ const LinkBioEditDialog = ({
         setGradientColors(newColors);
     };
 
+    // Funciones para manejar selección de imagen
+    const handleBackgroundImageSelect = (imageData) => {
+        updateContent('backgroundImage', imageData.src);
+        // Opcional: también podríamos guardar metadata como product_id, media_id, etc.
+        setIsImageSelectorOpen(false);
+    };
+
+    const handleClearBackgroundImage = () => {
+        updateContent('backgroundImage', '');
+    };
+
     return (
         <div className="space-y-4">
 
@@ -195,6 +210,63 @@ const LinkBioEditDialog = ({
 
             {localContent.backgroundType === 'image' && (
                 <>
+                    <div className="space-y-2">
+                        <Label>Imagen de Fondo</Label>
+
+                        {localContent.backgroundImage ? (
+                            <div className="relative border rounded-md overflow-hidden">
+                                <img
+                                    src={localContent.backgroundImage}
+                                    alt="Fondo del link bio"
+                                    className="w-full h-32 object-cover"
+                                />
+                                <div className="absolute top-2 right-2 flex gap-2">
+                                    <Button
+                                        variant="secondary"
+                                        size="icon"
+                                        className="w-8 h-8 bg-white/90 hover:bg-white"
+                                        onClick={() => setIsImageSelectorOpen(true)}
+                                    >
+                                        <ImageIcon className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        className="w-8 h-8"
+                                        onClick={handleClearBackgroundImage}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => setIsImageSelectorOpen(true)}
+                                >
+                                    <ImageIcon className="h-4 w-4 mr-2" />
+                                    Seleccionar imagen de fondo
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Input de respaldo para URL manual */}
+                        <div className="mt-2">
+                            <Label htmlFor="backgroundImageUrl" className="text-xs text-gray-500">
+                                O ingresa una URL manualmente
+                            </Label>
+                            <Input
+                                id="backgroundImageUrl"
+                                value={localContent.backgroundImage || ''}
+                                onChange={(e) => updateContent('backgroundImage', e.target.value)}
+                                placeholder="https://ejemplo.com/imagen.jpg"
+                                className="mt-1"
+                            />
+                        </div>
+                    </div>
+
                     <div>
                         <Label htmlFor="backgroundImage">URL de la Imagen</Label>
                         <Input
@@ -411,6 +483,13 @@ const LinkBioEditDialog = ({
                     </div>
                 </div>
             )}
+            <ImageSelector
+                open={isImageSelectorOpen}
+                onOpenChange={setIsImageSelectorOpen}
+                onSelectImage={handleBackgroundImageSelect}
+                allImages={allImages}
+                page={page}
+            />
         </div>
     );
 };

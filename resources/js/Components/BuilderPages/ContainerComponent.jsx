@@ -1,186 +1,176 @@
 // components/BuilderPages/components/ContainerComponent.jsx
+
 import React from 'react';
 import CanvasItem from './CanvasItem';
 import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
 
 const ContainerComponent = ({
-    comp,
-    getStyles,
-    onEdit,
-    onDelete,
-    themeSettings,
-    appliedTheme,
-    isPreview,
-    products,
-    setComponents,
-    hoveredComponentId,
-    setHoveredComponentId
+  comp,
+  getStyles,
+  onEdit,
+  onDelete,
+  themeSettings,
+  appliedTheme,
+  isPreview,
+  products,
+  setComponents,
+  hoveredComponentId,
+  setHoveredComponentId
 }) => {
-    // Obtener configuración del tema con valores por defecto
-    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+  // Obtener configuración del tema con valores por defecto
+  const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+  const themeContainerStyles = getComponentStyles(themeWithDefaults, 'container', appliedTheme);
+  const customStyles = comp.styles || {};
 
-    // Obtener estilos específicos del componente container del tema
-    const themeContainerStyles = getComponentStyles(themeWithDefaults, 'container', appliedTheme);
+  // Helper para añadir unidad
+  const withUnit = (value, unit = 'px') => {
+    if (value === undefined || value === null || value === '') return undefined;
+    if (typeof value === 'string' && isNaN(Number(value))) return value;
+    return `${value}${unit}`;
+  };
 
-    // Extraer estilos personalizados
-    const customStyles = comp.styles || {};
+  // Padding individual
+  const paddingTop = withUnit(customStyles.paddingTop) || '0px';
+  const paddingRight = withUnit(customStyles.paddingRight) || '0px';
+  const paddingBottom = withUnit(customStyles.paddingBottom) || '0px';
+  const paddingLeft = withUnit(customStyles.paddingLeft) || '0px';
 
-    // Helper para añadir unidad (px) si es solo número
-    const withUnit = (value, unit = 'px') => {
-        if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
-        if (typeof value === 'string' && isNaN(Number(value))) return value;
-        return `${value}${unit}`;
-    };
+  // Alignment y dirección
+  const alignment = customStyles.alignment || 'left';
+  const direction = customStyles.direction || 'row';
+  const gap = withUnit(customStyles.gap) || themeContainerStyles.gap || '0px';
 
-    // Padding individual - usar withUnit para asegurar px
-    const paddingTop = withUnit(customStyles.paddingTop) || '0px';
-    const paddingRight = withUnit(customStyles.paddingRight) || '0px';
-    const paddingBottom = withUnit(customStyles.paddingBottom) || '0px';
-    const paddingLeft = withUnit(customStyles.paddingLeft) || '0px';
+  // ✅ IMAGEN DE FONDO
+  const backgroundImage = customStyles.backgroundImage;
+  const backgroundColor = customStyles.backgroundColor || themeContainerStyles.backgroundColor || 'transparent';
+  const backgroundSize = customStyles.backgroundSize || 'cover';
+  const backgroundPosition = customStyles.backgroundPosition || 'center';
 
-    // Alignment 
-    const alignment = customStyles.alignment || 'left';
+  const borderRadius = withUnit(customStyles.borderRadius) || themeContainerStyles.borderRadius || '0px';
 
-    // Dirección (flex direction)
-    const direction = customStyles.direction || 'row';
+  // Determinar alineación flex
+  const getFlexAlignment = () => {
+    if (direction === 'row') {
+      switch (alignment) {
+        case 'left': return 'flex-start';
+        case 'center': return 'center';
+        case 'right': return 'flex-end';
+        default: return 'flex-start';
+      }
+    } else {
+      switch (alignment) {
+        case 'left': return 'flex-start';
+        case 'center': return 'center';
+        case 'right': return 'flex-end';
+        default: return 'flex-start';
+      }
+    }
+  };
 
-    // Gap entre elementos hijos usando valor del tema
-    const gap = withUnit(customStyles.gap) || themeContainerStyles.gap || '0px';
+  const flexAlignment = getFlexAlignment();
 
-    // Background y border radius usando valores del tema
-    const backgroundColor = customStyles.backgroundColor || themeContainerStyles.backgroundColor || 'transparent';
-    const borderRadius = withUnit(customStyles.borderRadius) || themeContainerStyles.borderRadius || '0px';
+  // Estilos del contenedor
+  const containerStyles = {
+    ...getStyles(comp),
+    width: '100%',
+    paddingTop,
+    paddingRight,
+    paddingBottom,
+    paddingLeft,
+    // Fondo: si hay imagen, se muestra; si no, solo color
+    backgroundColor: backgroundImage ? 'transparent' : backgroundColor,
+    backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+    backgroundSize,
+    backgroundPosition,
+    backgroundRepeat: 'no-repeat',
+    borderRadius,
+    display: 'flex',
+    flexDirection: direction,
+    gap,
+    justifyContent: direction === 'row' ? flexAlignment : 'flex-start',
+    alignItems: direction === 'row' ? 'flex-start' : flexAlignment,
+    flexWrap: 'wrap',
+    border: isPreview ? 'none' : `2px dashed ${themeWithDefaults.borders}`,
+    minHeight: '50px',
+    position: 'relative',
+    boxSizing: 'border-box',
+  };
 
-    // Determinar alineación basada en dirección
-    const getFlexAlignment = () => {
-        if (direction === 'row') {
-            // Para dirección horizontal
-            switch (alignment) {
-                case 'left': return 'flex-start';
-                case 'center': return 'center';
-                case 'right': return 'flex-end';
-                default: return 'flex-start';
-            }
-        } else {
-            // Para dirección vertical
-            switch (alignment) {
-                case 'left': return 'flex-start';
-                case 'center': return 'center';
-                case 'right': return 'flex-end';
-                default: return 'flex-start';
-            }
-        }
-    };
+  // Eventos de mouse
+  const handleMouseEnter = () => {
+    if (setHoveredComponentId && !isPreview) {
+      setHoveredComponentId(comp.id);
+    }
+  };
 
-    const flexAlignment = getFlexAlignment();
+  const handleMouseLeave = () => {
+    if (setHoveredComponentId && !isPreview) {
+      setHoveredComponentId(null);
+    }
+  };
 
-    const containerStyles = {
-        ...getStyles(comp),
-        // Layout - SIEMPRE ANCHO COMPLETO
-        width: '100%',
-        // Padding individual
-        paddingTop,
-        paddingRight,
-        paddingBottom,
-        paddingLeft,
-        // Background y borde usando valores del tema
-        backgroundColor,
-        borderRadius,
-        // Flexbox para organizar hijos
-        display: 'flex',
-        flexDirection: direction,
-        gap,
-        // Alineación basada en dirección
-        justifyContent: direction === 'row' ? flexAlignment : 'flex-start',
-        alignItems: direction === 'row' ? 'flex-start' : flexAlignment,
-        // Permitir que los hijos se envuelvan si no caben
-        flexWrap: 'wrap',
-        // Estilos de borde para modo edición usando colores del tema
-        border: isPreview ? 'none' : `2px dashed ${themeWithDefaults.borders}`,
-        minHeight: '50px',
-        position: 'relative',
-        boxSizing: 'border-box',
-    };
-
-    // Funciones seguras para eventos de mouse
-    const handleMouseEnter = () => {
-        if (setHoveredComponentId && !isPreview) {
-            setHoveredComponentId(comp.id);
-        }
-    };
-
-    const handleMouseLeave = () => {
-        if (setHoveredComponentId && !isPreview) {
-            setHoveredComponentId(null);
-        }
-    };
-
-    const handleDeleteChild = (childId) => {
-        setComponents((prev) => {
-            const updateComponentChildren = (components) => {
-                return components.map((c) => {
-                    if (c.id === comp.id && c.content) {
-                        return {
-                            ...c,
-                            content: c.content.filter((sc) => sc.id !== childId)
-                        };
-                    }
-                    if (c.type === 'container' && c.content) {
-                        return {
-                            ...c,
-                            content: updateComponentChildren(c.content)
-                        };
-                    }
-                    return c;
-                });
+  const handleDeleteChild = (childId) => {
+    setComponents((prev) => {
+      const updateComponentChildren = (components) => {
+        return components.map((c) => {
+          if (c.id === comp.id && c.content) {
+            return {
+              ...c,
+              content: c.content.filter((sc) => sc.id !== childId)
             };
-            const updated = updateComponentChildren(prev);
-            return updated;
+          }
+          if (c.type === 'container' && c.content) {
+            return {
+              ...c,
+              content: updateComponentChildren(c.content)
+            };
+          }
+          return c;
         });
-    };
+      };
+      return updateComponentChildren(prev);
+    });
+  };
 
-    return (
-        <div
-            style={containerStyles}
-            className="group relative"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-        >
-            {/* Los hijos - ahora siempre debería haber al menos uno */}
-            {comp.content && comp.content.length > 0 ? (
-                comp.content.map((subComp) => (
-                    <CanvasItem
-                        key={subComp.id}
-                        comp={subComp}
-                        onEditComponent={onEdit}
-                        onDeleteComponent={handleDeleteChild}
-                        themeSettings={themeSettings}
-                        appliedTheme={appliedTheme}
-                        isPreview={isPreview}
-                        products={products}
-                        setComponents={setComponents}
-                        hoveredComponentId={hoveredComponentId}
-                        setHoveredComponentId={setHoveredComponentId}
-                    />
-                ))
-            ) : (
-                // Esto solo debería verse si alguien elimina todos los hijos
-                !isPreview && (
-                    <div
-                        className="w-full text-center text-gray-400 py-8 border border-dasheds border-gray-300 rounded cursor-pointer"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit();
-                        }}
-                    >
-                        <p>Contenedor vacío</p>
-                        <p className="text-sm">Agrega componentes aquí</p>
-                    </div>
-                )
-            )}
-        </div>
-    );
+  return (
+    <div
+      style={containerStyles}
+      className="group relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {comp.content && comp.content.length > 0 ? (
+        comp.content.map((subComp) => (
+          <CanvasItem
+            key={subComp.id}
+            comp={subComp}
+            onEditComponent={onEdit}
+            onDeleteComponent={handleDeleteChild}
+            themeSettings={themeSettings}
+            appliedTheme={appliedTheme}
+            isPreview={isPreview}
+            products={products}
+            setComponents={setComponents}
+            hoveredComponentId={hoveredComponentId}
+            setHoveredComponentId={setHoveredComponentId}
+          />
+        ))
+      ) : (
+        !isPreview && (
+          <div
+            className="w-full text-center text-gray-400 py-8 border border-dashed border-gray-300 rounded cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+          >
+            <p>Contenedor vacío</p>
+            <p className="text-sm">Agrega componentes aquí</p>
+          </div>
+        )
+      )}
+    </div>
+  );
 };
 
 export default ContainerComponent;
