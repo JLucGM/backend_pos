@@ -37,6 +37,9 @@ class StoreSubscriptionPlanRequest extends FormRequest
             'limits.staff_users' => ['nullable', 'integer'],
             'limits.stores' => ['nullable', 'integer'],
             'limits.pages' => ['nullable', 'integer'],
+            'limits.can_customize_pages' => ['nullable', 'boolean'],
+            'limits.can_manage_menus' => ['nullable', 'boolean'],
+            'is_public' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ];
     }

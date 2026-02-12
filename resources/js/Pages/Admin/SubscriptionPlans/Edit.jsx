@@ -10,7 +10,6 @@ import { TrashIcon } from 'lucide-react';
 
 const SubscriptionPlanForm = lazy(() => import('./SubscriptionPlanForm'));
 
-
 export default function Edit({ subscriptionPlan }) {
     const initialValues = {
         name: subscriptionPlan.name || '',
@@ -21,6 +20,7 @@ export default function Edit({ subscriptionPlan }) {
         is_active: subscriptionPlan.is_active || false,
         is_trial: subscriptionPlan.is_trial || false,
         is_featured: subscriptionPlan.is_featured || false,
+        is_public: subscriptionPlan.is_public || false,
         trial_days: subscriptionPlan.trial_days || 0,
         features: subscriptionPlan.features || [],
         limits: subscriptionPlan.limits || {},

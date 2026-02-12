@@ -17,6 +17,7 @@ class SubscriptionController extends Controller
     public function index()
     {
         $plans = SubscriptionPlan::active()
+            ->where('is_public', true)
             ->orderBy('sort_order')
             ->orderBy('price')
             ->get();

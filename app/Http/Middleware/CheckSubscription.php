@@ -120,6 +120,17 @@ class CheckSubscription
                     ->count();
                 return $currentCount < $limit;
 
+            case 'pages.customize':
+                // Verificar si puede acceder al Builder (limitación booleana)
+                $canCustomize = $company->getSubscriptionLimit('can_customize_pages');
+                return $canCustomize === true;
+
+            case 'menus.create':
+            case 'menus.edit':
+                // Verificar si puede gestionar menús (limitación booleana)
+                $canManageMenus = $company->getSubscriptionLimit('can_manage_menus');
+                return $canManageMenus === true;
+
             case 'orders.create':
             case 'orders.edit':
                 // En período de prueba, NO permitir órdenes

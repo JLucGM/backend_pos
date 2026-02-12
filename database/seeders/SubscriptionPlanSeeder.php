@@ -23,6 +23,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_active' => true,
                 'is_trial' => true,
                 'is_featured' => false,
+                'is_public' => true,
                 'trial_days' => 1,
                 'features' => [
                     'Gestión básica de productos',
@@ -30,11 +31,41 @@ class SubscriptionPlanSeeder extends Seeder
                     'Soporte por email',
                 ],
                 'limits' => [
-                    'staff_users' => 1, // Solo el propietario
-                    'stores' => 1,      // Una tienda
-                    'pages' => 0,       // Sin páginas personalizadas (solo esenciales)
+                    'staff_users' => 1,
+                    'stores' => 1,
+                    'pages' => 0,
+                    'can_customize_pages' => true,
+                    'can_manage_menus' => true,
                 ],
                 'sort_order' => 1,
+            ],
+            [
+                'name' => 'Emprendedor',
+                'slug' => 'emprendedor',
+                'description' => 'Plan económico para emprendedores que están comenzando',
+                'price' => 9.99,
+                'yearly_price' => 99.99,
+                'currency' => 'USD',
+                'is_active' => true,
+                'is_trial' => false,
+                'is_featured' => false,
+                'is_public' => true,
+                'trial_days' => 0,
+                'features' => [
+                    'Hasta 3 páginas personalizadas',
+                    '1 usuario staff',
+                    '1 tienda',
+                    'Soporte por email',
+                    'Reportes básicos',
+                ],
+                'limits' => [
+                    'staff_users' => 1,
+                    'stores' => 1,
+                    'pages' => 3,
+                    'can_customize_pages' => false,
+                    'can_manage_menus' => false,
+                ],
+                'sort_order' => 2,
             ],
             [
                 'name' => 'Básico',
@@ -46,6 +77,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_active' => true,
                 'is_trial' => false,
                 'is_featured' => false,
+                'is_public' => true,
                 'trial_days' => 0,
                 'features' => [
                     'Hasta 100 órdenes por mes',
@@ -55,11 +87,13 @@ class SubscriptionPlanSeeder extends Seeder
                     'Reportes básicos',
                 ],
                 'limits' => [
-                    'staff_users' => 3,  // Hasta 3 usuarios staff
-                    'stores' => 1,       // Una tienda
-                    'pages' => 5,        // Hasta 5 páginas personalizadas
+                    'staff_users' => 3,
+                    'stores' => 1,
+                    'pages' => 5,
+                    'can_customize_pages' => true,
+                    'can_manage_menus' => true,
                 ],
-                'sort_order' => 2,
+                'sort_order' => 3,
             ],
             [
                 'name' => 'Profesional',
@@ -71,6 +105,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_active' => true,
                 'is_trial' => false,
                 'is_featured' => true, // Plan destacado
+                'is_public' => true,
                 'trial_days' => 0,
                 'features' => [
                     'Hasta 500 órdenes por mes',
@@ -80,13 +115,17 @@ class SubscriptionPlanSeeder extends Seeder
                     'Reportes avanzados',
                     'Integraciones con terceros',
                     'Múltiples usuarios',
+                    'Personalización completa de páginas',
+                    'Gestión de menús',
                 ],
                 'limits' => [
-                    'staff_users' => 10, // Hasta 10 usuarios staff
-                    'stores' => 3,       // Hasta 3 tiendas
-                    'pages' => 15,       // Hasta 15 páginas personalizadas
+                    'staff_users' => 10,
+                    'stores' => 3,
+                    'pages' => 15,
+                    'can_customize_pages' => true,
+                    'can_manage_menus' => true,
                 ],
-                'sort_order' => 3,
+                'sort_order' => 4,
             ],
             [
                 'name' => 'Empresarial',
@@ -98,6 +137,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_active' => true,
                 'is_trial' => false,
                 'is_featured' => false,
+                'is_public' => true,
                 'trial_days' => 0,
                 'features' => [
                     'Órdenes ilimitadas',
@@ -109,13 +149,17 @@ class SubscriptionPlanSeeder extends Seeder
                     'Usuarios ilimitados',
                     'API completa',
                     'Personalización avanzada',
+                    'Acceso completo al Builder',
+                    'Gestión avanzada de menús',
                 ],
                 'limits' => [
-                    'staff_users' => -1, // Ilimitado
-                    'stores' => -1,      // Ilimitado
-                    'pages' => -1,       // Ilimitado
+                    'staff_users' => -1,
+                    'stores' => -1,
+                    'pages' => -1,
+                    'can_customize_pages' => true,
+                    'can_manage_menus' => true,
                 ],
-                'sort_order' => 4,
+                'sort_order' => 5,
             ],
         ];
 

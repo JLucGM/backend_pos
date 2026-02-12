@@ -19,6 +19,7 @@ export default function Create() {
         currency: "USD",
         is_active: 1,
         is_trial: false,
+        is_public: true,
         is_featured: false,
         trial_days: 0,
         features: [],

@@ -32,7 +32,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        $subscriptionPlans = SubscriptionPlan::active()
+        $subscriptionPlans = SubscriptionPlan::where('is_public', true)->active()
             ->orderBy('sort_order')
             ->orderBy('price')
             ->get();

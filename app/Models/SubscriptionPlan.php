@@ -19,6 +19,7 @@ class SubscriptionPlan extends Model
         'yearly_price',
         'currency',
         'is_active',
+        'is_public',
         'is_trial',
         'is_featured',
         'trial_days',
@@ -33,6 +34,7 @@ class SubscriptionPlan extends Model
         'is_active' => 'boolean',
         'is_trial' => 'boolean',
         'is_featured' => 'boolean',
+        'is_public' => 'boolean',
         'price' => 'decimal:2',
         'yearly_price' => 'decimal:2',
     ];

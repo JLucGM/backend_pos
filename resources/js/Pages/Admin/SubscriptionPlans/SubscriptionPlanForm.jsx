@@ -30,12 +30,21 @@ export default function SubscriptionPlanForm({ data, setData, errors, isEdit = f
         setData('features', newFeatures);
     };
 
-    // Manejar limits (objeto)
+    // Manejar limits (objeto con valores numéricos y booleanos)
     const handleLimitChange = (key, value) => {
-        setData('limits', {
-            ...data.limits,
-            [key]: parseInt(value) || 0
-        });
+        // Si es booleano, mantenerlo como booleano
+        if (typeof value === 'boolean') {
+            setData('limits', {
+                ...data.limits,
+                [key]: value
+            });
+        } else {
+            // Si es numérico, parsearlo
+            setData('limits', {
+                ...data.limits,
+                [key]: parseInt(value) || 0
+            });
+        }
     };
 
     return (
@@ -151,6 +160,55 @@ export default function SubscriptionPlanForm({ data, setData, errors, isEdit = f
                             <InputError message={errors.limits} />
                         </div>
 
+                        {/* Permisos de Funcionalidades - Límites Booleanos */}
+                        <div className="col-span-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <InputLabel value="Permisos de Funcionalidades" className="mb-3 font-semibold" />
+
+                            <div className="space-y-3">
+                                {/* Personalización de Páginas */}
+                                <div className="flex items-start gap-3">
+                                    <Input
+                                        type="checkbox"
+                                        id="can_customize_pages"
+                                        checked={data.limits?.can_customize_pages ?? false}
+                                        onChange={e => handleLimitChange('can_customize_pages', e.target.checked)}
+                                        className="h-5 w-5 mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <div className="flex-1">
+                                        <InputLabel
+                                            htmlFor="can_customize_pages"
+                                            value="Permitir personalización de páginas (Builder)"
+                                            className="!mb-0 cursor-pointer"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Permite acceso al Builder visual para personalizar el diseño de las páginas
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Gestión de Menús */}
+                                <div className="flex items-start gap-3">
+                                    <Input
+                                        type="checkbox"
+                                        id="can_manage_menus"
+                                        checked={data.limits?.can_manage_menus ?? false}
+                                        onChange={e => handleLimitChange('can_manage_menus', e.target.checked)}
+                                        className="h-5 w-5 mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <div className="flex-1">
+                                        <InputLabel
+                                            htmlFor="can_manage_menus"
+                                            value="Permitir gestión de menús"
+                                            className="!mb-0 cursor-pointer"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Permite crear y editar menús de navegación personalizados
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="flex gap-4 items-center">
                             <div>
                                 <InputLabel htmlFor="price" value="Precio Mensual" />
@@ -231,6 +289,24 @@ export default function SubscriptionPlanForm({ data, setData, errors, isEdit = f
                             />
                             <InputLabel htmlFor="is_featured" value="Plan destacado" />
                             <InputError message={errors.is_featured} />
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <Input
+                                id="is_public"
+                                type="checkbox"
+                                name="is_public"
+                                checked={data.is_public ?? true}
+                                onChange={(e) => setData('is_public', e.target.checked)}
+                                className="h-5 w-5 mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <div className="flex-1">
+                                <InputLabel htmlFor="is_public" value="Plan público (visible para todos)" className="!mb-0 cursor-pointer" />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Si está desactivado, solo super admins podrán asignar este plan manualmente a compañías específicas
+                                </p>
+                            </div>
+                            <InputError message={errors.is_public} />
                         </div>
                     </DivSection>
 

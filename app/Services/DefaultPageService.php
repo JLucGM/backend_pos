@@ -35,6 +35,7 @@ class DefaultPageService
                     'template_id' => 3,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Tienda',
@@ -45,6 +46,7 @@ class DefaultPageService
                     'template_id' => 3,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Detalles del producto',
@@ -55,6 +57,7 @@ class DefaultPageService
                     'template_id' => 3,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Carrito de compras',
@@ -65,6 +68,7 @@ class DefaultPageService
                     'template_id' => 3,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Checkout',
@@ -75,6 +79,7 @@ class DefaultPageService
                     'template_id' => 3,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Iniciar sesión',
@@ -85,6 +90,7 @@ class DefaultPageService
                     'template_id' => 3,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Registrarse',
@@ -95,6 +101,7 @@ class DefaultPageService
                     'template_id' => 3,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Perfil de usuario',
@@ -105,6 +112,7 @@ class DefaultPageService
                     'template_id' => 3,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Pedidos',
@@ -115,6 +123,7 @@ class DefaultPageService
                     'template_id' => 3,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Políticas de privacidad',
@@ -124,6 +133,7 @@ class DefaultPageService
                     'theme_id' => $defaultTheme?->id ?? null,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Términos de servicio',
@@ -133,6 +143,7 @@ class DefaultPageService
                     'theme_id' => $defaultTheme?->id ?? null,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Políticas de envío',
@@ -142,6 +153,7 @@ class DefaultPageService
                     'theme_id' => $defaultTheme?->id ?? null,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Información de contacto',
@@ -151,6 +163,7 @@ class DefaultPageService
                     'theme_id' => $defaultTheme?->id ?? null,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                     'title' => 'Política de devolución y reembolso',
@@ -160,6 +173,7 @@ class DefaultPageService
                     'theme_id' => $defaultTheme?->id ?? null,
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
                 [
                 'title' => 'Bio',
@@ -170,6 +184,7 @@ class DefaultPageService
                 'template_id' => null,
                 'company_id' => $company->id,
                 'theme_settings' => null,
+                'is_published' => true,
             ],
                 [
                     'title' => 'Orden exitosa',
@@ -208,6 +223,7 @@ class DefaultPageService
                     ]),
                     'company_id' => $company->id,
                     'theme_settings' => null,
+                    'is_published' => true,
                 ],
             ];
 
