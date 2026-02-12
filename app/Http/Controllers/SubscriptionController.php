@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SubscriptionPlan;
 use App\Models\Subscription;
 use App\Models\SubscriptionPayment;
+use App\Models\SystemPaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -104,13 +105,14 @@ class SubscriptionController extends Controller
             abort(403);
         }
 
+        // Obtener métodos de pago activos del sistema
+        $systemPaymentMethods = SystemPaymentMethod::active()
+            ->ordered()
+            ->get();
+
         return Inertia::render('Subscriptions/Payment', [
             'subscription' => $subscription->load('plan'),
-            'paymentMethods' => [
-                'paypal' => true,
-                'stripe' => true,
-                'offline' => true,
-            ],
+            'systemPaymentMethods' => $systemPaymentMethods,
         ]);
     }
 
@@ -120,7 +122,8 @@ class SubscriptionController extends Controller
     public function processPayment(Request $request, Subscription $subscription)
     {
         $request->validate([
-            'payment_method' => 'required|in:paypal,stripe,offline',
+            'payment_method' => 'required|exists:system_payment_methods,slug',
+            'transaction_id' => 'required|string|max:100',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -131,60 +134,28 @@ class SubscriptionController extends Controller
             abort(403);
         }
 
-        // Crear registro de pago
+        $systemPaymentMethod = SystemPaymentMethod::where('slug', $request->payment_method)->first();
+
+        // Crear registro de pago pendiente
         $payment = SubscriptionPayment::create([
             'subscription_id' => $subscription->id,
             'company_id' => $subscription->company_id,
+            'system_payment_method_id' => $systemPaymentMethod->id,
             'payment_method' => $request->payment_method,
+            'payment_provider' => $systemPaymentMethod->name,
+            'transaction_id' => $request->transaction_id,
             'amount' => $subscription->amount,
             'currency' => $subscription->currency,
-            'status' => $request->payment_method === 'offline' ? 'pending' : 'pending',
+            'status' => 'pending',
             'notes' => $request->notes,
         ]);
 
-        // Procesar según el método de pago
-        switch ($request->payment_method) {
-            case 'paypal':
-                return $this->processPayPalPayment($payment);
-            case 'stripe':
-                return $this->processStripePayment($payment);
-            case 'offline':
-                return $this->processOfflinePayment($payment);
-        }
-    }
-
-    /**
-     * Procesar pago con PayPal
-     */
-    private function processPayPalPayment(SubscriptionPayment $payment)
-    {
-        // Aquí integrarías con PayPal API
-        // Por ahora, simulamos el proceso
-        
-        return redirect()->route('subscriptions.payment.success', $payment)
-            ->with('message', 'Redirigiendo a PayPal...');
-    }
-
-    /**
-     * Procesar pago con Stripe
-     */
-    private function processStripePayment(SubscriptionPayment $payment)
-    {
-        // Aquí integrarías con Stripe API
-        // Por ahora, simulamos el proceso
-        
-        return redirect()->route('subscriptions.payment.success', $payment)
-            ->with('message', 'Redirigiendo a Stripe...');
-    }
-
-    /**
-     * Procesar pago offline
-     */
-    private function processOfflinePayment(SubscriptionPayment $payment)
-    {
+        // Redirigir a la página de pago pendiente
         return redirect()->route('subscriptions.payment.pending', $payment)
-            ->with('message', 'Tu pago está siendo procesado. Te notificaremos cuando sea confirmado.');
+            ->with('message', 'Tu pago ha sido registrado y está siendo verificado. Te notificaremos cuando el plan sea activado.');
     }
+
+
 
     /**
      * Página de éxito del pago

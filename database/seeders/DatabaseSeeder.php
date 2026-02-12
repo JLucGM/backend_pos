@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->call(StatesSeeder::class);
         $this->call(CitiesSeeder::class);
         $this->call(PaymentsMethodsSeeder::class);
+        $this->call(SystemPaymentMethodSeeder::class);
         $this->call(StoreSeeder::class);
         $this->call(SettingsSeeder::class);
         $this->call(ThemeSeeder::class);

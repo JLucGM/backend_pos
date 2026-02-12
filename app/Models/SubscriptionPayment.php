@@ -12,6 +12,7 @@ class SubscriptionPayment extends Model
     protected $fillable = [
         'subscription_id',
         'company_id',
+        'system_payment_method_id',
         'payment_method',
         'payment_provider',
         'transaction_id',
@@ -43,6 +44,14 @@ class SubscriptionPayment extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Relación con el método de pago del sistema
+     */
+    public function systemPaymentMethod()
+    {
+        return $this->belongsTo(SystemPaymentMethod::class);
     }
 
     /**
