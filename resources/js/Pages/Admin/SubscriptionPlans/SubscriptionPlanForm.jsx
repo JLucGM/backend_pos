@@ -112,52 +112,40 @@ export default function SubscriptionPlanForm({ data, setData, errors, isEdit = f
                             <InputLabel value="Límites del Plan" />
                             <div className="grid grid-cols-2 gap-4 mt-2">
                                 <div>
-                                    <InputLabel htmlFor="limits_orders" value="Órdenes" className="text-sm" />
+                                    <InputLabel htmlFor="limits_staff_users" value="Usuarios Staff" className="text-sm" />
                                     <TextInput
-                                        id="limits_orders"
+                                        id="limits_staff_users"
                                         type="number"
-                                        value={data.limits?.orders || 0}
-                                        onChange={e => handleLimitChange('orders', e.target.value)}
+                                        value={data.limits?.staff_users || 0}
+                                        onChange={e => handleLimitChange('staff_users', e.target.value)}
                                         className="w-full"
                                         placeholder="-1 para ilimitado"
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">-1 = Ilimitado</p>
+                                    <p className="text-xs text-gray-500 mt-1">Usuarios del dashboard (excluyendo clientes)</p>
                                 </div>
                                 <div>
-                                    <InputLabel htmlFor="limits_products" value="Productos" className="text-sm" />
+                                    <InputLabel htmlFor="limits_stores" value="Tiendas" className="text-sm" />
                                     <TextInput
-                                        id="limits_products"
+                                        id="limits_stores"
                                         type="number"
-                                        value={data.limits?.products || 0}
-                                        onChange={e => handleLimitChange('products', e.target.value)}
+                                        value={data.limits?.stores || 0}
+                                        onChange={e => handleLimitChange('stores', e.target.value)}
                                         className="w-full"
                                         placeholder="-1 para ilimitado"
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">-1 = Ilimitado</p>
+                                    <p className="text-xs text-gray-500 mt-1">Número de tiendas físicas o virtuales</p>
                                 </div>
                                 <div>
-                                    <InputLabel htmlFor="limits_users" value="Usuarios" className="text-sm" />
+                                    <InputLabel htmlFor="limits_pages" value="Páginas Dinámicas" className="text-sm" />
                                     <TextInput
-                                        id="limits_users"
+                                        id="limits_pages"
                                         type="number"
-                                        value={data.limits?.users || 0}
-                                        onChange={e => handleLimitChange('users', e.target.value)}
+                                        value={data.limits?.pages || 0}
+                                        onChange={e => handleLimitChange('pages', e.target.value)}
                                         className="w-full"
                                         placeholder="-1 para ilimitado"
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">-1 = Ilimitado</p>
-                                </div>
-                                <div>
-                                    <InputLabel htmlFor="limits_storage" value="Almacenamiento (MB)" className="text-sm" />
-                                    <TextInput
-                                        id="limits_storage"
-                                        type="number"
-                                        value={data.limits?.storage || 0}
-                                        onChange={e => handleLimitChange('storage', e.target.value)}
-                                        className="w-full"
-                                        placeholder="-1 para ilimitado"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">-1 = Ilimitado</p>
+                                    <p className="text-xs text-gray-500 mt-1">Páginas personalizadas (0 = solo esenciales)</p>
                                 </div>
                             </div>
                             <InputError message={errors.limits} />

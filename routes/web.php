@@ -87,6 +87,7 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
             ->name('frontend.orders.show');
 
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
+            ->middleware('subscription:orders.create')
             ->name('frontend.checkout.process');
 
         // Confirmación de orden
@@ -158,6 +159,7 @@ Route::group([
             ->name('frontend.orders.show.custom');
 
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
+            ->middleware('subscription:orders.create')
             ->name('frontend.checkout.process');
 
         // Confirmación de orden
@@ -179,8 +181,8 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('users', [UserController::class, 'index'])->name('user.index');
-    Route::get('users/create', [UserController::class, 'create'])->name('user.create');
-    Route::post('users', [UserController::class, 'store'])->name('user.store');
+    Route::get('users/create', [UserController::class, 'create'])->middleware('subscription:staff_users.create')->name('user.create');
+    Route::post('users', [UserController::class, 'store'])->middleware('subscription:staff_users.create')->name('user.store');
     Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('user.edit');
     Route::post('users/{user}', [UserController::class, 'update'])->name('user.update');
     Route::delete('users/{user}', [UserController::class, 'destroy'])->name('user.destroy');
@@ -244,8 +246,8 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::delete('cities/{city}', [CitiesController::class, 'destroy'])->name('cities.destroy');
 
     Route::get('stores', [StoreController::class, 'index'])->name('stores.index');
-    Route::get('stores/create', [StoreController::class, 'create'])->name('stores.create');
-    Route::post('stores', [StoreController::class, 'store'])->name('stores.store');
+    Route::get('stores/create', [StoreController::class, 'create'])->middleware('subscription:stores.create')->name('stores.create');
+    Route::post('stores', [StoreController::class, 'store'])->middleware('subscription:stores.create')->name('stores.store');
     Route::get('stores/{store}/edit', [StoreController::class, 'edit'])->name('stores.edit');
     Route::post('stores/{store}', [StoreController::class, 'update'])->name('stores.update');
     Route::delete('stores/{store}', [StoreController::class, 'destroy'])->name('stores.destroy');
@@ -303,10 +305,10 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::patch('/pages/update-company-theme', [PageController::class, 'updateCompanyTheme'])->name('pages.update-company-theme');
     Route::get('pages', [PageController::class, 'index'])->name('pages.index');
     Route::get('pages/policy', [PageController::class, 'indexPolicy'])->name('policy.index');
-    Route::get('pages/create', [PageController::class, 'create'])->name('pages.create');
+    Route::get('pages/create', [PageController::class, 'create'])->middleware('subscription:pages.create')->name('pages.create');
     Route::get('pages/themes', [PageController::class, 'themes'])->name('pages.themes');
     Route::get('pages/{page}', [PageController::class, 'show'])->name('pages.show');
-    Route::post('pages', [PageController::class, 'store'])->name('pages.store');
+    Route::post('pages', [PageController::class, 'store'])->middleware('subscription:pages.create')->name('pages.store');
     Route::get('pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
     Route::post('pages/{page}', [PageController::class, 'update'])->name('pages.update');
     Route::delete('pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');

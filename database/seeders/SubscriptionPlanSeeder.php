@@ -23,17 +23,16 @@ class SubscriptionPlanSeeder extends Seeder
                 'is_active' => true,
                 'is_trial' => true,
                 'is_featured' => false,
-                'trial_days' => 14,
+                'trial_days' => 1,
                 'features' => [
                     'Gestión básica de productos',
                     'Panel de administración',
                     'Soporte por email',
                 ],
                 'limits' => [
-                    'orders' => 0, // No puede crear órdenes
-                    'products' => 10,
-                    'users' => 1,
-                    'storage' => 100, // MB
+                    'staff_users' => 1, // Solo el propietario
+                    'stores' => 1,      // Una tienda
+                    'pages' => 0,       // Sin páginas personalizadas (solo esenciales)
                 ],
                 'sort_order' => 1,
             ],
@@ -56,10 +55,9 @@ class SubscriptionPlanSeeder extends Seeder
                     'Reportes básicos',
                 ],
                 'limits' => [
-                    'orders' => 100,
-                    'products' => 100,
-                    'users' => 3,
-                    'storage' => 1000, // MB
+                    'staff_users' => 3,  // Hasta 3 usuarios staff
+                    'stores' => 1,       // Una tienda
+                    'pages' => 5,        // Hasta 5 páginas personalizadas
                 ],
                 'sort_order' => 2,
             ],
@@ -84,10 +82,9 @@ class SubscriptionPlanSeeder extends Seeder
                     'Múltiples usuarios',
                 ],
                 'limits' => [
-                    'orders' => 500,
-                    'products' => 500,
-                    'users' => 10,
-                    'storage' => 5000, // MB
+                    'staff_users' => 10, // Hasta 10 usuarios staff
+                    'stores' => 3,       // Hasta 3 tiendas
+                    'pages' => 15,       // Hasta 15 páginas personalizadas
                 ],
                 'sort_order' => 3,
             ],
@@ -114,10 +111,9 @@ class SubscriptionPlanSeeder extends Seeder
                     'Personalización avanzada',
                 ],
                 'limits' => [
-                    'orders' => -1, // Ilimitado
-                    'products' => -1, // Ilimitado
-                    'users' => -1, // Ilimitado
-                    'storage' => -1, // Ilimitado
+                    'staff_users' => -1, // Ilimitado
+                    'stores' => -1,      // Ilimitado
+                    'pages' => -1,       // Ilimitado
                 ],
                 'sort_order' => 4,
             ],

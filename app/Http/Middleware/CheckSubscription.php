@@ -63,17 +63,19 @@ class CheckSubscription
      */
     private function isFeatureAllowedInTrial(string $feature): bool
     {
+        // Características permitidas en trial
         $trialAllowedFeatures = [
-            'products.create',
-            'products.edit',
-            'users.create',
             'dashboard.view',
+            'products.view',
+            'products.edit',
         ];
 
+        // Características BLOQUEADAS en trial
         $trialBlockedFeatures = [
-            'orders.create',
+            'orders.create',     // Backend
             'orders.edit',
-            'payments.process',
+            'checkout.process',  // Frontend
+            'checkout.access',   // Acceso a página Checkout
         ];
 
         return in_array($feature, $trialAllowedFeatures) && 
@@ -86,27 +88,50 @@ class CheckSubscription
     private function checkFeatureLimit($company, string $feature): bool
     {
         switch ($feature) {
-            case 'orders.create':
-                $limit = $company->getSubscriptionLimit('orders');
-                if ($limit === 0) return false; // No permitido
-                if ($limit === -1) return true; // Ilimitado
+            case 'staff_users.create':
+                $limit = $company->getSubscriptionLimit('staff_users');
+                if ($limit === 0) return false;
+                if ($limit === -1) return true;
                 
-                $currentCount = $company->orders()->count();
+                // Contar SOLO usuarios staff (excluir clientes)
+                $currentCount = $company->users()
+                    ->whereHas('roles', function($query) {
+                        $query->whereNotIn('name', ['client']);
+                    })
+                    ->count();
                 return $currentCount < $limit;
+
+            case 'stores.create':
+                $limit = $company->getSubscriptionLimit('stores');
+                if ($limit === 0) return false;
+                if ($limit === -1) return true;
+                
+                $currentCount = $company->stores()->count();
+                return $currentCount < $limit;
+
+            case 'pages.create':
+                $limit = $company->getSubscriptionLimit('pages');
+                if ($limit === 0) return false;
+                if ($limit === -1) return true;
+                
+                // Contar SOLO páginas personalizadas (excluir 'essential')
+                $currentCount = $company->pages()
+                    ->where('page_type', '!=', 'essential')
+                    ->count();
+                return $currentCount < $limit;
+
+            case 'orders.create':
+            case 'orders.edit':
+                // En período de prueba, NO permitir órdenes
+                if ($company->onTrial()) {
+                    return false;
+                }
+                // En planes pagos, permitir órdenes ilimitadas
+                return true;
 
             case 'products.create':
-                $limit = $company->getSubscriptionLimit('products');
-                if ($limit === -1) return true; // Ilimitado
-                
-                $currentCount = $company->products()->count();
-                return $currentCount < $limit;
-
-            case 'users.create':
-                $limit = $company->getSubscriptionLimit('users');
-                if ($limit === -1) return true; // Ilimitado
-                
-                $currentCount = $company->users()->count();
-                return $currentCount < $limit;
+                // Productos siempre permitidos (sin límite)
+                return true;
 
             default:
                 return true;
