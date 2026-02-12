@@ -216,7 +216,58 @@ class FrontendController extends Controller
 
         // Datos de producto actual (si es página de detalles)
         $productData = $this->getProductData($company, $slug, $request, $mainStore);
-        // dd($products);
+        
+        // ----- INYECTAR COMPONENTES GLOBALES (HEADER/FOOTER) -----
+        // Excluir páginas específicas como 'bio'
+        if ($slug !== 'bio' && $slug !== 'link-in-bio') { // Ajustar según el slug real de la bio
+            $globalHeader = \App\Models\GlobalComponent::where('company_id', $company->id)->where('type', 'header')->where('is_active', true)->first();
+            $globalFooter = \App\Models\GlobalComponent::where('company_id', $company->id)->where('type', 'footer')->where('is_active', true)->first();
+
+            $layout = $page->layout ? (is_string($page->layout) ? json_decode($page->layout, true) : $page->layout) : [];
+            $layout = is_array($layout) ? $layout : [];
+            
+            // Si hay header global, reemplazar o inyectar
+            if ($globalHeader) {
+                $headerIndex = -1;
+                foreach ($layout as $index => $component) {
+                    if (isset($component['type']) && $component['type'] === 'header') {
+                        $headerIndex = $index;
+                        break;
+                    }
+                }
+
+                $globalHeaderContent = $globalHeader->content;
+                
+                if ($headerIndex !== -1) {
+                    $layout[$headerIndex] = $globalHeaderContent;
+                } else {
+                    array_unshift($layout, $globalHeaderContent);
+                }
+            }
+
+            // Si hay footer global, reemplazar o inyectar
+            if ($globalFooter) {
+                $footerIndex = -1;
+                foreach ($layout as $index => $component) {
+                    if (isset($component['type']) && $component['type'] === 'footer') {
+                        $footerIndex = $index;
+                        break;
+                    }
+                }
+
+                $globalFooterContent = $globalFooter->content;
+
+                if ($footerIndex !== -1) {
+                    $layout[$footerIndex] = $globalFooterContent;
+                } else {
+                    $layout[] = $globalFooterContent;
+                }
+            }
+            
+            // Asignar el layout modificado al objeto page en memoria
+            $page->layout = $layout; // Frontend espera array o string, Index.jsx lo maneja
+        }
+
         // AGREGAR: Pasar la tienda principal a la vista
         return Inertia::render('Frontend/Index', array_merge(
             [

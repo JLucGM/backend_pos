@@ -351,46 +351,46 @@ export default function Index({
                 )}
             </Head>
 
-                {/* Renderizar cada bloque del layout */}
-                {layoutBlocks.map(block =>
-                    renderBlock(
-                        block,
-                        themeSettings,
-                        availableMenus,
-                        products,
-                        currentProduct,
-                        companyId,
-                        paymentMethods,
-                        shippingRates,
-                        userDeliveryLocations,
-                        userGiftCards,
-                        userOrders,
-                        'frontend', // Modo frontend siempre
-                        companyLogo,
-                        companyFavicon,
-                        currentUser,
-                        countries,
-                        states,
-                        cities
-                    )
-                )}
+            {/* Renderizar cada bloque del layout */}
+            {layoutBlocks.map(block =>
+                renderBlock(
+                    block,
+                    themeSettings,
+                    availableMenus,
+                    products,
+                    currentProduct,
+                    companyId,
+                    paymentMethods,
+                    shippingRates,
+                    userDeliveryLocations,
+                    userGiftCards,
+                    userOrders,
+                    'frontend', // Modo frontend siempre
+                    companyLogo,
+                    companyFavicon,
+                    currentUser,
+                    countries,
+                    states,
+                    cities
+                )
+            )}
 
-                {isProductDetailPage && !currentProduct && (
-                    <div className="text-center py-12 bg-gray-50">
-                        <h2 className="text-2xl font-bold text-gray-700 mb-4">
-                            Producto no encontrado
-                        </h2>
-                        <p className="text-gray-600 mb-6">
-                            El producto que buscas no está disponible o no existe.
-                        </p>
-                        <a
-                            href="/"
-                            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            Volver al inicio
-                        </a>
-                    </div>
-                )}
+            {isProductDetailPage && !currentProduct && (
+                <div className="text-center py-12 bg-gray-50">
+                    <h2 className="text-2xl font-bold text-gray-700 mb-4">
+                        Producto no encontrado
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                        El producto que buscas no está disponible o no existe.
+                    </p>
+                    <a
+                        href="/"
+                        className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Volver al inicio
+                    </a>
+                </div>
+            )}
         </>
     );
 }

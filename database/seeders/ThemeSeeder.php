@@ -231,6 +231,7 @@ class ThemeSeeder extends Seeder
                 'banner_innerContainerBorderRadius' => '0px',
 
                 // Bento Component
+                'bento_backgroundColor' => '#ffffffff',
                 'bento_containerBorderRadius' => '0px',
                 'bento_gridGap' => '20px',
 
@@ -469,7 +470,7 @@ class ThemeSeeder extends Seeder
                 'banner_innerContainerBorderRadius' => '0px',
 
                 // Bento Component
-                'bento_backgroundColor' => '#1a1a1a',
+                'bento_backgroundColor' => '#ffffffff',
                 'bento_containerBorderRadius' => '0px',
                 'bento_gridGap' => '20px',
 

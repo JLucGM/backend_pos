@@ -3,6 +3,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import CarouselComponent from '@/Components/BuilderPages/CarouselComponent';
+import HeaderComponent from '@/Components/BuilderPages/Header/HeaderComponent';
+import FooterComponent from '@/Components/BuilderPages/Footer/FooterComponent';
 
 // Componente Producto (igual que antes)
 const ProductComponent = ({ products }) => {
@@ -22,7 +24,7 @@ const ProductComponent = ({ products }) => {
     );
 };
 
-export default function Show({ page, products }) {
+export default function Show({ page, products, availableMenus, logoUrl }) {
     // Extraer settings del theme
     const themeSettings = page.theme?.settings || {};
 
@@ -66,6 +68,31 @@ export default function Show({ page, products }) {
                 return <ProductComponent key={comp.id} products={products} />;
             case 'carousel': // Nuevo caso para carousel
                 return <CarouselComponent key={comp.id} products={products.slice(0, comp.content.limit || 5)} />;
+            case 'header':
+                return (
+                    <HeaderComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        themeSettings={themeSettings}
+                        appliedTheme={page.theme}
+                        mode="frontend"
+                        availableMenus={availableMenus}
+                        companyLogo={logoUrl}
+                    />
+                );
+            case 'footer':
+                return (
+                    <FooterComponent
+                        key={comp.id}
+                        comp={comp}
+                        getStyles={getStyles}
+                        themeSettings={themeSettings}
+                        appliedTheme={page.theme}
+                        mode="frontend"
+                        availableMenus={availableMenus}
+                    />
+                );
             case 'container':
                 return (
                     <div key={comp.id} style={getStyles(comp)}>
@@ -81,20 +108,20 @@ export default function Show({ page, products }) {
 
     return (
         // <AuthenticatedLayout>
-            <div
-                className="max-w-7xl mx-auto"
-                style={{
-                    // Aplicar estilos globales del theme al contenedor
-                    backgroundColor: themeSettings?.background ? `hsl(${themeSettings.background})` : '#fff',
-                    fontFamily: themeSettings?.fontFamily || 'inherit',
-                }}
-            >
-                <Head title={page.title} />
-                {/* <h1>{page.title}</h1> */}
-                <div>
-                    {layout.map(renderComponent)}
-                </div>
+        <div
+            className="max-w-7xl mx-auto"
+            style={{
+                // Aplicar estilos globales del theme al contenedor
+                backgroundColor: themeSettings?.background ? `hsl(${themeSettings.background})` : '#fff',
+                fontFamily: themeSettings?.fontFamily || 'inherit',
+            }}
+        >
+            <Head title={page.title} />
+            {/* <h1>{page.title}</h1> */}
+            <div>
+                {layout.map(renderComponent)}
             </div>
+        </div>
         // </AuthenticatedLayout>
     );
 }

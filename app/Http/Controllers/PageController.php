@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Store;
 use App\Models\Template;
 use App\Models\Theme;
+use App\Models\GlobalComponent;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\Auth;
@@ -119,17 +120,92 @@ class PageController extends RoutingController
      */
     public function show(Page $page)
     {
-        $page->load('theme');
+        $page->load('theme', 'company.setting.media');
 
         $user = Auth::user();
-        $companyId = $user->company_id;
+        $companyId = $user->company_id; // WARNING: This assumes the logged in user is viewing. But public pages might be viewed by guests?
+        // If public page, we should use $page->company_id.
+        // But the previous code used Auth::user()->company_id.
+        // Let's assume for now it's for authenticated users or the previous code was implicit about it. 
+        // Wait, "Show" usually implies public view?
+        // "PageController" seems to be for Admin? "Admin\Pages\Show"? No, it returns "Pages/Show".
+        // If it is public, Auth::user() might be null.
+        // Let's stick to $page->company_id if possible, but the original code used Auth::user().
+        // If Auth::user() is null, this will crash.
+        // I should check if it's "Pages/Show" (Public) or "Admin/Pages/Show".
+        // The file is `resources/js/Pages/Pages/Show.jsx`.
+        // The controller extends `RoutingController`.
+        // Middleware in construct suggests it's admin: `middleware('can:admin.pages.index')`.
+        // So it IS an admin preview or similar.
+        
+        $companyId = $page->company_id; // Use page's company ID to be safe and correct.
 
         $products = Product::with('stocks', 'combinations.combinationAttributeValue.attributeValue.attribute', 'categories', 'media')
             ->where('company_id', $companyId)
             ->get();
 
 
-        return Inertia::render('Pages/Show', compact('page', 'products'));
+
+        // ----- INYECTAR COMPONENTES GLOBALES (HEADER/FOOTER) -----
+        $globalHeader = GlobalComponent::where('company_id', $companyId)->where('type', 'header')->where('is_active', true)->first();
+        $globalFooter = GlobalComponent::where('company_id', $companyId)->where('type', 'footer')->where('is_active', true)->first();
+
+        $layout = $page->layout ? json_decode($page->layout, true) : [];
+
+        // Si hay header global, reemplazar o inyectar
+        if ($globalHeader) {
+            $headerIndex = -1;
+            foreach ($layout as $index => $component) {
+                if ($component['type'] === 'header') {
+                    $headerIndex = $index;
+                    break;
+                }
+            }
+
+            $globalHeaderContent = $globalHeader->content;
+            
+            if ($headerIndex !== -1) {
+                $layout[$headerIndex] = $globalHeaderContent;
+            } else {
+                array_unshift($layout, $globalHeaderContent);
+            }
+        }
+
+        // Si hay footer global, reemplazar o inyectar
+        if ($globalFooter) {
+            $footerIndex = -1;
+            foreach ($layout as $index => $component) {
+                if ($component['type'] === 'footer') {
+                    $footerIndex = $index;
+                    break;
+                }
+            }
+
+            $globalFooterContent = $globalFooter->content;
+
+            if ($footerIndex !== -1) {
+                $layout[$footerIndex] = $globalFooterContent;
+            } else {
+                $layout[] = $globalFooterContent;
+            }
+        }
+        
+        // Asignar el layout modificado al objeto page (solo en memoria para la vista)
+        $page->layout = json_encode($layout);
+
+        // EXTRAER DATOS ADICIONALES PARA HEADER/FOOTER
+        $availableMenus = Menu::where('company_id', $companyId)
+            ->with(['items.children' => function ($query) {
+                $query->orderBy('order', 'asc');
+            }])
+            ->get()->toArray();
+
+        $logoUrl = null;
+        if ($page->company->setting && $page->company->setting->getFirstMedia('logo')) {
+            $logoUrl = $page->company->setting->getFirstMedia('logo')->getUrl();
+        }
+
+        return Inertia::render('Pages/Show', compact('page', 'products', 'availableMenus', 'logoUrl'));
     }
 
     /**
@@ -293,7 +369,7 @@ class PageController extends RoutingController
         }
     }
 
-    // ----- 2. Imágenes de la página (colección 'page_images') -----
+        // ----- 2. Imágenes de la página (colección 'page_images') -----
     $pageImages = $page->getMedia('page_images')->map(function ($media) {
         return [
             'id'              => 'page-' . $media->id,
@@ -307,6 +383,55 @@ class PageController extends RoutingController
 
     // ----- 3. Unificar (puedes ordenar como quieras) -----
     $allImages = array_merge($pageImages, $productImages);
+
+    // ----- INYECTAR COMPONENTES GLOBALES (HEADER/FOOTER) -----
+    $globalHeader = GlobalComponent::where('company_id', $companyId)->where('type', 'header')->where('is_active', true)->first();
+    $globalFooter = GlobalComponent::where('company_id', $companyId)->where('type', 'footer')->where('is_active', true)->first();
+
+    $layout = $page->layout ? json_decode($page->layout, true) : [];
+
+    // Si hay header global, reemplazar o inyectar
+    if ($globalHeader) {
+        $headerIndex = -1;
+        foreach ($layout as $index => $component) {
+            if ($component['type'] === 'header') {
+                $headerIndex = $index;
+                break;
+            }
+        }
+
+        $globalHeaderContent = $globalHeader->content;
+        // Asegurar ID único para evitar conflictos si se guardó con otro ID
+        // $globalHeaderContent['id'] = $globalHeaderContent['id'] ?? 'global-header'; 
+
+        if ($headerIndex !== -1) {
+            $layout[$headerIndex] = $globalHeaderContent;
+        } else {
+            array_unshift($layout, $globalHeaderContent);
+        }
+    }
+
+    // Si hay footer global, reemplazar o inyectar
+    if ($globalFooter) {
+        $footerIndex = -1;
+        foreach ($layout as $index => $component) {
+            if ($component['type'] === 'footer') {
+                $footerIndex = $index;
+                break;
+            }
+        }
+
+        $globalFooterContent = $globalFooter->content;
+
+        if ($footerIndex !== -1) {
+            $layout[$footerIndex] = $globalFooterContent;
+        } else {
+            $layout[] = $globalFooterContent;
+        }
+    }
+    
+    // Asignar el layout modificado al objeto page (solo en memoria para la vista)
+    $page->layout = json_encode($layout);
 
         return Inertia::render('Pages/Builder', [
             'page' => $page,
@@ -383,14 +508,35 @@ class PageController extends RoutingController
                     }
                 }
             }
+
+            // ----- GUARDAR COMPONENTES GLOBALES -----
+            if ($component['type'] === 'header' || $component['type'] === 'footer') {
+                GlobalComponent::updateOrCreate(
+                    [
+                        'company_id' => $page->company_id,
+                        'type' => $component['type']
+                    ],
+                    [
+                        'content' => $component,
+                        'name' => ucfirst($component['type']) . ' Global',
+                        'is_active' => true
+                    ]
+                );
+            }
         }
 
 
-        $page->update([
-            'layout' => json_encode($layout),
-        ]);
+        // Guardar el layout en la página, EXCLUYENDO header y footer globales
+        // para evitar redundancia y asegurar que siempre se usen los de la tabla global_components
+        $layoutToSave = array_filter($layout, function ($component) {
+            return $component['type'] !== 'header' && $component['type'] !== 'footer';
+        });
 
-        return redirect()->back()->with('success', 'Layout actualizado correctamente.');
+        // Re-indexar el array para evitar índices numéricos no consecutivos en JSON
+        $page->layout = json_encode(array_values($layoutToSave));
+        $page->save();
+
+        return back()->with('success', 'Diseño guardado correctamente');
     }
 
     /**

@@ -2537,7 +2537,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         }
                         // Componentes con estructura children
                         else if (
-                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio','container'].includes(items[i].type) &&
+                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'container'].includes(items[i].type) &&
                             items[i].content?.children
                         ) {
                             childArray = items[i].content.children;
