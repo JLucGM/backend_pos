@@ -31,6 +31,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\InventoryTransferController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -265,6 +266,10 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::get('stocks/create', [StockController::class, 'create'])->name('stocks.create');
     Route::post('stocks', [StockController::class, 'store'])->name('stocks.store');
     Route::put('stocks/{stock}', [StockController::class, 'update'])->name('stocks.update');
+
+    Route::post('inventory-transfers/check-stock', [InventoryTransferController::class, 'checkStock'])->name('inventory-transfers.check-stock');
+Route::resource('inventory-transfers', InventoryTransferController::class);
+
 
     Route::get('orders', [OrderController::class, 'index'])->middleware('subscription:orders.view')->name('orders.index');
     Route::get('orders/create', [OrderController::class, 'create'])->middleware('subscription:orders.create')->name('orders.create');

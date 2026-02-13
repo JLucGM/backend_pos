@@ -89,6 +89,10 @@ export function AppSidebar({
             url: "stocks.index",
           },
           {
+            title: "Transferencias",
+            url: "inventory-transfers.index",
+          },
+          {
             title: "Gift Cards",
             url: "giftCards.index",
           },
