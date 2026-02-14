@@ -14,6 +14,7 @@ use App\Models\Tax;
 use App\Models\User;
 use App\Services\DefaultMenuService; // <-- Agregar esta línea
 use App\Services\DefaultPageService;
+use App\Services\DefaultGlobalComponentService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -127,6 +128,7 @@ class RegisteredUserController extends Controller
             // Crear páginas por defecto para la empresa <-- Agregar esta línead
             DefaultPageService::createForCompany($company);
 
+            DefaultGlobalComponentService::createForCompany($company);
             // Asociar la empresa al usuario
             $user->company()->associate($company);
             $user->save();

@@ -4,232 +4,94 @@ namespace App\Services;
 
 use App\Models\Company;
 use App\Models\Page;
+use App\Models\Template;
 use App\Models\Theme;
 use Illuminate\Support\Facades\DB;
 
 class DefaultPageService
 {
-    /**
-     * Crea páginas por defecto para una empresa
-     */
     public static function createForCompany(Company $company): void
     {
         DB::transaction(function () use ($company) {
-            // Obtener el tema por defecto (tema-azul)
-            $defaultTheme = Theme::where('slug', 'tema-azul')->first();
+            $defaultTheme = Theme::where('slug', 'tema-azul')->first() ?? Theme::first();
+            $templates = self::getTemplatesBySlug();
 
-            // Si no existe, usar el primero disponible
-            if (!$defaultTheme) {
-                $defaultTheme = Theme::first();
-            }
-
-            // Definir las páginas por defecto
-            $pages = [
-                [
-                    'title' => 'Inicio',
-                    'content' => '<p>Bienvenido a nuestra tienda en línea. Aquí encontrarás los mejores productos.</p>',
-                    'page_type' => 'essential',
-                    'is_homepage' => true,
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => true,
-                    'template_id' => 3,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Tienda',
-                    'content' => '<p>Explora nuestra amplia selección de productos.</p>',
-                    'page_type' => 'essential',
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => true,
-                    'template_id' => 3,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Detalles del producto',
-                    'content' => '<p>Detalles completos de cada producto.</p>',
-                    'page_type' => 'essential',
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => true,
-                    'template_id' => 3,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Carrito de compras',
-                    'content' => '<p>Tu carrito de compras está vacío.</p>',
-                    'page_type' => 'essential',
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => true,
-                    'template_id' => 3,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Checkout',
-                    'content' => '<p>Completa tu información de envío y pago.</p>',
-                    'page_type' => 'essential',
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => true,
-                    'template_id' => 3,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Iniciar sesión',
-                    'content' => '<p>Inicia sesión en tu cuenta.</p>',
-                    'page_type' => 'essential',
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => true,
-                    'template_id' => 3,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Registrarse',
-                    'content' => '<p>Crea una nueva cuenta.</p>',
-                    'page_type' => 'essential',
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => true,
-                    'template_id' => 3,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Perfil de usuario',
-                    'content' => '<p>Gestiona tu perfil y preferencias.</p>',
-                    'page_type' => 'essential',
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => true,
-                    'template_id' => 3,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Pedidos',
-                    'content' => '<p>Revisa el historial de tus pedidos.</p>',
-                    'page_type' => 'essential',
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => true,
-                    'template_id' => 3,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Políticas de privacidad',
-                    'content' => '<p>Nuestras políticas de privacidad y protección de datos.</p>',
-                    'page_type' => 'policy',
-                    'is_editable' => true,
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Términos de servicio',
-                    'content' => '<p>Los términos y condiciones de nuestro servicio.</p>',
-                    'page_type' => 'policy',
-                    'is_editable' => true,
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Políticas de envío',
-                    'content' => '<p>Información sobre nuestras políticas de envío y entregas.</p>',
-                    'page_type' => 'policy',
-                    'is_editable' => true,
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Información de contacto',
-                    'content' => '<p>Contáctanos para cualquier consulta o soporte.</p>',
-                    'page_type' => 'policy',
-                    'is_editable' => true,
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                    'title' => 'Política de devolución y reembolso',
-                    'content' => '<p>Descuentos increíbles en productos seleccionados.</p>',
-                    'page_type' => 'policy',
-                    'is_editable' => true,
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
-                [
-                'title' => 'Bio',
-                'content' => '<p>Explora nuestros productos destacados.</p>',
-                'page_type' => 'link_bio',
-                'theme_id' => $temaOscuro?->id ?? $defaultTheme?->id ?? null,
-                'uses_template' => true,
-                'template_id' => null,
-                'company_id' => $company->id,
-                'theme_settings' => null,
-                'is_published' => true,
-            ],
-                [
-                    'title' => 'Orden exitosa',
-                    'content' => '<p>Tu orden ha sido procesada exitosamente.</p>',
-                    'page_type' => 'essential',
-                    'theme_id' => $defaultTheme?->id ?? null,
-                    'uses_template' => false,
-                    'template_id' => null,
-                    'layout' => json_encode([
-                        [
-                            'id' => 1,
-                            'type' => 'success',
-                            'content' => [
-                                'title' => '¡Orden Exitosa!',
-                                'subtitle' => 'Tu orden ha sido procesada correctamente',
-                                'iconColor' => '#10b981',
-                                'titleColor' => '#000000',
-                                'titleSize' => '32px',
-                                'subtitleColor' => '#666666',
-                                'subtitleSize' => '18px',
-                                'showContinueShoppingButton' => true,
-                                'continueButtonText' => 'Continuar Comprando',
-                                'showOrdersButton' => true,
-                                'ordersButtonText' => 'Ver Mis Pedidos',
-                                'additionalMessage' => 'Recibirás un email de confirmación con los detalles de tu pedido.'
-                            ],
-                            'styles' => [
-                                'backgroundColor' => '#ffffff',
-                                'paddingTop' => '40px',
-                                'paddingRight' => '20px',
-                                'paddingBottom' => '40px',
-                                'paddingLeft' => '20px',
-                                'maxWidth' => '1200px'
-                            ]
-                        ]
-                    ]),
-                    'company_id' => $company->id,
-                    'theme_settings' => null,
-                    'is_published' => true,
-                ],
+            // Páginas esenciales (con template específico)
+            $essentialPages = [
+                ['title' => 'Inicio', 'template_slug' => 'home-template', 'is_homepage' => true],
+                ['title' => 'Tienda', 'template_slug' => 'shop-template'],
+                ['title' => 'Detalles del producto', 'template_slug' => 'product-detail-template'],
+                ['title' => 'Carrito de compras', 'template_slug' => 'cart-template'],
+                ['title' => 'Checkout', 'template_slug' => 'checkout-template'],
+                ['title' => 'Iniciar sesión', 'template_slug' => 'login-template'],
+                ['title' => 'Registrarse', 'template_slug' => 'register-template'],
+                ['title' => 'Perfil de usuario', 'template_slug' => 'profile-template'],
+                ['title' => 'Pedidos', 'template_slug' => 'orders-template'],
+                ['title' => 'Orden exitosa', 'template_slug' => 'success-template'],
+                ['title' => 'Bio', 'template_slug' => 'link-bio-template'],
             ];
 
-            foreach ($pages as $pageData) {
-                Page::create($pageData);
+            foreach ($essentialPages as $data) {
+                $template = $templates[$data['template_slug']] ?? $templates['basic-template'] ?? null;
+                Page::create([
+                    'title' => $data['title'],
+                    'content' => '<p>Contenido de ' . $data['title'] . '</p>',
+                    'page_type' => 'essential',
+                    'is_homepage' => $data['is_homepage'] ?? false,
+                    'is_editable' => true,
+                    'is_published' => true,
+                    'theme_id' => $defaultTheme?->id,
+                    'uses_template' => true,
+                    'template_id' => $template?->id,
+                    'layout' => $template?->layout_structure,
+                    'company_id' => $company->id,
+                ]);
+            }
+
+            // Páginas de políticas
+            $policyPages = [
+                'Políticas de privacidad',
+                'Términos de servicio',
+                'Políticas de envío',
+                'Información de contacto',
+                'Política de devolución y reembolso',
+            ];
+
+            $policyTemplate = $templates['policy-template'] ?? $templates['basic-template'] ?? null;
+            foreach ($policyPages as $title) {
+                Page::create([
+                    'title' => $title,
+                    'content' => '<p>Contenido de ' . $title . '</p>',
+                    'page_type' => 'policy',
+                    'is_editable' => true,
+                    'is_published' => true,
+                    'theme_id' => $defaultTheme?->id,
+                    'uses_template' => true,
+                    'template_id' => $policyTemplate?->id,
+                    'layout' => $policyTemplate?->layout_structure,
+                    'company_id' => $company->id,
+                ]);
             }
         });
+    }
+
+    private static function getTemplatesBySlug(): array
+    {
+        $slugs = [
+            'home-template',
+            'shop-template',
+            'product-detail-template',
+            'cart-template',
+            'checkout-template',
+            'login-template',
+            'register-template',
+            'profile-template',
+            'orders-template',
+            'success-template',
+            'link-bio-template',
+            'policy-template',
+            'basic-template',
+        ];
+        return Template::whereIn('slug', $slugs)->get()->keyBy('slug')->all();
     }
 }

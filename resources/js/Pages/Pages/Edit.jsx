@@ -11,7 +11,7 @@ import Loader from '@/Components/ui/loader';
 const PagesForm = lazy(() => import('./PagesForm'));
 
 export default function Edit({ page }) {
-    console.log(page)
+
     const initialValues = {
         title: page.title,
         content: page.content,
@@ -43,13 +43,13 @@ export default function Edit({ page }) {
                             <ArrowLongLeftIcon className='size-6' />
                         </Link>
                         <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            Actualizar página
+                            {page.title}
                         </h2>
                     </div>
                 </div>
             }
         >
-            <Head className="capitalize" title="Actualizar página" />
+            <Head className="capitalize" title={page.title} />
 
             <div className=" text-gray-900 dark:text-gray-100">
                 <form onSubmit={submit} className='space-y-4'>

@@ -95,24 +95,43 @@ class PageController extends RoutingController
     {
         $user = Auth::user();
 
-        Page::create(array_merge(
-            $request->only(
-                'title',
-                'content',
-                // 'is_default',
-                'is_published',
-                // 'is_homepage',
-            ),
-            [
-                'company_id' => $user->company_id,
-                'page_type' => 'custom',
-                'is_deletable' => true,
-                'is_editable' => true,
+        // Validar datos básicos (ajusta según tus necesidades)
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'is_published' => 'boolean',
+        ]);
 
-            ]
-        ));
+        // Obtener la plantilla básica (slug 'basic-template')
+        $basicTemplate = Template::where('slug', 'basic-template')->first();
 
-        return to_route('pages.index');
+        // Determinar el tema por defecto de la compañía (si tiene uno)
+        $company = $user->company;
+        $defaultTheme = null;
+        if ($company && $company->default_theme_id) {
+            $defaultTheme = Theme::find($company->default_theme_id);
+        }
+        // Si no, usar tema-azul como fallback
+        if (!$defaultTheme) {
+            $defaultTheme = Theme::where('slug', 'tema-azul')->first();
+        }
+
+        // Crear la página
+        $page = Page::create([
+            'title' => $request->title,
+            'content' => $request->content ?? '',
+            'is_published' => $request->is_published ?? false,
+            'company_id' => $user->company_id,
+            'page_type' => 'custom',
+            'is_deletable' => true,
+            'is_editable' => true,
+            'theme_id' => $defaultTheme?->id,
+            'uses_template' => (bool)$basicTemplate,
+            'template_id' => $basicTemplate?->id,
+            'layout' => $basicTemplate?->layout_structure, // Copia el layout de la plantilla
+        ]);
+
+        return to_route('pages.edit', $page)->with('success', 'Página creada correctamente.');
     }
 
     /**
@@ -123,28 +142,13 @@ class PageController extends RoutingController
         $page->load('theme', 'company.setting.media');
 
         $user = Auth::user();
-        $companyId = $user->company_id; // WARNING: This assumes the logged in user is viewing. But public pages might be viewed by guests?
-        // If public page, we should use $page->company_id.
-        // But the previous code used Auth::user()->company_id.
-        // Let's assume for now it's for authenticated users or the previous code was implicit about it. 
-        // Wait, "Show" usually implies public view?
-        // "PageController" seems to be for Admin? "Admin\Pages\Show"? No, it returns "Pages/Show".
-        // If it is public, Auth::user() might be null.
-        // Let's stick to $page->company_id if possible, but the original code used Auth::user().
-        // If Auth::user() is null, this will crash.
-        // I should check if it's "Pages/Show" (Public) or "Admin/Pages/Show".
-        // The file is `resources/js/Pages/Pages/Show.jsx`.
-        // The controller extends `RoutingController`.
-        // Middleware in construct suggests it's admin: `middleware('can:admin.pages.index')`.
-        // So it IS an admin preview or similar.
-        
+        $companyId = $user->company_id;
+
         $companyId = $page->company_id; // Use page's company ID to be safe and correct.
 
         $products = Product::with('stocks', 'combinations.combinationAttributeValue.attributeValue.attribute', 'categories', 'media')
             ->where('company_id', $companyId)
             ->get();
-
-
 
         // ----- INYECTAR COMPONENTES GLOBALES (HEADER/FOOTER) -----
         $globalHeader = GlobalComponent::where('company_id', $companyId)->where('type', 'header')->where('is_active', true)->first();
@@ -163,7 +167,7 @@ class PageController extends RoutingController
             }
 
             $globalHeaderContent = $globalHeader->content;
-            
+
             if ($headerIndex !== -1) {
                 $layout[$headerIndex] = $globalHeaderContent;
             } else {
@@ -189,7 +193,7 @@ class PageController extends RoutingController
                 $layout[] = $globalFooterContent;
             }
         }
-        
+
         // Asignar el layout modificado al objeto page (solo en memoria para la vista)
         $page->layout = json_encode($layout);
 
@@ -293,7 +297,7 @@ class PageController extends RoutingController
                 }
             })
             ->get();
-
+        // dd($products);
         // Filtrar las combinaciones que también tengan stock en la tienda principal
         $products = $products->map(function ($product) use ($mainStore) {
             // Filtrar combinaciones que tengan stock en la tienda principal
@@ -352,86 +356,86 @@ class PageController extends RoutingController
         $states = \App\Models\State::all();
         $cities = \App\Models\City::all();
 
-                // ----- 1. Imágenes de productos -----
-    $productImages = [];
-    foreach ($products as $product) {
-        foreach ($product->media as $media) {
-            $productImages[] = [
-                'id'               => 'product-' . $product->id . '-' . $media->id,
-                'src'              => $media->original_url ?? $media->url,
-                'alt'              => $product->product_name,
-                'product_id'       => $product->id,
-                'media_id'         => $media->id,
-                'is_from_product'  => true,
-                'is_page_image'    => false,
-                'product_name'     => $product->product_name,
-            ];
+        // ----- 1. Imágenes de productos -----
+        $productImages = [];
+        foreach ($products as $product) {
+            foreach ($product->media as $media) {
+                $productImages[] = [
+                    'id'               => 'product-' . $product->id . '-' . $media->id,
+                    'src'              => $media->original_url ?? $media->url,
+                    'alt'              => $product->product_name,
+                    'product_id'       => $product->id,
+                    'media_id'         => $media->id,
+                    'is_from_product'  => true,
+                    'is_page_image'    => false,
+                    'product_name'     => $product->product_name,
+                ];
+            }
         }
-    }
 
         // ----- 2. Imágenes de la página (colección 'page_images') -----
-    $pageImages = $page->getMedia('page_images')->map(function ($media) {
-        return [
-            'id'              => 'page-' . $media->id,
-            'src'             => $media->getUrl(),
-            'alt'             => $media->name,
-            'media_id'        => $media->id,
-            'is_from_product' => false,
-            'is_page_image'   => true,
-        ];
-    })->toArray();
+        $pageImages = $page->getMedia('page_images')->map(function ($media) {
+            return [
+                'id'              => 'page-' . $media->id,
+                'src'             => $media->getUrl(),
+                'alt'             => $media->name,
+                'media_id'        => $media->id,
+                'is_from_product' => false,
+                'is_page_image'   => true,
+            ];
+        })->toArray();
 
-    // ----- 3. Unificar (puedes ordenar como quieras) -----
-    $allImages = array_merge($pageImages, $productImages);
+        // ----- 3. Unificar (puedes ordenar como quieras) -----
+        $allImages = array_merge($pageImages, $productImages);
 
-    // ----- INYECTAR COMPONENTES GLOBALES (HEADER/FOOTER) -----
-    $globalHeader = GlobalComponent::where('company_id', $companyId)->where('type', 'header')->where('is_active', true)->first();
-    $globalFooter = GlobalComponent::where('company_id', $companyId)->where('type', 'footer')->where('is_active', true)->first();
+        // ----- INYECTAR COMPONENTES GLOBALES (HEADER/FOOTER) -----
+        $globalHeader = GlobalComponent::where('company_id', $companyId)->where('type', 'header')->where('is_active', true)->first();
+        $globalFooter = GlobalComponent::where('company_id', $companyId)->where('type', 'footer')->where('is_active', true)->first();
 
-    $layout = $page->layout ? json_decode($page->layout, true) : [];
+        $layout = $page->layout ? json_decode($page->layout, true) : [];
 
-    // Si hay header global, reemplazar o inyectar
-    if ($globalHeader) {
-        $headerIndex = -1;
-        foreach ($layout as $index => $component) {
-            if ($component['type'] === 'header') {
-                $headerIndex = $index;
-                break;
+        // Si hay header global, reemplazar o inyectar
+        if ($globalHeader) {
+            $headerIndex = -1;
+            foreach ($layout as $index => $component) {
+                if ($component['type'] === 'header') {
+                    $headerIndex = $index;
+                    break;
+                }
+            }
+
+            $globalHeaderContent = $globalHeader->content;
+            // Asegurar ID único para evitar conflictos si se guardó con otro ID
+            // $globalHeaderContent['id'] = $globalHeaderContent['id'] ?? 'global-header'; 
+
+            if ($headerIndex !== -1) {
+                $layout[$headerIndex] = $globalHeaderContent;
+            } else {
+                array_unshift($layout, $globalHeaderContent);
             }
         }
 
-        $globalHeaderContent = $globalHeader->content;
-        // Asegurar ID único para evitar conflictos si se guardó con otro ID
-        // $globalHeaderContent['id'] = $globalHeaderContent['id'] ?? 'global-header'; 
+        // Si hay footer global, reemplazar o inyectar
+        if ($globalFooter) {
+            $footerIndex = -1;
+            foreach ($layout as $index => $component) {
+                if ($component['type'] === 'footer') {
+                    $footerIndex = $index;
+                    break;
+                }
+            }
 
-        if ($headerIndex !== -1) {
-            $layout[$headerIndex] = $globalHeaderContent;
-        } else {
-            array_unshift($layout, $globalHeaderContent);
-        }
-    }
+            $globalFooterContent = $globalFooter->content;
 
-    // Si hay footer global, reemplazar o inyectar
-    if ($globalFooter) {
-        $footerIndex = -1;
-        foreach ($layout as $index => $component) {
-            if ($component['type'] === 'footer') {
-                $footerIndex = $index;
-                break;
+            if ($footerIndex !== -1) {
+                $layout[$footerIndex] = $globalFooterContent;
+            } else {
+                $layout[] = $globalFooterContent;
             }
         }
 
-        $globalFooterContent = $globalFooter->content;
-
-        if ($footerIndex !== -1) {
-            $layout[$footerIndex] = $globalFooterContent;
-        } else {
-            $layout[] = $globalFooterContent;
-        }
-    }
-    
-    // Asignar el layout modificado al objeto page (solo en memoria para la vista)
-    $page->layout = json_encode($layout);
+        // Asignar el layout modificado al objeto page (solo en memoria para la vista)
+        $page->layout = json_encode($layout);
 
         return Inertia::render('Pages/Builder', [
             'page' => $page,
@@ -732,77 +736,77 @@ class PageController extends RoutingController
 
     // En PageController.php (dentro de la clase)
 
-/**
- * Obtener todas las imágenes de la página (productos + página)
- */
-public function getPageImages(Page $page)
-{
-    // Imágenes de la colección 'page_images' de la página
-    $pageMedia = $page->getMedia('page_images')->map(function ($media) {
-        return [
-            'id' => $media->id,
-            'src' => $media->getUrl(),
-            'alt' => $media->name,
-            'media_id' => $media->id,
-            'is_from_product' => false,
-            'is_page_image' => true,
-        ];
-    });
-
-    // Imágenes de productos (ya se pasan en el builder)
-    // Las combinaremos en el frontend
-
-    return response()->json($pageMedia); // Opcional, pero no usaremos Axios
-}
-
-/**
- * Subir una imagen directamente a la página
- */
-public function uploadImage(Request $request, Page $page)
-{
-    $request->validate([
-        'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB máx
-    ]);
-
-    try {
-        $media = $page->addMedia($request->file('image'))
-            ->usingFileName($request->file('image')->hashName())
-            ->withCustomProperties(['uploaded_via' => 'builder'])
-            ->toMediaCollection('page_images');
-
-        // Retornar respuesta Inertia con el nuevo medio
-        return back()->with([
-            'success' => 'Imagen subida correctamente',
-            'new_page_image' => [
+    /**
+     * Obtener todas las imágenes de la página (productos + página)
+     */
+    public function getPageImages(Page $page)
+    {
+        // Imágenes de la colección 'page_images' de la página
+        $pageMedia = $page->getMedia('page_images')->map(function ($media) {
+            return [
                 'id' => $media->id,
                 'src' => $media->getUrl(),
                 'alt' => $media->name,
                 'media_id' => $media->id,
                 'is_from_product' => false,
                 'is_page_image' => true,
-            ]
+            ];
+        });
+
+        // Imágenes de productos (ya se pasan en el builder)
+        // Las combinaremos en el frontend
+
+        return response()->json($pageMedia); // Opcional, pero no usaremos Axios
+    }
+
+    /**
+     * Subir una imagen directamente a la página
+     */
+    public function uploadImage(Request $request, Page $page)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB máx
         ]);
-    } catch (\Exception $e) {
-        return back()->withErrors(['upload' => 'Error al subir la imagen: ' . $e->getMessage()]);
-    }
-}
 
-/**
- * Eliminar una imagen de la página
- */
-public function deleteImage(Page $page, $mediaId)
-{
-    $media = $page->media()->find($mediaId);
+        try {
+            $media = $page->addMedia($request->file('image'))
+                ->usingFileName($request->file('image')->hashName())
+                ->withCustomProperties(['uploaded_via' => 'builder'])
+                ->toMediaCollection('page_images');
 
-    if (!$media) {
-        return back()->withErrors(['delete' => 'La imagen no existe']);
+            // Retornar respuesta Inertia con el nuevo medio
+            return back()->with([
+                'success' => 'Imagen subida correctamente',
+                'new_page_image' => [
+                    'id' => $media->id,
+                    'src' => $media->getUrl(),
+                    'alt' => $media->name,
+                    'media_id' => $media->id,
+                    'is_from_product' => false,
+                    'is_page_image' => true,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return back()->withErrors(['upload' => 'Error al subir la imagen: ' . $e->getMessage()]);
+        }
     }
 
-    try {
-        $media->delete();
-        return back()->with('success', 'Imagen eliminada correctamente');
-    } catch (\Exception $e) {
-        return back()->withErrors(['delete' => 'Error al eliminar la imagen: ' . $e->getMessage()]);
+    /**
+     * Eliminar una imagen de la página
+     */
+    public function deleteImage(Page $page, $mediaId)
+    {
+        $media = $page->media()->find($mediaId);
+
+        if (!$media) {
+            return back()->withErrors(['delete' => 'La imagen no existe']);
+        }
+
+        try {
+            $media->delete();
+            return back()->with('success', 'Imagen eliminada correctamente');
+        } catch (\Exception $e) {
+            return back()->withErrors(['delete' => 'Error al eliminar la imagen: ' . $e->getMessage()]);
+        }
     }
-}
 }

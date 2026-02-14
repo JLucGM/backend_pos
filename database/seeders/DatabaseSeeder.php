@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         $this->call(TemplateSeeder::class);
         $this->call(PageSeeder::class);
         $this->call(MenuSeeder::class);
+        $this->call(GlobalComponentSeeder::class);
 
         DB::table('shipping_rates')->insert([
             'name' => 'Estandar',

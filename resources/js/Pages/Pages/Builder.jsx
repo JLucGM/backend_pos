@@ -11,7 +11,7 @@ import ComponentTree from '@/Components/BuilderPages/ComponentTree';
 import Canvas from '@/Components/BuilderPages/Canvas';
 import { addToHistory } from '@/utils/Builder/builderUtils';
 import { ScrollArea } from '@/Components/ui/scroll-area';
-import ApplyTemplate from '@/Components/ApplyTemplate';
+// import ApplyTemplate from '@/Components/ApplyTemplate';
 import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
 import { Badge } from '@/Components/ui/badge';
 import { getThemeWithDefaults } from '@/utils/themeUtils';
@@ -3078,7 +3078,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             ) : (
                                 // MODO NORMAL - Mostrar árbol de componentes
                                 <>
-                                    {!isPreviewMode && (
+                                    {/* {!isPreviewMode && (
                                         <>
                                             <ApplyTemplate
                                                 page={page}
@@ -3086,7 +3086,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 onTemplateApplied={() => router.reload()}
                                             />
                                         </>
-                                    )}
+                                    )} */}
 
                                     <DndContext
                                         sensors={sensors}
