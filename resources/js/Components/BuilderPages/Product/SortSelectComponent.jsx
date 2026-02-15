@@ -1,12 +1,41 @@
 import React from 'react';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
-const SortSelectComponent = ({ comp = {}, value, onChange }) => {
-    const styles = comp.styles || {};
+const SortSelectComponent = ({
+    comp = {},
+    value,
+    onChange,
+    themeSettings,
+    appliedTheme
+}) => {
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (val) => resolveStyleValue(val, themeWithDefaults, appliedTheme);
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Valores resueltos (con fallbacks)
+    const borderRadius = resolveValue(styles.borderRadius || '4px');
+    const borderThickness = resolveValue(styles.borderThickness || '1px');
+    const borderColor = resolveValue(styles.borderColor || '#ccc');
+    const background = resolveValue(styles.background || '#fff');
+
+    // Estilo del select (manteniendo la lógica original del flag `border`)
     const selectStyle = {
-        borderRadius: styles.borderRadius || '4px',
+        borderRadius,
         padding: '6px 8px',
-        border: styles.border ? `${styles.borderThickness || '1px'} solid ${styles.borderColor || '#ccc'}` : '1px solid #ccc',
-        background: styles.background || '#fff',
+        border: styles.border
+            ? `${borderThickness} solid ${borderColor}`
+            : '1px solid #ccc',
+        // background,
     };
 
     return (

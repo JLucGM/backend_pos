@@ -5,14 +5,13 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\GlobalComponent;
 use App\Models\Company;
-use App\Models\Menu; // Si existe el modelo Menu
+use App\Models\Menu;
 use App\Models\Theme;
 
 class GlobalComponentSeeder extends Seeder
 {
     public function run()
     {
-        // Obtener todas las compañías (asumiendo que existen)
         $companies = Company::all();
 
         if ($companies->isEmpty()) {
@@ -20,16 +19,39 @@ class GlobalComponentSeeder extends Seeder
             return;
         }
 
-        // Obtener el tema por defecto (tema-azul)
         $theme = Theme::where('slug', 'tema-azul')->first();
         $settings = $theme ? $theme->settings : [];
 
         foreach ($companies as $company) {
-            // Obtener el primer menú de la compañía (si existe)
-            $firstMenu = Menu::where('company_id', $company->id)->first();
-            $menuId = $firstMenu ? $firstMenu->id : null;
+            // Obtener el menú para el header (Principal)
+            $headerMenu = Menu::where('company_id', $company->id)
+                ->where('name', 'Principal')
+                ->first();
+            $headerMenuId = $headerMenu ? $headerMenu->id : null;
 
-            // Crear o actualizar header global
+            if (!$headerMenu) {
+                $this->command->warn("Compañía ID {$company->id}: No se encontró el menú 'Principal' para el header.");
+            }
+
+            // Obtener los dos menús para el footer
+            $footerMenu = Menu::where('company_id', $company->id)
+                ->where('name', 'footer')
+                ->first();
+            $footerMenuId = $footerMenu ? $footerMenu->id : null;
+
+            $principalMenu = Menu::where('company_id', $company->id)
+                ->where('name', 'Principal')
+                ->first();
+            $principalMenuId = $principalMenu ? $principalMenu->id : null;
+
+            if (!$footerMenu) {
+                $this->command->warn("Compañía ID {$company->id}: No se encontró el menú 'footer' para el footer.");
+            }
+            if (!$principalMenu) {
+                $this->command->warn("Compañía ID {$company->id}: No se encontró el menú 'Principal' para el footer (se usará null).");
+            }
+
+            // Crear o actualizar componente de header
             GlobalComponent::updateOrCreate(
                 [
                     'company_id' => $company->id,
@@ -37,12 +59,12 @@ class GlobalComponentSeeder extends Seeder
                 ],
                 [
                     'name' => 'Header Global',
-                    'content' => $this->buildHeader($settings, $menuId),
+                    'content' => $this->buildHeader($settings, $headerMenuId),
                     'is_active' => true,
                 ]
             );
 
-            // Crear o actualizar footer global
+            // Crear o actualizar componente de footer (con dos menús)
             GlobalComponent::updateOrCreate(
                 [
                     'company_id' => $company->id,
@@ -50,21 +72,21 @@ class GlobalComponentSeeder extends Seeder
                 ],
                 [
                     'name' => 'Footer Global',
-                    'content' => $this->buildFooter($settings, $menuId),
+                    'content' => $this->buildFooter($footerMenuId, $principalMenuId),
                     'is_active' => true,
                 ]
             );
 
-            $this->command->info("Componentes globales creados para compañía ID: {$company->id}");
+            $this->command->info("Componentes globales creados/actualizados para compañía ID: {$company->id}");
         }
     }
 
     /**
-     * Construye la estructura del header (igual que en handleAddComponent)
+     * Construye la estructura del header.
      */
     private function buildHeader($settings, $menuId)
     {
-        $headerId = 2000000; // ID base para evitar colisiones
+        $headerId = 2000000;
         $logoId = $headerId + 1;
         $menuComponentId = $headerId + 2;
 
@@ -82,13 +104,13 @@ class GlobalComponentSeeder extends Seeder
                     'cart' => [
                         'count' => '0',
                         'styles' => [
-                            'iconColor' => $settings['text'] ?? '#0a0a0a',
-                            'backgroundColor' => $settings['muted_color'] ?? '#f5f5f5',
+                            'iconColor' => 'theme.text',
+                            'backgroundColor' => 'theme.muted_color',
                             'borderWidth' => $settings['border_thickness_none'] ?? '0px',
                             'borderStyle' => $settings['border_style_solid'] ?? 'solid',
-                            'borderColor' => $settings['muted_color'] ?? '#f5f5f5',
+                            'borderColor' => 'theme.muted_color',
                             'borderOpacity' => $settings['opacity_100'] ?? '1',
-                            'borderRadius' => $settings['border_radius_full'] ?? '50%',
+                            'borderRadius' => 'theme.border_radius_full',
                             'backgroundOpacity' => $settings['opacity_100'] ?? '1',
                             'width' => '36px',
                             'height' => '36px',
@@ -96,38 +118,7 @@ class GlobalComponentSeeder extends Seeder
                             'fontSize' => '16px'
                         ]
                     ],
-                    'profile' => [
-                        'styles' => [
-                            'iconColor' => $settings['text'] ?? '#0a0a0a',
-                            'backgroundColor' => $settings['muted_color'] ?? '#f5f5f5',
-                            'borderWidth' => $settings['border_thickness_none'] ?? '0px',
-                            'borderStyle' => $settings['border_style_solid'] ?? 'solid',
-                            'borderColor' => $settings['muted_color'] ?? '#f5f5f5',
-                            'borderOpacity' => $settings['opacity_100'] ?? '1',
-                            'borderRadius' => $settings['border_radius_full'] ?? '50%',
-                            'backgroundOpacity' => $settings['opacity_100'] ?? '1',
-                            'width' => '36px',
-                            'height' => '36px',
-                            'padding' => '8px',
-                            'fontSize' => '16px'
-                        ]
-                    ],
-                    'search' => [
-                        'styles' => [
-                            'iconColor' => $settings['text'] ?? '#0a0a0a',
-                            'backgroundColor' => 'transparent',
-                            'borderWidth' => $settings['border_thickness_none'] ?? '0px',
-                            'borderStyle' => $settings['border_style_solid'] ?? 'solid',
-                            'borderColor' => $settings['muted_color'] ?? '#f5f5f5',
-                            'borderOpacity' => $settings['opacity_100'] ?? '1',
-                            'borderRadius' => $settings['border_radius_full'] ?? '50%',
-                            'backgroundOpacity' => $settings['opacity_100'] ?? '1',
-                            'width' => '36px',
-                            'height' => '36px',
-                            'padding' => '8px',
-                            'fontSize' => '16px'
-                        ]
-                    ],
+                    // profile y search se pueden agregar similarmente
                 ],
                 'children' => [
                     [
@@ -136,9 +127,9 @@ class GlobalComponentSeeder extends Seeder
                         'content' => 'Logo',
                         'styles' => [
                             'layout' => 'fit',
-                            'fontSize' => $settings['heading5_fontSize'] ?? '24px',
+                            'fontSize' => 'theme.heading5_fontSize',
                             'fontWeight' => 'bold',
-                            'color' => $settings['heading'] ?? '#0a0a0a',
+                            'color' => 'theme.heading',
                             'backgroundColor' => 'none',
                             'paddingTop' => '0px',
                             'paddingRight' => '0px',
@@ -156,17 +147,17 @@ class GlobalComponentSeeder extends Seeder
                             'layout' => 'fit',
                             'display' => 'flex',
                             'gap' => '20px',
-                            'fontSize' => $settings['heading6_fontSize'] ?? '16px',
+                            'fontSize' => 'theme.heading6_fontSize',
                             'fontWeight' => 'normal',
                             'textTransform' => 'none',
                             'lineHeight' => 'normal',
                             'fontType' => 'default',
-                            'color' => $settings['text'] ?? '#0a0a0a',
+                            'color' => 'theme.text',
                             'buttonBackgroundColor' => 'transparent',
                             'backgroundColor' => 'transparent',
                             'borderWidth' => $settings['border_thickness_none'] ?? '0px',
-                            'borderColor' => $settings['borders'] ?? '#f5f5f5',
-                            'borderRadius' => $settings['border_radius_none'] ?? '0px',
+                            'borderColor' => 'theme.borders',
+                            'borderRadius' => 'theme.border_radius_none',
                             'paddingTop' => '5px',
                             'paddingRight' => '10px',
                             'paddingBottom' => '5px',
@@ -180,20 +171,21 @@ class GlobalComponentSeeder extends Seeder
                 'paddingRight' => '20px',
                 'paddingBottom' => '20px',
                 'paddingLeft' => '20px',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
-                'borderBottom' => '1px solid ' . ($settings['borders'] ?? '#f5f5f5')
+                'backgroundColor' => 'theme.background',
+                'borderBottom' => '1px solid theme.borders'
             ]
         ];
     }
 
     /**
-     * Construye la estructura del footer (igual que en handleAddComponent)
+     * Construye la estructura del footer con dos menús.
      */
-    private function buildFooter($settings, $menuId)
+    private function buildFooter($menuFooterId, $menuPrincipalId)
     {
         $footerId = 3000000;
-        $column1Id = $footerId + 1;
-        $column2Id = $footerId + 2;
+        $column1Id = $footerId + 1; // Columna de texto
+        $column2Id = $footerId + 2; // Menú footer
+        $column3Id = $footerId + 3; // Menú Principal
 
         return [
             'id' => $footerId,
@@ -213,28 +205,46 @@ class GlobalComponentSeeder extends Seeder
                     'linkedin' => ''
                 ],
                 'children' => [
+                    // Columna 1: información de contacto
                     [
                         'id' => $column1Id,
                         'type' => 'text',
                         'content' => "Dirección: Calle Principal 123\nTeléfono: (123) 456-7890\nEmail: info@empresa.com",
                         'styles' => [
                             'layout' => 'fit',
-                            'color' => $settings['text'] ?? '#0a0a0a',
-                            'fontSize' => $settings['paragraph_fontSize'] ?? '14px',
-                            'lineHeight' => $settings['paragraph_lineHeight'] ?? '1.6'
+                            'color' => 'theme.text',
+                            'fontSize' => 'theme.paragraph_fontSize',
+                            'lineHeight' => 'theme.paragraph_lineHeight'
                         ]
                     ],
+                    // Columna 2: menú Principal (Inicio, Tienda)
                     [
-                        'id' => $column2Id,
+                        'id' => $column3Id,
                         'type' => 'footerMenu',
                         'content' => [
-                            'menuId' => $menuId,
+                            'menuId' => $menuPrincipalId,
                         ],
                         'styles' => [
                             'layout' => 'fit',
                             'display' => 'column',
                             'gap' => '8px',
-                            'color' => $settings['text'] ?? '#0a0a0a',
+                            'color' => 'theme.text',
+                            'fontSize' => '14px',
+                            'textTransform' => 'none'
+                        ]
+                    ],
+                    // Columna 3: menú footer (información de contacto, políticas)
+                    [
+                        'id' => $column2Id,
+                        'type' => 'footerMenu',
+                        'content' => [
+                            'menuId' => $menuFooterId,
+                        ],
+                        'styles' => [
+                            'layout' => 'fit',
+                            'display' => 'column',
+                            'gap' => '8px',
+                            'color' => 'theme.text',
                             'fontSize' => '14px',
                             'textTransform' => 'none'
                         ]
@@ -242,7 +252,7 @@ class GlobalComponentSeeder extends Seeder
                 ]
             ],
             'styles' => [
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'paddingTop' => '40px',
                 'paddingRight' => '20px',
                 'paddingBottom' => '40px',

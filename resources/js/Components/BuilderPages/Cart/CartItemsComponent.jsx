@@ -1,9 +1,9 @@
-// CartItemsComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS
+// CartItemsComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS Y SOPORTE PARA REFERENCIAS AL TEMA
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const CartItemsComponent = ({
     comp,
@@ -17,14 +17,31 @@ const CartItemsComponent = ({
     appliedTheme
 }) => {
     const { settings } = usePage().props;
-    const styles = comp.styles || {};
-    const content = comp.content || {};
+    const rawStyles = comp.styles || {};
+    const rawContent = comp.content || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos y contenido
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    const content = {};
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
 
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
@@ -35,7 +52,7 @@ const CartItemsComponent = ({
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || themeCartStyles.backgroundColor || themeWithDefaults.background,
+        backgroundColor: resolveValue(styles.backgroundColor || themeCartStyles.backgroundColor || themeWithDefaults.background),
         paddingTop: withUnit(styles.paddingTop || '20px'),
         paddingRight: withUnit(styles.paddingRight || '20px'),
         paddingBottom: withUnit(styles.paddingBottom || '20px'),
@@ -43,7 +60,7 @@ const CartItemsComponent = ({
         borderRadius: withUnit(styles.borderRadius || themeCartStyles.borderRadius || '0'),
         borderWidth: withUnit(styles.borderWidth || '0'),
         borderStyle: styles.borderStyle || 'solid',
-        borderColor: styles.borderColor || themeWithDefaults.borders,
+        borderColor: resolveValue(styles.borderColor || themeWithDefaults.borders),
     };
 
     const handleClick = () => {
@@ -52,21 +69,21 @@ const CartItemsComponent = ({
         }
     };
 
-    // Estilos de fuente del tema
+    // Estilos de fuente del tema (con resolución)
     const getFontStyles = (type = 'title') => {
         if (type === 'title') {
             return {
-                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
-                fontSize: styles.titleSize || themeCartTitleStyles.fontSize || themeWithDefaults.heading2_fontSize || '24px',
+                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
+                fontSize: withUnit(styles.titleSize || themeCartTitleStyles.fontSize || themeWithDefaults.heading2_fontSize || '24px'),
                 fontWeight: styles.titleWeight || themeWithDefaults.heading2_fontWeight || 'bold',
-                color: styles.titleColor || themeCartTitleStyles.color || themeWithDefaults.heading,
+                color: resolveValue(styles.titleColor || themeCartTitleStyles.color || themeWithDefaults.heading),
             };
         }
 
         return {
-            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
-            fontSize: styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
-            color: styles.color || themeWithDefaults.text,
+            fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+            fontSize: withUnit(styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px'),
+            color: resolveValue(styles.color || themeWithDefaults.text),
         };
     };
 
@@ -109,7 +126,7 @@ const CartItemsComponent = ({
             <div className="mt-2">
                 <div className="text-xs" style={{
                     color: '#059669',
-                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
                     backgroundColor: 'rgba(5, 150, 105, 0.1)',
                     padding: '4px 8px',
                     borderRadius: '4px',
@@ -121,7 +138,7 @@ const CartItemsComponent = ({
                 {percentageOff > 0 && (
                     <div className="text-xs mt-1" style={{
                         color: '#dc2626',
-                        fontFamily: getResolvedFont(themeWithDefaults, 'body_font')
+                        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
                     }}>
                         {percentageOff}% de descuento
                     </div>
@@ -151,9 +168,9 @@ const CartItemsComponent = ({
                             key={item.id}
                             className="flex items-start gap-4 p-4 rounded-lg border"
                             style={{
-                                border: styles.rowBorder || '1px solid #e5e7eb',
+                                border: resolveValue(styles.rowBorder || '1px solid #e5e7eb'),
                                 padding: styles.rowPadding || '16px',
-                                backgroundColor: styles.rowBackground || themeWithDefaults.background,
+                                backgroundColor: resolveValue(styles.rowBackground || themeWithDefaults.background),
                             }}
                         >
                             {/* Imagen del producto */}
@@ -176,8 +193,8 @@ const CartItemsComponent = ({
                                 <div className="flex justify-between">
                                     <div>
                                         <h3 className="font-medium" style={{
-                                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
-                                            color: themeWithDefaults.heading
+                                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+                                            color: resolveValue(themeWithDefaults.heading)
                                         }}>
                                             {item.name}
                                         </h3>
@@ -185,7 +202,7 @@ const CartItemsComponent = ({
                                         {/* Combinación seleccionada */}
                                         {content.showCombination !== false && item.combination && (
                                             <div className="text-sm mt-1" style={{
-                                                color: themeWithDefaults.text,
+                                                color: resolveValue(themeWithDefaults.text),
                                                 opacity: '0.7'
                                             }}>
                                                 {item.combination.attribute_values
@@ -200,7 +217,7 @@ const CartItemsComponent = ({
                                             <div>
                                                 <div className="line-through text-sm" style={{
                                                     color: '#999',
-                                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font')
+                                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
                                                 }}>
                                                     {settings?.currency ? (
                                                         <CurrencyDisplay currency={settings.currency} amount={item.originalPrice * item.quantity} />
@@ -209,8 +226,8 @@ const CartItemsComponent = ({
                                                     )}
                                                 </div>
                                                 <div className="font-semibold" style={{
-                                                    color: themeSettings?.primary ? themeSettings.primary : '#1d4ed8',
-                                                    fontFamily: themeSettings?.heading_font
+                                                    color: resolveValue(themeWithDefaults.primary_color),
+                                                    fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme)
                                                 }}>
                                                     {settings?.currency ? (
                                                         <CurrencyDisplay currency={settings.currency} amount={item.price * item.quantity} />
@@ -221,7 +238,7 @@ const CartItemsComponent = ({
                                                 {/* Mostrar ahorro */}
                                                 <div className="text-xs mt-1" style={{
                                                     color: '#059669',
-                                                    fontFamily: themeSettings?.body_font
+                                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
                                                 }}>
                                                     Ahorras: {settings?.currency ? (
                                                         <CurrencyDisplay currency={settings.currency} amount={item.discountAmount || 0} />
@@ -233,8 +250,8 @@ const CartItemsComponent = ({
                                         ) : (
                                             <div>
                                                 <div className="font-semibold" style={{
-                                                    color: themeSettings?.primary ? themeSettings.primary : '#1d4ed8',
-                                                    fontFamily: themeSettings?.heading_font
+                                                    color: resolveValue(themeWithDefaults.primary_color),
+                                                    fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme)
                                                 }}>
                                                     {settings?.currency ? (
                                                         <CurrencyDisplay currency={settings.currency} amount={item.price * item.quantity} />
@@ -261,7 +278,7 @@ const CartItemsComponent = ({
                                 {content.showStock && (
                                     <div className="text-sm mt-1" style={{
                                         color: item.stock > 0 ? '#059669' : '#dc2626',
-                                        fontFamily: themeSettings?.body_font
+                                        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
                                     }}>
                                         {item.stock > 0
                                             ? `${item.stock} disponibles`
@@ -281,14 +298,14 @@ const CartItemsComponent = ({
                                             className="px-3 py-1 hover:bg-gray-100"
                                             style={{
                                                 borderRight: '1px solid #e5e7eb',
-                                                color: themeSettings?.foreground ? themeSettings.foreground : '#374151',
-                                                fontFamily: themeSettings?.body_font
+                                                color: resolveValue(themeWithDefaults.text),
+                                                fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
                                             }}
                                         >
                                             -
                                         </button>
                                         <span className="px-4 py-1" style={{
-                                            fontFamily: themeSettings?.body_font
+                                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
                                         }}>
                                             {item.quantity}
                                         </span>
@@ -301,8 +318,8 @@ const CartItemsComponent = ({
                                             className="px-3 py-1 hover:bg-gray-100"
                                             style={{
                                                 borderLeft: '1px solid #e5e7eb',
-                                                color: themeSettings?.foreground ? themeSettings.foreground : '#374151',
-                                                fontFamily: themeSettings?.body_font
+                                                color: resolveValue(themeWithDefaults.text),
+                                                fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
                                             }}
                                         >
                                             +
@@ -316,7 +333,7 @@ const CartItemsComponent = ({
                                             onRemoveItem(item.id);
                                         }}
                                         className="flex items-center gap-1 text-red-600 hover:text-red-800"
-                                        style={{ fontFamily: themeSettings?.body_font }}
+                                        style={{ fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme) }}
                                     >
                                         <Trash2 size={16} />
                                         <span className="text-sm">Eliminar</span>

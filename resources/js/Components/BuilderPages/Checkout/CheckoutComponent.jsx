@@ -9,7 +9,7 @@ import ComponentWithHover from '../ComponentWithHover';
 import { usePage } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -38,12 +38,31 @@ const CheckoutComponent = ({
     userDeliveryLocations = [],
     userGiftCards = [],
 }) => {
-    // console.log(userGiftCards)
     const { props } = usePage();
-    const customStyles = comp.styles || {};
-    const checkoutConfig = comp.content || {};
-    const children = checkoutConfig.children || [];
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const customStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        customStyles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver configuración del contenido
+    const rawContent = comp.content || {};
+    const checkoutConfig = {};
+    Object.keys(rawContent).forEach(key => {
+        checkoutConfig[key] = resolveValue(rawContent[key]);
+    });
+
+    const children = checkoutConfig.children || [];
 
     // Obtener estilos del tema para checkout
     const themeCheckoutStyles = getComponentStyles(themeWithDefaults, 'checkout', appliedTheme);
@@ -559,7 +578,7 @@ const CheckoutComponent = ({
         }
     }, [companyId, mode]);
 
-    // Estilos del contenedor principal
+    // Estilos del contenedor principal (usando customStyles resueltos)
     const containerStyles = {
         ...getStyles(comp),
         width: '100%',
@@ -577,7 +596,12 @@ const CheckoutComponent = ({
         borderRadius: withUnit(customStyles.borderRadius || themeCheckoutStyles.borderRadius || '0px'),
     };
 
-    // Determinar layout type
+    const innerContainerStyles = {
+                backgroundColor: customStyles.backgroundColor || themeCheckoutStyles.backgroundColor || themeWithDefaults.background,
+
+    };
+
+    // Determinar layout type (resuelto)
     const layoutType = customStyles.layoutType || 'compact';
 
     const submitOrder = async () => {
@@ -699,7 +723,7 @@ const CheckoutComponent = ({
         });
     };
 
-    // Configuración por defecto para modo frontend
+    // Configuración por defecto para modo frontend (usando checkoutConfig resuelto)
     const displayChildren = useMemo(() => {
         if (mode === 'frontend' && children.length === 0) {
             return [
@@ -791,7 +815,7 @@ const CheckoutComponent = ({
             cartTotal: displayCartTotal,
             shipping: totals.shipping,
             tax: totals.tax,
-            taxDetails: totals.taxDetails, // <-- AGREGAR TAX DETAILS
+            taxDetails: totals.taxDetails,
             discounts: totals.manualDiscountsTotal,
             giftCardAmount: totals.giftCardAmount,
             orderTotal: totals.orderTotal,
@@ -881,7 +905,7 @@ const CheckoutComponent = ({
                             cartTotal={displayCartTotal}
                             shipping={totals.shipping}
                             tax={totals.tax}
-                            taxDetails={totals.taxDetails} // <-- Pasar taxDetails
+                            taxDetails={totals.taxDetails}
                             discounts={totals.manualDiscountsTotal}
                             automaticDiscountsTotal={totals.automaticDiscountsTotal}
                             giftCardAmount={totals.giftCardAmount}
@@ -909,8 +933,8 @@ const CheckoutComponent = ({
                             setAcceptTerms={setAcceptTerms}
                             onSubmitOrder={submitOrder}
                             paymentMethods={displayPaymentMethods}
-                            isSubmitting={isSubmitting}  // <-- Pasar el estado
-                            orderError={orderError}      // <-- Pasar error si existe
+                            isSubmitting={isSubmitting}
+                            orderError={orderError}
                         />
                     </ComponentWithHover>
                 );
@@ -1030,6 +1054,7 @@ const CheckoutComponent = ({
     };
 
     return (
+        <div className="checkout-container" style={innerContainerStyles}>
         <div style={containerStyles}>
             {/* Modal de autenticación */}
             {showAuthModal && mode === 'frontend' && (
@@ -1043,7 +1068,7 @@ const CheckoutComponent = ({
                 />
             )}
 
-            {/* Indicador de datos de ejemplo en modo builder */}
+            {/* Indicador de datos de ejemplo en modo builder (opcional) */}
             {/* {mode === 'builder' && (
                 <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="flex items-center gap-2">
@@ -1056,6 +1081,7 @@ const CheckoutComponent = ({
             )} */}
 
             {renderLayout()}
+        </div>
         </div>
     );
 };

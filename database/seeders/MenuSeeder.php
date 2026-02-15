@@ -20,60 +20,107 @@ class MenuSeeder extends Seeder
             return;
         }
 
-        // Verificar si ya existe un menú para esta empresa
-        $existingMenu = Menu::where('company_id', 1)->first();
-        
-        if ($existingMenu) {
-            $this->command->warn('Ya existe un menú para la empresa con ID 1. Eliminando menú existente...');
-            
-            // Eliminar items del menú primero
-            MenuItem::where('menu_id', $existingMenu->id)->delete();
-            // Eliminar el menú
-            $existingMenu->delete();
+        // Eliminar todos los menús existentes para la empresa 1 (y sus ítems)
+        $menus = Menu::where('company_id', 1)->get();
+        foreach ($menus as $menu) {
+            MenuItem::where('menu_id', $menu->id)->delete();
+            $menu->delete();
+            $this->command->info("Menú '{$menu->name}' eliminado (ID: {$menu->id})");
         }
 
-        // Crear el menú principal (exactamente como en tu ejemplo)
-        $menu = Menu::create([
+        // Crear el menú Principal
+        $menuPrincipal = Menu::create([
             'company_id' => 1,
             'name' => 'Principal',
         ]);
+        $this->command->info("Menú 'Principal' creado con ID: {$menuPrincipal->id}");
 
-        $this->command->info("Menú creado con ID: {$menu->id}");
-
-        // Crear los items del menú (exactamente como en tu ejemplo JSON)
-        $menuItems = [
+        // Ítems del menú Principal
+        $itemsPrincipal = [
             [
-                'menu_id' => $menu->id,
-                'parent_id' => null,
                 'title' => 'Inicio',
                 'url' => '/inicio',
                 'order' => 0,
+                'parent_id' => null,
             ],
             [
-                'menu_id' => $menu->id,
-                'parent_id' => null,
                 'title' => 'Tienda',
                 'url' => '/tienda',
                 'order' => 1,
+                'parent_id' => null,
             ],
         ];
 
-        foreach ($menuItems as $item) {
-            MenuItem::create($item);
-            $this->command->info("Item creado: {$item['title']}");
+        foreach ($itemsPrincipal as $itemData) {
+            $itemData['menu_id'] = $menuPrincipal->id;
+            MenuItem::create($itemData);
+            $this->command->info("Ítem '{$itemData['title']}' creado en menú Principal");
         }
 
-        $this->command->info('Menú creado exitosamente para la empresa con ID 1');
-        
+        // Crear el menú Footer
+        $menuFooter = Menu::create([
+            'company_id' => 1,
+            'name' => 'footer',   // tal como lo solicitaste
+        ]);
+        $this->command->info("Menú 'footer' creado con ID: {$menuFooter->id}");
+
+        // Ítems del menú Footer (según tu estructura)
+        $itemsFooter = [
+            [
+                'title' => 'Información de contacto',
+                'url' => '/informacion-de-contacto',
+                'order' => 0,
+                'parent_id' => null,
+            ],
+            [
+                'title' => 'Politica de devoluciones y reembolso',
+                'url' => '/politica-de-devolucion-y-reembolso',
+                'order' => 1,
+                'parent_id' => null,
+            ],
+            [
+                'title' => 'Politica de envio',
+                'url' => '/politicas-de-envio',
+                'order' => 2,
+                'parent_id' => null,
+            ],
+            [
+                'title' => 'Politica de privacidad',
+                'url' => '/politicas-de-privacidad',
+                'order' => 3,
+                'parent_id' => null,
+            ],
+            [
+                'title' => 'Terminos de servicio',
+                'url' => '/terminos-de-servicio',
+                'order' => 4,
+                'parent_id' => null,
+            ],
+        ];
+
+        foreach ($itemsFooter as $itemData) {
+            $itemData['menu_id'] = $menuFooter->id;
+            MenuItem::create($itemData);
+            $this->command->info("Ítem '{$itemData['title']}' creado en menú footer");
+        }
+
+        $this->command->info('Seeder ejecutado correctamente. Menús Principal y footer creados.');
+
         // Mostrar resumen
         $this->command->table(
-            ['ID', 'Menú', 'Empresa ID', 'Items'],
+            ['ID', 'Nombre', 'Empresa ID', 'Cantidad de ítems'],
             [
                 [
-                    $menu->id,
-                    $menu->name,
-                    $menu->company_id,
-                    MenuItem::where('menu_id', $menu->id)->count()
+                    $menuPrincipal->id,
+                    $menuPrincipal->name,
+                    $menuPrincipal->company_id,
+                    MenuItem::where('menu_id', $menuPrincipal->id)->count()
+                ],
+                [
+                    $menuFooter->id,
+                    $menuFooter->name,
+                    $menuFooter->company_id,
+                    MenuItem::where('menu_id', $menuFooter->id)->count()
                 ]
             ]
         );

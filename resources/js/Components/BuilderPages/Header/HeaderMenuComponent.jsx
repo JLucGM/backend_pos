@@ -1,25 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from '@inertiajs/react';
-import { getThemeWithDefaults, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
-const HeaderMenuComponent = ({ 
-    comp, 
-    getStyles, 
-    onEdit, 
-    isPreview, 
-    themeSettings, 
+const HeaderMenuComponent = ({
+    comp,
+    getStyles,
+    onEdit,
+    isPreview,
+    themeSettings,
     availableMenus = [],
-    mode = 'frontend' // 'builder' o 'frontend'
+    appliedTheme,
+    mode = 'frontend'
 }) => {
-    const styles = getStyles(comp);
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // Función para resolver estilos
+    const resolveStyles = (styles) => {
+        if (!styles) return {};
+        const resolved = {};
+        Object.keys(styles).forEach(key => {
+            resolved[key] = resolveStyleValue(styles[key], themeWithDefaults, appliedTheme);
+        });
+        return resolved;
+    };
+
+    // Obtener estilos base y resolverlos
+    const baseStyles = getStyles ? getStyles(comp) : (comp.styles || {});
+    const styles = resolveStyles(baseStyles);
+
     const [activeSubmenu, setActiveSubmenu] = useState(null);
     const [activeSubSubmenu, setActiveSubSubmenu] = useState(null);
     const [menuItems, setMenuItems] = useState([]);
+    // Estado para hover de items: { [itemId]: boolean }
+    const [hoveredItems, setHoveredItems] = useState({});
 
-    // OBTENER LOS ITEMS DEL MENÚ DINÁMICAMENTE
+    // Cargar items del menú según menuId
     useEffect(() => {
         if (!comp.content?.menuId) {
-            // Si no hay menuId, verificar si hay items directos (backward compatibility)
+            // Compatibilidad con estructura antigua
             if (comp.content?.items && Array.isArray(comp.content.items)) {
                 setMenuItems(comp.content.items);
             } else if (Array.isArray(comp.content)) {
@@ -30,87 +48,62 @@ const HeaderMenuComponent = ({
             return;
         }
 
-        // Buscar el menú por ID en availableMenus
         const menuId = parseInt(comp.content.menuId);
         const foundMenu = availableMenus.find(menu => parseInt(menu.id) === menuId);
-        
-        if (foundMenu?.items) {
-            setMenuItems(foundMenu.items);
-        } else {
-            setMenuItems([]);
-        }
+        setMenuItems(foundMenu?.items || []);
     }, [comp.content, availableMenus]);
 
-    // Función para procesar URLs
+    // Procesar URL para links
     const processUrl = (url) => {
         if (!url) return '#';
-        
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-            return url;
-        }
-        
-        if (url.startsWith('/')) {
-            return url;
-        }
-        
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        if (url.startsWith('/')) return url;
         return `/${url}`;
     };
 
-    // Si no hay items en modo edición, mostrar mensaje
-    if (!isPreview && menuItems.length === 0) {
-        return (
-            <div 
-                style={{
-                    padding: '15px',
-                    border: '2px dashed #f59e0b',
-                    backgroundColor: '#fffbeb',
-                    borderRadius: '6px',
-                    color: '#92400e',
-                    textAlign: 'center',
-                    cursor: 'pointer'
-                }}
-                onDoubleClick={() => onEdit && onEdit(comp)}
-            >
-                <strong>Menú vacío</strong><br/>
-                <small>Doble clic para configurar</small>
-            </div>
-        );
-    }
+    // Obtener estilos base para items (sin hover)
+    const getBaseItemStyles = (depth = 0) => ({
+        fontFamily: styles.fontFamily || themeWithDefaults.body_font,
+        fontSize: depth === 0 ? (styles.fontSize || '16px') : '14px',
+        fontWeight: styles.fontWeight || 'normal',
+        color: styles.color || themeWithDefaults.text,
+        backgroundColor: styles.buttonBackgroundColor || 'transparent',
+        border: styles.borderWidth ? 
+            `${styles.borderWidth} solid ${styles.borderColor || themeWithDefaults.borders}` : 'none',
+        borderRadius: styles.borderRadius || '4px',
+        padding: depth === 0 ? '8px 16px' : '6px 12px',
+        textDecoration: 'none',
+        display: 'inline-block',
+        whiteSpace: 'nowrap',
+        cursor: 'pointer',
+        transition: 'all 0.2s',
+    });
 
-    // En modo preview, si no hay items, mostrar un placeholder simple
-    if (isPreview && menuItems.length === 0) {
-        return (
-            <nav style={{ display: 'flex', gap: '20px', padding: '5px' }}>
-                <span style={{ opacity: 0.5 }}>[Menú]</span>
-            </nav>
-        );
-    }
+    // Manejadores de hover
+    const handleItemHover = useCallback((itemId, isHovered) => {
+        setHoveredItems(prev => ({ ...prev, [itemId]: isHovered }));
+    }, []);
 
-    // Función para obtener estilos simplificada
-    const getItemStyles = (depth = 0) => {
-        return {
-            fontFamily: themeSettings?.body_font || 'inherit',
-            fontSize: depth === 0 ? (comp.styles?.fontSize || '16px') : '14px',
-            fontWeight: comp.styles?.fontWeight || 'normal',
-            color: comp.styles?.color || getThemeWithDefaults(themeSettings.text),
-            backgroundColor: comp.styles?.buttonBackgroundColor || 'transparent',
-            border: comp.styles?.borderWidth ? 
-                `${comp.styles.borderWidth} solid ${comp.styles.borderColor || getThemeWithDefaults(themeSettings.borders)}` : 'none',
-            borderRadius: comp.styles?.borderRadius || '4px',
-            padding: depth === 0 ? '8px 16px' : '6px 12px',
-            textDecoration: 'none',
-            display: 'inline-block',
-            whiteSpace: 'nowrap',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-        };
-    };
-
-    // Renderizar cada item con submenús
+    // Renderizar un item con sus submenús
     const renderMenuItem = (item, depth = 0) => {
         const hasChildren = item.children && item.children.length > 0;
         const isActive = depth === 0 ? activeSubmenu === item.id : activeSubSubmenu === item.id;
-        const itemStyles = getItemStyles(depth);
+        const baseStyles = getBaseItemStyles(depth);
+        const isHovered = hoveredItems[item.id] || false;
+
+        // Resolver colores hover si existen
+        const hoverColor = styles.hoverColor ? 
+            resolveStyleValue(styles.hoverColor, themeWithDefaults, appliedTheme) : null;
+        const hoverBg = styles.hoverBackgroundColor ? 
+            resolveStyleValue(styles.hoverBackgroundColor, themeWithDefaults, appliedTheme) : null;
+
+        // Estilos combinados con hover
+        const combinedStyles = {
+            ...baseStyles,
+            color: isHovered && hoverColor ? hoverColor : baseStyles.color,
+            backgroundColor: isHovered && hoverBg ? hoverBg : baseStyles.backgroundColor,
+        };
+
         const processedUrl = processUrl(item.url);
 
         return (
@@ -118,72 +111,41 @@ const HeaderMenuComponent = ({
                 key={item.id} 
                 style={{ position: 'relative', display: 'inline-block' }}
                 onMouseEnter={() => {
+                    handleItemHover(item.id, true);
                     if (depth === 0) setActiveSubmenu(item.id);
                     else setActiveSubSubmenu(item.id);
                 }}
                 onMouseLeave={() => {
+                    handleItemHover(item.id, false);
                     if (depth === 0) setActiveSubmenu(null);
                     else setActiveSubSubmenu(null);
                 }}
             >
                 {mode === 'frontend' || isPreview ? (
-                    // En modo frontend o preview, usar Inertia Link para navegación SPA
                     <Link
                         href={processedUrl}
-                        style={itemStyles}
-                        onMouseEnter={(e) => {
-                            if (comp.styles?.hoverColor) {
-                                e.target.style.color = comp.styles.hoverColor;
-                            }
-                            if (comp.styles?.hoverBackgroundColor) {
-                                e.target.style.backgroundColor = comp.styles.hoverBackgroundColor;
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.color = itemStyles.color;
-                            e.target.style.backgroundColor = itemStyles.backgroundColor;
-                        }}
+                        style={combinedStyles}
                     >
                         {item.title || item.label || item.name || `Item ${item.id}`}
-                        {hasChildren && ' '}
                     </Link>
                 ) : (
-                    // En modo builder, mantener comportamiento de edición
                     <a
                         href="#"
-                        style={itemStyles}
-                        onMouseEnter={(e) => {
-                            if (comp.styles?.hoverColor) {
-                                e.target.style.color = comp.styles.hoverColor;
-                            }
-                            if (comp.styles?.hoverBackgroundColor) {
-                                e.target.style.backgroundColor = comp.styles.hoverBackgroundColor;
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.color = itemStyles.color;
-                            e.target.style.backgroundColor = itemStyles.backgroundColor;
-                        }}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            if (onEdit) {
-                                onEdit(comp);
-                            }
-                        }}
+                        style={combinedStyles}
+                        onClick={(e) => e.preventDefault()}
+                        onDoubleClick={() => onEdit(comp)}
                     >
                         {item.title || item.label || item.name || `Item ${item.id}`}
-                        {hasChildren && ' '}
                     </a>
                 )}
 
-                {/* Submenú */}
                 {hasChildren && isActive && (
                     <div style={{
                         position: 'absolute',
                         top: '100%',
                         left: 0,
-                        backgroundColor: getThemeWithDefaults(themeSettings.background),
-                        border: '1px solid #e5e7eb',
+                        backgroundColor: themeWithDefaults.background,
+                        border: `1px solid ${themeWithDefaults.borders}`,
                         borderRadius: '4px',
                         boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
                         minWidth: '200px',
@@ -196,12 +158,42 @@ const HeaderMenuComponent = ({
         );
     };
 
-    // Estilos del contenedor principal
+    // Mensaje cuando no hay items en modo edición
+    if (!isPreview && menuItems.length === 0) {
+        return (
+            <div 
+                style={{
+                    padding: '15px',
+                    border: '2px dashed #f59e0b',
+                    backgroundColor: '#fffbeb',
+                    borderRadius: '6px',
+                    color: '#92400e',
+                    textAlign: 'center',
+                    cursor: 'pointer'
+                }}
+                onDoubleClick={() => onEdit(comp)}
+            >
+                <strong>Menú vacío</strong><br/>
+                <small>Doble clic para configurar</small>
+            </div>
+        );
+    }
+
+    // Placeholder en preview
+    if (isPreview && menuItems.length === 0) {
+        return (
+            <nav style={{ display: 'flex', gap: '20px', padding: '5px' }}>
+                <span style={{ opacity: 0.5 }}>[Menú]</span>
+            </nav>
+        );
+    }
+
+    // Estilos del contenedor principal del menú
     const containerStyles = {
         ...styles,
-        display: 'flex',
+        display: styles.display || 'flex',
         alignItems: 'center',
-        gap: comp.styles?.gap || '20px',
+        gap: styles.gap || '20px',
     };
 
     return (

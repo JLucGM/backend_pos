@@ -1,7 +1,6 @@
-// components/BuilderPages/FooterMenuComponent.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const FooterMenuComponent = ({
     comp,
@@ -18,22 +17,41 @@ const FooterMenuComponent = ({
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeFooterStyles = getComponentStyles(themeWithDefaults, 'footer', appliedTheme);
 
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos
+    const resolvedStyles = {};
+    Object.keys(styles).forEach(key => {
+        resolvedStyles[key] = resolveValue(styles[key]);
+    });
+
+    // Resolver propiedades del contenido
+    const content = comp.content || {};
+    const resolvedContent = {};
+    Object.keys(content).forEach(key => {
+        resolvedContent[key] = resolveValue(content[key]);
+    });
+
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
     // OBTENER LOS ITEMS DEL MENÚ DINÁMICAMENTE
     useEffect(() => {
-        if (!comp.content?.menuId) {
+        if (!resolvedContent.menuId) {
             setMenuItems([]);
             return;
         }
 
-        const menuId = parseInt(comp.content.menuId);
+        const menuId = parseInt(resolvedContent.menuId);
 
         const foundMenu = availableMenus.find(menu => parseInt(menu.id) === menuId);
 
@@ -42,7 +60,7 @@ const FooterMenuComponent = ({
         } else {
             setMenuItems([]);
         }
-    }, [comp.content, availableMenus]);
+    }, [resolvedContent.menuId, availableMenus]);
 
     // Función para procesar URLs
     const processUrl = (url) => {
@@ -71,7 +89,7 @@ const FooterMenuComponent = ({
                 <strong>Menú Footer</strong><br />
                 <small>Doble clic para configurar</small>
                 <div style={{ fontSize: '10px', marginTop: '5px' }}>
-                    ID: {comp.id} | menuId: {comp.content?.menuId || 'none'}
+                    ID: {comp.id} | menuId: {resolvedContent.menuId || 'none'}
                 </div>
             </div>
         );
@@ -85,24 +103,33 @@ const FooterMenuComponent = ({
                 border: '1px dashed #ccc',
                 borderRadius: '4px'
             }}>
-                <span style={{ opacity: 0.5 }}>[Menú Footer {comp.content?.menuId || 'sin configurar'}]</span>
+                <span style={{ opacity: 0.5 }}>[Menú Footer {resolvedContent.menuId || 'sin configurar'}]</span>
             </div>
         );
     }
 
     // Determinar disposición (column o row)
-    const displayStyle = comp.styles?.display || 'column';
+    const displayStyle = resolvedStyles.display || 'column';
+
+    // Obtener gap con valores resueltos
+    const gapValue = resolvedStyles.gap === 'custom' ? resolvedStyles.customGap : (resolvedStyles.gap || '8px');
+    const gapUnit = resolvedStyles.gap === 'custom' ? resolvedStyles.customGapUnit : (resolvedStyles.gapUnit || 'px');
+    const gap = withUnit(gapValue, gapUnit);
+
+    // Obtener fontSize con valores resueltos
+    const fontSizeValue = resolvedStyles.fontSize === 'custom' ? resolvedStyles.customFontSize : (resolvedStyles.fontSize || '14px');
+    const fontSizeUnit = resolvedStyles.fontSize === 'custom' ? resolvedStyles.customFontSizeUnit : (resolvedStyles.fontSizeUnit || 'px');
+    const fontSize = withUnit(fontSizeValue, fontSizeUnit);
 
     const containerStyles = {
-        ...styles,
+        ...resolvedStyles,
         display: 'flex',
         flexDirection: displayStyle === 'column' ? 'column' : 'row',
-        gap: withUnit(
-            comp.styles?.gap === 'custom' ? comp.styles?.customGap : (comp.styles?.gap || '8px'),
-            comp.styles?.gap === 'custom' ? comp.styles?.customGapUnit : (comp.styles?.gapUnit || 'px')
-        ),
+        gap: gap,
         alignItems: displayStyle === 'column' ? 'flex-start' : 'center',
     };
+
+    const linkColor = resolveValue(resolvedStyles.color || themeWithDefaults.text);
 
     return (
         <div
@@ -118,17 +145,14 @@ const FooterMenuComponent = ({
                             <Link
                                 href={processedUrl}
                                 style={{
-                                    color: comp.styles?.color || themeWithDefaults.text,
+                                    color: linkColor,
                                     textDecoration: 'none',
-                                    fontSize: withUnit(
-                                        comp.styles?.fontSize === 'custom' ? comp.styles?.customFontSize : (comp.styles?.fontSize || '14px'),
-                                        comp.styles?.fontSize === 'custom' ? comp.styles?.customFontSizeUnit : (comp.styles?.fontSizeUnit || 'px')
-                                    ),
-                                    textTransform: comp.styles?.textTransform || 'none',
+                                    fontSize: fontSize,
+                                    textTransform: resolvedStyles.textTransform || 'none',
                                     display: 'block',
                                     padding: '4px 0',
                                     transition: 'color 0.2s',
-                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
                                 }}
                                 className="hover:opacity-80"
                             >
@@ -137,17 +161,14 @@ const FooterMenuComponent = ({
                         ) : (
                             <div
                                 style={{
-                                    color: comp.styles?.color || themeWithDefaults.text,
+                                    color: linkColor,
                                     textDecoration: 'none',
-                                    fontSize: withUnit(
-                                        comp.styles?.fontSize === 'custom' ? comp.styles?.customFontSize : (comp.styles?.fontSize || '14px'),
-                                        comp.styles?.fontSize === 'custom' ? comp.styles?.customFontSizeUnit : (comp.styles?.fontSizeUnit || 'px')
-                                    ),
-                                    textTransform: comp.styles?.textTransform || 'none',
+                                    fontSize: fontSize,
+                                    textTransform: resolvedStyles.textTransform || 'none',
                                     display: 'block',
                                     padding: '4px 0',
                                     cursor: 'pointer',
-                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                                    fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
                                 }}
                                 onClick={(e) => {
                                     e.preventDefault();

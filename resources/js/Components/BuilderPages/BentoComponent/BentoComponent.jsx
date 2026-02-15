@@ -2,7 +2,7 @@ import React from 'react';
 import BentoTitleComponent from './BentoTitleComponent';
 import BentoFeatureComponent from './BentoFeatureComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const BentoComponent = ({
     comp,
@@ -16,10 +16,37 @@ const BentoComponent = ({
     hoveredComponentId,
     setHoveredComponentId
 }) => {
-    const bentoConfig = comp.content || {};
-    const children = bentoConfig.children || [];
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    const themeBentoStyles = getComponentStyles(themeWithDefaults, 'bento');
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver contenido del componente
+    const rawContent = comp.content || {};
+    const bentoConfig = {};
+    Object.keys(rawContent).forEach(key => {
+        bentoConfig[key] = resolveValue(rawContent[key]);
+    });
+
+    const children = bentoConfig.children || [];
+
+    // Resolver estilos personalizados del componente (si los hay)
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Obtener estilos del tema para bento (resueltos por si acaso)
+    const themeBentoStylesRaw = getComponentStyles(themeWithDefaults, 'bento', appliedTheme);
+    const themeBentoStyles = {};
+    Object.keys(themeBentoStylesRaw).forEach(key => {
+        themeBentoStyles[key] = resolveValue(themeBentoStylesRaw[key]);
+    });
 
     // Función para obtener el nombre del tipo de componente
     const getComponentTypeName = (type) => {
@@ -36,24 +63,23 @@ const BentoComponent = ({
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
-    // Configuración del contenedor principal con valores del tema
+    // Configuración del contenedor principal con valores resueltos
     const containerStyles = {
         ...getStyles(comp),
         width: '100%',
-        backgroundColor: bentoConfig.backgroundColor || themeBentoStyles.backgroundColor,
+        backgroundColor: resolveValue(bentoConfig.backgroundColor || themeBentoStyles.backgroundColor),
         padding: '40px 20px',
         borderRadius: withUnit(bentoConfig.containerBorderRadius) || themeBentoStyles.borderRadius,
         border: bentoConfig.containerBorder === 'solid'
-            ? `${withUnit(bentoConfig.containerBorderThickness) || '1px'} solid ${bentoConfig.containerBorderColor || '#e5e7eb'}`
+            ? `${withUnit(bentoConfig.containerBorderThickness) || '1px'} solid ${resolveValue(bentoConfig.containerBorderColor || '#e5e7eb')}`
             : 'none',
     };
 
-    // Grid styles basado en la cantidad de características con valores del tema
+    // Grid styles basado en la cantidad de características
     const featuresCount = children.filter(child => child.type === 'bentoFeature').length;
     const gridColumns = bentoConfig.gridColumns || getGridColumns(featuresCount);
 
@@ -111,6 +137,8 @@ const BentoComponent = ({
                         isPreview={isPreview}
                         onEdit={onEdit}
                         onDelete={onDelete}
+                        themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                     />
@@ -134,6 +162,8 @@ const BentoComponent = ({
                             isPreview={isPreview}
                             onEdit={onEdit}
                             onDelete={onDelete}
+                            themeSettings={themeSettings}
+                            appliedTheme={appliedTheme}
                             hoveredComponentId={hoveredComponentId}
                             setHoveredComponentId={setHoveredComponentId}
                         />

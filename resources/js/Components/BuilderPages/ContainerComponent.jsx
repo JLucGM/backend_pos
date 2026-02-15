@@ -1,8 +1,7 @@
 // components/BuilderPages/components/ContainerComponent.jsx
-
 import React from 'react';
 import CanvasItem from './CanvasItem';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const ContainerComponent = ({
   comp,
@@ -19,8 +18,27 @@ const ContainerComponent = ({
 }) => {
   // Obtener configuración del tema con valores por defecto
   const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-  const themeContainerStyles = getComponentStyles(themeWithDefaults, 'container', appliedTheme);
-  const customStyles = comp.styles || {};
+
+  // ===========================================
+  // FUNCIÓN PARA RESOLVER REFERENCIAS
+  // ===========================================
+  const resolveValue = (value) => {
+    return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+  };
+
+  // Obtener estilos específicos del tema para container y resolverlos
+  const themeContainerStylesRaw = getComponentStyles(themeWithDefaults, 'container', appliedTheme);
+  const themeContainerStyles = {};
+  Object.keys(themeContainerStylesRaw).forEach(key => {
+    themeContainerStyles[key] = resolveValue(themeContainerStylesRaw[key]);
+  });
+
+  // Resolver estilos personalizados del componente
+  const rawStyles = comp.styles || {};
+  const customStyles = {};
+  Object.keys(rawStyles).forEach(key => {
+    customStyles[key] = resolveValue(rawStyles[key]);
+  });
 
   // Helper para añadir unidad
   const withUnit = (value, unit = 'px') => {
@@ -29,24 +47,24 @@ const ContainerComponent = ({
     return `${value}${unit}`;
   };
 
-  // Padding individual
-  const paddingTop = withUnit(customStyles.paddingTop) || '0px';
-  const paddingRight = withUnit(customStyles.paddingRight) || '0px';
-  const paddingBottom = withUnit(customStyles.paddingBottom) || '0px';
-  const paddingLeft = withUnit(customStyles.paddingLeft) || '0px';
+  // Padding individual (resolver por si acaso, aunque normalmente son numéricos)
+  const paddingTop = withUnit(resolveValue(customStyles.paddingTop) || '0px');
+  const paddingRight = withUnit(resolveValue(customStyles.paddingRight) || '0px');
+  const paddingBottom = withUnit(resolveValue(customStyles.paddingBottom) || '0px');
+  const paddingLeft = withUnit(resolveValue(customStyles.paddingLeft) || '0px');
 
   // Alignment y dirección
   const alignment = customStyles.alignment || 'left';
   const direction = customStyles.direction || 'row';
-  const gap = withUnit(customStyles.gap) || themeContainerStyles.gap || '0px';
+  const gap = withUnit(resolveValue(customStyles.gap) || themeContainerStyles.gap || '0px');
 
-  // ✅ IMAGEN DE FONDO
+  // Imagen de fondo (no resolver, es una URL)
   const backgroundImage = customStyles.backgroundImage;
-  const backgroundColor = customStyles.backgroundColor || themeContainerStyles.backgroundColor || 'transparent';
+  const backgroundColor = resolveValue(customStyles.backgroundColor || themeContainerStyles.backgroundColor || 'transparent');
   const backgroundSize = customStyles.backgroundSize || 'cover';
   const backgroundPosition = customStyles.backgroundPosition || 'center';
 
-  const borderRadius = withUnit(customStyles.borderRadius) || themeContainerStyles.borderRadius || '0px';
+  const borderRadius = withUnit(resolveValue(customStyles.borderRadius) || themeContainerStyles.borderRadius || '0px');
 
   // Determinar alineación flex
   const getFlexAlignment = () => {
@@ -90,7 +108,7 @@ const ContainerComponent = ({
     justifyContent: direction === 'row' ? flexAlignment : 'flex-start',
     alignItems: direction === 'row' ? 'flex-start' : flexAlignment,
     flexWrap: 'wrap',
-    border: isPreview ? 'none' : `2px dashed ${themeWithDefaults.borders}`,
+    border: isPreview ? 'none' : `2px dashed ${resolveValue(themeWithDefaults.borders)}`,
     minHeight: '50px',
     position: 'relative',
     boxSizing: 'border-box',

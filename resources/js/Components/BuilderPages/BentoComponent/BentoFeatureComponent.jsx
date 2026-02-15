@@ -2,7 +2,7 @@ import React from 'react';
 import BentoFeatureTitleComponent from './BentoFeatureTitleComponent';
 import BentoFeatureTextComponent from './BentoFeatureTextComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const BentoFeatureComponent = ({
     comp,
@@ -15,9 +15,30 @@ const BentoFeatureComponent = ({
     themeSettings,
     appliedTheme
 }) => {
-    const featureConfig = comp.content || {};
-    const children = featureConfig.children || [];
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver contenido del componente
+    const rawContent = comp.content || {};
+    const featureConfig = {};
+    Object.keys(rawContent).forEach(key => {
+        featureConfig[key] = resolveValue(rawContent[key]);
+    });
+
+    const children = featureConfig.children || [];
+
+    // Resolver estilos personalizados del componente (por si acaso)
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
 
     // Función para obtener el nombre del tipo de componente
     const getComponentTypeName = (type) => {
@@ -31,20 +52,24 @@ const BentoFeatureComponent = ({
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
-    // Estilos de la carta de característica con valores del tema
+    // Resolver valores del tema
+    const resolvedBackground = resolveValue(featureConfig.backgroundColor || themeWithDefaults.background);
+    const resolvedBorders = resolveValue(featureConfig.borderColor || themeWithDefaults.borders);
+    const resolvedShadows = resolveValue(themeWithDefaults.shadows || 'rgba(0, 0, 0, 0.1)');
+
+    // Estilos de la carta de característica con valores resueltos
     const cardStyles = {
         ...getStyles(comp),
-        backgroundColor: featureConfig.backgroundColor || themeWithDefaults.background,
+        backgroundColor: resolvedBackground,
         backgroundImage: featureConfig.backgroundImage ? `url(${featureConfig.backgroundImage})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         border: featureConfig.border === 'solid'
-            ? `${withUnit(featureConfig.borderThickness) || '1px'} solid ${featureConfig.borderColor || themeWithDefaults.borders}`
+            ? `${withUnit(featureConfig.borderThickness) || '1px'} solid ${resolvedBorders}`
             : 'none',
         borderRadius: withUnit(featureConfig.borderRadius) || '12px',
         padding: withUnit(featureConfig.padding) || '24px',
@@ -53,7 +78,7 @@ const BentoFeatureComponent = ({
         flexDirection: 'column',
         justifyContent: 'center',
         opacity: featureConfig.opacity || 1,
-        boxShadow: `0 4px 6px -1px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0, 0, 0, 0.1)'}, 0 2px 4px -1px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0, 0, 0, 0.06)'}`,
+        boxShadow: `0 4px 6px -1px ${resolvedShadows}, 0 2px 4px -1px ${resolvedShadows}`,
     };
 
     // Manejo de eventos
@@ -106,6 +131,7 @@ const BentoFeatureComponent = ({
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                         themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
                     />
                 </ComponentWithHover>
             )}
@@ -128,6 +154,7 @@ const BentoFeatureComponent = ({
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                         themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
                     />
                 </ComponentWithHover>
             )}

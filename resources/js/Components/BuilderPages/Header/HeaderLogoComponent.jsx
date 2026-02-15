@@ -1,6 +1,5 @@
-// components/BuilderPages/HeaderLogoComponent.jsx
 import React from 'react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
 const HeaderLogoComponent = ({
     comp,
@@ -11,12 +10,26 @@ const HeaderLogoComponent = ({
     companyLogo,
     appliedTheme
 }) => {
-    const styles = getStyles(comp);
+    // Obtener tema combinado con valores por defecto
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // Función para resolver estilos (referencias "theme.xxx")
+    const resolveStyles = (styles) => {
+        if (!styles) return {};
+        const resolved = {};
+        Object.keys(styles).forEach(key => {
+            resolved[key] = resolveStyleValue(styles[key], themeWithDefaults, appliedTheme);
+        });
+        return resolved;
+    };
+
+    // Obtener estilos base del componente y resolverlos
+    const baseStyles = getStyles ? getStyles(comp) : (comp.styles || {});
+    const styles = resolveStyles(baseStyles);
 
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
@@ -24,27 +37,27 @@ const HeaderLogoComponent = ({
     // Estilos específicos para el logo
     const logoStyles = {
         ...styles,
-        paddingTop: withUnit(comp.styles?.paddingTop) || '0px',
-        paddingRight: withUnit(comp.styles?.paddingRight) || '0px',
-        paddingBottom: withUnit(comp.styles?.paddingBottom) || '0px',
-        paddingLeft: withUnit(comp.styles?.paddingLeft) || '0px',
+        paddingTop: withUnit(styles.paddingTop) || '0px',
+        paddingRight: withUnit(styles.paddingRight) || '0px',
+        paddingBottom: withUnit(styles.paddingBottom) || '0px',
+        paddingLeft: withUnit(styles.paddingLeft) || '0px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        height: withUnit(styles?.height, comp.styles?.heightUnit) || 'auto',
-        width: withUnit(styles?.width, comp.styles?.widthUnit) || 'auto',
-        maxHeight: withUnit(styles?.maxHeight) || 'none',
-        maxWidth: withUnit(styles?.maxWidth) || 'none',
-        opacity: styles?.opacity ? `${styles.opacity}%` : '100%',
-        borderWidth: withUnit(styles?.borderWidth) || '0px',
-        borderStyle: styles?.borderStyle || 'solid',
-        borderColor: styles?.borderColor || 'transparent',
-        borderRadius: withUnit(styles?.borderRadius) || '0px',
+        height: withUnit(styles.height) || 'auto',
+        width: withUnit(styles.width) || 'auto',
+        maxHeight: withUnit(styles.maxHeight) || 'none',
+        maxWidth: withUnit(styles.maxWidth) || 'none',
+        opacity: styles.opacity ? `${styles.opacity}%` : '100%',
+        borderWidth: withUnit(styles.borderWidth) || '0px',
+        borderStyle: styles.borderStyle || 'solid',
+        borderColor: styles.borderColor || 'transparent',
+        borderRadius: withUnit(styles.borderRadius) || '0px',
     };
 
-    // Determinar qué mostrar: logo de la compañía o contenido del componente
-    const displayContent = () => {
-        // Si hay logo de compañía disponible y no hay contenido personalizado
+    // Determinar qué mostrar: logo de la compañía o contenido personalizado
+    const renderContent = () => {
+        // Si hay logo de compañía y el contenido es el predeterminado ("Logo")
         const isDefaultContent = !comp.content || comp.content === 'Logo' || comp.content === '';
 
         if (companyLogo && isDefaultContent) {
@@ -55,9 +68,9 @@ const HeaderLogoComponent = ({
                     style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: comp.styles?.objectFit || 'contain',
-                        maxHeight: logoStyles.maxHeight || '100%',
-                        maxWidth: logoStyles.maxWidth || '100%',
+                        objectFit: styles.objectFit || 'contain',
+                        maxHeight: logoStyles.maxHeight,
+                        maxWidth: logoStyles.maxWidth,
                     }}
                 />
             );
@@ -73,15 +86,15 @@ const HeaderLogoComponent = ({
                     style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: comp.styles?.objectFit || 'contain',
-                        maxHeight: logoStyles.maxHeight || '100%',
-                        maxWidth: logoStyles.maxWidth || '100%',
+                        objectFit: styles.objectFit || 'contain',
+                        maxHeight: logoStyles.maxHeight,
+                        maxWidth: logoStyles.maxWidth,
                     }}
                 />
             );
         }
 
-        // Si el contenido es un objeto con propiedades de imagen
+        // Si el contenido es un objeto con src
         if (comp.content && typeof comp.content === 'object' && comp.content.src) {
             return (
                 <img
@@ -90,20 +103,20 @@ const HeaderLogoComponent = ({
                     style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: comp.styles?.objectFit || 'contain',
-                        maxHeight: logoStyles.maxHeight || '100%',
-                        maxWidth: logoStyles.maxWidth || '100%',
+                        objectFit: styles.objectFit || 'contain',
+                        maxHeight: logoStyles.maxHeight,
+                        maxWidth: logoStyles.maxWidth,
                     }}
                 />
             );
         }
 
-        // Si es texto simple
+        // Texto simple
         return (
             <span style={{
-                fontSize: comp.styles?.fontSize || '24px',
-                fontWeight: comp.styles?.fontWeight || 'bold',
-                color: comp.styles?.color || getThemeWithDefaults(themeSettings, appliedTheme.heading),
+                fontSize: styles.fontSize || '24px',
+                fontWeight: styles.fontWeight || 'bold',
+                color: styles.color || themeWithDefaults.heading,
             }}>
                 {comp.content || 'Logo'}
             </span>
@@ -116,7 +129,7 @@ const HeaderLogoComponent = ({
             onDoubleClick={isPreview ? undefined : () => onEdit(comp)}
             className={isPreview ? '' : 'hover:opacity-80 cursor-pointer'}
         >
-            {displayContent()}
+            {renderContent()}
         </div>
     );
 };

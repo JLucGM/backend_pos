@@ -1,43 +1,75 @@
 import React, { useState } from 'react';
-import { getThemeWithDefaults, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const QuantitySelectorComponent = ({
     comp,
     maxQuantity = 99,
     onQuantityChange,
-    themeSettings, // Añadir themeSettings como prop
+    themeSettings,
     appliedTheme
 }) => {
     const [quantity, setQuantity] = useState(1);
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados del componente
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido (por si contiene referencias)
+    const rawContent = comp.content || {};
+    const content = {};
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
+
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
-    // Función para obtener valores por defecto del tema
+    // Función para obtener valores por defecto del tema (con resolución)
     const getThemeValue = (key, defaultValue) => {
         // Mapear las claves del componente a las claves del tema
         const themeMap = {
-            'labelColor': themeSettings?.quantity_labelColor || themeSettings?.text_color || '#666666',
-            'borderColor': themeSettings?.quantity_borderColor || themeSettings?.border_color || '#d1d5db',
-            'buttonColor': themeSettings?.quantity_buttonColor || themeSettings?.primary_color || '#374151',
+            'labelColor': themeSettings?.quantity_labelColor || themeSettings?.text_color,
+            'borderColor': themeSettings?.quantity_borderColor || themeSettings?.border_color,
+            'buttonColor': themeSettings?.quantity_buttonColor || themeSettings?.primary_color,
             'inputColor': themeWithDefaults.text,
-            'borderRadius': themeSettings?.quantity_borderRadius || themeSettings?.border_radius || '6px',
-            'buttonSize': themeSettings?.quantity_buttonSize || themeSettings?.button_font_size || '16px',
-            'inputSize': themeSettings?.quantity_inputSize || themeSettings?.input_font_size || '16px',
+            'borderRadius': themeSettings?.quantity_borderRadius || themeSettings?.border_radius,
+            'buttonSize': themeSettings?.quantity_buttonSize || themeSettings?.button_font_size,
+            'inputSize': themeSettings?.quantity_inputSize || themeSettings?.input_font_size,
         };
 
-        return comp.styles?.[key] || themeMap[key] || defaultValue;
+        // Prioridad 1: estilos personalizados del componente (ya resueltos)
+        if (styles[key] !== undefined) {
+            return styles[key];
+        }
+
+        // Prioridad 2: valor del tema (resolver por si acaso)
+        const themeValue = themeMap[key];
+        if (themeValue !== undefined) {
+            return resolveValue(themeValue);
+        }
+
+        // Prioridad 3: valor por defecto (resolver por si acaso)
+        return resolveValue(defaultValue);
     };
 
     const getThemeValueWithUnit = (key, unitKey, defaultValue) => {
         const value = getThemeValue(key, defaultValue);
-        const unit = comp.styles?.[unitKey] || (value.toString().includes('rem') ? 'rem' : (value.toString().includes('em') ? 'em' : 'px'));
+        const unit = styles[unitKey] || (value.toString().includes('rem') ? 'rem' : (value.toString().includes('em') ? 'em' : 'px'));
         return withUnit(value, unit);
     };
 
@@ -66,16 +98,16 @@ const QuantitySelectorComponent = ({
 
     return (
         <div className="quantity-selector" style={{
-            ...comp.styles,
+            ...styles,
             display: 'flex',
             alignItems: 'center',
-            gap: withUnit(comp.styles?.gap || '8px'),
+            gap: withUnit(styles.gap || '8px'),
         }}>
             <label className="quantity-label text-sm font-medium" style={{
                 color: getThemeValue('labelColor', '#666666'),
                 minWidth: '70px',
             }}>
-                {comp.content?.label || 'Cantidad:'}
+                {content.label || 'Cantidad:'}
             </label>
 
             <div className="flex items-center border rounded-md" style={{
@@ -125,7 +157,7 @@ const QuantitySelectorComponent = ({
                 </button>
             </div>
 
-            {comp.content?.showMax && maxQuantity < 20 && (
+            {content.showMax && maxQuantity < 20 && (
                 <span className="text-xs text-gray-500">
                     Máx: {maxQuantity}
                 </span>

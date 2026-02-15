@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const AnnouncementComponent = ({
     comp,
@@ -17,18 +17,37 @@ const AnnouncementComponent = ({
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeAnnouncementStyles = getComponentStyles(themeWithDefaults, 'announcement-bar');
 
-    // Obtener el texto del anuncio
-    const getText = () => {
-        if (typeof announcementConfig === 'string') {
-            return announcementConfig;
-        }
-        return announcementConfig.text || 'Nuevo anuncio';
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
     };
 
-    // Obtener la URL de navegación
+    // Resolver todas las propiedades de customStyles
+    const resolvedCustomStyles = {};
+    Object.keys(customStyles).forEach(key => {
+        resolvedCustomStyles[key] = resolveValue(customStyles[key]);
+    });
+
+    // Resolver contenido si es necesario (aunque probablemente no contenga referencias)
+    const resolvedConfig = {};
+    Object.keys(announcementConfig).forEach(key => {
+        resolvedConfig[key] = resolveValue(announcementConfig[key]);
+    });
+
+    // Obtener el texto del anuncio (usar resolvedConfig)
+    const getText = () => {
+        if (typeof resolvedConfig === 'string') {
+            return resolvedConfig;
+        }
+        return resolvedConfig.text || 'Nuevo anuncio';
+    };
+
+    // Obtener la URL de navegación (usar resolvedConfig)
     const getNavigationUrl = () => {
-        if (typeof announcementConfig === 'object') {
-            return announcementConfig.navigationUrl || '';
+        if (typeof resolvedConfig === 'object') {
+            return resolvedConfig.navigationUrl || '';
         }
         return '';
     };
@@ -66,17 +85,18 @@ const AnnouncementComponent = ({
             return `${value}${unit}`;
         };
 
-        const fontSize = customStyles.fontSize || themeAnnouncementStyles.fontSize || themeWithDefaults.paragraph_fontSize || '14px';
-        const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+        // Usar resolvedCustomStyles para todas las propiedades personalizadas
+        const fontSize = resolvedCustomStyles.fontSize || themeAnnouncementStyles.fontSize || themeWithDefaults.paragraph_fontSize || '14px';
+        const fontSizeUnit = resolvedCustomStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
 
         return {
             ...baseStyles,
             fontFamily: getFontFamily(),
             fontSize: withUnit(fontSize, fontSizeUnit),
-            fontWeight: customStyles.fontWeight || 'normal',
-            color: customStyles.color || themeAnnouncementStyles.color || themeWithDefaults.text,
-            textTransform: customStyles.textTransform || 'none',
-            lineHeight: customStyles.lineHeight || '1.4',
+            fontWeight: resolvedCustomStyles.fontWeight || 'normal',
+            color: resolvedCustomStyles.color || themeAnnouncementStyles.color || themeWithDefaults.text,
+            textTransform: resolvedCustomStyles.textTransform || 'none',
+            lineHeight: resolvedCustomStyles.lineHeight || '1.4',
             textDecoration: hasNavigation() ? 'underline' : 'none',
             cursor: hasNavigation() ? 'pointer' : 'default',
             transition: 'all 0.2s ease',
@@ -107,18 +127,18 @@ const AnnouncementComponent = ({
 
     // Función para obtener la fuente usando utilidades del tema
     const getFontFamily = () => {
-        const fontType = customStyles.fontType;
+        const fontType = resolvedCustomStyles.fontType;
 
         // Si el usuario seleccionó "default" o no especificó nada
         if (fontType === 'default' || !fontType) {
-            return getResolvedFont(themeWithDefaults, 'paragraph_font');
+            return getResolvedFont(themeWithDefaults, 'paragraph_font', appliedTheme);
         }
 
-        if (fontType === 'custom' && customStyles.customFont) {
-            return customStyles.customFont;
+        if (fontType === 'custom' && resolvedCustomStyles.customFont) {
+            return resolvedCustomStyles.customFont;
         }
 
-        return getResolvedFont(themeWithDefaults, fontType);
+        return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
     };
 
     const textStyles = getTextStyles();

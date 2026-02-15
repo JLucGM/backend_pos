@@ -1,12 +1,46 @@
 import React from 'react';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
-const PriceFilterComponent = ({ comp = {}, minPrice, maxPrice, setMinPrice, setMaxPrice }) => {
-    const styles = comp.styles || {};
+const PriceFilterComponent = ({
+    comp = {},
+    minPrice,
+    maxPrice,
+    setMinPrice,
+    setMaxPrice,
+    themeSettings,
+    appliedTheme
+}) => {
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Valores resueltos (con fallbacks)
+    const borderRadius = resolveValue(styles.borderRadius || '4px');
+    const borderThickness = resolveValue(styles.borderThickness || '1px');
+    const borderColor = resolveValue(styles.borderColor || '#ccc');
+    const background = resolveValue(styles.background || '#fff');
+
     const inputStyle = {
-        borderRadius: styles.borderRadius || '4px',
+        borderRadius,
         padding: '6px 8px',
-        border: styles.border ? `${styles.borderThickness || '1px'} solid ${styles.borderColor || '#ccc'}` : '1px solid #ccc',
-        background: styles.background || '#fff',
+        border: styles.border
+            ? `${borderThickness} solid ${borderColor}`
+            : '1px solid #ccc',
+        background,
+        // Color de texto heredado del tema (opcional)
+        color: resolveValue(themeWithDefaults.text),
     };
 
     return (

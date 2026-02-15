@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const ProductTitleComponent = ({
     comp,
@@ -10,21 +10,33 @@ const ProductTitleComponent = ({
     themeSettings,
     appliedTheme
 }) => {
-    // console.log(comp.styles)
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const customStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        customStyles[key] = resolveValue(rawStyles[key]);
+    });
+
     const computeTextStyles = () => {
         const baseStyles = getStyles(comp);
-        const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-        console.log('ProductTitleComponent computeTextStyles', { id: comp.id, customStyles });
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading2'; // Por defecto heading2 para títulos de producto
 
         // Obtener estilos del tema para el tipo de texto (usar la utilidad importada)
-        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle, appliedTheme);
 
         // Obtener estilos específicos del componente product-title
-        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-title');
+        const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-title', appliedTheme);
 
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
@@ -34,21 +46,21 @@ const ProductTitleComponent = ({
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
                     const headingKey = `${textStyle}_font`;
-                    return getResolvedFont(themeWithDefaults, headingKey) || themeTextStyles.fontFamily;
+                    return getResolvedFont(themeWithDefaults, headingKey, appliedTheme) || themeTextStyles.fontFamily;
                 } else {
-                    return getResolvedFont(themeWithDefaults, 'body_font') || themeTextStyles.fontFamily;
+                    return getResolvedFont(themeWithDefaults, 'body_font', appliedTheme) || themeTextStyles.fontFamily;
                 }
             }
 
             // Si el usuario eligió una referencia genérica a heading, mapearla al nivel actual
             if (fontType === 'heading_font') {
                 const headingKey = `${textStyle}_font`;
-                return getResolvedFont(themeWithDefaults, headingKey) || themeTextStyles.fontFamily;
+                return getResolvedFont(themeWithDefaults, headingKey, appliedTheme) || themeTextStyles.fontFamily;
             }
 
             // Soporte para otras referencias de tema (subheading, accent, body, etc.)
             if (fontType === 'subheading_font' || fontType === 'accent_font' || fontType === 'body_font' || fontType.endsWith('_font')) {
-                return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
+                return getResolvedFont(themeWithDefaults, fontType, appliedTheme) || themeTextStyles.fontFamily;
             }
 
             if (fontType === 'custom' && customStyles.customFont) {
@@ -62,7 +74,6 @@ const ProductTitleComponent = ({
         // Helper para añadir unidad (px) si es solo número
         const withUnit = (value, unit = 'px') => {
             if (value === undefined || value === null || value === '') return undefined;
-            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
             if (typeof value === 'string' && isNaN(Number(value))) return value;
             return `${value}${unit}`;
         };
@@ -89,6 +100,11 @@ const ProductTitleComponent = ({
         const alignment = customStyles.alignment || 'center';
         const textAlign = layout === 'fill' ? alignment : 'center';
 
+        // Color final resuelto
+        const finalColor = customStyles.color ||
+            themeComponentStyles.color ||
+            themeWithDefaults.heading;
+
         return {
             ...baseStyles,
             width,
@@ -99,8 +115,7 @@ const ProductTitleComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            // Usar color del tema como fallback
-            color: customStyles.color || themeComponentStyles.color || themeWithDefaults.heading,
+            color: resolveValue(finalColor),
             margin: 0,
             padding: '10px 0'
         };

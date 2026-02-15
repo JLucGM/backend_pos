@@ -10,7 +10,7 @@ import VideoComponent from '../VideoComponent';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ComponentWithHover from '../ComponentWithHover';
 import { Button } from '@/Components/ui/button';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const CarouselComponent = ({
     comp,
@@ -26,19 +26,46 @@ const CarouselComponent = ({
     setHoveredComponentId,
     mode = 'builder' // Agregar mode prop
 }) => {
-    const carouselConfig = comp.content || {};
-    const children = carouselConfig.children || [];
+    const rawContent = comp.content || {};
+    const rawStyles = comp.styles || {};
+    const children = rawContent.children || [];
     const carouselRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeCarouselStyles = getComponentStyles(themeWithDefaults, 'carousel', appliedTheme);
 
-    // Configuración del carrusel con valores del tema
-    const limit = carouselConfig.limit || 5;
-    const slidesToShow = carouselConfig.slidesToShow || 3;
-    const gapX = carouselConfig.gapX || themeWithDefaults.carousel_gapX;
-    const gapY = carouselConfig.gapY || themeWithDefaults.carousel_gapY;
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos base del componente
+    const baseStyles = getStyles(comp);
+    const resolvedBaseStyles = {};
+    Object.keys(baseStyles).forEach(key => {
+        resolvedBaseStyles[key] = resolveValue(baseStyles[key]);
+    });
+
+    // Resolver contenido (carouselConfig)
+    const config = {};
+    Object.keys(rawContent).forEach(key => {
+        config[key] = resolveValue(rawContent[key]);
+    });
+
+    // Resolver estilos personalizados (rawStyles)
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Configuración del carrusel con valores resueltos y del tema
+    const limit = config.limit || 5;
+    const slidesToShow = config.slidesToShow || 3;
+    const gapX = config.gapX || themeWithDefaults.carousel_gapX;
+    const gapY = config.gapY || themeWithDefaults.carousel_gapY;
 
     // Función para obtener el nombre del tipo de componente
     const getComponentTypeName = (type) => {
@@ -69,9 +96,9 @@ const CarouselComponent = ({
         return typeNames[type] || type;
     };
 
-    // Container styles con valores del tema
+    // Container styles con valores resueltos y del tema
     const containerStyles = {
-        ...getStyles(comp),
+        ...resolvedBaseStyles,
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -80,7 +107,7 @@ const CarouselComponent = ({
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
-        backgroundColor: carouselConfig.backgroundColor || themeCarouselStyles.backgroundColor,
+        backgroundColor: config.backgroundColor || themeCarouselStyles.backgroundColor,
         padding: '20px 0',
     };
 
@@ -209,6 +236,7 @@ const CarouselComponent = ({
                         onEdit={onEdit}
                         onDelete={onDelete}
                         themeSettings={themeSettings}
+                        appliedTheme={appliedTheme} // Asegurar que se pase appliedTheme
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                     />
@@ -290,6 +318,7 @@ const CarouselComponent = ({
                                     onEdit={onEdit}
                                     onDelete={onDelete}
                                     themeSettings={themeSettings}
+                                    appliedTheme={appliedTheme} // Pasar appliedTheme
                                     isPreview={isPreview}
                                     products={products}
                                     setComponents={setComponents}

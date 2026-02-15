@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import {
+    getThemeWithDefaults,
+    getComponentStyles,
+    getResolvedFont,
+    resolveStyleValue
+} from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
     if (value === undefined || value === null || value === '') return undefined;
-    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
     if (typeof value === 'string' && isNaN(Number(value))) return value;
     return `${value}${unit}`;
 };
@@ -17,6 +21,27 @@ const ProductDetailAttributesComponent = ({
     appliedTheme
 }) => {
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido (por si tiene referencias)
+    const rawContent = comp.content || {};
+    const content = {};
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
 
     const [selectedValues, setSelectedValues] = useState({});
     const [availableCombinations, setAvailableCombinations] = useState([]);
@@ -149,79 +174,65 @@ const ProductDetailAttributesComponent = ({
         }
     }, [selectedValues, product]);
 
-    // Función para obtener estilos de fuente según configuración
-    // Función para obtener estilos de fuente según configuración
+    // ===========================================
+    // FUNCIONES DE ESTILOS CON VALORES RESUELTOS
+    // ===========================================
     const getFontStyles = (type = 'title') => {
-        const styles = comp.styles || {};
-        const theme = themeSettings || {};
-
         if (type === 'title') {
             const fontType = styles.titleFontType || 'default';
             let fontFamily;
 
             if (fontType === 'default') {
-                // Usar heading_font del tema para títulos
-                fontFamily = theme?.heading_font || theme?.heading_font_family || "'Inter', sans-serif";
+                fontFamily = resolveValue(themeWithDefaults?.heading_font || themeWithDefaults?.heading_font_family || "'Inter', sans-serif");
             } else if (fontType === 'custom' && styles.titleCustomFont) {
                 fontFamily = styles.titleCustomFont;
             } else {
-                // Usar fuentes específicas del tema
                 switch (fontType) {
                     case 'body_font':
-                        fontFamily = theme?.body_font || "'Inter', sans-serif";
+                        fontFamily = resolveValue(themeWithDefaults?.body_font || "'Inter', sans-serif");
                         break;
                     case 'heading_font':
-                        fontFamily = theme?.heading_font || "'Inter', sans-serif";
+                        fontFamily = resolveValue(themeWithDefaults?.heading_font || "'Inter', sans-serif");
                         break;
                     case 'subheading_font':
-                        fontFamily = theme?.subheading_font || "'Inter', sans-serif";
+                        fontFamily = resolveValue(themeWithDefaults?.subheading_font || "'Inter', sans-serif");
                         break;
                     case 'accent_font':
-                        fontFamily = theme?.accent_font || "'Georgia', serif";
+                        fontFamily = resolveValue(themeWithDefaults?.accent_font || "'Georgia', serif");
                         break;
                     default:
-                        fontFamily = theme?.body_font || "'Inter', sans-serif";
+                        fontFamily = resolveValue(themeWithDefaults?.body_font || "'Inter', sans-serif");
                 }
             }
 
-            // Determinar tamaño de fuente y peso según el estilo seleccionado
             let fontSize = styles.titleSize;
             let fontWeight = styles.titleFontWeight;
 
-            // Si no están definidos, usar los del tema según el estilo de texto
             if (!fontSize || !fontWeight) {
                 const textStyle = styles.titleTextStyle || 'heading3';
 
-                // Extraer el nivel si es un heading
                 if (textStyle.startsWith('heading')) {
                     const level = textStyle.replace('heading', '');
 
-                    // Usar los valores del tema para el nivel correspondiente
                     if (!fontSize) {
-                        // Buscar primero en el tema, luego valor por defecto
-                        const themeFontSize = theme?.[`heading${level}_fontSize`] || theme?.[`heading${level}_size`];
+                        const themeFontSize = themeWithDefaults?.[`heading${level}_fontSize`] || themeWithDefaults?.[`heading${level}_size`];
                         fontSize = themeFontSize || `${3.5 - (level * 0.25)}rem`;
                     }
 
                     if (!fontWeight) {
-                        const themeFontWeight = theme?.[`heading${level}_fontWeight`];
+                        const themeFontWeight = themeWithDefaults?.[`heading${level}_fontWeight`];
                         fontWeight = themeFontWeight || 'bold';
                     }
                 } else if (textStyle === 'paragraph') {
                     if (!fontSize) {
-                        fontSize = theme?.paragraph_fontSize || theme?.paragraph_size || '16px';
+                        fontSize = themeWithDefaults?.paragraph_fontSize || themeWithDefaults?.paragraph_size || '16px';
                     }
                     if (!fontWeight) {
-                        fontWeight = theme?.paragraph_fontWeight || 'normal';
+                        fontWeight = themeWithDefaults?.paragraph_fontWeight || 'normal';
                     }
                 } else {
-                    // Valores por defecto
-                    if (!fontSize) {
-                        fontSize = '18px';
-                    }
-                    if (!fontWeight) {
-                        fontWeight = 'bold';
-                    }
+                    if (!fontSize) fontSize = '18px';
+                    if (!fontWeight) fontWeight = 'bold';
                 }
             }
 
@@ -229,37 +240,33 @@ const ProductDetailAttributesComponent = ({
                 fontFamily,
                 fontSize: withUnit(fontSize, styles.titleSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px')),
                 fontWeight,
-                color: styles.titleColor || themeWithDefaults.heading,
-                marginBottom: theme?.spacing_medium || '1rem',
+                color: resolveValue(styles.titleColor || themeWithDefaults.heading),
+                marginBottom: resolveValue(themeWithDefaults?.spacing_medium || '1rem'),
             };
         } else {
-            // Para etiquetas
             return {
-                fontFamily: theme?.body_font || "'Inter', sans-serif",
-                fontSize: withUnit(styles.labelSize || theme?.paragraph_fontSize || '14px', styles.labelSizeUnit || 'px'),
-                fontWeight: styles.labelFontWeight || theme?.paragraph_fontWeight || 'normal',
-                color: styles.labelColor || (theme?.text ? theme.text : '#666666'),
-                marginBottom: theme?.spacing_small || '0.5rem',
+                fontFamily: resolveValue(themeWithDefaults?.body_font || "'Inter', sans-serif"),
+                fontSize: withUnit(styles.labelSize || themeWithDefaults?.paragraph_fontSize || '14px', styles.labelSizeUnit || 'px'),
+                fontWeight: styles.labelFontWeight || themeWithDefaults?.paragraph_fontWeight || 'normal',
+                color: resolveValue(styles.labelColor || themeWithDefaults?.text || '#666666'),
+                marginBottom: resolveValue(themeWithDefaults?.spacing_small || '0.5rem'),
                 display: 'block',
             };
         }
     };
 
-    // Estilos del contenedor con valores del tema
+    // Estilos del contenedor con valores resueltos
     const containerStyles = {
-        marginBottom: themeSettings?.spacing_large || '2rem',
-        padding: themeSettings?.spacing_small || '0.5rem',
-        ...comp.styles,
+        marginBottom: resolveValue(themeWithDefaults?.spacing_large || '2rem'),
+        padding: resolveValue(themeWithDefaults?.spacing_small || '0.5rem'),
+        ...styles, // estilos personalizados ya resueltos
     };
 
     // Estilos para botones seleccionados y no seleccionados
     const getButtonStyles = (isSelected) => {
-        const styles = comp.styles || {};
-        const theme = themeSettings || {};
-
         const baseStyles = {
-            padding: `${theme?.spacing_small || '0.5rem'} ${theme?.spacing_medium || '1rem'} `,
-            borderRadius: withUnit(styles.buttonBorderRadius || theme?.border_radius || '6px'),
+            padding: `${resolveValue(themeWithDefaults?.spacing_small || '0.5rem')} ${resolveValue(themeWithDefaults?.spacing_medium || '1rem')}`,
+            borderRadius: withUnit(styles.buttonBorderRadius || resolveValue(themeWithDefaults?.border_radius || '6px')),
             fontSize: '14px',
             fontWeight: '500',
             transition: 'all 0.2s',
@@ -267,36 +274,34 @@ const ProductDetailAttributesComponent = ({
             borderWidth: '1px',
             borderStyle: 'solid',
             cursor: 'pointer',
-            fontFamily: theme?.button_font_family || 'inherit',
+            fontFamily: resolveValue(themeWithDefaults?.button_font_family || 'inherit'),
         };
 
         if (isSelected) {
             return {
                 ...baseStyles,
-                backgroundColor: styles.selectedBgColor || (theme?.primary_button_background ? theme.primary_button_background : '#dbeafe'),
-                color: styles.selectedTextColor || (theme?.primary_button_text ? theme.primary_button_text : '#1e40af'),
-                borderColor: styles.selectedBorderColor || (theme?.primary_button_border ? theme.primary_button_border : '#93c5fd'),
+                backgroundColor: resolveValue(styles.selectedBgColor || themeWithDefaults?.primary_button_background || '#dbeafe'),
+                color: resolveValue(styles.selectedTextColor || themeWithDefaults?.primary_button_text || '#1e40af'),
+                borderColor: resolveValue(styles.selectedBorderColor || themeWithDefaults?.primary_button_border || '#93c5fd'),
             };
         } else {
             return {
                 ...baseStyles,
-                backgroundColor: styles.buttonBgColor || themeWithDefaults.secondary_button_background,
-                color: styles.buttonColor || themeWithDefaults.secondary_button_text,
-                borderColor: styles.buttonBorderColor || themeWithDefaults.borders,
+                backgroundColor: resolveValue(styles.buttonBgColor || themeWithDefaults?.secondary_button_background),
+                color: resolveValue(styles.buttonColor || themeWithDefaults?.secondary_button_text),
+                borderColor: resolveValue(styles.buttonBorderColor || themeWithDefaults?.borders),
             };
         }
     };
 
     const attributes = extractAttributes();
 
-    // Si no hay atributos, mostrar mensaje o nada
     if (attributes.length === 0) {
-        // Modo builder: mostrar datos de ejemplo
         if (!product) {
             return (
                 <div style={containerStyles} className="product-attributes">
                     <h3 className="text-lg font-semibold mb-4" style={getFontStyles('title')}>
-                        {comp.content?.title || 'Opciones del Producto'}
+                        {content.title || 'Opciones del Producto'}
                     </h3>
 
                     <div className="mb-4">
@@ -323,15 +328,13 @@ const ProductDetailAttributesComponent = ({
                 </div>
             );
         }
-
-        // En frontend, si no hay atributos, no renderizar nada
         return null;
     }
 
     return (
         <div style={containerStyles} className="product-attributes">
             <h3 className="text-lg font-semibold mb-4" style={getFontStyles('title')}>
-                {comp.content?.title || 'Opciones'}
+                {content.title || 'Opciones'}
             </h3>
 
             {attributes.map(attribute => (
@@ -370,25 +373,24 @@ const ProductDetailAttributesComponent = ({
                 </div>
             ))}
 
-            {/* Información de la combinación actual */}
             {currentCombination && (
                 <div className="mt-4 p-3 rounded-md" style={{
-                    backgroundColor: themeWithDefaults.background,
-                    borderColor: themeWithDefaults.borders,
+                    backgroundColor: resolveValue(themeWithDefaults.background),
+                    borderColor: resolveValue(themeWithDefaults.borders),
                     borderWidth: '1px',
                     borderStyle: 'solid',
-                    borderRadius: themeSettings?.border_radius || '0.5rem',
+                    borderRadius: resolveValue(themeWithDefaults?.border_radius || '0.5rem'),
                 }}>
                     <div className="flex justify-between items-center">
                         <span className="text-sm" style={{
-                            color: themeSettings?.text ? themeSettings.text : '#666666',
-                            fontFamily: themeSettings?.body_font || 'inherit',
+                            color: resolveValue(themeWithDefaults?.text || '#666666'),
+                            fontFamily: resolveValue(themeWithDefaults?.body_font || 'inherit'),
                         }}>
                             Combinación seleccionada
                         </span>
                         <span className="text-sm font-medium" style={{
-                            color: themeWithDefaults.heading,
-                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
+                            color: resolveValue(themeWithDefaults.heading),
+                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
                         }}>
                             {currentCombination.attribute_values.map(attr => attr.value_name).join(' / ')}
                         </span>
@@ -396,15 +398,14 @@ const ProductDetailAttributesComponent = ({
 
                     <div className="mt-2 flex justify-between items-center">
                         <span className="text-sm" style={{
-                            color: themeSettings?.text ? themeSettings.text : '#666666',
-                            fontFamily: themeSettings?.body_font || 'inherit',
+                            color: resolveValue(themeWithDefaults?.text || '#666666'),
+                            fontFamily: resolveValue(themeWithDefaults?.body_font || 'inherit'),
                         }}>
                             Disponibilidad:
                         </span>
-                        <span className={`text - sm font - medium ${getCurrentStock() > 0 ? 'text-green-600' : 'text-red-600'
-                            } `} style={{
-                                fontFamily: themeSettings?.body_font || 'inherit',
-                            }}>
+                        <span className={`text-sm font-medium ${getCurrentStock() > 0 ? 'text-green-600' : 'text-red-600'}`} style={{
+                            fontFamily: resolveValue(themeWithDefaults?.body_font || 'inherit'),
+                        }}>
                             {getCurrentStock() > 0
                                 ? `${getCurrentStock()} disponibles`
                                 : 'Agotado'
@@ -414,17 +415,16 @@ const ProductDetailAttributesComponent = ({
                 </div>
             )}
 
-            {/* Mensaje si no hay combinación válida */}
             {availableCombinations.length === 0 && Object.keys(selectedValues).length > 0 && (
                 <div className="mt-4 p-3 rounded-md" style={{
                     backgroundColor: '#fee2e2',
                     borderColor: '#fecaca',
                     borderWidth: '1px',
                     borderStyle: 'solid',
-                    borderRadius: themeSettings?.border_radius || '0.5rem',
+                    borderRadius: resolveValue(themeWithDefaults?.border_radius || '0.5rem'),
                 }}>
                     <p className="text-sm text-red-700" style={{
-                        fontFamily: themeSettings?.body_font || 'inherit',
+                        fontFamily: resolveValue(themeWithDefaults?.body_font || 'inherit'),
                     }}>
                         Esta combinación no está disponible. Por favor selecciona otras opciones.
                     </p>

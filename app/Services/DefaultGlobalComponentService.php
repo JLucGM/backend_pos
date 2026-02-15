@@ -11,34 +11,35 @@ class DefaultGlobalComponentService
 {
     public static function createForCompany(Company $company): void
     {
-        $menu = Menu::where('company_id', $company->id)->first();
-        $menuId = $menu?->id;
+        // Obtener los menús de la empresa
+        $mainMenu = Menu::where('company_id', $company->id)->where('name', 'Principal')->first();
+        $footerMenu = Menu::where('company_id', $company->id)->where('name', 'footer')->first();
 
-        $theme = Theme::where('slug', 'tema-azul')->first() ?? Theme::first();
-        $settings = $theme?->settings ?? [];
+        $mainMenuId = $mainMenu?->id;
+        $footerMenuId = $footerMenu?->id;
 
-        // Header
+        // Header (usa el menú Principal)
         GlobalComponent::updateOrCreate(
             ['company_id' => $company->id, 'type' => 'header'],
             [
                 'name' => 'Header Global',
-                'content' => self::buildHeader($settings, $menuId),
+                'content' => self::buildHeader($mainMenuId),
                 'is_active' => true,
             ]
         );
 
-        // Footer
+        // Footer (usa ambos menús)
         GlobalComponent::updateOrCreate(
             ['company_id' => $company->id, 'type' => 'footer'],
             [
                 'name' => 'Footer Global',
-                'content' => self::buildFooter($settings, $menuId),
+                'content' => self::buildFooter($footerMenuId, $mainMenuId),
                 'is_active' => true,
             ]
         );
     }
 
-    private static function buildHeader($settings, $menuId)
+    private static function buildHeader($menuId)
     {
         $headerId = 2000000;
         $logoId = $headerId + 1;
@@ -58,14 +59,14 @@ class DefaultGlobalComponentService
                     'cart' => [
                         'count' => '0',
                         'styles' => [
-                            'iconColor' => $settings['text'] ?? '#0a0a0a',
-                            'backgroundColor' => $settings['muted_color'] ?? '#f5f5f5',
-                            'borderWidth' => $settings['border_thickness_none'] ?? '0px',
-                            'borderStyle' => $settings['border_style_solid'] ?? 'solid',
-                            'borderColor' => $settings['muted_color'] ?? '#f5f5f5',
-                            'borderOpacity' => $settings['opacity_100'] ?? '1',
-                            'borderRadius' => $settings['border_radius_full'] ?? '50%',
-                            'backgroundOpacity' => $settings['opacity_100'] ?? '1',
+                            'iconColor' => 'theme.text',
+                            'backgroundColor' => 'theme.muted_color',
+                            'borderWidth' => 'theme.border_thickness_none',
+                            'borderStyle' => 'theme.border_style_solid',
+                            'borderColor' => 'theme.muted_color',
+                            'borderOpacity' => 'theme.opacity_100',
+                            'borderRadius' => 'theme.border_radius_full',
+                            'backgroundOpacity' => 'theme.opacity_100',
                             'width' => '36px',
                             'height' => '36px',
                             'padding' => '8px',
@@ -74,14 +75,14 @@ class DefaultGlobalComponentService
                     ],
                     'profile' => [
                         'styles' => [
-                            'iconColor' => $settings['text'] ?? '#0a0a0a',
-                            'backgroundColor' => $settings['muted_color'] ?? '#f5f5f5',
-                            'borderWidth' => $settings['border_thickness_none'] ?? '0px',
-                            'borderStyle' => $settings['border_style_solid'] ?? 'solid',
-                            'borderColor' => $settings['muted_color'] ?? '#f5f5f5',
-                            'borderOpacity' => $settings['opacity_100'] ?? '1',
-                            'borderRadius' => $settings['border_radius_full'] ?? '50%',
-                            'backgroundOpacity' => $settings['opacity_100'] ?? '1',
+                            'iconColor' => 'theme.text',
+                            'backgroundColor' => 'theme.muted_color',
+                            'borderWidth' => 'theme.border_thickness_none',
+                            'borderStyle' => 'theme.border_style_solid',
+                            'borderColor' => 'theme.muted_color',
+                            'borderOpacity' => 'theme.opacity_100',
+                            'borderRadius' => 'theme.border_radius_full',
+                            'backgroundOpacity' => 'theme.opacity_100',
                             'width' => '36px',
                             'height' => '36px',
                             'padding' => '8px',
@@ -90,14 +91,14 @@ class DefaultGlobalComponentService
                     ],
                     'search' => [
                         'styles' => [
-                            'iconColor' => $settings['text'] ?? '#0a0a0a',
+                            'iconColor' => 'theme.text',
                             'backgroundColor' => 'transparent',
-                            'borderWidth' => $settings['border_thickness_none'] ?? '0px',
-                            'borderStyle' => $settings['border_style_solid'] ?? 'solid',
-                            'borderColor' => $settings['muted_color'] ?? '#f5f5f5',
-                            'borderOpacity' => $settings['opacity_100'] ?? '1',
-                            'borderRadius' => $settings['border_radius_full'] ?? '50%',
-                            'backgroundOpacity' => $settings['opacity_100'] ?? '1',
+                            'borderWidth' => 'theme.border_thickness_none',
+                            'borderStyle' => 'theme.border_style_solid',
+                            'borderColor' => 'theme.muted_color',
+                            'borderOpacity' => 'theme.opacity_100',
+                            'borderRadius' => 'theme.border_radius_full',
+                            'backgroundOpacity' => 'theme.opacity_100',
                             'width' => '36px',
                             'height' => '36px',
                             'padding' => '8px',
@@ -112,9 +113,9 @@ class DefaultGlobalComponentService
                         'content' => 'Logo',
                         'styles' => [
                             'layout' => 'fit',
-                            'fontSize' => $settings['heading5_fontSize'] ?? '24px',
+                            'fontSize' => 'theme.heading5_fontSize',
                             'fontWeight' => 'bold',
-                            'color' => $settings['heading'] ?? '#0a0a0a',
+                            'color' => 'theme.heading',
                             'backgroundColor' => 'none',
                             'paddingTop' => '0px',
                             'paddingRight' => '0px',
@@ -130,17 +131,17 @@ class DefaultGlobalComponentService
                             'layout' => 'fit',
                             'display' => 'flex',
                             'gap' => '20px',
-                            'fontSize' => $settings['heading6_fontSize'] ?? '16px',
+                            'fontSize' => 'theme.heading6_fontSize',
                             'fontWeight' => 'normal',
                             'textTransform' => 'none',
                             'lineHeight' => 'normal',
                             'fontType' => 'default',
-                            'color' => $settings['text'] ?? '#0a0a0a',
+                            'color' => 'theme.text',
                             'buttonBackgroundColor' => 'transparent',
                             'backgroundColor' => 'transparent',
-                            'borderWidth' => $settings['border_thickness_none'] ?? '0px',
-                            'borderColor' => $settings['borders'] ?? '#f5f5f5',
-                            'borderRadius' => $settings['border_radius_none'] ?? '0px',
+                            'borderWidth' => 'theme.border_thickness_none',
+                            'borderColor' => 'theme.borders',
+                            'borderRadius' => 'theme.border_radius_none',
                             'paddingTop' => '5px',
                             'paddingRight' => '10px',
                             'paddingBottom' => '5px',
@@ -154,17 +155,18 @@ class DefaultGlobalComponentService
                 'paddingRight' => '20px',
                 'paddingBottom' => '20px',
                 'paddingLeft' => '20px',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
-                'borderBottom' => '1px solid ' . ($settings['borders'] ?? '#f5f5f5')
+                'backgroundColor' => 'theme.background',
+                'borderBottom' => '1px solid theme.borders'
             ]
         ];
     }
 
-    private static function buildFooter($settings, $menuId)
+    private static function buildFooter($menuFooterId, $menuPrincipalId)
     {
         $footerId = 3000000;
-        $column1Id = $footerId + 1;
-        $column2Id = $footerId + 2;
+        $column1Id = $footerId + 1;  // Columna de texto
+        $column2Id = $footerId + 2;  // Menú footer
+        $column3Id = $footerId + 3;  // Menú Principal
 
         return [
             'id' => $footerId,
@@ -184,20 +186,33 @@ class DefaultGlobalComponentService
                         'content' => "Dirección: Calle Principal 123\nTeléfono: (123) 456-7890\nEmail: info@empresa.com",
                         'styles' => [
                             'layout' => 'fit',
-                            'color' => $settings['text'] ?? '#0a0a0a',
-                            'fontSize' => $settings['paragraph_fontSize'] ?? '14px',
-                            'lineHeight' => $settings['paragraph_lineHeight'] ?? '1.6'
+                            'color' => 'theme.text',
+                            'fontSize' => 'theme.paragraph_fontSize',
+                            'lineHeight' => 'theme.paragraph_lineHeight'
                         ]
                     ],
                     [
                         'id' => $column2Id,
                         'type' => 'footerMenu',
-                        'content' => ['menuId' => $menuId],
+                        'content' => ['menuId' => $menuPrincipalId],
                         'styles' => [
                             'layout' => 'fit',
                             'display' => 'column',
                             'gap' => '8px',
-                            'color' => $settings['text'] ?? '#0a0a0a',
+                            'color' => 'theme.text',
+                            'fontSize' => '14px',
+                            'textTransform' => 'none'
+                        ]
+                    ],
+                    [
+                        'id' => $column3Id,
+                        'type' => 'footerMenu',
+                        'content' => ['menuId' => $menuFooterId],
+                        'styles' => [
+                            'layout' => 'fit',
+                            'display' => 'column',
+                            'gap' => '8px',
+                            'color' => 'theme.text',
                             'fontSize' => '14px',
                             'textTransform' => 'none'
                         ]
@@ -205,7 +220,7 @@ class DefaultGlobalComponentService
                 ]
             ],
             'styles' => [
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'paddingTop' => '40px',
                 'paddingRight' => '20px',
                 'paddingBottom' => '40px',

@@ -10,7 +10,7 @@ import ContainerComponent from '../ContainerComponent';
 import MarqueeTextComponent from '../MarqueeComponent/MarqueeTextComponent';
 import LinkComponent from '../LinkComponent';
 import DividerComponent from '../DividerComponent/DividerComponent';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const BannerComponent = ({
     comp,
@@ -27,6 +27,11 @@ const BannerComponent = ({
     // Obtener configuración del tema con valores por defecto
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
+    // Función para resolver referencias en cualquier valor
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
     // Obtener estilos específicos del componente banner del tema
     const themeBannerStyles = getComponentStyles(themeWithDefaults, 'banner', appliedTheme);
     const themeBannerInnerStyles = getComponentStyles(themeWithDefaults, 'banner-inner', appliedTheme);
@@ -40,42 +45,41 @@ const BannerComponent = ({
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
-    // Configuración del contenedor principal usando valores del tema como fallback
-    const containerHeight = withUnit(bannerConfig.containerHeight, bannerConfig.containerHeightUnit || 'px') || themeWithDefaults.banner_containerHeight || '400px';
-    const containerWidth = withUnit(bannerConfig.containerWidth, bannerConfig.containerWidthUnit || '%') || '100%';
-    const marginTop = withUnit(bannerConfig.marginTop) || '0px';
-    const marginRight = withUnit(bannerConfig.marginRight) || '0px';
-    const marginBottom = withUnit(bannerConfig.marginBottom) || '0px';
-    const marginLeft = withUnit(bannerConfig.marginLeft) || '0px';
-    const paddingTop = withUnit(bannerConfig.paddingTop) || themeWithDefaults.banner_paddingTop || '20px';
-    const paddingRight = withUnit(bannerConfig.paddingRight) || themeWithDefaults.banner_paddingRight || '20px';
-    const paddingBottom = withUnit(bannerConfig.paddingBottom) || themeWithDefaults.banner_paddingBottom || '20px';
-    const paddingLeft = withUnit(bannerConfig.paddingLeft) || themeWithDefaults.banner_paddingLeft || '20px';
-    const backgroundColor = bannerConfig.backgroundColor || themeWithDefaults.banner_backgroundColor || 'transparent';
-    const backgroundImage = bannerConfig.backgroundImage || null;
-    const backgroundVideo = bannerConfig.backgroundVideo || null;
-    const backgroundSize = bannerConfig.backgroundSize || 'cover';
-    const backgroundPosition = bannerConfig.backgroundPosition || 'center center';
-    const containerVerticalPosition = bannerConfig.containerVerticalPosition || 'center';
-    const containerHorizontalPosition = bannerConfig.containerHorizontalPosition || 'center';
-    const contentDirection = bannerConfig.contentDirection || 'vertical';
+    // Resolver valores antes de usarlos
+    const containerHeight = resolveValue(bannerConfig.containerHeight) || themeWithDefaults.banner_containerHeight || '400px';
+    const containerWidth = resolveValue(bannerConfig.containerWidth) || '100%';
+    const marginTop = resolveValue(bannerConfig.marginTop) || '0px';
+    const marginRight = resolveValue(bannerConfig.marginRight) || '0px';
+    const marginBottom = resolveValue(bannerConfig.marginBottom) || '0px';
+    const marginLeft = resolveValue(bannerConfig.marginLeft) || '0px';
+    const paddingTop = resolveValue(bannerConfig.paddingTop) || themeWithDefaults.banner_paddingTop || '20px';
+    const paddingRight = resolveValue(bannerConfig.paddingRight) || themeWithDefaults.banner_paddingRight || '20px';
+    const paddingBottom = resolveValue(bannerConfig.paddingBottom) || themeWithDefaults.banner_paddingBottom || '20px';
+    const paddingLeft = resolveValue(bannerConfig.paddingLeft) || themeWithDefaults.banner_paddingLeft || '20px';
+    const backgroundColor = resolveValue(bannerConfig.backgroundColor) || themeWithDefaults.banner_backgroundColor || 'transparent';
+    const backgroundImage = resolveValue(bannerConfig.backgroundImage) || null;
+    const backgroundVideo = resolveValue(bannerConfig.backgroundVideo) || null;
+    const backgroundSize = resolveValue(bannerConfig.backgroundSize) || 'cover';
+    const backgroundPosition = resolveValue(bannerConfig.backgroundPosition) || 'center center';
+    const containerVerticalPosition = resolveValue(bannerConfig.containerVerticalPosition) || 'center';
+    const containerHorizontalPosition = resolveValue(bannerConfig.containerHorizontalPosition) || 'center';
+    const contentDirection = resolveValue(bannerConfig.contentDirection) || 'vertical';
 
-    // NUEVO: Configuración del contenedor interno usando valores del tema
-    const innerContainerBackgroundColor = bannerConfig.innerContainerBackgroundColor || themeWithDefaults.banner_innerContainerBackgroundColor || 'transparent';
-    const innerContainerBackgroundOpacity = bannerConfig.innerContainerBackgroundOpacity || themeWithDefaults.banner_innerContainerBackgroundOpacity || 1;
-    const innerContainerPaddingTop = withUnit(bannerConfig.innerContainerPaddingTop) || themeWithDefaults.banner_innerContainerPaddingTop || '20px';
-    const innerContainerPaddingRight = withUnit(bannerConfig.innerContainerPaddingRight) || themeWithDefaults.banner_innerContainerPaddingRight || '20px';
-    const innerContainerPaddingBottom = withUnit(bannerConfig.innerContainerPaddingBottom) || themeWithDefaults.banner_innerContainerPaddingBottom || '20px';
-    const innerContainerPaddingLeft = withUnit(bannerConfig.innerContainerPaddingLeft) || themeWithDefaults.banner_innerContainerPaddingLeft || '20px';
-    const innerContainerBorderRadius = withUnit(bannerConfig.innerContainerBorderRadius) || themeWithDefaults.banner_innerContainerBorderRadius || '0px';
-    const innerContainerWidth = withUnit(bannerConfig.innerContainerWidth, bannerConfig.innerContainerWidthUnit || 'px') || 'auto';
-    const innerContainerMaxWidth = withUnit(bannerConfig.innerContainerMaxWidth, bannerConfig.innerContainerMaxWidthUnit || 'px') || '800px';
-    const innerContainerShow = bannerConfig.innerContainerShow !== false; // Por defecto true
+    // Configuración del contenedor interno
+    const innerContainerBackgroundColor = resolveValue(bannerConfig.innerContainerBackgroundColor) || themeWithDefaults.banner_innerContainerBackgroundColor || 'transparent';
+    const innerContainerBackgroundOpacity = resolveValue(bannerConfig.innerContainerBackgroundOpacity) || themeWithDefaults.banner_innerContainerBackgroundOpacity || 1;
+    const innerContainerPaddingTop = resolveValue(bannerConfig.innerContainerPaddingTop) || themeWithDefaults.banner_innerContainerPaddingTop || '20px';
+    const innerContainerPaddingRight = resolveValue(bannerConfig.innerContainerPaddingRight) || themeWithDefaults.banner_innerContainerPaddingRight || '20px';
+    const innerContainerPaddingBottom = resolveValue(bannerConfig.innerContainerPaddingBottom) || themeWithDefaults.banner_innerContainerPaddingBottom || '20px';
+    const innerContainerPaddingLeft = resolveValue(bannerConfig.innerContainerPaddingLeft) || themeWithDefaults.banner_innerContainerPaddingLeft || '20px';
+    const innerContainerBorderRadius = resolveValue(bannerConfig.innerContainerBorderRadius) || themeWithDefaults.banner_innerContainerBorderRadius || '0px';
+    const innerContainerWidth = resolveValue(bannerConfig.innerContainerWidth) || 'auto';
+    const innerContainerMaxWidth = resolveValue(bannerConfig.innerContainerMaxWidth) || '800px';
+    const innerContainerShow = bannerConfig.innerContainerShow !== false;
 
     // Funciones de alineación
     const getVerticalAlignment = () => {
@@ -97,16 +101,16 @@ const BannerComponent = ({
     // Estilos del contenedor principal
     const containerStyles = {
         ...getStyles(comp),
-        height: containerHeight,
-        width: containerWidth,
-        marginTop,
-        marginRight,
-        marginBottom,
-        marginLeft,
-        paddingTop,
-        paddingRight,
-        paddingBottom,
-        paddingLeft,
+        height: withUnit(containerHeight, bannerConfig.containerHeightUnit || 'px'),
+        width: withUnit(containerWidth, bannerConfig.containerWidthUnit || '%'),
+        marginTop: withUnit(marginTop),
+        marginRight: withUnit(marginRight),
+        marginBottom: withUnit(marginBottom),
+        marginLeft: withUnit(marginLeft),
+        paddingTop: withUnit(paddingTop),
+        paddingRight: withUnit(paddingRight),
+        paddingBottom: withUnit(paddingBottom),
+        paddingLeft: withUnit(paddingLeft),
         backgroundColor: backgroundImage || backgroundVideo ? 'transparent' : backgroundColor,
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
         backgroundSize,
@@ -132,15 +136,15 @@ const BannerComponent = ({
         width: '100%',
     };
 
-    // NUEVO: Estilos del contenedor interno que envuelve los hijos
+    // Estilos del contenedor interno
     const innerContainerStyles = {
-        paddingTop: innerContainerPaddingTop,
-        paddingRight: innerContainerPaddingRight,
-        paddingBottom: innerContainerPaddingBottom,
-        paddingLeft: innerContainerPaddingLeft,
-        borderRadius: innerContainerBorderRadius,
-        width: innerContainerWidth,
-        maxWidth: innerContainerMaxWidth,
+        paddingTop: withUnit(innerContainerPaddingTop),
+        paddingRight: withUnit(innerContainerPaddingRight),
+        paddingBottom: withUnit(innerContainerPaddingBottom),
+        paddingLeft: withUnit(innerContainerPaddingLeft),
+        borderRadius: withUnit(innerContainerBorderRadius),
+        width: withUnit(innerContainerWidth, bannerConfig.innerContainerWidthUnit || 'px'),
+        maxWidth: withUnit(innerContainerMaxWidth, bannerConfig.innerContainerMaxWidthUnit || 'px'),
         display: 'flex',
         flexDirection: contentDirection === 'horizontal' ? 'row' : 'column',
         gap: contentDirection === 'horizontal' ? '20px' : '10px',
@@ -162,23 +166,19 @@ const BannerComponent = ({
 
     // Función para convertir HEX a RGBA
     function hexToRgba(hex, opacity) {
-        // Remove the hash if it exists
         hex = hex.replace('#', '');
-
-        // Parse the hex values
         let r, g, b;
         if (hex.length === 3) {
             r = parseInt(hex[0] + hex[0], 16);
             g = parseInt(hex[1] + hex[1], 16);
             b = parseInt(hex[2] + hex[2], 16);
         } else if (hex.length === 6) {
-            r = parseInt(hex[0] + hex[1], 16);
-            g = parseInt(hex[2] + hex[3], 16);
-            b = parseInt(hex[4] + hex[5], 16);
+            r = parseInt(hex.substring(0, 2), 16);
+            g = parseInt(hex.substring(2, 4), 16);
+            b = parseInt(hex.substring(4, 6), 16);
         } else {
-            return hex; // Return as-is if invalid
+            return hex;
         }
-
         return `rgba(${r}, ${g}, ${b}, ${opacity})`;
     }
 
@@ -224,6 +224,7 @@ const BannerComponent = ({
             getStyles,
             isPreview,
             themeSettings,
+            appliedTheme,
             onEdit: () => onEdit(child),
             onDelete: () => handleDeleteChild(child.id),
             hoveredComponentId,

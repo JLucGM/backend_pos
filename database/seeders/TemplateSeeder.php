@@ -29,17 +29,189 @@ class TemplateSeeder extends Seeder
     {
         $theme = Theme::where('slug', 'tema-azul')->first();
         if (!$theme) {
+            // Si no existe, lo creamos con settings por defecto (copiados de ThemeSeeder para tema-azul)
             $theme = Theme::create([
                 'name' => 'Tema Azul',
                 'slug' => 'tema-azul',
                 'description' => 'Tema azul por defecto',
                 'is_active' => true,
-                'settings' => [] // Puedes poner settings por defecto si no existen
+                'settings' => [
+                    "background" => "#ffffff",
+                    "heading" => "#0a0a0a",
+                    "text" => "#0a0a0a",
+                    "links" => "#0080ff",
+                    "hover_links" => "#0066cc",
+                    "borders" => "#f5f5f5",
+                    "shadows" => "#0000001a",
+                    "accent_color" => "#0066cc",
+                    "muted_color" => "#6b7280",
+                    "success_color" => "#10b981",
+                    "warning_color" => "#f59e0b",
+                    "danger_color" => "#ef4444",
+                    "info_color" => "#3b82f6",
+                    "spacing_unit" => "0.5rem",
+                    "spacing_none" => "0",
+                    "spacing_xxsmall" => "0.125rem",
+                    "spacing_xsmall" => "0.25rem",
+                    "spacing_small" => "0.5rem",
+                    "spacing_medium" => "1rem",
+                    "spacing_large" => "1.5rem",
+                    "spacing_xlarge" => "2rem",
+                    "spacing_2xlarge" => "2.5rem",
+                    "spacing_3xlarge" => "3rem",
+                    "spacing_4xlarge" => "4rem",
+                    "border_radius_small" => "0.25rem",
+                    "border_radius_medium" => "0.5rem",
+                    "border_radius_large" => "1rem",
+                    "border_radius_xlarge" => "2rem",
+                    "border_radius_full" => "9999px",
+                    "border_radius_circle" => "50%",
+                    "border_radius_pill" => "9999px",
+                    "border_thickness_none" => "0px",
+                    "border_thickness_hairline" => "1px",
+                    "border_thickness_thin" => "2px",
+                    "border_thickness_medium" => "3px",
+                    "border_thickness_thick" => "4px",
+                    "border_thickness_xthick" => "6px",
+                    "border_style_solid" => "solid",
+                    "border_style_dashed" => "dashed",
+                    "border_style_dotted" => "dotted",
+                    "border_style_double" => "double",
+                    "border_style_groove" => "groove",
+                    "border_style_ridge" => "ridge",
+                    "border_style_inset" => "inset",
+                    "border_style_outset" => "outset",
+                    "border_style_none" => "none",
+                    "border_style_hidden" => "hidden",
+                    "shadow_sm" => "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                    "shadow_md" => "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    "shadow_lg" => "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    "shadow_xl" => "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+                    "shadow_2xl" => "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    "opacity_0" => "0",
+                    "opacity_25" => "0.25",
+                    "opacity_50" => "0.5",
+                    "opacity_75" => "0.75",
+                    "opacity_100" => "1",
+                    "default_border_style" => "solid",
+                    "default_border_thickness" => "1px",
+                    "default_border_radius" => "0.5rem",
+                    "primary_button_background" => "#d6eaff",
+                    "primary_button_text" => "#0a0a0a",
+                    "primary_button_border" => "#d6eaff",
+                    "primary_button_border_thickness" => "1px",
+                    "primary_button_corner_radius" => "0.5rem",
+                    "primary_button_text_case" => "default",
+                    "primary_button_hover_background" => "#addeff",
+                    "primary_button_hover_text" => "#0a0a0a",
+                    "primary_button_hover_border" => "#addeff",
+                    "primary_button_hover_border_thickness" => "1px",
+                    "primary_button_focus_background" => "#85c2ff",
+                    "primary_button_focus_text" => "#0a0a0a",
+                    "primary_button_focus_border" => "#85c2ff",
+                    "primary_button_focus_border_thickness" => "2px",
+                    "secondary_button_background" => "#f5f5f5",
+                    "secondary_button_text" => "#0a0a0a",
+                    "secondary_button_border" => "#f5f5f5",
+                    "secondary_button_border_thickness" => "1px",
+                    "secondary_button_corner_radius" => "0.5rem",
+                    "secondary_button_text_case" => "default",
+                    "secondary_button_hover_background" => "#d6d6d6",
+                    "secondary_button_hover_text" => "#0a0a0a",
+                    "secondary_button_hover_border" => "#d6d6d6",
+                    "secondary_button_hover_border_thickness" => "1px",
+                    "secondary_button_focus_background" => "#b8b8b8",
+                    "secondary_button_focus_text" => "#0a0a0a",
+                    "secondary_button_focus_border" => "#b8b8b8",
+                    "secondary_button_focus_border_thickness" => "2px",
+                    "input_background" => "#ffffff",
+                    "input_text" => "#0a0a0a",
+                    "input_border" => "#f5f5f5",
+                    "input_border_thickness" => "1px",
+                    "input_corner_radius" => "0.375rem",
+                    "input_hover_background" => "#ffffff",
+                    "input_focus_background" => "#ffffff",
+                    "input_focus_border" => "#d6eaff",
+                    "body_font" => "'Arial', 'Helvetica', sans-serif",
+                    "heading_font" => "'Arial', 'Helvetica', sans-serif",
+                    "subheading_font" => "'Arial', 'Helvetica', sans-serif",
+                    "accent_font" => "'Georgia', 'Times New Roman', serif",
+                    "paragraph_font" => "body_font",
+                    "paragraph_fontSize" => "16px",
+                    "paragraph_fontWeight" => "normal",
+                    "paragraph_lineHeight" => "1.6",
+                    "paragraph_textTransform" => "none",
+                    "heading1_font" => "heading_font",
+                    "heading1_fontSize" => "2.5rem",
+                    "heading1_fontWeight" => "bold",
+                    "heading1_lineHeight" => "1.2",
+                    "heading1_textTransform" => "none",
+                    "heading2_font" => "heading_font",
+                    "heading2_fontSize" => "2rem",
+                    "heading2_fontWeight" => "bold",
+                    "heading2_lineHeight" => "1.3",
+                    "heading2_textTransform" => "none",
+                    "heading3_font" => "heading_font",
+                    "heading3_fontSize" => "1.75rem",
+                    "heading3_fontWeight" => "bold",
+                    "heading3_lineHeight" => "1.3",
+                    "heading3_textTransform" => "none",
+                    "heading4_font" => "heading_font",
+                    "heading4_fontSize" => "1.5rem",
+                    "heading4_fontWeight" => "bold",
+                    "heading4_lineHeight" => "1.4",
+                    "heading4_textTransform" => "none",
+                    "heading5_font" => "heading_font",
+                    "heading5_fontSize" => "1.25rem",
+                    "heading5_fontWeight" => "bold",
+                    "heading5_lineHeight" => "1.4",
+                    "heading5_textTransform" => "none",
+                    "heading6_font" => "heading_font",
+                    "heading6_fontSize" => "1rem",
+                    "heading6_fontWeight" => "bold",
+                    "heading6_lineHeight" => "1.5",
+                    "heading6_textTransform" => "none",
+                    "primary_color" => "#d6eaff",
+                    "foreground" => "#0a0a0a",
+                    "secondary_color" => "#f5f5f5",
+                    "font_family" => "'Arial', sans-serif",
+                    "heading_font_family" => "'Arial', sans-serif",
+                    "button_font_family" => "'Arial', sans-serif",
+                    "input_font_family" => "'Arial', sans-serif",
+                    "carousel_gapX" => "10px",
+                    "carousel_gapY" => "10px",
+                    "banner_containerHeight" => "400px",
+                    "banner_paddingTop" => "20px",
+                    "banner_paddingRight" => "20px",
+                    "banner_paddingBottom" => "20px",
+                    "banner_paddingLeft" => "20px",
+                    "banner_innerContainerBackgroundOpacity" => "1",
+                    "banner_innerContainerPaddingTop" => "20px",
+                    "banner_innerContainerPaddingRight" => "20px",
+                    "banner_innerContainerPaddingBottom" => "20px",
+                    "banner_innerContainerPaddingLeft" => "20px",
+                    "banner_innerContainerBorderRadius" => "0px",
+                    "bento_backgroundColor" => "#ffffffff",
+                    "bento_containerBorderRadius" => "0px",
+                    "bento_gridGap" => "20px",
+                    "container_borderRadius" => "0px",
+                    "container_gap" => "0px",
+                    "marquee_paddingTop" => "10px",
+                    "marquee_paddingBottom" => "10px",
+                    "marquee_fontSize" => "16px",
+                    "marquee_fontWeight" => "normal",
+                    "marquee_borderRadius" => "0px",
+                    "divider_paddingTop" => "20px",
+                    "divider_paddingBottom" => "20px",
+                    "divider_lineWidth" => "1px",
+                    "divider_lineLength" => "100%",
+                    "divider_opacity" => "1",
+                ]
             ]);
         }
 
-        $settings = $this->getDefaultThemeSettings();
-        $baseId = 1000000; // Base para IDs de componentes (suficientemente grande)
+        $settings = $this->getDefaultThemeSettings(); // Ahora $settings ya no se usa directamente para valores, pero lo mantenemos por si acaso
+        $baseId = 1000000;
 
         $templates = [
             // Plantilla para página de inicio
@@ -48,10 +220,10 @@ class TemplateSeeder extends Seeder
                 'slug' => 'home-template',
                 'description' => 'Plantilla para la página de inicio con banner, carrusel y separador',
                 'layout_structure' => json_encode([
-                    $this->createAnnouncementBar($baseId + 1, $settings),
-                    $this->createBanner($baseId + 10, $settings),
-                    $this->createCarousel($baseId + 20, $settings),
-                    $this->createDivider($baseId + 30, $settings),
+                    $this->createAnnouncementBar($baseId + 1),
+                    $this->createBanner($baseId + 10),
+                    $this->createCarousel($baseId + 20),
+                    $this->createDivider($baseId + 30),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -62,7 +234,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'shop-template',
                 'description' => 'Plantilla para la página de tienda con lista de productos',
                 'layout_structure' => json_encode([
-                    $this->createProductList($baseId + 40, $settings),
+                    $this->createProductList($baseId + 40),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -73,7 +245,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'product-detail-template',
                 'description' => 'Plantilla para la página de detalles de producto',
                 'layout_structure' => json_encode([
-                    $this->createProductDetail($baseId + 50, $settings),
+                    $this->createProductDetail($baseId + 50),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -84,7 +256,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'cart-template',
                 'description' => 'Plantilla para la página de carrito',
                 'layout_structure' => json_encode([
-                    $this->createCart($baseId + 60, $settings),
+                    $this->createCart($baseId + 60),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -95,7 +267,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'checkout-template',
                 'description' => 'Plantilla para la página de checkout',
                 'layout_structure' => json_encode([
-                    $this->createCheckout($baseId + 70, $settings),
+                    $this->createCheckout($baseId + 70),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -106,7 +278,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'login-template',
                 'description' => 'Plantilla para la página de inicio de sesión',
                 'layout_structure' => json_encode([
-                    $this->createLogin($baseId + 80, $settings),
+                    $this->createLogin($baseId + 80),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -117,7 +289,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'register-template',
                 'description' => 'Plantilla para la página de registro',
                 'layout_structure' => json_encode([
-                    $this->createRegister($baseId + 90, $settings),
+                    $this->createRegister($baseId + 90),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -128,7 +300,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'profile-template',
                 'description' => 'Plantilla para la página de perfil',
                 'layout_structure' => json_encode([
-                    $this->createProfile($baseId + 100, $settings),
+                    $this->createProfile($baseId + 100),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -139,7 +311,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'orders-template',
                 'description' => 'Plantilla para la página de pedidos',
                 'layout_structure' => json_encode([
-                    $this->createOrders($baseId + 110, $settings),
+                    $this->createOrders($baseId + 110),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -150,7 +322,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'success-template',
                 'description' => 'Plantilla para la página de orden exitosa',
                 'layout_structure' => json_encode([
-                    $this->createSuccess($baseId + 120, $settings),
+                    $this->createSuccess($baseId + 120),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -161,7 +333,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'link-bio-template',
                 'description' => 'Plantilla para página de link bio',
                 'layout_structure' => json_encode([
-                    $this->createLinkBio($baseId + 130, $settings),
+                    $this->createLinkBio($baseId + 130),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -172,7 +344,7 @@ class TemplateSeeder extends Seeder
                 'slug' => 'policy-template',
                 'description' => 'Plantilla para páginas de políticas con editor de contenido',
                 'layout_structure' => json_encode([
-                    $this->createPageContent($baseId + 140, $settings),
+                    $this->createPageContent($baseId + 140),
                 ]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
@@ -182,7 +354,7 @@ class TemplateSeeder extends Seeder
                 'name' => 'Página Básica',
                 'slug' => 'basic-template',
                 'description' => 'Plantilla vacía para personalizar completamente',
-                'layout_structure' => json_encode([]), // Sin componentes iniciales
+                'layout_structure' => json_encode([]),
                 'is_global' => true,
                 'theme_id' => $theme->id,
             ],
@@ -196,9 +368,11 @@ class TemplateSeeder extends Seeder
         }
     }
 
-    // Métodos auxiliares para crear cada tipo de componente (igual que en handleAddComponent)
+    // ==================== MÉTODOS DE COMPONENTES ====================
+    // Todos ellos ahora devuelven referencias "theme.clave" en lugar de valores concretos.
+    // Los valores numéricos fijos (como paddings, gaps, etc.) se mantienen como números.
 
-    private function createAnnouncementBar($id, $settings)
+    private function createAnnouncementBar($id)
     {
         $announcementId = $id + 1;
         return [
@@ -217,7 +391,7 @@ class TemplateSeeder extends Seeder
                         'styles' => [
                             'fontSize' => '14px',
                             'fontWeight' => 'normal',
-                            'color' => $settings['text'] ?? '#0a0a0a',
+                            'color' => 'theme.text',
                             'textTransform' => 'none',
                             'fontType' => 'default'
                         ]
@@ -225,14 +399,14 @@ class TemplateSeeder extends Seeder
                 ]
             ],
             'styles' => [
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'paddingTop' => '15px',
                 'paddingBottom' => '15px'
             ]
         ];
     }
 
-    private function createBanner($id, $settings)
+    private function createBanner($id)
     {
         $titleId = $id + 1;
         $textId = $id + 2;
@@ -240,17 +414,17 @@ class TemplateSeeder extends Seeder
             'id' => $id,
             'type' => 'banner',
             'content' => [
-                'containerHeight' => $settings['banner_containerHeight'] ?? '400px',
+                'containerHeight' => 'theme.banner_containerHeight',
                 'containerWidth' => '100%',
                 'marginTop' => '0px',
                 'marginRight' => '0px',
                 'marginBottom' => '0px',
                 'marginLeft' => '0px',
-                'paddingTop' => $settings['banner_paddingTop'] ?? '20px',
-                'paddingRight' => $settings['banner_paddingRight'] ?? '20px',
-                'paddingBottom' => $settings['banner_paddingBottom'] ?? '20px',
-                'paddingLeft' => $settings['banner_paddingLeft'] ?? '20px',
-                'backgroundColor' => $settings['background'] ?? 'transparent',
+                'paddingTop' => 'theme.banner_paddingTop',
+                'paddingRight' => 'theme.banner_paddingRight',
+                'paddingBottom' => 'theme.banner_paddingBottom',
+                'paddingLeft' => 'theme.banner_paddingLeft',
+                'backgroundColor' => 'theme.background',
                 'backgroundImage' => null,
                 'backgroundVideo' => null,
                 'backgroundSize' => 'cover',
@@ -261,12 +435,12 @@ class TemplateSeeder extends Seeder
                 'innerContainerShow' => true,
                 'innerContainerHasBackground' => true,
                 'innerContainerBackgroundColor' => 'transparent',
-                'innerContainerBackgroundOpacity' => $settings['banner_innerContainerBackgroundOpacity'] ?? '1',
-                'innerContainerPaddingTop' => $settings['banner_innerContainerPaddingTop'] ?? '20px',
-                'innerContainerPaddingRight' => $settings['banner_innerContainerPaddingRight'] ?? '20px',
-                'innerContainerPaddingBottom' => $settings['banner_innerContainerPaddingBottom'] ?? '20px',
-                'innerContainerPaddingLeft' => $settings['banner_innerContainerPaddingLeft'] ?? '20px',
-                'innerContainerBorderRadius' => $settings['banner_innerContainerBorderRadius'] ?? '0px',
+                'innerContainerBackgroundOpacity' => 'theme.banner_innerContainerBackgroundOpacity',
+                'innerContainerPaddingTop' => 'theme.banner_innerContainerPaddingTop',
+                'innerContainerPaddingRight' => 'theme.banner_innerContainerPaddingRight',
+                'innerContainerPaddingBottom' => 'theme.banner_innerContainerPaddingBottom',
+                'innerContainerPaddingLeft' => 'theme.banner_innerContainerPaddingLeft',
+                'innerContainerBorderRadius' => 'theme.banner_innerContainerBorderRadius',
                 'innerContainerWidth' => 'auto',
                 'innerContainerMaxWidth' => '800px',
                 'children' => [
@@ -276,15 +450,15 @@ class TemplateSeeder extends Seeder
                         'content' => 'Título del Banner',
                         'styles' => [
                             'textStyle' => 'heading2',
-                            'layout' => 'fit',
+                            'layout' => 'fill',
                             'alignment' => 'center',
                             'paddingTop' => '10px',
                             'paddingRight' => '10px',
                             'paddingBottom' => '10px',
                             'paddingLeft' => '10px',
                             'backgroundColor' => 'transparent',
-                            'borderRadius' => $settings['border_radius_small'] ?? '0px',
-                            'color' => $settings['heading'] ?? '#0a0a0a'
+                            'borderRadius' => 'theme.border_radius_small',
+                            'color' => 'theme.heading'
                         ]
                     ],
                     [
@@ -292,18 +466,18 @@ class TemplateSeeder extends Seeder
                         'type' => 'bannerText',
                         'content' => 'Texto descriptivo del banner',
                         'styles' => [
-                            'layout' => 'fit',
+                            'layout' => 'fill',
                             'alignment' => 'center',
                             'background' => 'transparent',
-                            'backgroundOpacity' => $settings['opacity_100'] ?? '1',
-                            'borderRadius' => $settings['border_radius_small'] ?? '0px',
+                            'backgroundOpacity' => 'theme.opacity_100',
+                            'borderRadius' => 'theme.border_radius_small',
                             'paddingTop' => '10px',
                             'paddingRight' => '10px',
                             'paddingBottom' => '10px',
                             'paddingLeft' => '10px',
-                            'color' => $settings['text'] ?? '#0a0a0a',
-                            'fontSize' => $settings['paragraph_fontSize'] ?? '16px',
-                            'fontWeight' => $settings['paragraph_fontWeight'] ?? 'normal'
+                            'color' => 'theme.text',
+                            'fontSize' => 'theme.paragraph_fontSize',
+                            'fontWeight' => 'theme.paragraph_fontWeight'
                         ]
                     ]
                 ]
@@ -312,7 +486,7 @@ class TemplateSeeder extends Seeder
         ];
     }
 
-    private function createCarousel($id, $settings)
+    private function createCarousel($id)
     {
         $titleId = $id + 1;
         $cardId = $id + 2;
@@ -326,9 +500,9 @@ class TemplateSeeder extends Seeder
             'content' => [
                 'limit' => 5,
                 'slidesToShow' => 3,
-                'gapX' => $settings['carousel_gapX'] ?? '10px',
-                'gapY' => $settings['carousel_gapY'] ?? '10px',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'gapX' => 'theme.carousel_gapX',
+                'gapY' => 'theme.carousel_gapY',
+                'backgroundColor' => 'theme.background',
                 'children' => [
                     [
                         'id' => $titleId,
@@ -337,9 +511,9 @@ class TemplateSeeder extends Seeder
                         'styles' => [
                             'layout' => 'fit',
                             'alignment' => 'center',
-                            'color' => $settings['heading'] ?? '#0a0a0a',
-                            'fontSize' => $settings['heading2_fontSize'] ?? '24px',
-                            'fontWeight' => $settings['heading2_fontWeight'] ?? 'bold'
+                            'color' => 'theme.heading',
+                            'fontSize' => 'theme.heading2_fontSize',
+                            'fontWeight' => 'theme.heading2_fontWeight'
                         ]
                     ],
                     [
@@ -347,17 +521,17 @@ class TemplateSeeder extends Seeder
                         'type' => 'carouselCard',
                         'content' => [
                             'cardBorder' => 'none',
-                            'cardBorderThickness' => $settings['border_thickness_hairline'] ?? '1px',
-                            'cardBorderOpacity' => $settings['opacity_100'] ?? '1',
-                            'cardBorderRadius' => $settings['border_radius_small'] ?? '0px',
+                            'cardBorderThickness' => 'theme.border_thickness_hairline',
+                            'cardBorderOpacity' => 'theme.opacity_100',
+                            'cardBorderRadius' => 'theme.border_radius_small',
                             'cardPaddingTop' => '10px',
                             'cardPaddingRight' => '10px',
                             'cardPaddingBottom' => '10px',
                             'cardPaddingLeft' => '10px',
                             'imageBorder' => 'none',
-                            'imageBorderThickness' => $settings['border_thickness_hairline'] ?? '1px',
-                            'imageBorderOpacity' => $settings['opacity_100'] ?? '1',
-                            'imageBorderRadius' => $settings['border_radius_small'] ?? '0px',
+                            'imageBorderThickness' => 'theme.border_thickness_hairline',
+                            'imageBorderOpacity' => 'theme.opacity_100',
+                            'imageBorderRadius' => 'theme.border_radius_small',
                             'children' => [
                                 [
                                     'id' => $imageId,
@@ -366,9 +540,9 @@ class TemplateSeeder extends Seeder
                                     'styles' => [
                                         'aspectRatio' => 'square',
                                         'imageBorder' => 'none',
-                                        'imageBorderThickness' => $settings['border_thickness_hairline'] ?? '1px',
-                                        'imageBorderOpacity' => $settings['opacity_100'] ?? '1',
-                                        'imageBorderRadius' => $settings['border_radius_small'] ?? '0px'
+                                        'imageBorderThickness' => 'theme.border_thickness_hairline',
+                                        'imageBorderOpacity' => 'theme.opacity_100',
+                                        'imageBorderRadius' => 'theme.border_radius_small'
                                     ]
                                 ],
                                 [
@@ -378,8 +552,8 @@ class TemplateSeeder extends Seeder
                                     'styles' => [
                                         'layout' => 'fit',
                                         'alignment' => 'left',
-                                        'color' => $settings['text'] ?? '#0a0a0a',
-                                        'fontSize' => $settings['paragraph_fontSize'] ?? '16px',
+                                        'color' => 'theme.text',
+                                        'fontSize' => 'theme.paragraph_fontSize',
                                         'fontWeight' => '600'
                                     ]
                                 ],
@@ -390,7 +564,7 @@ class TemplateSeeder extends Seeder
                                     'styles' => [
                                         'layout' => 'fit',
                                         'alignment' => 'left',
-                                        'color' => $settings['text'] ?? '#0a0a0a',
+                                        'color' => 'theme.text',
                                         'fontSize' => '14px',
                                         'fontWeight' => 'normal'
                                     ]
@@ -405,24 +579,24 @@ class TemplateSeeder extends Seeder
         ];
     }
 
-    private function createDivider($id, $settings)
+    private function createDivider($id)
     {
         return [
             'id' => $id,
             'type' => 'divider',
             'content' => '',
             'styles' => [
-                'paddingTop' => $settings['divider_paddingTop'] ?? '20px',
-                'paddingBottom' => $settings['divider_paddingBottom'] ?? '20px',
-                'lineWidth' => $settings['divider_lineWidth'] ?? '1px',
-                'lineLength' => $settings['divider_lineLength'] ?? '100%',
-                'lineColor' => $settings['borders'] ?? '#f5f5f5',
-                'opacity' => $settings['divider_opacity'] ?? '1',
+                'paddingTop' => 'theme.divider_paddingTop',
+                'paddingBottom' => 'theme.divider_paddingBottom',
+                'lineWidth' => 'theme.divider_lineWidth',
+                'lineLength' => 'theme.divider_lineLength',
+                'lineColor' => 'theme.borders',
+                'opacity' => 'theme.divider_opacity',
             ]
         ];
     }
 
-    private function createProductList($id, $settings)
+    private function createProductList($id)
     {
         $listId = $id;
         $titleId = $id + 1;
@@ -439,9 +613,9 @@ class TemplateSeeder extends Seeder
             'type' => 'productList',
             'content' => [
                 'columns' => 3,
-                'gapX' => $settings['carousel_gapX'] ?? '10px',
-                'gapY' => $settings['carousel_gapY'] ?? '10px',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'gapX' => 'theme.carousel_gapX',
+                'gapY' => 'theme.carousel_gapY',
+                'backgroundColor' => 'theme.background',
                 'limit' => 8,
                 'children' => [
                     [
@@ -451,9 +625,9 @@ class TemplateSeeder extends Seeder
                         'styles' => [
                             'layout' => 'fit',
                             'alignment' => 'center',
-                            'color' => $settings['heading'] ?? '#0a0a0a',
-                            'fontSize' => $settings['heading2_fontSize'] ?? '24px',
-                            'fontWeight' => $settings['heading2_fontWeight'] ?? 'bold'
+                            'color' => 'theme.heading',
+                            'fontSize' => 'theme.heading2_fontSize',
+                            'fontWeight' => 'theme.heading2_fontWeight'
                         ]
                     ],
                     [
@@ -461,9 +635,9 @@ class TemplateSeeder extends Seeder
                         'type' => 'productCard',
                         'content' => [
                             'cardBorder' => 'none',
-                            'cardBorderThickness' => $settings['border_thickness_hairline'] ?? '1px',
-                            'cardBorderOpacity' => $settings['opacity_100'] ?? '1',
-                            'cardBorderRadius' => $settings['border_radius_small'] ?? '0px',
+                            'cardBorderThickness' => 'theme.border_thickness_hairline',
+                            'cardBorderOpacity' => 'theme.opacity_100',
+                            'cardBorderRadius' => 'theme.border_radius_small',
                             'cardPaddingTop' => '0px',
                             'cardPaddingRight' => '0px',
                             'cardPaddingBottom' => '0px',
@@ -475,10 +649,10 @@ class TemplateSeeder extends Seeder
                                     'content' => '',
                                     'styles' => [
                                         'aspectRatio' => 'square',
-                                        'imageBorder' => $settings['border_thickness_none'] ?? 'none',
-                                        'imageBorderThickness' => $settings['border_thickness_hairline'] ?? '1px',
-                                        'imageBorderOpacity' => $settings['opacity_100'] ?? '1',
-                                        'imageBorderRadius' => $settings['border_radius_small'] ?? '0px'
+                                        'imageBorder' => 'theme.border_thickness_none',
+                                        'imageBorderThickness' => 'theme.border_thickness_hairline',
+                                        'imageBorderOpacity' => 'theme.opacity_100',
+                                        'imageBorderRadius' => 'theme.border_radius_small'
                                     ]
                                 ],
                                 [
@@ -488,8 +662,8 @@ class TemplateSeeder extends Seeder
                                     'styles' => [
                                         'layout' => 'fit',
                                         'alignment' => 'left',
-                                        'color' => $settings['text'] ?? '#0a0a0a',
-                                        'fontSize' => $settings['paragraph_fontSize'] ?? '16px',
+                                        'color' => 'theme.text',
+                                        'fontSize' => 'theme.paragraph_fontSize',
                                         'fontWeight' => '600'
                                     ]
                                 ],
@@ -500,7 +674,7 @@ class TemplateSeeder extends Seeder
                                     'styles' => [
                                         'layout' => 'fit',
                                         'alignment' => 'left',
-                                        'color' => $settings['text'] ?? '#0a0a0a',
+                                        'color' => 'theme.text',
                                         'fontSize' => '14px',
                                         'fontWeight' => 'normal'
                                     ]
@@ -514,10 +688,10 @@ class TemplateSeeder extends Seeder
                         'type' => 'productListPriceFilter',
                         'content' => [],
                         'styles' => [
-                            'borderRadius' => $settings['border_radius_small'] ?? '4px',
-                            'borderColor' => $settings['borders'] ?? '#ccc',
-                            'borderThickness' => $settings['border_thickness_hairline'] ?? '1px',
-                            'background' => $settings['background'] ?? '#fff'
+                            'borderRadius' => 'theme.border_radius_small',
+                            'borderColor' => 'theme.borders',
+                            'borderThickness' => 'theme.border_thickness_hairline',
+                            'background' => 'theme.background'
                         ]
                     ],
                     [
@@ -525,10 +699,10 @@ class TemplateSeeder extends Seeder
                         'type' => 'productListSortSelect',
                         'content' => [],
                         'styles' => [
-                            'borderRadius' => $settings['border_radius_small'] ?? '4px',
-                            'borderColor' => $settings['borders'] ?? '#ccc',
-                            'borderThickness' => $settings['border_thickness_hairline'] ?? '1px',
-                            'background' => $settings['background'] ?? '#fff'
+                            'borderRadius' => 'theme.border_radius_small',
+                            'borderColor' => 'theme.borders',
+                            'borderThickness' => 'theme.border_thickness_hairline',
+                            'background' => 'theme.background'
                         ]
                     ],
                     [
@@ -536,16 +710,16 @@ class TemplateSeeder extends Seeder
                         'type' => 'productListPagination',
                         'content' => [],
                         'styles' => [
-                            'borderRadius' => $settings['border_radius_small'] ?? '4px',
-                            'border' => ($settings['border_thickness_hairline'] ?? '1px') . ' solid',
-                            'borderColor' => $settings['borders'] ?? '#000',
-                            'background' => $settings['background'] ?? '#fff'
+                            'borderRadius' => 'theme.border_radius_small',
+                            'border' => 'theme.border_thickness_hairline solid',
+                            'borderColor' => 'theme.borders',
+                            'background' => 'theme.background'
                         ]
                     ]
                 ]
             ],
             'styles' => [
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'paddingTop' => '20px',
                 'paddingRight' => '20px',
                 'paddingBottom' => '20px',
@@ -554,7 +728,7 @@ class TemplateSeeder extends Seeder
         ];
     }
 
-    private function createProductDetail($id, $settings)
+    private function createProductDetail($id)
     {
         $productDetailId = $id;
         $imageId = $id + 1;
@@ -578,9 +752,9 @@ class TemplateSeeder extends Seeder
                         'styles' => [
                             'aspectRatio' => 'square',
                             'imageBorder' => 'none',
-                            'imageBorderThickness' => $settings['border_thickness_hairline'] ?? '1px',
-                            'imageBorderOpacity' => $settings['opacity_100'] ?? '1',
-                            'imageBorderRadius' => $settings['border_radius_small'] ?? '0px'
+                            'imageBorderThickness' => 'theme.border_thickness_hairline',
+                            'imageBorderOpacity' => 'theme.opacity_100',
+                            'imageBorderRadius' => 'theme.border_radius_small'
                         ]
                     ],
                     [
@@ -590,8 +764,8 @@ class TemplateSeeder extends Seeder
                         'styles' => [
                             'layout' => 'fit',
                             'alignment' => 'left',
-                            'color' => $settings['heading'] ?? '#0a0a0a',
-                            'fontSize' => $settings['heading4_fontSize'] ?? '32px',
+                            'color' => 'theme.heading',
+                            'fontSize' => 'theme.heading4_fontSize',
                             'fontWeight' => 'bold'
                         ]
                     ],
@@ -602,8 +776,8 @@ class TemplateSeeder extends Seeder
                         'styles' => [
                             'layout' => 'fit',
                             'alignment' => 'left',
-                            'color' => $settings['text'] ?? '#0a0a0a',
-                            'fontSize' => $settings['heading5_fontSize'] ?? '24px',
+                            'color' => 'theme.text',
+                            'fontSize' => 'theme.heading5_fontSize',
                             'fontWeight' => 'normal'
                         ]
                     ],
@@ -614,8 +788,8 @@ class TemplateSeeder extends Seeder
                         'styles' => [
                             'layout' => 'fit',
                             'alignment' => 'left',
-                            'color' => $settings['text'] ?? '#0a0a0a',
-                            'fontSize' => $settings['paragraph_fontSize'] ?? '16px',
+                            'color' => 'theme.text',
+                            'fontSize' => 'theme.paragraph_fontSize',
                             'fontWeight' => 'normal'
                         ]
                     ],
@@ -630,9 +804,9 @@ class TemplateSeeder extends Seeder
                             'paddingRight' => '10px',
                             'paddingBottom' => '10px',
                             'paddingLeft' => '10px',
-                            'borderRadius' => $settings['primary_button_corner_radius'] ?? '4px',
-                            'backgroundColor' => $settings['primary_button_background'] ?? '#d6eaff',
-                            'color' => $settings['primary_button_text'] ?? '#0a0a0a'
+                            'borderRadius' => 'theme.primary_button_corner_radius',
+                            'backgroundColor' => 'theme.primary_button_background',
+                            'color' => 'theme.primary_button_text'
                         ]
                     ],
                     [
@@ -642,9 +816,9 @@ class TemplateSeeder extends Seeder
                             'title' => 'Opciones del Producto',
                         ],
                         'styles' => [
-                            'titleColor' => $settings['heading'] ?? '#0a0a0a',
+                            'titleColor' => 'theme.heading',
                             'titleSize' => '18px',
-                            'labelColor' => $settings['text'] ?? '#0a0a0a',
+                            'labelColor' => 'theme.text',
                             'labelSize' => '14px',
                         ]
                     ],
@@ -659,12 +833,12 @@ class TemplateSeeder extends Seeder
                         ],
                         'styles' => [
                             'padding' => '12px 16px',
-                            'borderRadius' => $settings['border_radius_small'] ?? '8px',
-                            'borderWidth' => $settings['border_thickness_hairline'] ?? '1px',
-                            'inStockBgColor' => $settings['success_color'] ?? '#dcfce7',
-                            'inStockColor' => $settings['success_color'] ? '#166534' : '#166534',
-                            'outOfStockBgColor' => $settings['danger_color'] ?? '#fee2e2',
-                            'outOfStockColor' => $settings['danger_color'] ? '#991b1b' : '#991b1b',
+                            'borderRadius' => 'theme.border_radius_small',
+                            'borderWidth' => 'theme.border_thickness_hairline',
+                            'inStockBgColor' => 'theme.success_color',
+                            'inStockColor' => 'theme.success_color',
+                            'outOfStockBgColor' => 'theme.danger_color',
+                            'outOfStockColor' => 'theme.danger_color',
                         ]
                     ],
                     [
@@ -675,11 +849,11 @@ class TemplateSeeder extends Seeder
                             'showMax' => true,
                         ],
                         'styles' => [
-                            'labelColor' => $settings['text'] ?? '#0a0a0a',
-                            'borderColor' => $settings['borders'] ?? '#f5f5f5',
-                            'borderRadius' => $settings['border_radius_medium'] ?? '6px',
-                            'buttonColor' => $settings['text'] ?? '#0a0a0a',
-                            'inputColor' => $settings['text'] ?? '#0a0a0a',
+                            'labelColor' => 'theme.text',
+                            'borderColor' => 'theme.borders',
+                            'borderRadius' => 'theme.border_radius_medium',
+                            'buttonColor' => 'theme.text',
+                            'inputColor' => 'theme.text',
                         ]
                     ]
                 ]
@@ -688,7 +862,7 @@ class TemplateSeeder extends Seeder
         ];
     }
 
-    private function createCart($id, $settings)
+    private function createCart($id)
     {
         $cartId = $id;
         $itemsId = $id + 1;
@@ -710,15 +884,15 @@ class TemplateSeeder extends Seeder
                             'showStock' => true,
                         ],
                         'styles' => [
-                            'backgroundColor' => $settings['background'] ?? '#ffffff',
+                            'backgroundColor' => 'theme.background',
                             'padding' => '20px',
-                            'borderRadius' => $settings['border_radius_medium'] ?? '12px',
-                            'titleSize' => $settings['heading5_fontSize'] ?? '24px',
-                            'titleColor' => $settings['heading'] ?? '#0a0a0a',
+                            'borderRadius' => 'theme.border_radius_medium',
+                            'titleSize' => 'theme.heading5_fontSize',
+                            'titleColor' => 'theme.heading',
                             'imageSize' => '80px',
                             'rowPadding' => '16px',
-                            'rowBorder' => '1px solid ' . ($settings['borders'] ?? '#f5f5f5'),
-                            'buttonColor' => $settings['danger_color'] ?? '#dc2626',
+                            'rowBorder' => '1px solid ' . 'theme.borders',
+                            'buttonColor' => 'theme.danger_color',
                         ]
                     ],
                     [
@@ -735,11 +909,11 @@ class TemplateSeeder extends Seeder
                             'checkoutButtonText' => 'Proceder al pago',
                         ],
                         'styles' => [
-                            'backgroundColor' => $settings['background'] ?? '#ffffff',
+                            'backgroundColor' => 'theme.background',
                             'padding' => '24px',
-                            'borderWidth' => $settings['border_thickness_hairline'] ?? '1px',
-                            'borderRadius' => $settings['border_radius_large'] ?? '12px',
-                            'borderColor' => $settings['borders'] ?? '#f5f5f5',
+                            'borderWidth' => 'theme.border_thickness_hairline',
+                            'borderRadius' => 'theme.border_radius_large',
+                            'borderColor' => 'theme.borders',
                             'titleSize' => '20px',
                             'totalFontSize' => '24px',
                         ]
@@ -753,13 +927,13 @@ class TemplateSeeder extends Seeder
                 'paddingRight' => '20px',
                 'paddingBottom' => '40px',
                 'paddingLeft' => '20px',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'gap' => '40px',
             ]
         ];
     }
 
-    private function createCheckout($id, $settings)
+    private function createCheckout($id)
     {
         $checkoutId = $id;
         $discountGiftCardId = $id + 1;
@@ -781,9 +955,9 @@ class TemplateSeeder extends Seeder
                             'title' => 'Descuentos y Gift Cards',
                         ],
                         'styles' => [
-                            'backgroundColor' => $settings['background'] ?? '#ffffff',
+                            'backgroundColor' => 'theme.background',
                             'padding' => '16px',
-                            'borderRadius' => $settings['border_radius_medium'] ?? '8px'
+                            'borderRadius' => 'theme.border_radius_medium'
                         ]
                     ],
                     [
@@ -796,11 +970,11 @@ class TemplateSeeder extends Seeder
                             'showPaymentMethodsPreview' => true
                         ],
                         'styles' => [
-                            'backgroundColor' => $settings['background'] ?? '#ffffff',
+                            'backgroundColor' => 'theme.background',
                             'padding' => '24px',
-                            'borderRadius' => $settings['border_radius_medium'] ?? '12px',
+                            'borderRadius' => 'theme.border_radius_medium',
                             'titleSize' => '20px',
-                            'titleColor' => $settings['heading'] ?? '#0a0a0a',
+                            'titleColor' => 'theme.heading',
                         ]
                     ],
                     [
@@ -818,10 +992,10 @@ class TemplateSeeder extends Seeder
                             'totalText' => 'Total'
                         ],
                         'styles' => [
-                            'backgroundColor' => $settings['background'] ?? '#ffffff',
+                            'backgroundColor' => 'theme.background',
                             'padding' => '24px',
-                            'borderRadius' => $settings['border_radius_large'] ?? '12px',
-                            'borderColor' => $settings['borders'] ?? '#f5f5f5',
+                            'borderRadius' => 'theme.border_radius_large',
+                            'borderColor' => 'theme.borders',
                             'titleSize' => '20px',
                             'totalFontSize' => '24px',
                         ]
@@ -841,13 +1015,13 @@ class TemplateSeeder extends Seeder
                             'buttonText' => 'Realizar Pedido'
                         ],
                         'styles' => [
-                            'backgroundColor' => $settings['background'] ?? '#ffffff',
+                            'backgroundColor' => 'theme.background',
                             'padding' => '24px',
-                            'borderRadius' => $settings['border_radius_large'] ?? '12px',
+                            'borderRadius' => 'theme.border_radius_large',
                             'titleSize' => '20px',
-                            'buttonBackgroundColor' => $settings['primary_button_background'] ?? '#d6eaff',
-                            'buttonColor' => $settings['primary_button_text'] ?? '#0a0a0a',
-                            'buttonBorderRadius' => $settings['primary_button_corner_radius'] ?? '8px'
+                            'buttonBackgroundColor' => 'theme.primary_button_background',
+                            'buttonColor' => 'theme.primary_button_text',
+                            'buttonBorderRadius' => 'theme.primary_button_corner_radius'
                         ]
                     ]
                 ]
@@ -859,13 +1033,13 @@ class TemplateSeeder extends Seeder
                 'paddingRight' => '20px',
                 'paddingBottom' => '40px',
                 'paddingLeft' => '20px',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'gap' => '40px',
             ]
         ];
     }
 
-    private function createLogin($id, $settings)
+    private function createLogin($id)
     {
         return [
             'id' => $id,
@@ -886,23 +1060,23 @@ class TemplateSeeder extends Seeder
             ],
             'styles' => [
                 'layout' => 'vertical',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'padding' => '32px',
-                'borderRadius' => $settings['border_radius_medium'] ?? '12px',
-                'titleColor' => $settings['heading'] ?? '#0a0a0a',
-                'titleSize' => $settings['heading4_fontSize'] ?? '28px',
-                'subtitleColor' => $settings['text'] ?? '#0a0a0a',
-                'subtitleSize' => $settings['paragraph_fontSize'] ?? '16px',
-                'buttonBackgroundColor' => $settings['primary_button_background'] ?? '#d6eaff',
-                'buttonColor' => $settings['primary_button_text'] ?? '#0a0a0a',
-                'buttonBorderRadius' => $settings['primary_button_corner_radius'] ?? '8px',
+                'borderRadius' => 'theme.border_radius_medium',
+                'titleColor' => 'theme.heading',
+                'titleSize' => 'theme.heading4_fontSize',
+                'subtitleColor' => 'theme.text',
+                'subtitleSize' => 'theme.paragraph_fontSize',
+                'buttonBackgroundColor' => 'theme.primary_button_background',
+                'buttonColor' => 'theme.primary_button_text',
+                'buttonBorderRadius' => 'theme.primary_button_corner_radius',
                 'maxWidth' => '400px',
                 'margin' => '0 auto'
             ]
         ];
     }
 
-    private function createRegister($id, $settings)
+    private function createRegister($id)
     {
         return [
             'id' => $id,
@@ -924,23 +1098,23 @@ class TemplateSeeder extends Seeder
             ],
             'styles' => [
                 'layout' => 'vertical',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'padding' => '32px',
-                'borderRadius' => $settings['border_radius_medium'] ?? '12px',
-                'titleColor' => $settings['heading'] ?? '#0a0a0a',
-                'titleSize' => $settings['heading4_fontSize'] ?? '28px',
-                'subtitleColor' => $settings['text'] ?? '#0a0a0a',
-                'subtitleSize' => $settings['paragraph_fontSize'] ?? '16px',
-                'buttonBackgroundColor' => $settings['secondary_button_background'] ?? '#f5f5f5',
-                'buttonColor' => $settings['secondary_button_text'] ?? '#0a0a0a',
-                'buttonBorderRadius' => $settings['secondary_button_corner_radius'] ?? '8px',
+                'borderRadius' => 'theme.border_radius_medium',
+                'titleColor' => 'theme.heading',
+                'titleSize' => 'theme.heading4_fontSize',
+                'subtitleColor' => 'theme.text',
+                'subtitleSize' => 'theme.paragraph_fontSize',
+                'buttonBackgroundColor' => 'theme.secondary_button_background',
+                'buttonColor' => 'theme.secondary_button_text',
+                'buttonBorderRadius' => 'theme.secondary_button_corner_radius',
                 'maxWidth' => '400px',
                 'margin' => '0 auto'
             ]
         ];
     }
 
-    private function createProfile($id, $settings)
+    private function createProfile($id)
     {
         return [
             'id' => $id,
@@ -956,26 +1130,26 @@ class TemplateSeeder extends Seeder
                 'layoutType' => 'tabs'
             ],
             'styles' => [
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'paddingTop' => '40px',
                 'paddingRight' => '20px',
                 'paddingBottom' => '40px',
                 'paddingLeft' => '20px',
                 'maxWidth' => '1200px',
-                'borderRadius' => $settings['border_radius_small'] ?? '0px',
-                'titleColor' => $settings['heading'] ?? '#0a0a0a',
-                'titleSize' => $settings['heading4_fontSize'] ?? '32px',
+                'borderRadius' => 'theme.border_radius_small',
+                'titleColor' => 'theme.heading',
+                'titleSize' => 'theme.heading4_fontSize',
                 'titleWeight' => 'bold',
                 'titleAlignment' => 'left',
-                'cardBackgroundColor' => $settings['background'] ?? '#ffffff',
-                'cardBorderRadius' => $settings['border_radius_medium'] ?? '12px',
-                'cardBorder' => '1px solid ' . ($settings['borders'] ?? '#f5f5f5'),
+                'cardBackgroundColor' => 'theme.background',
+                'cardBorderRadius' => 'theme.border_radius_medium',
+                'cardBorder' => '1px solid ' . 'theme.borders',
                 'cardPadding' => '24px'
             ]
         ];
     }
 
-    private function createOrders($id, $settings)
+    private function createOrders($id)
     {
         return [
             'id' => $id,
@@ -995,18 +1169,18 @@ class TemplateSeeder extends Seeder
                 'allowExpandDetails' => true
             ],
             'styles' => [
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'paddingTop' => '40px',
                 'paddingRight' => '20px',
                 'paddingBottom' => '40px',
                 'paddingLeft' => '20px',
                 'maxWidth' => '1000px',
-                'borderRadius' => $settings['border_radius_small'] ?? '0px'
+                'borderRadius' => 'theme.border_radius_small'
             ]
         ];
     }
 
-    private function createSuccess($id, $settings)
+    private function createSuccess($id)
     {
         return [
             'id' => $id,
@@ -1015,37 +1189,37 @@ class TemplateSeeder extends Seeder
                 'title' => '¡Orden Exitosa!',
                 'subtitle' => 'Tu orden ha sido procesada correctamente',
                 'iconColor' => '#10b981',
-                'titleColor' => $settings['heading'] ?? '#0a0a0a',
-                'titleSize' => $settings['heading4_fontSize'] ?? '32px',
+                'titleColor' => 'theme.heading',
+                'titleSize' => 'theme.heading4_fontSize',
                 'titleWeight' => 'bold',
-                'subtitleColor' => $settings['text'] ?? '#0a0a0a',
-                'subtitleSize' => $settings['heading6_fontSize'] ?? '18px',
+                'subtitleColor' => 'theme.text',
+                'subtitleSize' => 'theme.heading6_fontSize',
                 'showContinueShoppingButton' => true,
                 'continueButtonText' => 'Continuar Comprando',
                 'continueButtonBg' => 'transparent',
-                'continueButtonColor' => $settings['text'] ?? '#0a0a0a',
-                'continueButtonBorder' => $settings['borders'] ?? '#f5f5f5',
+                'continueButtonColor' => 'theme.text',
+                'continueButtonBorder' => 'theme.borders',
                 'showOrdersButton' => true,
                 'ordersButtonText' => 'Ver Mis Pedidos',
-                'ordersButtonBg' => $settings['primary_button_background'] ?? '#d6eaff',
-                'ordersButtonColor' => $settings['primary_button_text'] ?? '#0a0a0a',
+                'ordersButtonBg' => 'theme.primary_button_background',
+                'ordersButtonColor' => 'theme.primary_button_text',
                 'additionalMessage' => '',
-                'messageBackgroundColor' => $settings['background'] ?? '#ffffff',
-                'messageTextColor' => $settings['text'] ?? '#0a0a0a'
+                'messageBackgroundColor' => 'theme.background',
+                'messageTextColor' => 'theme.text'
             ],
             'styles' => [
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'paddingTop' => '40px',
                 'paddingRight' => '20px',
                 'paddingBottom' => '40px',
                 'paddingLeft' => '20px',
                 'maxWidth' => '1200px',
-                'borderRadius' => $settings['border_radius_small'] ?? '0px'
+                'borderRadius' => 'theme.border_radius_small'
             ]
         ];
     }
 
-    private function createLinkBio($id, $settings)
+    private function createLinkBio($id)
     {
         $linkBioId = $id;
         $headingId = $id + 1;
@@ -1058,7 +1232,7 @@ class TemplateSeeder extends Seeder
             'type' => 'linkBio',
             'content' => [
                 'backgroundType' => 'color',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'maxWidth' => '400',
                 'buttonsGap' => '16',
                 'alignment' => 'center',
@@ -1071,9 +1245,9 @@ class TemplateSeeder extends Seeder
                             'textStyle' => 'heading1',
                             'layout' => 'fit',
                             'alignment' => 'center',
-                            'color' => $settings['heading'] ?? '#0a0a0a',
-                            'fontSize' => $settings['heading1_fontSize'] ?? '32px',
-                            'fontWeight' => $settings['heading1_fontWeight'] ?? 'bold',
+                            'color' => 'theme.heading',
+                            'fontSize' => 'theme.heading1_fontSize',
+                            'fontWeight' => 'theme.heading1_fontWeight',
                             'paddingBottom' => '20px'
                         ]
                     ],
@@ -1082,9 +1256,9 @@ class TemplateSeeder extends Seeder
                         'type' => 'text',
                         'content' => 'Encuéntrame en todas mis redes sociales',
                         'styles' => [
-                            'color' => $settings['text'] ?? '#0a0a0a',
-                            'fontSize' => $settings['paragraph_fontSize'] ?? '16px',
-                            'fontWeight' => $settings['paragraph_fontWeight'] ?? 'normal',
+                            'color' => 'theme.text',
+                            'fontSize' => 'theme.paragraph_fontSize',
+                            'fontWeight' => 'theme.paragraph_fontWeight',
                             'textAlign' => 'center',
                             'paddingBottom' => '10px'
                         ]
@@ -1102,9 +1276,9 @@ class TemplateSeeder extends Seeder
                             'paddingBottom' => '12px',
                             'paddingLeft' => '24px',
                             'paddingRight' => '24px',
-                            'borderRadius' => $settings['primary_button_corner_radius'] ?? '8px',
-                            'backgroundColor' => $settings['primary_button_background'] ?? '#d6eaff',
-                            'color' => $settings['primary_button_text'] ?? '#0a0a0a'
+                            'borderRadius' => 'theme.primary_button_corner_radius',
+                            'backgroundColor' => 'theme.primary_button_background',
+                            'color' => 'theme.primary_button_text'
                         ]
                     ],
                     [
@@ -1120,9 +1294,9 @@ class TemplateSeeder extends Seeder
                             'paddingBottom' => '12px',
                             'paddingLeft' => '24px',
                             'paddingRight' => '24px',
-                            'borderRadius' => $settings['secondary_button_corner_radius'] ?? '8px',
-                            'backgroundColor' => $settings['secondary_button_background'] ?? '#f5f5f5',
-                            'color' => $settings['secondary_button_text'] ?? '#0a0a0a'
+                            'borderRadius' => 'theme.secondary_button_corner_radius',
+                            'backgroundColor' => 'theme.secondary_button_background',
+                            'color' => 'theme.secondary_button_text'
                         ]
                     ]
                 ]
@@ -1132,13 +1306,13 @@ class TemplateSeeder extends Seeder
                 'paddingRight' => '20px',
                 'paddingBottom' => '40px',
                 'paddingLeft' => '20px',
-                'backgroundColor' => $settings['background'] ?? '#ffffff',
+                'backgroundColor' => 'theme.background',
                 'minHeight' => '600px'
             ]
         ];
     }
 
-    private function createPageContent($id, $settings)
+    private function createPageContent($id)
     {
         return [
             'id' => $id,
@@ -1146,8 +1320,9 @@ class TemplateSeeder extends Seeder
             'content' => '<p>Contenido de la página. Haz clic para editar.</p>',
             'styles' => [
                 'padding' => '20px',
-                'fontFamily' => $settings['body_font'] ?? 'inherit',
-                'color' => $settings['text'] ?? '#0a0a0a'
+                'fontFamily' => 'theme.body_font',
+                'color' => 'theme.text',
+                'backgroundColor' => 'theme.background'
             ]
         ];
     }

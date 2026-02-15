@@ -1,6 +1,6 @@
 // components/Builder/components/MarqueeTextComponent.jsx
 import React, { useState, useRef, useEffect } from 'react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, appliedTheme }) => {
     // Obtener configuración del tema con valores por defecto
@@ -14,6 +14,24 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
     const contentRef = useRef(null);
     const containerRef = useRef(null);
 
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido (si es necesario)
+    const rawContent = comp.content;
+    const resolvedContent = resolveValue(rawContent);
+
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
@@ -24,25 +42,24 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
 
     const getMarqueeStyles = () => {
         const baseStyles = getStyles(comp);
-        const customStyles = comp.styles || {};
 
-        // Padding individual usando valores del tema como fallback
-        const paddingTop = customStyles.paddingTop || themeWithDefaults.marquee_paddingTop || '10px';
-        const paddingRight = customStyles.paddingRight || '0px';
-        const paddingBottom = customStyles.paddingBottom || themeWithDefaults.marquee_paddingBottom || '10px';
-        const paddingLeft = customStyles.paddingLeft || '0px';
+        // Padding individual usando valores del tema como fallback (resueltos)
+        const paddingTop = styles.paddingTop || themeWithDefaults.marquee_paddingTop || '10px';
+        const paddingRight = styles.paddingRight || '0px';
+        const paddingBottom = styles.paddingBottom || themeWithDefaults.marquee_paddingBottom || '10px';
+        const paddingLeft = styles.paddingLeft || '0px';
 
         // Layout: fit (ancho natural) o fill (ancho 100%)
-        const layout = customStyles.layout || 'fill';
+        const layout = styles.layout || 'fill';
         const width = layout === 'fill' ? '100%' : 'auto';
 
-        // Estilos de texto usando valores del tema
-        const fontSize = customStyles.fontSize || themeWithDefaults.marquee_fontSize || '16px';
-        const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
-        const fontWeight = customStyles.fontWeight || themeWithDefaults.marquee_fontWeight || 'normal';
-        const color = customStyles.color || themeWithDefaults.marquee_color || themeWithDefaults.text;
-        const backgroundColor = customStyles.backgroundColor || themeWithDefaults.marquee_backgroundColor || 'transparent';
-        const borderRadius = customStyles.borderRadius || themeWithDefaults.marquee_borderRadius || '0px';
+        // Estilos de texto usando valores del tema (resueltos)
+        const fontSize = styles.fontSize || themeWithDefaults.marquee_fontSize || '16px';
+        const fontSizeUnit = styles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+        const fontWeight = styles.fontWeight || themeWithDefaults.marquee_fontWeight || 'normal';
+        const color = styles.color || themeWithDefaults.marquee_color || themeWithDefaults.text;
+        const backgroundColor = styles.backgroundColor || themeWithDefaults.marquee_backgroundColor || 'transparent';
+        const borderRadius = styles.borderRadius || themeWithDefaults.marquee_borderRadius || '0px';
 
         return {
             ...baseStyles,
@@ -64,12 +81,12 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
     };
 
     const getAnimationStyle = () => {
-        const customStyles = comp.styles || {};
-        const direction = customStyles.direction || 'left';
-        const speed = customStyles.speed || 2;
+        const direction = styles.direction || 'left';
+        // Resolver speed si es referencia
+        const speed = resolveValue(styles.speed || 2);
 
         // Convertir velocidad a duración (más velocidad = menor duración)
-        const duration = 20 / speed; // 20 segundos base dividido por la velocidad
+        const duration = 20 / speed;
 
         return {
             display: 'inline-block',
@@ -80,32 +97,31 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
     };
 
     const handleMouseEnter = () => {
-        if (comp.styles?.interactive !== false) {
+        if (styles.interactive !== false) {
             setIsPaused(true);
         }
     };
 
     const handleMouseLeave = () => {
-        if (comp.styles?.interactive !== false) {
+        if (styles.interactive !== false) {
             setIsPaused(false);
         }
     };
 
     // Función para obtener la fuente usando utilidades del tema
     const getFontFamily = () => {
-        const customStyles = comp.styles || {};
-        const fontType = customStyles.fontType;
+        const fontType = styles.fontType;
 
         // Si el usuario seleccionó "default" o no especificó nada
         if (fontType === 'default' || !fontType) {
-            return getResolvedFont(themeWithDefaults, 'body_font');
+            return getResolvedFont(themeWithDefaults, 'body_font', appliedTheme);
         }
 
-        if (fontType === 'custom' && customStyles.customFont) {
-            return customStyles.customFont;
+        if (fontType === 'custom' && styles.customFont) {
+            return styles.customFont;
         }
 
-        return getResolvedFont(themeWithDefaults, fontType);
+        return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
     };
 
     // Agregar estilos CSS dinámicamente
@@ -128,22 +144,22 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
         };
     }, []);
 
-    // EXTRAER EL TEXTO DEL CONTENIDO - ¡ESTO ES LO QUE FALTA!
+    // EXTRAER EL TEXTO DEL CONTENIDO (ya resuelto)
     const getTextContent = () => {
-        if (!comp.content) return 'Texto en movimiento';
+        if (!resolvedContent) return 'Texto en movimiento';
 
         // Si content es una cadena, devolverla directamente
-        if (typeof comp.content === 'string') {
-            return comp.content;
+        if (typeof resolvedContent === 'string') {
+            return resolvedContent;
         }
 
         // Si content es un objeto, extraer la propiedad 'text'
-        if (typeof comp.content === 'object' && comp.content !== null) {
-            return comp.content.text || 'Texto en movimiento';
+        if (typeof resolvedContent === 'object' && resolvedContent !== null) {
+            return resolvedContent.text || 'Texto en movimiento';
         }
 
         // Si es otra cosa, convertir a cadena
-        return String(comp.content);
+        return String(resolvedContent);
     };
 
     const textContent = getTextContent();
@@ -161,7 +177,7 @@ const MarqueeTextComponent = ({ comp, getStyles, onEdit, isPreview, themeSetting
                 ref={marqueeRef}
                 style={getAnimationStyle()}
             >
-                {textContent} {/* ¡Usar textContent, no comp.content directamente! */}
+                {textContent}
             </div>
         </div>
     );

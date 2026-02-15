@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const ProductNameComponent = ({
     comp,
@@ -7,13 +7,27 @@ const ProductNameComponent = ({
     isPreview,
     onEdit,
     onDelete,
-    themeSettings, // Añadimos themeSettings
+    themeSettings,
     appliedTheme
 }) => {
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const customStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        customStyles[key] = resolveValue(rawStyles[key]);
+    });
+
     const getComponentStyles = () => {
         const baseStyles = getStyles(comp);
-        const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'paragraph'; // Por defecto paragraph para nombres
@@ -25,9 +39,9 @@ const ProductNameComponent = ({
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`);
+                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`, appliedTheme);
                 } else {
-                    return getResolvedFont(themeWithDefaults, 'paragraph_font');
+                    return getResolvedFont(themeWithDefaults, 'paragraph_font', appliedTheme);
                 }
             }
 
@@ -35,13 +49,12 @@ const ProductNameComponent = ({
                 return customStyles.customFont;
             }
 
-            return getResolvedFont(themeWithDefaults, fontType);
+            return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
         };
 
         // Helper para añadir unidad (px) si es solo número
         const withUnit = (value, unit = 'px') => {
             if (value === undefined || value === null || value === '') return undefined;
-            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
             if (typeof value === 'string' && isNaN(Number(value))) return value;
             return `${value}${unit}`;
         };
@@ -58,7 +71,7 @@ const ProductNameComponent = ({
             color = customStyles.color || themeWithDefaults.text;
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
-            const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+            const themeTextStyles = getTextStyles(themeWithDefaults, textStyle, appliedTheme);
             fontSize = customStyles.fontSize || themeTextStyles.fontSize;
             fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
             fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
@@ -82,6 +95,9 @@ const ProductNameComponent = ({
         const alignment = customStyles.alignment || 'left';
         const textAlign = layout === 'fill' ? alignment : 'left';
 
+        // Color final resuelto (por si acaso, aunque ya está en customStyles)
+        const finalColor = resolveValue(color);
+
         return {
             ...baseStyles,
             width,
@@ -92,7 +108,7 @@ const ProductNameComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color,
+            color: finalColor,
             margin: '10px 0 5px 0',
         };
     };

@@ -5,7 +5,7 @@ import { UserCircleIcon, TruckIcon, MapPinIcon, CreditCardIcon, HomeIcon, CheckI
 import { StoreIcon } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -20,6 +20,7 @@ const CustomerInfoComponent = ({
     isPreview,
     onEdit,
     themeSettings,
+    appliedTheme,  // <-- añadido
     currentUser,
     userDeliveryLocations = [],
     selectedAddressId,
@@ -34,8 +35,28 @@ const CustomerInfoComponent = ({
     mode = 'builder'
 }) => {
     const { settings } = usePage().props;
-    const styles = comp.styles || {};
-    const content = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados del componente
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido del componente
+    const rawContent = comp.content || {};
+    const content = {};
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
 
     // Estado para mostrar/ocultar todas las direcciones
     const [showAllAddresses, setShowAllAddresses] = useState(false);
@@ -90,24 +111,11 @@ const CustomerInfoComponent = ({
         }
     ];
 
-    const examplePaymentMethods = [
-        {
-            id: 'card',
-            name: 'Tarjeta de Crédito/Débito',
-            description: 'Paga con tu tarjeta Visa, Mastercard o American Express'
-        },
-        {
-            id: 'paypal',
-            name: 'PayPal',
-            description: 'Paga de forma segura con tu cuenta PayPal'
-        }
-    ];
 
     // Usar datos de ejemplo en modo builder
     const displayUser = mode === 'builder' ? exampleUser : currentUser;
     const displayAddresses = mode === 'builder' ? exampleAddresses : (userDeliveryLocations || []);
     const displayShippingRates = mode === 'builder' ? exampleShippingRates : (shippingRates || []);
-    // const displayPaymentMethods = mode === 'builder' ? examplePaymentMethods : (paymentMethods || []);
 
     // Direcciones a mostrar
     const addressesToShow = showAllAddresses
@@ -116,19 +124,19 @@ const CustomerInfoComponent = ({
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || '#ffffff',
+        backgroundColor: resolveValue(styles.backgroundColor || themeWithDefaults.background),
         paddingTop: withUnit(styles.paddingTop || '24px'),
         paddingRight: withUnit(styles.paddingRight || '24px'),
         paddingBottom: withUnit(styles.paddingBottom || '24px'),
         paddingLeft: withUnit(styles.paddingLeft || '24px'),
-        borderRadius: withUnit(styles.borderRadius || '12px'),
-        border: '1px solid #e5e7eb',
+        borderRadius: withUnit(styles.borderRadius || themeWithDefaults.border_radius_medium || '12px'),
+        border: `1px solid ${resolveValue(themeWithDefaults.borders)}`,
     };
 
     const titleStyles = {
-        fontSize: withUnit(styles.titleSize || '20px', styles.titleSizeUnit || 'px'),
-        color: styles.titleColor || '#000000',
-        fontFamily: themeSettings?.heading_font,
+        fontSize: withUnit(styles.titleSize || themeWithDefaults.heading3_fontSize || '20px', styles.titleSizeUnit || 'px'),
+        color: resolveValue(styles.titleColor || themeWithDefaults.heading),
+        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
         marginBottom: '20px',
         fontWeight: '600',
     };
@@ -142,16 +150,20 @@ const CustomerInfoComponent = ({
                 </h2>
 
                 <div className="text-center py-8">
-                    <UserCircleIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-700 mb-2">
+                    <UserCircleIcon className="h-16 w-16 mx-auto mb-4" style={{ color: resolveValue(themeWithDefaults.text) }} />
+                    <h3 className="text-lg font-medium mb-2" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                         Inicia sesión para continuar
                     </h3>
-                    <p className="text-gray-500 mb-6">
+                    <p className="mb-6" style={{ color: resolveValue(themeWithDefaults.text) }}>
                         Necesitamos que inicies sesión para procesar tu pedido.
                     </p>
                     <Button
                         onClick={showAuthModal}
                         className="px-8"
+                        style={{
+                            ...getButtonStyles(themeWithDefaults, 'primary', appliedTheme),
+                            fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+                        }}
                     >
                         Iniciar Sesión o Registrarse
                     </Button>
@@ -166,64 +178,67 @@ const CustomerInfoComponent = ({
                 {content.title || 'Información del Cliente'}
             </h2>
 
-            {/* Indicador de datos de ejemplo */}
-            {/* {mode === 'builder' && (
-                <div className="mb-4 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-700">
-                    <strong>Modo Builder:</strong> Mostrando datos de ejemplo para personalización
-                </div>
-            )} */}
-
             {/* Información del usuario */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="mb-6 p-4 rounded-lg" style={{ backgroundColor: resolveValue(themeWithDefaults.secondary_button_background) }}>
                 <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
-                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                            <UserCircleIcon className="h-6 w-6 text-blue-600" />
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: resolveValue(themeWithDefaults.primary_button_background + '20') }}>
+                            <UserCircleIcon className="h-6 w-6" style={{ color: resolveValue(themeWithDefaults.links) }} />
                         </div>
                     </div>
                     <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{displayUser?.name || 'Nombre del Cliente'}</h3>
-                        <p className="text-gray-600">{displayUser?.email || 'email@ejemplo.com'}</p>
+                        <h3 className="font-semibold" style={{ color: resolveValue(themeWithDefaults.heading) }}>
+                            {displayUser?.name || 'Nombre del Cliente'}
+                        </h3>
+                        <p style={{ color: resolveValue(themeWithDefaults.text) }}>{displayUser?.email || 'email@ejemplo.com'}</p>
                         {displayUser?.phone && (
-                            <p className="text-gray-600">Teléfono: {displayUser.phone}</p>
+                            <p style={{ color: resolveValue(themeWithDefaults.text) }}>Teléfono: {displayUser.phone}</p>
                         )}
                     </div>
-                    {/* {mode !== 'builder' && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={showAuthModal}
-                        >
-                            Cambiar
-                        </Button>
-                    )} */}
                 </div>
             </div>
 
             {/* Tipo de entrega */}
             <div className="mb-6">
-                <h3 className="font-medium text-gray-700 mb-3">Tipo de Entrega</h3>
+                <h3 className="font-medium mb-3" style={{ color: resolveValue(themeWithDefaults.heading) }}>Tipo de Entrega</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                         type="button"
                         onClick={() => onDeliveryTypeChange('delivery')}
-                        className={`p-4 border rounded-lg text-left transition-all ${deliveryType === 'delivery'
-                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                                : 'border-gray-300 hover:border-gray-400'
-                            }`}
+                        className="p-4 border rounded-lg text-left transition-all"
+                        style={{
+                            borderColor: deliveryType === 'delivery'
+                                ? resolveValue(themeWithDefaults.links)
+                                : resolveValue(themeWithDefaults.borders),
+                            backgroundColor: deliveryType === 'delivery'
+                                ? resolveValue(themeWithDefaults.links + '10')
+                                : 'transparent',
+                            boxShadow: deliveryType === 'delivery'
+                                ? `0 0 0 2px ${resolveValue(themeWithDefaults.links + '20')}`
+                                : 'none',
+                        }}
                     >
                         <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${deliveryType === 'delivery' ? 'bg-blue-100' : 'bg-gray-100'
-                                }`}>
-                                <TruckIcon className={`h-6 w-6 ${deliveryType === 'delivery' ? 'text-blue-600' : 'text-gray-400'
-                                    }`} />
+                            <div className="p-2 rounded-lg"
+                                style={{ backgroundColor: deliveryType === 'delivery'
+                                    ? resolveValue(themeWithDefaults.links + '20')
+                                    : resolveValue(themeWithDefaults.secondary_button_background) }}>
+                                <TruckIcon className="h-6 w-6" style={{
+                                    color: deliveryType === 'delivery'
+                                        ? resolveValue(themeWithDefaults.links)
+                                        : resolveValue(themeWithDefaults.text)
+                                }} />
                             </div>
                             <div>
-                                <div className={`font-medium ${deliveryType === 'delivery' ? 'text-blue-700' : 'text-gray-700'
-                                    }`}>
+                                <div className="font-medium" style={{
+                                    color: deliveryType === 'delivery'
+                                        ? resolveValue(themeWithDefaults.links)
+                                        : resolveValue(themeWithDefaults.heading)
+                                }}>
                                     Envío a Domicilio
                                 </div>
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
                                     Recibe tu pedido en tu dirección
                                 </div>
                             </div>
@@ -233,23 +248,39 @@ const CustomerInfoComponent = ({
                     <button
                         type="button"
                         onClick={() => onDeliveryTypeChange('pickup')}
-                        className={`p-4 border rounded-lg text-left transition-all ${deliveryType === 'pickup'
-                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                                : 'border-gray-300 hover:border-gray-400'
-                            }`}
+                        className="p-4 border rounded-lg text-left transition-all"
+                        style={{
+                            borderColor: deliveryType === 'pickup'
+                                ? resolveValue(themeWithDefaults.links)
+                                : resolveValue(themeWithDefaults.borders),
+                            backgroundColor: deliveryType === 'pickup'
+                                ? resolveValue(themeWithDefaults.links + '10')
+                                : 'transparent',
+                            boxShadow: deliveryType === 'pickup'
+                                ? `0 0 0 2px ${resolveValue(themeWithDefaults.links + '20')}`
+                                : 'none',
+                        }}
                     >
                         <div className="flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${deliveryType === 'pickup' ? 'bg-blue-100' : 'bg-gray-100'
-                                }`}>
-                                <StoreIcon className={`h-6 w-6 ${deliveryType === 'pickup' ? 'text-blue-600' : 'text-gray-400'
-                                    }`} />
+                            <div className="p-2 rounded-lg"
+                                style={{ backgroundColor: deliveryType === 'pickup'
+                                    ? resolveValue(themeWithDefaults.links + '20')
+                                    : resolveValue(themeWithDefaults.secondary_button_background) }}>
+                                <StoreIcon className="h-6 w-6" style={{
+                                    color: deliveryType === 'pickup'
+                                        ? resolveValue(themeWithDefaults.links)
+                                        : resolveValue(themeWithDefaults.text)
+                                }} />
                             </div>
                             <div>
-                                <div className={`font-medium ${deliveryType === 'pickup' ? 'text-blue-700' : 'text-gray-700'
-                                    }`}>
+                                <div className="font-medium" style={{
+                                    color: deliveryType === 'pickup'
+                                        ? resolveValue(themeWithDefaults.links)
+                                        : resolveValue(themeWithDefaults.heading)
+                                }}>
                                     Recoger en Tienda
                                 </div>
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
                                     Recoge tu pedido en nuestro local
                                 </div>
                             </div>
@@ -262,20 +293,24 @@ const CustomerInfoComponent = ({
             {deliveryType === 'delivery' && (
                 <div className="mb-6">
                     <div className="flex justify-between items-center mb-3">
-                        <h3 className="font-medium text-gray-700">Dirección de entrega</h3>
+                        <h3 className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
+                            Dirección de entrega
+                        </h3>
                         <button
                             onClick={() => console.log('Agregar nueva dirección')}
-                            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                            className="text-sm flex items-center gap-1"
+                            style={{ color: resolveValue(themeWithDefaults.links) }}
                         >
                             <span>+ Nueva dirección</span>
                         </button>
                     </div>
 
                     {displayAddresses.length === 0 ? (
-                        <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg">
-                            <HomeIcon className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                            <p className="text-gray-500">No hay direcciones registradas</p>
-                            <button className="mt-2 text-blue-600 hover:text-blue-800">
+                        <div className="text-center py-6 border-2 border-dashed rounded-lg"
+                            style={{ borderColor: resolveValue(themeWithDefaults.borders) }}>
+                            <HomeIcon className="h-12 w-12 mx-auto mb-2" style={{ color: resolveValue(themeWithDefaults.text) }} />
+                            <p style={{ color: resolveValue(themeWithDefaults.text) }}>No hay direcciones registradas</p>
+                            <button className="mt-2" style={{ color: resolveValue(themeWithDefaults.links) }}>
                                 Agregar primera dirección
                             </button>
                         </div>
@@ -284,20 +319,30 @@ const CustomerInfoComponent = ({
                             {addressesToShow.map(address => (
                                 <div
                                     key={address.id}
-                                    className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedAddressId === address.id
-                                            ? 'border-blue-500 bg-blue-50'
-                                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                        }`}
+                                    className="p-4 border rounded-lg cursor-pointer transition-all"
+                                    style={{
+                                        borderColor: selectedAddressId === address.id
+                                            ? resolveValue(themeWithDefaults.links)
+                                            : resolveValue(themeWithDefaults.borders),
+                                        backgroundColor: selectedAddressId === address.id
+                                            ? resolveValue(themeWithDefaults.links + '10')
+                                            : 'transparent',
+                                    }}
                                     onClick={() => onAddressSelect(address.id)}
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-start gap-3">
                                                 <div className="flex-shrink-0 mt-1">
-                                                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${selectedAddressId === address.id
-                                                            ? 'border-blue-500 bg-blue-500'
-                                                            : 'border-gray-300'
-                                                        }`}>
+                                                    <div className="w-5 h-5 rounded-full border flex items-center justify-center"
+                                                        style={{
+                                                            borderColor: selectedAddressId === address.id
+                                                                ? resolveValue(themeWithDefaults.links)
+                                                                : resolveValue(themeWithDefaults.borders),
+                                                            backgroundColor: selectedAddressId === address.id
+                                                                ? resolveValue(themeWithDefaults.links)
+                                                                : 'transparent',
+                                                        }}>
                                                         {selectedAddressId === address.id && (
                                                             <CheckIcon className="h-3 w-3 text-white" />
                                                         )}
@@ -305,26 +350,39 @@ const CustomerInfoComponent = ({
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <HomeIcon className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                                                        <span className="font-medium">{address.address_line_1}</span>
+                                                        <HomeIcon className="h-4 w-4 flex-shrink-0" style={{ color: resolveValue(themeWithDefaults.text) }} />
+                                                        <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
+                                                            {address.address_line_1}
+                                                        </span>
                                                         {address.is_default && (
-                                                            <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                                            <span className="px-2 py-0.5 text-xs font-medium rounded-full"
+                                                                style={{
+                                                                    backgroundColor: resolveValue(themeWithDefaults.links + '20'),
+                                                                    color: resolveValue(themeWithDefaults.links),
+                                                                }}>
                                                                 Principal
                                                             </span>
                                                         )}
                                                     </div>
                                                     {address.address_line_2 && (
-                                                        <p className="text-gray-600 text-sm">{address.address_line_2}</p>
+                                                        <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
+                                                            {address.address_line_2}
+                                                        </p>
                                                     )}
-                                                    <p className="text-gray-600 text-sm">
+                                                    <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
                                                         {address.city}, {address.state}, {address.country}
                                                     </p>
-                                                    <p className="text-gray-600 text-sm">CP: {address.postal_code}</p>
+                                                    <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
+                                                        CP: {address.postal_code}
+                                                    </p>
                                                     {address.phone_number && (
-                                                        <p className="text-gray-600 text-sm">Tel: {address.phone_number}</p>
+                                                        <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
+                                                            Tel: {address.phone_number}
+                                                        </p>
                                                     )}
                                                     {selectedAddressId === address.id && (
-                                                        <p className="text-blue-600 text-sm mt-2 font-medium flex items-center gap-1">
+                                                        <p className="text-sm mt-2 font-medium flex items-center gap-1"
+                                                            style={{ color: resolveValue(themeWithDefaults.links) }}>
                                                             <CheckIcon className="h-4 w-4" />
                                                             Seleccionada
                                                         </p>
@@ -339,7 +397,8 @@ const CustomerInfoComponent = ({
                             {displayAddresses.length > 2 && !showAllAddresses && (
                                 <button
                                     onClick={() => setShowAllAddresses(true)}
-                                    className="text-sm text-blue-600 hover:text-blue-800 w-full text-center py-2"
+                                    className="text-sm w-full text-center py-2"
+                                    style={{ color: resolveValue(themeWithDefaults.links) }}
                                 >
                                     Mostrar {displayAddresses.length - 2} direcciones más
                                 </button>
@@ -348,7 +407,8 @@ const CustomerInfoComponent = ({
                             {showAllAddresses && displayAddresses.length > 2 && (
                                 <button
                                     onClick={() => setShowAllAddresses(false)}
-                                    className="text-sm text-gray-600 hover:text-gray-800 w-full text-center py-2"
+                                    className="text-sm w-full text-center py-2"
+                                    style={{ color: resolveValue(themeWithDefaults.text) }}
                                 >
                                     Mostrar menos
                                 </button>
@@ -362,33 +422,44 @@ const CustomerInfoComponent = ({
             {deliveryType === 'delivery' && selectedAddressId && displayShippingRates.length > 0 && (
                 <div className="mb-6">
                     <div className="flex justify-between items-center mb-3">
-                        <h3 className="font-medium text-gray-700">Método de Envío</h3>
-                        <MapPinIcon className="h-5 w-5 text-gray-400" />
+                        <h3 className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
+                            Método de Envío
+                        </h3>
+                        <MapPinIcon className="h-5 w-5" style={{ color: resolveValue(themeWithDefaults.text) }} />
                     </div>
                     <div className="space-y-2">
                         {displayShippingRates.map(rate => (
                             <div
                                 key={rate.id}
-                                className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedShippingRate?.id === rate.id
-                                        ? 'border-blue-500 bg-blue-50'
-                                        : 'border-gray-200 hover:border-gray-300'
-                                    }`}
+                                className="p-4 border rounded-lg cursor-pointer transition-all"
+                                style={{
+                                    borderColor: selectedShippingRate?.id === rate.id
+                                        ? resolveValue(themeWithDefaults.links)
+                                        : resolveValue(themeWithDefaults.borders),
+                                    backgroundColor: selectedShippingRate?.id === rate.id
+                                        ? resolveValue(themeWithDefaults.links + '10')
+                                        : 'transparent',
+                                }}
                                 onClick={() => onShippingRateChange(rate)}
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex-1">
-                                        <div className="font-medium text-gray-900">{rate.name}</div>
+                                        <div className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
+                                            {rate.name}
+                                        </div>
                                         {rate.description && (
-                                            <div className="text-sm text-gray-600 mt-1">{rate.description}</div>
+                                            <div className="text-sm mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
+                                                {rate.description}
+                                            </div>
                                         )}
                                         {rate.estimated_days && (
-                                            <div className="text-xs text-gray-500 mt-1">
+                                            <div className="text-xs mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
                                                 Entrega estimada: {rate.estimated_days} días
                                             </div>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <div className="font-semibold text-lg">
+                                        <div className="font-semibold text-lg" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                             {settings?.currency ? (
                                                 <CurrencyDisplay currency={settings.currency} amount={rate.price} />
                                             ) : (
@@ -396,7 +467,8 @@ const CustomerInfoComponent = ({
                                             )}
                                         </div>
                                         {selectedShippingRate?.id === rate.id && (
-                                            <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                                            <div className="w-5 h-5 rounded-full flex items-center justify-center"
+                                                style={{ backgroundColor: resolveValue(themeWithDefaults.links) }}>
                                                 <div className="w-2 h-2 rounded-full bg-white"></div>
                                             </div>
                                         )}
@@ -408,46 +480,23 @@ const CustomerInfoComponent = ({
                 </div>
             )}
 
-            {/* Métodos de pago */}
-            {/* {displayPaymentMethods.length > 0 && (
-                <div className="mb-4">
-                    <div className="flex justify-between items-center mb-3">
-                        <h3 className="font-medium text-gray-700">Métodos de Pago Disponibles</h3>
-                        <CreditCardIcon className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <div className="space-y-2">
-                        {displayPaymentMethods.map(method => (
-                            <div
-                                key={method.id}
-                                className="p-4 border border-gray-200 rounded-lg"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="flex-1">
-                                        <div className="font-medium text-gray-900">{method.name}</div>
-                                        {method.description && (
-                                            <div className="text-sm text-gray-600 mt-1">
-                                                {method.description}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )} */}
-
             {/* Información para pickup */}
             {deliveryType === 'pickup' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="rounded-lg p-4"
+                    style={{
+                        backgroundColor: resolveValue(themeWithDefaults.info_color + '20'),
+                        border: `1px solid ${resolveValue(themeWithDefaults.info_color)}`,
+                    }}>
                     <div className="flex items-start gap-3">
-                        <StoreIcon className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <StoreIcon className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: resolveValue(themeWithDefaults.info_color) }} />
                         <div>
-                            <h4 className="font-medium text-blue-900">Recoger en Tienda</h4>
-                            <p className="text-blue-700 text-sm mt-1">
+                            <h4 className="font-medium" style={{ color: resolveValue(themeWithDefaults.info_color) }}>
+                                Recoger en Tienda
+                            </h4>
+                            <p className="text-sm mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
                                 Puedes recoger tu pedido en nuestro local. Te notificaremos cuando esté listo.
                             </p>
-                            <div className="mt-2 text-sm text-blue-600">
+                            <div className="mt-2 text-sm" style={{ color: resolveValue(themeWithDefaults.info_color) }}>
                                 <div>Horario: Lunes a Viernes 9:00 - 18:00</div>
                                 <div>Dirección: Av. Principal #123, Ciudad</div>
                             </div>

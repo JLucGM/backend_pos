@@ -56,6 +56,7 @@ import SuccessComponent from './Success/SuccessComponent';
 import AnnouncementBarComponent from './AnnouncementBar/AnnouncementBarComponent';
 import AnnouncementComponent from './AnnouncementBar/AnnouncementComponent';
 import LinkBioComponent from './LinkBio/LinkBioComponent';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
 const CanvasItem = ({
     comp,
@@ -78,27 +79,19 @@ const CanvasItem = ({
     canvasScrollTop = 0,
 }) => {
     const getStyles = (comp) => {
-        const styles = comp.styles || {};
-
-        // Estilos base del tema aplicado
-        const themeStyles = {
-            color: themeSettings?.foreground ? themeSettings.foreground : '#000000',
-            backgroundColor: themeSettings?.background ? themeSettings.background : 'transparent',
-            fontFamily: themeSettings?.fontFamily || 'inherit',
-            borderRadius: themeSettings?.borderRadius || '0',
-            // Agregar más propiedades del tema si existen
-            ...(themeSettings?.primary && {
-                '--primary-color': themeSettings.primary
-            }),
-        };
-
-        // Combinar estilos del tema con estilos específicos del componente
-        // Los estilos del componente tienen prioridad sobre los del tema
-        return {
-            ...themeStyles,
-            ...styles, // Los estilos del componente sobrescriben los del tema
-        };
-    };
+    // Obtén el tema combinado (personalizaciones + tema base)
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    
+    // Combina estilos del componente con estilos base (si los hay)
+    const baseStyles = comp.styles || {};
+    const resolvedStyles = {};
+    
+    Object.keys(baseStyles).forEach(key => {
+        resolvedStyles[key] = resolveStyleValue(baseStyles[key], themeWithDefaults, appliedTheme);
+    });
+    
+    return resolvedStyles;
+};
 
     const isHovered = hoveredComponentId === comp.id;
 

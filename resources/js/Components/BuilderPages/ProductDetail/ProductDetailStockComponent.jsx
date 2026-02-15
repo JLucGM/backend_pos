@@ -1,10 +1,9 @@
 import React from 'react';
-import { getThemeWithDefaults, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
     if (value === undefined || value === null || value === '') return undefined;
-    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
     if (typeof value === 'string' && isNaN(Number(value))) return value;
     return `${value}${unit}`;
 };
@@ -18,12 +17,32 @@ const ProductDetailStockComponent = ({
 }) => {
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido (por si tiene referencias)
+    const rawContent = comp.content || {};
+    const content = {};
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
+
     // Función para obtener estilos de fuente (definida una sola vez)
     const getFontStyles = () => {
-        const styles = comp.styles || {};
         const fontType = styles.fontType || 'default';
 
-        const fontFamily = getResolvedFont(themeWithDefaults, fontType === 'default' ? 'body_font' : fontType);
+        const fontFamily = getResolvedFont(themeWithDefaults, fontType === 'default' ? 'body_font' : fontType, appliedTheme);
 
         return {
             fontFamily,
@@ -39,34 +58,34 @@ const ProductDetailStockComponent = ({
 
         return (
             <div className="product-stock" style={{
-                ...comp.styles,
-                paddingTop: withUnit(comp.styles?.paddingTop || '12px'),
-                paddingRight: withUnit(comp.styles?.paddingRight || '16px'),
-                paddingBottom: withUnit(comp.styles?.paddingBottom || '12px'),
-                paddingLeft: withUnit(comp.styles?.paddingLeft || '16px'),
-                borderRadius: withUnit(comp.styles?.borderRadius || '8px'),
-                borderWidth: withUnit(comp.styles?.borderWidth || '1px'),
+                ...styles,
+                paddingTop: withUnit(styles.paddingTop || '12px'),
+                paddingRight: withUnit(styles.paddingRight || '16px'),
+                paddingBottom: withUnit(styles.paddingBottom || '12px'),
+                paddingLeft: withUnit(styles.paddingLeft || '16px'),
+                borderRadius: withUnit(styles.borderRadius || '8px'),
+                borderWidth: withUnit(styles.borderWidth || '1px'),
                 borderStyle: 'solid',
-                backgroundColor: comp.styles?.inStockBgColor || '#dcfce7',
-                color: comp.styles?.inStockColor || '#166534',
-                borderColor: comp.styles?.inStockBorderColor || '#bbf7d0',
+                backgroundColor: styles.inStockBgColor || '#dcfce7',
+                color: styles.text || '#166534',
+                borderColor: styles.inStockBorderColor || '#bbf7d0',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 ...fontStyles,
             }}>
                 <span className="stock-icon" style={{
-                    fontSize: comp.styles?.iconSize || '16px',
+                    fontSize: withUnit(styles.iconSize || '16px'),
                     fontWeight: 'bold',
                 }}>
-                    {comp.content?.inStockIcon || '✓'}
+                    {content.inStockIcon || '✓'}
                 </span>
 
                 <span className="stock-message" style={fontStyles}>
-                    {comp.content?.inStockText || 'En stock'}
+                    {content.inStockText || 'En stock'}
                 </span>
 
-                {comp.content?.showSku && (
+                {content.showSku && (
                     <span className="stock-sku ml-auto text-xs opacity-70">
                         SKU: ABC123
                     </span>
@@ -109,7 +128,6 @@ const ProductDetailStockComponent = ({
     // Estilos condicionales
     const getStatusStyles = () => {
         const status = stockInfo.status;
-        const styles = comp.styles || {};
 
         switch (status) {
             case 'in_stock':
@@ -139,11 +157,11 @@ const ProductDetailStockComponent = ({
         const quantity = stockInfo.quantity;
 
         if (quantity <= 0) {
-            return comp.content?.outOfStockText || 'Agotado';
+            return content.outOfStockText || 'Agotado';
         } else if (quantity <= 5) {
-            return comp.content?.lowStockText || `Solo ${quantity} disponibles`;
+            return content.lowStockText || `Solo ${quantity} disponibles`;
         } else {
-            return comp.content?.inStockText || `En stock (${quantity} disponibles)`;
+            return content.inStockText || `En stock (${quantity} disponibles)`;
         }
     };
 
@@ -152,11 +170,11 @@ const ProductDetailStockComponent = ({
         const status = stockInfo.status;
 
         if (status === 'in_stock') {
-            return comp.content?.inStockIcon || '✓';
+            return content.inStockIcon || '✓';
         } else if (status === 'low_stock') {
-            return comp.content?.lowStockIcon || '⚠';
+            return content.lowStockIcon || '⚠';
         } else {
-            return comp.content?.outOfStockIcon || '✗';
+            return content.outOfStockIcon || '✗';
         }
     };
 
@@ -165,13 +183,13 @@ const ProductDetailStockComponent = ({
 
     return (
         <div className="product-stock" style={{
-            ...comp.styles,
-            paddingTop: withUnit(comp.styles?.paddingTop || '12px'),
-            paddingRight: withUnit(comp.styles?.paddingRight || '16px'),
-            paddingBottom: withUnit(comp.styles?.paddingBottom || '12px'),
-            paddingLeft: withUnit(comp.styles?.paddingLeft || '16px'),
-            borderRadius: withUnit(comp.styles?.borderRadius || '8px'),
-            borderWidth: withUnit(comp.styles?.borderWidth || '1px'),
+            ...styles,
+            paddingTop: withUnit(styles.paddingTop || '12px'),
+            paddingRight: withUnit(styles.paddingRight || '16px'),
+            paddingBottom: withUnit(styles.paddingBottom || '12px'),
+            paddingLeft: withUnit(styles.paddingLeft || '16px'),
+            borderRadius: withUnit(styles.borderRadius || '8px'),
+            borderWidth: withUnit(styles.borderWidth || '1px'),
             borderStyle: 'solid',
             ...statusStyles,
             ...fontStyles,
@@ -180,7 +198,7 @@ const ProductDetailStockComponent = ({
             gap: '8px',
         }}>
             <span className="stock-icon" style={{
-                fontSize: withUnit(comp.styles?.iconSize || '16px'),
+                fontSize: withUnit(styles.iconSize || '16px'),
                 fontWeight: 'bold',
             }}>
                 {getStockIcon()}
@@ -190,7 +208,7 @@ const ProductDetailStockComponent = ({
                 {getStockMessage()}
             </span>
 
-            {comp.content?.showSku && product?.stocks?.[0]?.sku && (
+            {content.showSku && product?.stocks?.[0]?.sku && (
                 <span className="stock-sku ml-auto text-xs opacity-70">
                     SKU: {product.stocks[0].sku}
                 </span>

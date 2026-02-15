@@ -1,9 +1,9 @@
-// CartSummaryComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS E IMPUESTOS
+// CartSummaryComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS, IMPUESTOS Y SOPORTE PARA REFERENCIAS AL TEMA
 import React from 'react';
 import cartHelper from '@/Helper/cartHelper';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const CartSummaryComponent = ({
     comp,
@@ -19,10 +19,28 @@ const CartSummaryComponent = ({
     appliedTheme
 }) => {
     const { settings } = usePage().props;
-    const styles = comp.styles || {};
-    const content = comp.content || {};
+    const rawStyles = comp.styles || {};
+    const rawContent = comp.content || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos y contenido
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    const content = {};
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
+
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
@@ -30,11 +48,8 @@ const CartSummaryComponent = ({
         return `${value}${unit}`;
     };
 
-    // console.log(content)
-    // console.log(themeWithDefaults)
     // Obtener estilos del tema para cart
     const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart', appliedTheme);
-    // console.log(themeWithDefaults.background)
 
     const containerStyles = {
         ...getStyles(comp),
@@ -46,7 +61,7 @@ const CartSummaryComponent = ({
         borderRadius: withUnit(styles.borderRadius || themeCartStyles.borderRadius || '12px'),
         borderStyle: styles.borderStyle || 'solid',
         borderWidth: withUnit(styles.borderWidth || '0'),
-        borderColor: styles.borderColor || themeWithDefaults.borders,
+        borderColor: resolveValue(styles.borderColor || themeWithDefaults.borders),
     };
 
     const handleClick = () => {
@@ -103,40 +118,40 @@ const CartSummaryComponent = ({
 
     const cartSummary = getCartSummary();
 
-    // Estilos de fuente del tema
+    // Estilos de fuente del tema con resolución
     const getFontStyles = (type = 'normal') => {
         if (type === 'title') {
             const themeCartTitleStyles = getComponentStyles(themeWithDefaults, 'cart-title', appliedTheme);
             return {
-                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
-                fontSize: styles.titleSize || themeCartTitleStyles.fontSize || themeWithDefaults.heading3_fontSize || '20px',
+                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
+                fontSize: withUnit(styles.titleSize || themeCartTitleStyles.fontSize || themeWithDefaults.heading3_fontSize || '20px'),
                 fontWeight: styles.titleWeight || themeWithDefaults.heading3_fontWeight || 'bold',
-                color: styles.titleColor || themeCartTitleStyles.color || themeWithDefaults.heading,
+                color: resolveValue(styles.titleColor || themeCartTitleStyles.color || themeWithDefaults.heading),
             };
         }
 
         if (type === 'total') {
             return {
-                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font'),
+                fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
                 fontSize: withUnit(styles.totalFontSize || '24px', styles.totalFontSizeUnit || 'px'),
                 fontWeight: 'bold',
-                color: styles.totalColor || themeWithDefaults.links,
+                color: resolveValue(styles.totalColor || themeWithDefaults.links),
             };
         }
 
         if (type === 'discount') {
             return {
-                fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
-                fontSize: styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
+                fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+                fontSize: withUnit(styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px'),
                 color: '#059669',
                 fontWeight: '500'
             };
         }
 
         return {
-            fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
-            fontSize: styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px',
-            color: styles.color || themeWithDefaults.text,
+            fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+            fontSize: withUnit(styles.fontSize || themeWithDefaults.paragraph_fontSize || '14px'),
+            color: resolveValue(styles.color || themeWithDefaults.text),
         };
     };
 
@@ -144,6 +159,13 @@ const CartSummaryComponent = ({
     const totalStyles = getFontStyles('total');
     const discountStyles = getFontStyles('discount');
     const textStyles = getFontStyles();
+
+    // Resolver colores de botón primario
+    const primaryButtonStyles = getButtonStyles(themeWithDefaults, 'primary', appliedTheme);
+    const buttonStyles = {
+        ...primaryButtonStyles,
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+    };
 
     return (
         <div
@@ -243,7 +265,7 @@ const CartSummaryComponent = ({
 
                 {/* Línea divisoria */}
                 {(content.showDivider !== false) && (
-                    <hr className="my-4" style={{ borderColor: styles.dividerColor || themeWithDefaults.borders }} />
+                    <hr className="my-4" style={{ borderColor: resolveValue(styles.dividerColor || themeWithDefaults.borders) }} />
                 )}
 
                 {/* Total */}
@@ -261,10 +283,7 @@ const CartSummaryComponent = ({
                 {/* Botón de checkout */}
                 <button
                     className="w-full mt-6 py-3 rounded-md font-medium transition-colors"
-                    style={{
-                        ...getButtonStyles(themeWithDefaults, 'primary'),
-                        fontFamily: getResolvedFont(themeWithDefaults, 'body_font'),
-                    }}
+                    style={buttonStyles}
                     onClick={(e) => {
                         e.stopPropagation();
                         if (mode === 'frontend') {

@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Badge } from '@/Components/ui/badge';
 import { toast } from 'sonner';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 import { User, MapPin, Plus, Edit, Trash2, Phone, Mail, CreditCard } from 'lucide-react';
 import Select from 'react-select';
 import { customStyles } from '@/hooks/custom-select';
@@ -34,6 +34,29 @@ export default function ProfileComponent({
     states = [],
     cities = []
 }) {
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados del componente
+    const rawStyles = comp?.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido del componente
+    const rawContent = comp?.content || {};
+    const content = {};
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
+
     const [profileData, setProfileData] = useState({
         name: currentUser?.name || '',
         email: currentUser?.email || '',
@@ -66,19 +89,15 @@ export default function ProfileComponent({
     const stateOptions = useMemo(() => mapToSelectOptions(filteredStates, 'id', 'state_name'), [filteredStates]);
     const cityOptions = useMemo(() => mapToSelectOptions(filteredCities, 'id', 'city_name'), [filteredCities]);
 
-    const styles = comp?.styles || {};
-    const content = comp?.content || {};
-
     // Aplicar estilos del tema
-    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeProfileStyles = getComponentStyles(themeWithDefaults, 'profile', appliedTheme);
     const themeProfileCardStyles = getComponentStyles(themeWithDefaults, 'profile-card', appliedTheme);
 
-    // 1. Contenedor principal que usa el fondo del tema
+    // 1. Contenedor principal que usa el fondo del tema (sin fallback de objeto)
     const outerContainerStyles = {
         width: '100%',
         minHeight: mode === 'frontend' ? '100vh' : 'auto',
-        backgroundColor: themeWithDefaults.background || { h: 0, s: 0, l: 100 },
+        backgroundColor: resolveValue(themeWithDefaults.background),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -88,7 +107,7 @@ export default function ProfileComponent({
 
     // 2. Contenedor interno del perfil
     const containerStyles = {
-        backgroundColor: themeWithDefaults.background || themeProfileStyles.backgroundColor || styles.backgroundColor,
+        backgroundColor: resolveValue(styles.backgroundColor || themeProfileStyles.backgroundColor || themeWithDefaults.background),
         paddingTop: withUnit(styles.paddingTop || '40px'),
         paddingRight: withUnit(styles.paddingRight || '20px'),
         paddingBottom: withUnit(styles.paddingBottom || '40px'),
@@ -101,7 +120,7 @@ export default function ProfileComponent({
     };
 
     const titleStyles = {
-        color: styles.titleColor || themeWithDefaults.heading,
+        color: resolveValue(styles.titleColor || themeWithDefaults.heading),
         fontSize: withUnit(styles.titleSize || '32px', styles.titleSizeUnit || 'px'),
         fontWeight: styles.titleWeight || 'bold',
         marginBottom: '24px',
@@ -110,49 +129,48 @@ export default function ProfileComponent({
     };
 
     const cardStyles = {
-        backgroundColor: themeWithDefaults.background || styles.cardBackgroundColor || themeProfileCardStyles.backgroundColor || '#ffffff',
+        backgroundColor: resolveValue(styles.cardBackgroundColor || themeProfileCardStyles.backgroundColor || themeWithDefaults.background),
         borderRadius: withUnit(styles.cardBorderRadius || '12px'),
-        border: styles.cardBorder || `1px solid ${themeWithDefaults.borders}`,
+        border: resolveValue(styles.cardBorder || `1px solid ${themeWithDefaults.borders}`),
         padding: withUnit(styles.cardPadding || '24px')
     };
 
     // Estilos para etiquetas
     const labelStyles = {
-        color: themeWithDefaults.text,
+        color: resolveValue(themeWithDefaults.text),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         marginBottom: '8px'
     };
 
     // Estilos para inputs
     const inputStyles = {
-        borderColor: themeWithDefaults.input_border,
-        borderRadius: withUnit(themeWithDefaults.input_corner_radius || '6px'),
+        borderColor: resolveValue(themeWithDefaults.input_border),
+        borderRadius: withUnit(resolveValue(themeWithDefaults.input_corner_radius) || '6px'),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
-        color: themeWithDefaults.text,
-        backgroundColor: themeWithDefaults.input_background,
+        color: resolveValue(themeWithDefaults.text),
+        backgroundColor: resolveValue(themeWithDefaults.input_background),
     };
 
     // Estilos para botones primarios
     const primaryButtonStyles = {
-        backgroundColor: themeWithDefaults.primary_button_background,
-        color: themeWithDefaults.primary_button_text,
-        borderRadius: withUnit(themeWithDefaults.primary_button_corner_radius || '8px'),
+        backgroundColor: resolveValue(themeWithDefaults.primary_button_background),
+        color: resolveValue(themeWithDefaults.primary_button_text),
+        borderRadius: withUnit(resolveValue(themeWithDefaults.primary_button_corner_radius) || '8px'),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
     };
 
     // Estilos para botones secundarios/outline
     const outlineButtonStyles = {
-        borderColor: themeWithDefaults.borders,
-        color: themeWithDefaults.text,
+        borderColor: resolveValue(themeWithDefaults.borders),
+        color: resolveValue(themeWithDefaults.text),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
     };
 
-    // Efectos para filtrar estados y ciudades
+    // Efectos para filtrar estados y ciudades (sin cambios)
     useEffect(() => {
         if (addressData.country_id) {
             const statesForCountry = states.filter(state => state.country_id === addressData.country_id);
             setFilteredStates(statesForCountry);
-
             if (!statesForCountry.some(state => state.id === addressData.state_id)) {
                 setAddressData(prev => ({ ...prev, state_id: null, city_id: null }));
             }
@@ -166,7 +184,6 @@ export default function ProfileComponent({
         if (addressData.state_id) {
             const citiesForState = cities.filter(city => city.state_id === addressData.state_id);
             setFilteredCities(citiesForState);
-
             if (!citiesForState.some(city => city.id === addressData.city_id)) {
                 setAddressData(prev => ({ ...prev, city_id: null }));
             }
@@ -182,16 +199,16 @@ export default function ProfileComponent({
             <div style={outerContainerStyles}>
                 <div style={containerStyles} className="text-center">
                     <div style={{
-                        backgroundColor: themeWithDefaults.background,
-                        border: `1px solid ${themeWithDefaults.borders}`,
+                        backgroundColor: resolveValue(themeWithDefaults.background),
+                        border: `1px solid ${resolveValue(themeWithDefaults.borders)}`,
                         borderRadius: '12px',
                         padding: '40px',
                         maxWidth: '500px',
                         width: '100%',
                     }}>
-                        <User className="mx-auto h-12 w-12" style={{ color: themeWithDefaults.heading }} />
+                        <User className="mx-auto h-12 w-12" style={{ color: resolveValue(themeWithDefaults.heading) }} />
                         <h3 style={{
-                            color: themeWithDefaults.heading,
+                            color: resolveValue(themeWithDefaults.heading),
                             fontSize: '24px',
                             fontWeight: 'bold',
                             marginBottom: '8px',
@@ -200,7 +217,7 @@ export default function ProfileComponent({
                             {content.loginRequiredTitle || 'Inicia sesión para ver tu perfil'}
                         </h3>
                         <p style={{
-                            color: themeWithDefaults.text,
+                            color: resolveValue(themeWithDefaults.text),
                             marginBottom: '16px',
                             fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
                         }}>
@@ -222,11 +239,11 @@ export default function ProfileComponent({
     if (mode === 'builder') {
         const layoutType = content.layoutType || 'tabs';
 
-        // Componentes de ejemplo para el builder
+        // Componentes de ejemplo para el builder (todos con estilos resueltos)
         const exampleProfileSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
+                    <CardTitle className="flex items-center gap-2" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                         <User className="h-5 w-5" />
                         {content.personalInfoTitle || 'Información Personal'}
                     </CardTitle>
@@ -257,7 +274,7 @@ export default function ProfileComponent({
         const exampleAddressesSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
+                    <CardTitle className="flex items-center gap-2" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                         <MapPin className="h-5 w-5" />
                         {content.addressesTitle || 'Direcciones de Envío'}
                     </CardTitle>
@@ -265,19 +282,19 @@ export default function ProfileComponent({
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="border rounded-lg p-4" style={{
-                            borderColor: themeWithDefaults.borders,
-                            backgroundColor: themeWithDefaults.background
+                            borderColor: resolveValue(themeWithDefaults.borders),
+                            backgroundColor: resolveValue(themeWithDefaults.background)
                         }}>
                             <div className="flex items-center justify-between mb-2">
                                 <Badge variant="secondary">Principal</Badge>
-                                <Button variant="ghost" size="sm" disabled style={{ color: themeWithDefaults.text }}>
+                                <Button variant="ghost" size="sm" disabled style={{ color: resolveValue(themeWithDefaults.text) }}>
                                     <Edit className="h-4 w-4" />
                                 </Button>
                             </div>
-                            <p className="text-sm font-medium" style={{ color: themeWithDefaults.text }}>Calle Principal 123</p>
-                            <p className="text-sm" style={{ color: themeWithDefaults.text }}>Apartamento 4B</p>
-                            <p className="text-sm" style={{ color: themeWithDefaults.text }}>Ciudad, Estado 12345</p>
-                            <p className="text-sm" style={{ color: themeWithDefaults.text }}>+1 234 567 8900</p>
+                            <p className="text-sm font-medium" style={{ color: resolveValue(themeWithDefaults.text) }}>Calle Principal 123</p>
+                            <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>Apartamento 4B</p>
+                            <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>Ciudad, Estado 12345</p>
+                            <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>+1 234 567 8900</p>
                         </div>
                     </div>
                     <Button variant="outline" className="mt-4" disabled style={outlineButtonStyles}>
@@ -291,7 +308,7 @@ export default function ProfileComponent({
         const exampleGiftCardsSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
+                    <CardTitle className="flex items-center gap-2" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                         <CreditCard className="h-5 w-5" />
                         {content.giftCardsTitle || 'Mis Gift Cards'}
                     </CardTitle>
@@ -299,25 +316,25 @@ export default function ProfileComponent({
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="border rounded-lg p-4" style={{
-                            borderColor: themeWithDefaults.borders,
-                            backgroundColor: themeWithDefaults.background,
-                            background: `linear-gradient(135deg, ${themeWithDefaults.primary_button_background}20, ${themeWithDefaults.secondary_button_background}20)`
+                            borderColor: resolveValue(themeWithDefaults.borders),
+                            backgroundColor: resolveValue(themeWithDefaults.background),
+                            background: `linear-gradient(135deg, ${resolveValue(themeWithDefaults.primary_button_background)}20, ${resolveValue(themeWithDefaults.secondary_button_background)}20)`
                         }}>
                             <div className="flex items-center justify-between mb-2">
                                 <Badge variant="outline">Gift Card</Badge>
-                                <CreditCard className="h-5 w-5" style={{ color: themeWithDefaults.primary_button_background }} />
+                                <CreditCard className="h-5 w-5" style={{ color: resolveValue(themeWithDefaults.primary_button_background) }} />
                             </div>
-                            <p className="text-lg font-mono font-bold mb-2" style={{ color: themeWithDefaults.heading }}>
+                            <p className="text-lg font-mono font-bold mb-2" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                 GIFT-123456
                             </p>
                             <div className="space-y-1">
                                 <div className="flex justify-between text-sm">
-                                    <span style={{ color: themeWithDefaults.text }}>Saldo disponible:</span>
-                                    <span className="font-semibold" style={{ color: themeWithDefaults.primary_button_background }}>$75.00</span>
+                                    <span style={{ color: resolveValue(themeWithDefaults.text) }}>Saldo disponible:</span>
+                                    <span className="font-semibold" style={{ color: resolveValue(themeWithDefaults.primary_button_background) }}>$75.00</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span style={{ color: themeWithDefaults.text }}>Expira:</span>
-                                    <span style={{ color: themeWithDefaults.text }}>31/12/2024</span>
+                                    <span style={{ color: resolveValue(themeWithDefaults.text) }}>Expira:</span>
+                                    <span style={{ color: resolveValue(themeWithDefaults.text) }}>31/12/2024</span>
                                 </div>
                             </div>
                         </div>
@@ -346,19 +363,19 @@ export default function ProfileComponent({
                                 <div>
                                     <Card style={cardStyles}>
                                         <CardHeader>
-                                            <CardTitle style={{ color: themeWithDefaults.heading }}>Resumen</CardTitle>
+                                            <CardTitle style={{ color: resolveValue(themeWithDefaults.heading) }}>Resumen</CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm" style={{ color: themeWithDefaults.text }}>Direcciones</span>
+                                                <span className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>Direcciones</span>
                                                 <Badge>2</Badge>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm" style={{ color: themeWithDefaults.text }}>Gift Cards</span>
+                                                <span className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>Gift Cards</span>
                                                 <Badge>1</Badge>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm" style={{ color: themeWithDefaults.text }}>Pedidos</span>
+                                                <span className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>Pedidos</span>
                                                 <Badge>5</Badge>
                                             </div>
                                         </CardContent>
@@ -376,12 +393,12 @@ export default function ProfileComponent({
                         // Tabs Layout - Contenido organizado en pestañas
                         <Tabs defaultValue="profile" className="w-full">
                             <TabsList className="grid w-full grid-cols-3" style={{
-                                backgroundColor: themeWithDefaults.background,
-                                borderBottom: `1px solid ${themeWithDefaults.borders}`
+                                backgroundColor: resolveValue(themeWithDefaults.background),
+                                borderBottom: `1px solid ${resolveValue(themeWithDefaults.borders)}`
                             }}>
-                                <TabsTrigger value="profile" style={{ color: themeWithDefaults.text }}>Perfil</TabsTrigger>
-                                <TabsTrigger value="addresses" style={{ color: themeWithDefaults.text }}>Direcciones</TabsTrigger>
-                                <TabsTrigger value="giftcards" style={{ color: themeWithDefaults.text }}>Gift Cards</TabsTrigger>
+                                <TabsTrigger value="profile" style={{ color: resolveValue(themeWithDefaults.text) }}>Perfil</TabsTrigger>
+                                <TabsTrigger value="addresses" style={{ color: resolveValue(themeWithDefaults.text) }}>Direcciones</TabsTrigger>
+                                <TabsTrigger value="giftcards" style={{ color: resolveValue(themeWithDefaults.text) }}>Gift Cards</TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="profile" className="space-y-6">
@@ -402,7 +419,7 @@ export default function ProfileComponent({
         );
     }
 
-    // Funciones para manejar el perfil
+    // Funciones para manejar el perfil (sin cambios)
     const handleProfileUpdate = (e) => {
         e.preventDefault();
 
@@ -492,12 +509,12 @@ export default function ProfileComponent({
     // Determinar el tipo de layout
     const layoutType = content.layoutType || 'tabs';
 
-    // Renderizar contenido según el tipo de layout
+    // Renderizar contenido según el tipo de layout (todo con estilos resueltos)
     const renderProfileContent = () => {
         const profileSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
+                    <CardTitle className="flex items-center gap-2" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                         <User className="h-5 w-5" />
                         {content.personalInfoTitle || 'Información Personal'}
                     </CardTitle>
@@ -590,8 +607,8 @@ export default function ProfileComponent({
                                 <div>
                                     <Label style={labelStyles}>Nombre completo</Label>
                                     <div className="flex items-center gap-2 p-2 rounded" style={{
-                                        backgroundColor: `${themeWithDefaults.background}50`,
-                                        color: themeWithDefaults.text
+                                        backgroundColor: `${resolveValue(themeWithDefaults.background)}50`,
+                                        color: resolveValue(themeWithDefaults.text)
                                     }}>
                                         <User className="h-4 w-4" />
                                         <span>{currentUser?.name}</span>
@@ -600,8 +617,8 @@ export default function ProfileComponent({
                                 <div>
                                     <Label style={labelStyles}>Email</Label>
                                     <div className="flex items-center gap-2 p-2 rounded" style={{
-                                        backgroundColor: `${themeWithDefaults.background}50`,
-                                        color: themeWithDefaults.text
+                                        backgroundColor: `${resolveValue(themeWithDefaults.background)}50`,
+                                        color: resolveValue(themeWithDefaults.text)
                                     }}>
                                         <Mail className="h-4 w-4" />
                                         <span>{currentUser?.email}</span>
@@ -610,8 +627,8 @@ export default function ProfileComponent({
                                 <div>
                                     <Label style={labelStyles}>Teléfono</Label>
                                     <div className="flex items-center gap-2 p-2 rounded" style={{
-                                        backgroundColor: `${themeWithDefaults.background}50`,
-                                        color: themeWithDefaults.text
+                                        backgroundColor: `${resolveValue(themeWithDefaults.background)}50`,
+                                        color: resolveValue(themeWithDefaults.text)
                                     }}>
                                         <Phone className="h-4 w-4" />
                                         <span>{currentUser?.phone || 'No especificado'}</span>
@@ -632,7 +649,7 @@ export default function ProfileComponent({
             <Card style={cardStyles}>
                 <CardHeader>
                     <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
+                        <CardTitle className="flex items-center gap-2" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                             <MapPin className="h-5 w-5" />
                             {content.addressesTitle || 'Direcciones de Envío'}
                         </CardTitle>
@@ -647,11 +664,11 @@ export default function ProfileComponent({
                                 </Button>
                             </DialogTrigger>
                             <DialogContent style={{
-                                backgroundColor: themeWithDefaults.background,
-                                borderColor: themeWithDefaults.borders,
+                                backgroundColor: resolveValue(themeWithDefaults.background),
+                                borderColor: resolveValue(themeWithDefaults.borders),
                             }}>
                                 <DialogHeader>
-                                    <DialogTitle style={{ color: themeWithDefaults.heading }}>
+                                    <DialogTitle style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                         {editingAddress ? 'Editar Dirección' : 'Nueva Dirección'}
                                     </DialogTitle>
                                 </DialogHeader>
@@ -710,25 +727,25 @@ export default function ProfileComponent({
                                                     ...customStyles,
                                                     control: (base) => ({
                                                         ...base,
-                                                        borderColor: themeWithDefaults.input_border,
-                                                        backgroundColor: themeWithDefaults.input_background,
+                                                        borderColor: resolveValue(themeWithDefaults.input_border),
+                                                        backgroundColor: resolveValue(themeWithDefaults.input_background),
                                                     }),
                                                     menu: (base) => ({
                                                         ...base,
-                                                        backgroundColor: themeWithDefaults.background,
+                                                        backgroundColor: resolveValue(themeWithDefaults.background),
                                                     }),
                                                     option: (base, { isFocused }) => ({
                                                         ...base,
-                                                        backgroundColor: isFocused ? `${themeWithDefaults.primary_button_background}20` : 'transparent',
-                                                        color: themeWithDefaults.text,
+                                                        backgroundColor: isFocused ? `${resolveValue(themeWithDefaults.primary_button_background)}20` : 'transparent',
+                                                        color: resolveValue(themeWithDefaults.text),
                                                     }),
                                                     singleValue: (base) => ({
                                                         ...base,
-                                                        color: themeWithDefaults.text,
+                                                        color: resolveValue(themeWithDefaults.text),
                                                     }),
                                                     input: (base) => ({
                                                         ...base,
-                                                        color: themeWithDefaults.text,
+                                                        color: resolveValue(themeWithDefaults.text),
                                                     }),
                                                 }}
                                                 isClearable
@@ -747,25 +764,25 @@ export default function ProfileComponent({
                                                     ...customStyles,
                                                     control: (base) => ({
                                                         ...base,
-                                                        borderColor: themeWithDefaults.input_border,
-                                                        backgroundColor: themeWithDefaults.input_background,
+                                                        borderColor: resolveValue(themeWithDefaults.input_border),
+                                                        backgroundColor: resolveValue(themeWithDefaults.input_background),
                                                     }),
                                                     menu: (base) => ({
                                                         ...base,
-                                                        backgroundColor: themeWithDefaults.background,
+                                                        backgroundColor: resolveValue(themeWithDefaults.background),
                                                     }),
                                                     option: (base, { isFocused }) => ({
                                                         ...base,
-                                                        backgroundColor: isFocused ? `${themeWithDefaults.primary_button_background}20` : 'transparent',
-                                                        color: themeWithDefaults.text,
+                                                        backgroundColor: isFocused ? `${resolveValue(themeWithDefaults.primary_button_background)}20` : 'transparent',
+                                                        color: resolveValue(themeWithDefaults.text),
                                                     }),
                                                     singleValue: (base) => ({
                                                         ...base,
-                                                        color: themeWithDefaults.text,
+                                                        color: resolveValue(themeWithDefaults.text),
                                                     }),
                                                     input: (base) => ({
                                                         ...base,
-                                                        color: themeWithDefaults.text,
+                                                        color: resolveValue(themeWithDefaults.text),
                                                     }),
                                                 }}
                                                 isClearable
@@ -785,25 +802,25 @@ export default function ProfileComponent({
                                                     ...customStyles,
                                                     control: (base) => ({
                                                         ...base,
-                                                        borderColor: themeWithDefaults.input_border,
-                                                        backgroundColor: themeWithDefaults.input_background,
+                                                        borderColor: resolveValue(themeWithDefaults.input_border),
+                                                        backgroundColor: resolveValue(themeWithDefaults.input_background),
                                                     }),
                                                     menu: (base) => ({
                                                         ...base,
-                                                        backgroundColor: themeWithDefaults.background,
+                                                        backgroundColor: resolveValue(themeWithDefaults.background),
                                                     }),
                                                     option: (base, { isFocused }) => ({
                                                         ...base,
-                                                        backgroundColor: isFocused ? `${themeWithDefaults.primary_button_background}20` : 'transparent',
-                                                        color: themeWithDefaults.text,
+                                                        backgroundColor: isFocused ? `${resolveValue(themeWithDefaults.primary_button_background)}20` : 'transparent',
+                                                        color: resolveValue(themeWithDefaults.text),
                                                     }),
                                                     singleValue: (base) => ({
                                                         ...base,
-                                                        color: themeWithDefaults.text,
+                                                        color: resolveValue(themeWithDefaults.text),
                                                     }),
                                                     input: (base) => ({
                                                         ...base,
-                                                        color: themeWithDefaults.text,
+                                                        color: resolveValue(themeWithDefaults.text),
                                                     }),
                                                 }}
                                                 isClearable
@@ -828,7 +845,7 @@ export default function ProfileComponent({
                                             id="is_default"
                                             checked={addressData.is_default}
                                             onChange={(e) => setAddressData(prev => ({ ...prev, is_default: e.target.checked }))}
-                                            style={{ accentColor: themeWithDefaults.primary_button_background }}
+                                            style={{ accentColor: resolveValue(themeWithDefaults.primary_button_background) }}
                                         />
                                         <Label htmlFor="is_default" style={labelStyles}>Establecer como dirección principal</Label>
                                     </div>
@@ -853,15 +870,15 @@ export default function ProfileComponent({
                 <CardContent>
                     {userDeliveryLocations.length === 0 ? (
                         <div className="text-center py-8">
-                            <MapPin className="mx-auto h-12 w-12" style={{ color: `${themeWithDefaults.text}50` }} />
-                            <p style={{ color: themeWithDefaults.text }}>No tienes direcciones guardadas</p>
+                            <MapPin className="mx-auto h-12 w-12" style={{ color: `${resolveValue(themeWithDefaults.text)}50` }} />
+                            <p style={{ color: resolveValue(themeWithDefaults.text) }}>No tienes direcciones guardadas</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {userDeliveryLocations.map((address) => (
                                 <div key={address.id} className="border rounded-lg p-4" style={{
-                                    borderColor: themeWithDefaults.borders,
-                                    backgroundColor: themeWithDefaults.background
+                                    borderColor: resolveValue(themeWithDefaults.borders),
+                                    backgroundColor: resolveValue(themeWithDefaults.background)
                                 }}>
                                     <div className="flex items-center justify-between mb-2">
                                         {address.is_default && (
@@ -872,7 +889,7 @@ export default function ProfileComponent({
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => startEditAddress(address)}
-                                                style={{ color: themeWithDefaults.text }}
+                                                style={{ color: resolveValue(themeWithDefaults.text) }}
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </Button>
@@ -880,22 +897,22 @@ export default function ProfileComponent({
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => handleDeleteAddress(address.id)}
-                                                style={{ color: themeWithDefaults.text }}
+                                                style={{ color: resolveValue(themeWithDefaults.text) }}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>
-                                    <p className="text-sm font-medium" style={{ color: themeWithDefaults.text }}>{address.address_line_1}</p>
+                                    <p className="text-sm font-medium" style={{ color: resolveValue(themeWithDefaults.text) }}>{address.address_line_1}</p>
                                     {address.address_line_2 && (
-                                        <p className="text-sm" style={{ color: themeWithDefaults.text }}>{address.address_line_2}</p>
+                                        <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>{address.address_line_2}</p>
                                     )}
-                                    <p className="text-sm" style={{ color: themeWithDefaults.text }}>{address.full_address}</p>
+                                    <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>{address.full_address}</p>
                                     {address.phone_number && (
-                                        <p className="text-sm" style={{ color: themeWithDefaults.text }}>{address.phone_number}</p>
+                                        <p className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>{address.phone_number}</p>
                                     )}
                                     {address.notes && (
-                                        <p className="text-sm italic" style={{ color: `${themeWithDefaults.text}80` }}>{address.notes}</p>
+                                        <p className="text-sm italic" style={{ color: `${resolveValue(themeWithDefaults.text)}80` }}>{address.notes}</p>
                                     )}
                                 </div>
                             ))}
@@ -908,7 +925,7 @@ export default function ProfileComponent({
         const giftCardsSection = (
             <Card style={cardStyles}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2" style={{ color: themeWithDefaults.heading }}>
+                    <CardTitle className="flex items-center gap-2" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                         <CreditCard className="h-5 w-5" />
                         {content.giftCardsTitle || 'Mis Gift Cards'}
                     </CardTitle>
@@ -916,40 +933,40 @@ export default function ProfileComponent({
                 <CardContent>
                     {userGiftCards.length === 0 ? (
                         <div className="text-center py-8">
-                            <CreditCard className="mx-auto h-12 w-12" style={{ color: `${themeWithDefaults.text}50` }} />
-                            <p style={{ color: themeWithDefaults.text }}>No tienes gift cards disponibles</p>
+                            <CreditCard className="mx-auto h-12 w-12" style={{ color: `${resolveValue(themeWithDefaults.text)}50` }} />
+                            <p style={{ color: resolveValue(themeWithDefaults.text) }}>No tienes gift cards disponibles</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {userGiftCards.map((giftCard) => (
                                 <div key={giftCard.id} className="border rounded-lg p-4" style={{
-                                    borderColor: themeWithDefaults.borders,
-                                    backgroundColor: themeWithDefaults.background,
-                                    background: `linear-gradient(135deg, ${themeWithDefaults.primary_button_background}20, ${themeWithDefaults.secondary_button_background}20)`
+                                    borderColor: resolveValue(themeWithDefaults.borders),
+                                    backgroundColor: resolveValue(themeWithDefaults.background),
+                                    background: `linear-gradient(135deg, ${resolveValue(themeWithDefaults.primary_button_background)}20, ${resolveValue(themeWithDefaults.secondary_button_background)}20)`
                                 }}>
                                     <div className="flex items-center justify-between mb-2">
                                         <Badge variant="outline">Gift Card</Badge>
-                                        <CreditCard className="h-5 w-5" style={{ color: themeWithDefaults.primary_button_background }} />
+                                        <CreditCard className="h-5 w-5" style={{ color: resolveValue(themeWithDefaults.primary_button_background) }} />
                                     </div>
-                                    <p className="text-lg font-mono font-bold mb-2" style={{ color: themeWithDefaults.heading }}>
+                                    <p className="text-lg font-mono font-bold mb-2" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                         {giftCard.code}
                                     </p>
                                     <div className="space-y-1">
                                         <div className="flex justify-between text-sm">
-                                            <span style={{ color: themeWithDefaults.text }}>Saldo disponible:</span>
-                                            <span className="font-semibold" style={{ color: themeWithDefaults.primary_button_background }}>
+                                            <span style={{ color: resolveValue(themeWithDefaults.text) }}>Saldo disponible:</span>
+                                            <span className="font-semibold" style={{ color: resolveValue(themeWithDefaults.primary_button_background) }}>
                                                 ${giftCard.current_balance}
                                             </span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span style={{ color: themeWithDefaults.text }}>Saldo inicial:</span>
-                                            <span style={{ color: themeWithDefaults.text }}>
+                                            <span style={{ color: resolveValue(themeWithDefaults.text) }}>Saldo inicial:</span>
+                                            <span style={{ color: resolveValue(themeWithDefaults.text) }}>
                                                 ${giftCard.initial_balance}
                                             </span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span style={{ color: themeWithDefaults.text }}>Expira:</span>
-                                            <span style={{ color: themeWithDefaults.text }}>
+                                            <span style={{ color: resolveValue(themeWithDefaults.text) }}>Expira:</span>
+                                            <span style={{ color: resolveValue(themeWithDefaults.text) }}>
                                                 {new Date(giftCard.expiration_date).toLocaleDateString()}
                                             </span>
                                         </div>
@@ -962,59 +979,49 @@ export default function ProfileComponent({
             </Card>
         );
 
-        // Renderizar según el tipo de layout
         if (layoutType === 'grid') {
             return (
                 <div className="space-y-6">
-                    {/* Grid Layout - Todo visible a la vez */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Información Personal - ocupa 2 columnas */}
                         <div className="lg:col-span-2">
                             {profileSection}
                         </div>
-
-                        {/* Resumen - ocupa 1 columna */}
                         <div>
                             <Card style={cardStyles}>
                                 <CardHeader>
-                                    <CardTitle style={{ color: themeWithDefaults.heading }}>Resumen</CardTitle>
+                                    <CardTitle style={{ color: resolveValue(themeWithDefaults.heading) }}>Resumen</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm" style={{ color: themeWithDefaults.text }}>Direcciones</span>
+                                        <span className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>Direcciones</span>
                                         <Badge>{userDeliveryLocations.length}</Badge>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm" style={{ color: themeWithDefaults.text }}>Gift Cards</span>
+                                        <span className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>Gift Cards</span>
                                         <Badge>{userGiftCards.length}</Badge>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm" style={{ color: themeWithDefaults.text }}>Pedidos</span>
+                                        <span className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>Pedidos</span>
                                         <Badge>0</Badge>
                                     </div>
                                 </CardContent>
                             </Card>
                         </div>
                     </div>
-
-                    {/* Direcciones de Envío - ancho completo */}
                     {addressesSection}
-
-                    {/* Gift Cards - ancho completo */}
                     {giftCardsSection}
                 </div>
             );
         } else {
-            // Tabs Layout - Contenido organizado en pestañas
             return (
                 <Tabs defaultValue="profile" className="w-full">
                     <TabsList className="grid w-full grid-cols-3" style={{
-                        backgroundColor: themeWithDefaults.background,
-                        borderBottom: `1px solid ${themeWithDefaults.borders}`
+                        backgroundColor: resolveValue(themeWithDefaults.background),
+                        borderBottom: `1px solid ${resolveValue(themeWithDefaults.borders)}`
                     }}>
-                        <TabsTrigger value="profile" style={{ color: themeWithDefaults.text }}>Perfil</TabsTrigger>
-                        <TabsTrigger value="addresses" style={{ color: themeWithDefaults.text }}>Direcciones</TabsTrigger>
-                        <TabsTrigger value="giftcards" style={{ color: themeWithDefaults.text }}>Gift Cards</TabsTrigger>
+                        <TabsTrigger value="profile" style={{ color: resolveValue(themeWithDefaults.text) }}>Perfil</TabsTrigger>
+                        <TabsTrigger value="addresses" style={{ color: resolveValue(themeWithDefaults.text) }}>Direcciones</TabsTrigger>
+                        <TabsTrigger value="giftcards" style={{ color: resolveValue(themeWithDefaults.text) }}>Gift Cards</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="profile" className="space-y-6">

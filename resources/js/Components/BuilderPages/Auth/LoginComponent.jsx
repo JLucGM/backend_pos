@@ -7,7 +7,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Button } from '@/Components/ui/button';
 import { Link, usePage, router } from '@inertiajs/react';
 import { toast } from 'sonner';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -30,10 +30,29 @@ const LoginComponent = ({
 }) => {
     const { props } = usePage();
     const sessionDomain = props.env.SESSION_DOMAIN || '.pos.test';
-    const styles = comp.styles || {};
-    const content = comp.content || {};
+    const rawStyles = comp.styles || {};
+    const rawContent = comp.content || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeAuthStyles = getComponentStyles(themeWithDefaults, 'auth', appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido (por si acaso)
+    const content = {};
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
 
     const [loginUrl, setLoginUrl] = useState('');
     const [registerUrl, setRegisterUrl] = useState('');
@@ -57,8 +76,8 @@ const LoginComponent = ({
         justifyContent: 'center',
         padding: mode === 'frontend' ? '20px' : '0',
     };
-    console.log(styles.backgroundColor)
-    // 2. Contenedor de la tarjeta del formulario
+
+    // 2. Contenedor de la tarjeta del formulario (usando estilos resueltos)
     const containerStyles = {
         ...getStyles(comp),
         backgroundColor: styles.backgroundColor || themeAuthStyles.backgroundColor || themeWithDefaults.background,
@@ -177,40 +196,42 @@ const LoginComponent = ({
         }
     };
 
-    // CORRECCIÓN: Usar heading del tema para el título
+    // Estilos para título (usando valores resueltos)
     const titleStyles = {
         fontSize: withUnit(styles.titleSize || themeWithDefaults.heading1_fontSize || '28px', styles.titleSizeUnit || 'px'),
-        color: styles.titleColor || themeWithDefaults.heading, // <-- Usa heading del tema
+        color: styles.titleColor || themeWithDefaults.heading,
         fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
         marginBottom: '8px',
         textAlign: 'center',
         fontWeight: 'bold'
     };
 
-    // CORRECCIÓN: Usar text del tema para el subtítulo
+    // Estilos para subtítulo
     const subtitleStyles = {
         fontSize: withUnit(styles.subtitleSize || themeWithDefaults.paragraph_fontSize || '16px', styles.subtitleSizeUnit || 'px'),
-        color: styles.subtitleColor || themeWithDefaults.text, // <-- Usa text del tema
+        color: styles.subtitleColor || themeWithDefaults.text,
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         marginBottom: '24px',
         textAlign: 'center'
     };
 
-    // CORRECCIÓN: Usar text del tema para las etiquetas
+    // Estilos para etiquetas
     const labelStyles = {
-        color: styles.labelColor || themeWithDefaults.text, // <-- Usa text del tema
+        color: styles.labelColor || themeWithDefaults.text,
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
         marginBottom: '8px'
     };
 
+    // Estilos para inputs
     const inputStyles = {
         borderColor: styles.inputBorderColor || themeWithDefaults.input_border,
         borderRadius: withUnit(styles.inputBorderRadius || themeWithDefaults.input_corner_radius),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
-        color: themeWithDefaults.text, // <-- Color del texto dentro del input
+        color: themeWithDefaults.text,
         backgroundColor: styles.inputBackgroundColor || themeWithDefaults.input_background,
     };
 
+    // Estilos para botón
     const buttonStyles = {
         backgroundColor: styles.buttonBackgroundColor || themeWithDefaults.primary_button_background,
         color: styles.buttonColor || themeWithDefaults.primary_button_text,

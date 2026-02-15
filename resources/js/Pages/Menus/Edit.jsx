@@ -16,21 +16,18 @@ export default function Edit({ menu, menuItems, dynamicPages }) {
     const initialValues = {
         name: menu.name,
         // Enviamos el array plano (con id, parent_id, order) a MenusForm para que buildTree lo procese
-        items: menuItems || [], 
+        items: menuItems || [],
     };
-console.log(menu, menuItems)
+
     const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-console.log(data)
-        // 🚨 CAMBIO CLAVE: Enviamos data.items que YA es la estructura anidada 
-        // generada por MenusForm (vía handleTreeChange).
-        
+
         const submissionData = {
             name: data.name,
             items: data.items, // Se envía la estructura ANIDADA y saneada
-            _method: 'put', 
+            _method: 'put',
         };
 
         // Usamos la ruta de actualización
@@ -60,28 +57,23 @@ console.log(data)
         >
             <Head className="capitalize" title={`Editar ${menu.name}`} />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <Suspense fallback={<Loader />}>
-                            <form onSubmit={submit} className='space-y-4'>
-                                <MenusForm
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                    dynamicPages={dynamicPages}
-                                />
+            <Suspense fallback={<Loader />}>
+                <form onSubmit={submit} className='space-y-4'>
+                    <MenusForm
+                        data={data}
+                        setData={setData}
+                        errors={errors}
+                        dynamicPages={dynamicPages}
+                    />
 
-                                <div className="flex justify-end p-2.5">
-                                    <Button disabled={processing}>
-                                        {processing ? 'Actualizando...' : 'Guardar Cambios'}
-                                    </Button>
-                                </div>
-                            </form>
-                        </Suspense>
+                    <div className="flex justify-end p-2.5">
+                        <Button disabled={processing}>
+                            {processing ? 'Actualizando...' : 'Guardar Cambios'}
+                        </Button>
                     </div>
-                </div>
-            </div>
+                </form>
+            </Suspense>
+
         </AuthenticatedLayout>
     );
 }

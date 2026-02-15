@@ -17,7 +17,7 @@ import {
     XCircle,
     ShoppingCart
 } from 'lucide-react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -37,6 +37,26 @@ function OrdersComponent({
 }) {
     const [expandedOrder, setExpandedOrder] = useState(null);
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos y contenido del componente
+    const rawStyles = comp.styles || {};
+    const rawContent = comp.content || {};
+    const styles = {};
+    const content = {};
+
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
 
     // Datos de ejemplo para el builder
     const exampleOrders = [
@@ -140,14 +160,11 @@ function OrdersComponent({
         setExpandedOrder(expandedOrder === orderId ? null : orderId);
     };
 
-    const content = comp.content || {};
-    const styles = comp.styles || {};
-
     // 1. Contenedor principal que usa el fondo del tema
     const outerContainerStyles = {
         width: '100%',
         minHeight: mode === 'frontend' ? '100vh' : 'auto',
-        backgroundColor: themeWithDefaults.background || { h: 0, s: 0, l: 100 },
+        backgroundColor: themeWithDefaults.background,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -155,7 +172,7 @@ function OrdersComponent({
         padding: mode === 'frontend' ? '20px' : '0',
     };
 
-    // 2. Contenedor interno
+    // 2. Contenedor interno con valores resueltos
     const containerStyles = {
         backgroundColor: styles.backgroundColor || themeWithDefaults.background,
         paddingTop: withUnit(styles.paddingTop || '40px'),
@@ -168,30 +185,30 @@ function OrdersComponent({
         minHeight: mode === 'frontend' ? 'auto' : '100%',
     };
 
-    // Estilos para títulos
+    // Estilos para títulos (con valores resueltos)
     const titleStyles = {
-        color: styles.titleColor || themeWithDefaults.heading,
+        color: resolveValue(styles.titleColor || themeWithDefaults.heading),
         fontSize: withUnit(styles.titleSize, styles.titleSizeUnit || 'px'),
         fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
     };
 
     // Estilos para texto general
     const textStyles = {
-        color: themeWithDefaults.text,
+        color: resolveValue(themeWithDefaults.text),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
     };
 
     // Estilos para botones primarios
     const primaryButtonStyles = {
-        backgroundColor: themeWithDefaults.primary_button_background,
-        color: themeWithDefaults.primary_button_text,
-        borderRadius: themeWithDefaults.primary_button_corner_radius || '8px',
+        backgroundColor: resolveValue(themeWithDefaults.primary_button_background),
+        color: resolveValue(themeWithDefaults.primary_button_text),
+        borderRadius: withUnit(themeWithDefaults.primary_button_corner_radius || '8px'),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
     };
 
     // Estilos para botones ghost/outline
     const ghostButtonStyles = {
-        color: themeWithDefaults.text,
+        color: resolveValue(themeWithDefaults.text),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
     };
 
@@ -250,46 +267,20 @@ function OrdersComponent({
                             const StatusIcon = statusInfo.icon;
                             const isExpanded = expandedOrder === order.id;
 
-                            // Determinar color del badge según el estado
+                            // Determinar color del badge según el estado (usando colores del tema)
                             const getStatusBadgeColor = () => {
-                                switch (statusInfo.color) {
-                                    case 'yellow':
-                                        return {
-                                            background: `${themeWithDefaults.primary_button_background}20`,
-                                            color: themeWithDefaults.text,
-                                            border: `1px solid ${themeWithDefaults.borders}`
-                                        };
-                                    case 'green':
-                                        return {
-                                            background: `${{ ...themeWithDefaults, primary_button_background: '131 98% 40%' }}20`,
-                                            color: { ...themeWithDefaults, text: '131 50% 20%' },
-                                            border: `1px solid ${themeWithDefaults.borders}`
-                                        };
-                                    case 'red':
-                                        return {
-                                            background: `${{ ...themeWithDefaults, primary_button_background: '0 84% 60%' }}20`,
-                                            color: { ...themeWithDefaults, text: '0 72% 51%' },
-                                            border: `1px solid ${themeWithDefaults.borders}`
-                                        };
-                                    case 'blue':
-                                        return {
-                                            background: `${{ ...themeWithDefaults, primary_button_background: '221 83% 53%' }}20`,
-                                            color: { ...themeWithDefaults, text: '221 83% 53%' },
-                                            border: `1px solid ${themeWithDefaults.borders}`
-                                        };
-                                    case 'purple':
-                                        return {
-                                            background: `${{ ...themeWithDefaults, primary_button_background: '262 83% 58%' }}20`,
-                                            color: { ...themeWithDefaults, text: '262 83% 58%' },
-                                            border: `1px solid ${themeWithDefaults.borders}`
-                                        };
-                                    default:
-                                        return {
-                                            background: `${themeWithDefaults.primary_button_background}20`,
-                                            color: themeWithDefaults.text,
-                                            border: `1px solid ${themeWithDefaults.borders}`
-                                        };
-                                }
+                                // Valores base del tema
+                                const bgColor = themeWithDefaults.primary_button_background;
+                                const textColor = themeWithDefaults.text;
+                                const borderColor = themeWithDefaults.borders;
+
+                                // Para simplificar, usamos un estilo común con variaciones según color
+                                // En un caso real podrías mapear a colores específicos del tema
+                                return {
+                                    background: `${bgColor}20`, // 20% de opacidad
+                                    color: textColor,
+                                    border: `1px solid ${borderColor}`
+                                };
                             };
 
                             const badgeStyle = getStatusBadgeColor();

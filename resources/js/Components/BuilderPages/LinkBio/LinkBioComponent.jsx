@@ -1,11 +1,10 @@
-// components/BuilderPages/LinkBio/LinkBioComponent.jsx
 import React, { useState } from 'react';
 import ButtonComponent from '../ButtonComponent';
 import HeadingComponent from '../HeadingComponent';
 import TextComponent from '../TextComponent';
 import ImageComponent from '../ImageComponent';
 import DividerComponent from '../DividerComponent/DividerComponent';
-import { getThemeWithDefaults } from '@/utils/themeUtils';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
 const LinkBioComponent = ({
     comp,
@@ -22,11 +21,31 @@ const LinkBioComponent = ({
     const [isHovered, setIsHovered] = useState(false);
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
     const content = comp.content || {};
     const styles = comp.styles || {};
-    // Estilo del contenedor principal
+
+    // Resolver propiedades del contenido
+    const resolvedContent = {};
+    Object.keys(content).forEach(key => {
+        resolvedContent[key] = resolveValue(content[key]);
+    });
+
+    // Resolver propiedades de estilos (aunque probablemente no se usen directamente, por si acaso)
+    const resolvedStyles = {};
+    Object.keys(styles).forEach(key => {
+        resolvedStyles[key] = resolveValue(styles[key]);
+    });
+
+    // Estilo del contenedor principal (usamos resolvedStyles, pero podemos mantener styles si no hay referencias)
     const containerStyles = {
-        ...styles,
+        ...resolvedStyles,
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
@@ -48,36 +67,36 @@ const LinkBioComponent = ({
         zIndex: 0,
     };
 
-    if (content.backgroundType === 'color') {
-        backgroundStyle.backgroundColor = content.backgroundColor || themeWithDefaults.background;
-    } else if (content.backgroundType === 'image' && content.backgroundImage) {
-        backgroundStyle.backgroundImage = `url('${content.backgroundImage}')`;
-        backgroundStyle.backgroundSize = content.backgroundSize || 'cover';
-        backgroundStyle.backgroundPosition = content.backgroundPosition || 'center';
+    if (resolvedContent.backgroundType === 'color') {
+        backgroundStyle.backgroundColor = resolvedContent.backgroundColor || themeWithDefaults.background;
+    } else if (resolvedContent.backgroundType === 'image' && resolvedContent.backgroundImage) {
+        backgroundStyle.backgroundImage = `url('${resolvedContent.backgroundImage}')`;
+        backgroundStyle.backgroundSize = resolvedContent.backgroundSize || 'cover';
+        backgroundStyle.backgroundPosition = resolvedContent.backgroundPosition || 'center';
         backgroundStyle.backgroundRepeat = 'no-repeat';
 
-        // Aplicar filtro de imagen solo al fondo
-        if (content.imageFilter && content.imageFilter !== 'none') {
-            if (content.imageFilter === 'darken') {
+        // Aplicar filtro de imagen solo al fondo (resolver valores)
+        if (resolvedContent.imageFilter && resolvedContent.imageFilter !== 'none') {
+            if (resolvedContent.imageFilter === 'darken') {
                 backgroundStyle.filter = 'brightness(0.7)';
-            } else if (content.imageFilter === 'lighten') {
+            } else if (resolvedContent.imageFilter === 'lighten') {
                 backgroundStyle.filter = 'brightness(1.3)';
             }
         }
-    } else if (content.backgroundType === 'gradient' && content.gradientColors) {
-        backgroundStyle.background = content.gradientColors;
+    } else if (resolvedContent.backgroundType === 'gradient' && resolvedContent.gradientColors) {
+        backgroundStyle.background = resolvedContent.gradientColors;
     }
 
     // Estilo del overlay para cuando hay imagen con filtro (separado también)
     const overlayStyle = {};
-    if (content.backgroundType === 'image' && content.imageOverlay && content.imageOverlay !== 'none') {
-        if (content.imageOverlay === 'darken') {
+    if (resolvedContent.backgroundType === 'image' && resolvedContent.imageOverlay && resolvedContent.imageOverlay !== 'none') {
+        if (resolvedContent.imageOverlay === 'darken') {
             overlayStyle.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        } else if (content.imageOverlay === 'lighten') {
+        } else if (resolvedContent.imageOverlay === 'lighten') {
             overlayStyle.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-        } else if (content.imageOverlay === 'gradient-dark') {
+        } else if (resolvedContent.imageOverlay === 'gradient-dark') {
             overlayStyle.background = 'linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3))';
-        } else if (content.imageOverlay === 'gradient-light') {
+        } else if (resolvedContent.imageOverlay === 'gradient-light') {
             overlayStyle.background = 'linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3))';
         }
         overlayStyle.position = 'absolute';
@@ -90,13 +109,13 @@ const LinkBioComponent = ({
 
     // Estilo del contenedor interno (contenido)
     const innerContainerStyles = {
-        maxWidth: content.maxWidth ? `${content.maxWidth}px` : '400px',
+        maxWidth: resolvedContent.maxWidth ? `${resolvedContent.maxWidth}px` : '400px',
         width: '100%',
-        textAlign: content.alignment || 'center',
+        textAlign: resolvedContent.alignment || 'center',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: content.buttonsGap ? `${content.buttonsGap}px` : '16px',
+        gap: resolvedContent.buttonsGap ? `${resolvedContent.buttonsGap}px` : '16px',
         position: 'relative',
         zIndex: 2,
     };
@@ -121,7 +140,7 @@ const LinkBioComponent = ({
         if (onEdit) onEdit(comp);
     };
 
-    // Función para renderizar hijos según su tipo - ¡CORREGIDO!
+    // Función para renderizar hijos según su tipo
     const renderChild = (child) => {
         const commonProps = {
             comp: child,
@@ -165,17 +184,15 @@ const LinkBioComponent = ({
             <div style={backgroundStyle} />
 
             {/* Overlay para imagen de fondo (separado también) */}
-            {content.backgroundType === 'image' && content.imageOverlay && content.imageOverlay !== 'none' && (
+            {resolvedContent.backgroundType === 'image' && resolvedContent.imageOverlay && resolvedContent.imageOverlay !== 'none' && (
                 <div style={overlayStyle} />
             )}
 
             <div style={innerContainerStyles}>
-                {/* Renderizar hijos - ¡ESTO ES CLAVE! */}
-                {content.children && content.children.length > 0 ? (
-                    content.children.map(child => {
-                        // Verificar que el hijo tenga un ID válido
+                {/* Renderizar hijos */}
+                {resolvedContent.children && resolvedContent.children.length > 0 ? (
+                    resolvedContent.children.map(child => {
                         if (!child || !child.id) return null;
-
                         return renderChild(child);
                     })
                 ) : (

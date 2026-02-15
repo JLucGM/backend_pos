@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const ProductImageComponent = ({
     comp,
@@ -11,9 +11,28 @@ const ProductImageComponent = ({
     appliedTheme,
     mode = 'builder' // 'builder' o 'frontend'
 }) => {
-    const styles = comp.styles || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    const themeImageStyles = getComponentStyles(themeWithDefaults, 'image');
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados del componente
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Obtener estilos del tema para imágenes (resueltos)
+    const themeImageStylesRaw = getComponentStyles(themeWithDefaults, 'image', appliedTheme);
+    const themeImageStyles = {};
+    Object.keys(themeImageStylesRaw).forEach(key => {
+        themeImageStyles[key] = resolveValue(themeImageStylesRaw[key]);
+    });
 
     // Función para obtener estilos del contenedor según aspectRatio
     const getAspectRatioStyles = () => {
@@ -46,18 +65,20 @@ const ProductImageComponent = ({
     const containerStyles = {
         ...getAspectRatioStyles(),
         margin: '0 auto',
-        maxWidth: styles.maxWidth || '500px',
+        maxWidth: resolveValue(styles.maxWidth || '500px'),
     };
 
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
-    // Aplicar estilos del tema con valores por defecto
+    // Resolver sombra del tema
+    const resolvedShadow = resolveValue(themeWithDefaults.shadows);
+
+    // Aplicar estilos del tema con valores resueltos
     const imageStyles = {
         position: 'absolute',
         top: 0,
@@ -74,7 +95,7 @@ const ProductImageComponent = ({
         borderRadius: withUnit(styles.imageBorderRadius || themeImageStyles.borderRadius),
         objectFit: styles.objectFit || themeImageStyles.objectFit,
         // Sombra del tema
-        boxShadow: themeWithDefaults.shadows ? `0 2px 4px ${themeWithDefaults.shadows}` : 'none',
+        boxShadow: resolvedShadow ? `0 2px 4px ${resolvedShadow}` : 'none',
         // Transición para efectos hover en frontend
         transition: mode === 'frontend' ? 'transform 0.3s ease' : 'none',
     };

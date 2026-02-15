@@ -1,8 +1,8 @@
-// components/BuilderPages/Checkout/CheckoutSummaryComponent.jsx - VERSIÓN ACTUALIZADA
+// components/BuilderPages/Checkout/CheckoutSummaryComponent.jsx - VERSIÓN ACTUALIZADA CON SOPORTE PARA REFERENCIAS AL TEMA
 import React from 'react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -24,11 +24,32 @@ const CheckoutSummaryComponent = ({
     appliedGiftCard,
     mode = 'builder',
     automaticDiscountsTotal = 0,
-    taxDetails = []
+    taxDetails = [],
+    appliedTheme
 }) => {
     const { settings } = usePage().props;
-    const styles = comp.styles || {};
-    const content = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados del componente
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido del componente
+    const rawContent = comp.content || {};
+    const content = {};
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
 
     // Datos de ejemplo para modo builder (actualizados con descuentos)
     const exampleCartItems = [
@@ -98,19 +119,19 @@ const CheckoutSummaryComponent = ({
 
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: styles.backgroundColor || '#f9fafb',
+        backgroundColor: resolveValue(styles.backgroundColor || themeWithDefaults.background),
         paddingTop: withUnit(styles.paddingTop || '24px'),
         paddingRight: withUnit(styles.paddingRight || '24px'),
         paddingBottom: withUnit(styles.paddingBottom || '24px'),
         paddingLeft: withUnit(styles.paddingLeft || '24px'),
-        borderRadius: withUnit(styles.borderRadius || '8px'),
-        border: '1px solid #e5e7eb',
+        borderRadius: withUnit(styles.borderRadius || themeWithDefaults.border_radius_medium || '8px'),
+        border: `1px solid ${resolveValue(themeWithDefaults.borders)}`,
     };
 
     const titleStyles = {
-        fontSize: withUnit(styles.titleSize || styles.heading6_fontSize || '20px', styles.titleSizeUnit || 'px'),
-        color: styles.text || '#000000',
-        fontFamily: themeSettings?.heading_font,
+        fontSize: withUnit(styles.titleSize || themeWithDefaults.heading3_fontSize || '20px', styles.titleSizeUnit || 'px'),
+        color: resolveValue(styles.titleColor || themeWithDefaults.heading),
+        fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
         marginBottom: '20px',
         fontWeight: '600',
     };
@@ -124,7 +145,7 @@ const CheckoutSummaryComponent = ({
 
         return (
             <div className="mt-1">
-                <div className="text-xs text-green-600 font-medium">
+                <div className="text-xs" style={{ color: resolveValue(themeWithDefaults.success_color) }}>
                     {item.discountType === 'direct_discount' ? 'Descuento directo' :
                         item.discountType === 'product_automatic' ? 'Descuento automático' :
                             'Descuento aplicado'}
@@ -134,7 +155,7 @@ const CheckoutSummaryComponent = ({
                         `-$${discountAmount.toFixed(2)}`
                     )}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs" style={{ color: resolveValue(themeWithDefaults.text) }}>
                     {discountPercentage}% de descuento
                 </div>
             </div>
@@ -157,31 +178,38 @@ const CheckoutSummaryComponent = ({
             <div className="space-y-4">
                 {displayCartItems.length > 0 && (
                     <div className="mb-4">
-                        <h3 className="font-medium text-gray-900 mb-3">Productos</h3>
+                        <h3 className="font-medium mb-3" style={{ color: resolveValue(themeWithDefaults.heading) }}>
+                            Productos
+                        </h3>
                         <div className="space-y-4">
                             {displayCartItems.map(item => (
-                                <div key={item.id} className="flex justify-between items-start border-b pb-4">
+                                <div key={item.id} className="flex justify-between items-start border-b pb-4"
+                                    style={{ borderColor: resolveValue(themeWithDefaults.borders) }}>
                                     <div className="flex-1">
-                                        <div className="font-medium text-gray-900">{item.name}</div>
+                                        <div className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
+                                            {item.name}
+                                        </div>
                                         {item.combination_name && (
-                                            <div className="text-sm text-gray-500">{item.combination_name}</div>
+                                            <div className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
+                                                {item.combination_name}
+                                            </div>
                                         )}
 
                                         {/* Precios con/sin descuento */}
                                         <div className="text-sm mt-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-gray-500">
+                                                <span style={{ color: resolveValue(themeWithDefaults.text) }}>
                                                     {item.quantity} ×
                                                     {item.originalPrice > item.price ? (
                                                         <>
-                                                            <span className="line-through text-gray-400 ml-1">
+                                                            <span className="line-through ml-1" style={{ color: resolveValue(themeWithDefaults.text), opacity: '0.6' }}>
                                                                 {settings?.currency ? (
                                                                     <CurrencyDisplay currency={settings.currency} amount={item.originalPrice} />
                                                                 ) : (
                                                                     `$${item.originalPrice.toFixed(2)}`
                                                                 )}
                                                             </span>
-                                                            <span className="ml-1 font-medium text-green-600">
+                                                            <span className="ml-1 font-medium" style={{ color: resolveValue(themeWithDefaults.success_color) }}>
                                                                 {settings?.currency ? (
                                                                     <CurrencyDisplay currency={settings.currency} amount={item.price} />
                                                                 ) : (
@@ -202,10 +230,10 @@ const CheckoutSummaryComponent = ({
                                             </div>
                                             {item.manualDiscount && (
                                                 <div className="mt-1">
-                                                    <div className="text-xs text-blue-600 font-medium ">
+                                                    <div className="text-xs font-medium" style={{ color: resolveValue(themeWithDefaults.links) }}>
                                                         ✓ Descuento por código: {item.manualDiscount.code}
                                                     </div>
-                                                    <div className="text-xs text-blue-500">
+                                                    <div className="text-xs" style={{ color: resolveValue(themeWithDefaults.links) }}>
                                                         {item.manualDiscount.discount_type === 'percentage'
                                                             ? `${item.manualDiscount.value}% de descuento aplicado`
                                                             : `$${item.manualDiscount.value} de descuento aplicado`}
@@ -215,7 +243,7 @@ const CheckoutSummaryComponent = ({
                                             {renderDiscountInfo(item)}
                                             {/* Mostrar impuesto del producto */}
                                             {item.taxRate > 0 && (
-                                                <div className="text-xs text-gray-500 mt-1">
+                                                <div className="text-xs mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
                                                     Impuesto ({item.taxName || `${item.taxRate}%`}):
                                                     {settings?.currency ? (
                                                         <CurrencyDisplay currency={settings.currency} amount={(item.price * item.quantity) * (item.taxRate / 100)} />
@@ -226,7 +254,7 @@ const CheckoutSummaryComponent = ({
                                             )}
                                         </div>
                                     </div>
-                                    <div className="font-medium">
+                                    <div className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                         {settings?.currency ? (
                                             <CurrencyDisplay currency={settings.currency} amount={item.price * item.quantity} />
                                         ) : (
@@ -243,8 +271,8 @@ const CheckoutSummaryComponent = ({
                 <div className="space-y-2">
                     {/* Subtotal original (sin descuentos) */}
                     <div className="flex justify-between">
-                        <span>Subtotal original</span>
-                        <span className="line-through text-gray-400">
+                        <span style={{ color: resolveValue(themeWithDefaults.text) }}>Subtotal original</span>
+                        <span className="line-through" style={{ color: resolveValue(themeWithDefaults.text), opacity: '0.6' }}>
                             {settings?.currency ? (
                                 <CurrencyDisplay currency={settings.currency} amount={originalSubtotal} />
                             ) : (
@@ -255,7 +283,7 @@ const CheckoutSummaryComponent = ({
 
                     {/* Descuentos automáticos */}
                     {displayAutomaticDiscounts > 0 && (
-                        <div className="flex justify-between text-green-600">
+                        <div className="flex justify-between" style={{ color: resolveValue(themeWithDefaults.success_color) }}>
                             <span>Descuentos automáticos</span>
                             <span>
                                 {settings?.currency ? (
@@ -270,10 +298,10 @@ const CheckoutSummaryComponent = ({
                     {/* Gift Card aplicada */}
                     {appliedGiftCard && giftCardAmount > 0 && (
                         <div className="flex justify-between">
-                            <span className="text-gray-600">
+                            <span style={{ color: resolveValue(themeWithDefaults.text) }}>
                                 Gift Card ({appliedGiftCard.code})
                             </span>
-                            <span className="font-medium text-green-600">
+                            <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.success_color) }}>
                                 {settings?.currency ? (
                                     <>-<CurrencyDisplay currency={settings.currency} amount={giftCardAmount} /></>
                                 ) : (
@@ -285,7 +313,7 @@ const CheckoutSummaryComponent = ({
 
                     {/* Mostrar saldo restante de la gift card */}
                     {appliedGiftCard && giftCardAmount > 0 && (
-                        <div className="text-xs text-gray-500 italic mt-1">
+                        <div className="text-xs italic mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
                             Saldo restante en {appliedGiftCard.code}:
                             {settings?.currency ? (
                                 <CurrencyDisplay currency={settings.currency} amount={parseFloat(appliedGiftCard.current_balance) - giftCardAmount} />
@@ -295,7 +323,7 @@ const CheckoutSummaryComponent = ({
                         </div>
                     )}
 
-                    <div className="flex justify-between font-medium">
+                    <div className="flex justify-between font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                         <span>Subtotal</span>
                         <span>
                             {settings?.currency ? (
@@ -309,8 +337,14 @@ const CheckoutSummaryComponent = ({
                     {/* Envío */}
                     {content.showShipping !== false && displayShipping > 0 && (
                         <div className="flex justify-between">
-                            <span className="text-gray-600">Envío</span>
-                            <span className="font-medium">${displayShipping}</span>
+                            <span style={{ color: resolveValue(themeWithDefaults.text) }}>Envío</span>
+                            <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
+                                {settings?.currency ? (
+                                    <CurrencyDisplay currency={settings.currency} amount={displayShipping} />
+                                ) : (
+                                    `$${displayShipping.toFixed(2)}`
+                                )}
+                            </span>
                         </div>
                     )}
 
@@ -321,10 +355,10 @@ const CheckoutSummaryComponent = ({
                                 <>
                                     {displayTaxDetails.map((taxDetail, index) => (
                                         <div key={index} className="flex justify-between">
-                                            <span className="text-gray-600">
+                                            <span style={{ color: resolveValue(themeWithDefaults.text) }}>
                                                 {taxDetail.name} ({taxDetail.rate})
                                             </span>
-                                            <span className="font-medium">
+                                            <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                                 {settings?.currency ? (
                                                     <CurrencyDisplay currency={settings.currency} amount={taxDetail.amount} />
                                                 ) : (
@@ -334,9 +368,9 @@ const CheckoutSummaryComponent = ({
                                         </div>
                                     ))}
                                     {displayTaxDetails.length > 1 && (
-                                        <div className="flex justify-between border-t pt-1">
-                                            <span className="text-gray-600 font-medium">Total impuestos</span>
-                                            <span className="font-medium">
+                                        <div className="flex justify-between border-t pt-1" style={{ borderColor: resolveValue(themeWithDefaults.borders) }}>
+                                            <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.text) }}>Total impuestos</span>
+                                            <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                                 {settings?.currency ? (
                                                     <CurrencyDisplay currency={settings.currency} amount={displayTax} />
                                                 ) : (
@@ -348,8 +382,8 @@ const CheckoutSummaryComponent = ({
                                 </>
                             ) : (
                                 <div className="flex justify-between">
-                                    <span className="text-gray-600">Impuestos</span>
-                                    <span className="font-medium">
+                                    <span style={{ color: resolveValue(themeWithDefaults.text) }}>Impuestos</span>
+                                    <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                         {settings?.currency ? (
                                             <CurrencyDisplay currency={settings.currency} amount={displayTax} />
                                         ) : (
@@ -364,8 +398,8 @@ const CheckoutSummaryComponent = ({
                     {/* Total */}
                     {content.showOrderTotal !== false && (
                         <>
-                            <hr className="my-3 border-gray-300" />
-                            <div className="flex justify-between font-bold text-lg">
+                            <hr className="my-3" style={{ borderColor: resolveValue(themeWithDefaults.borders) }} />
+                            <div className="flex justify-between font-bold text-lg" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                 <span>Total</span>
                                 <span>
                                     {settings?.currency ? (
@@ -382,10 +416,16 @@ const CheckoutSummaryComponent = ({
 
             {/* Resumen de ahorros */}
             {displayAutomaticDiscounts > 0 && (
-                <div className="mt-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div
+                    className="mt-6 p-3 rounded-lg"
+                    style={{
+                        backgroundColor: resolveValue(themeWithDefaults.success_color + '20'), // 20% opacidad
+                        border: `1px solid ${resolveValue(themeWithDefaults.success_color)}`,
+                    }}
+                >
                     <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className="text-sm text-green-700 font-medium">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: resolveValue(themeWithDefaults.success_color) }}></div>
+                        <span className="text-sm font-medium" style={{ color: resolveValue(themeWithDefaults.success_color) }}>
                             ¡Has ahorrado {settings?.currency ? (
                                 <CurrencyDisplay currency={settings.currency} amount={displayAutomaticDiscounts} />
                             ) : (
@@ -395,14 +435,6 @@ const CheckoutSummaryComponent = ({
                     </div>
                 </div>
             )}
-
-            {/* {mode === 'builder' && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="text-xs text-gray-500 italic">
-                        Nota: En modo builder se muestran datos de ejemplo para diseño
-                    </div>
-                </div>
-            )} */}
         </div>
     );
 };

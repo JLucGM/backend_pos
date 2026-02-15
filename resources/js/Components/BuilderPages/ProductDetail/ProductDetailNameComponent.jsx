@@ -1,10 +1,15 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, getComponentStyles } from '@/utils/themeUtils';
+import {
+    getThemeWithDefaults,
+    getTextStyles,
+    getResolvedFont,
+    getComponentStyles,
+    resolveStyleValue
+} from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
     if (value === undefined || value === null || value === '') return undefined;
-    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
     if (typeof value === 'string' && isNaN(Number(value))) return value;
     return `${value}${unit}`;
 };
@@ -18,16 +23,33 @@ const ProductDetailNameComponent = ({
     product,
     appliedTheme
 }) => {
-    const getComponentStyles2 = () => {  // Nombre diferente
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados del componente
+    const rawStyles = comp.styles || {};
+    const customStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        customStyles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido (por si contiene referencias)
+    const resolvedContent = resolveValue(comp.content);
+
+    const getComponentStyles2 = () => {
         const baseStyles = getStyles(comp);
-        const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'paragraph';
 
         // Obtener estilos del tema para el tipo de texto
-        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Usa la función importada
+        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle, appliedTheme);
 
         // Obtener estilos específicos del componente product-title
         const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-title', appliedTheme);
@@ -36,12 +58,11 @@ const ProductDetailNameComponent = ({
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
 
-            // Si el usuario seleccionó "default" o no especificó nada, usar el tema
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return getResolvedFont(themeWithDefaults, 'heading_font');
+                    return getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme);
                 } else {
-                    return getResolvedFont(themeWithDefaults, 'body_font');
+                    return getResolvedFont(themeWithDefaults, 'body_font', appliedTheme);
                 }
             }
 
@@ -49,8 +70,7 @@ const ProductDetailNameComponent = ({
                 return customStyles.customFont;
             }
 
-            // Usar getResolvedFont para resolver referencias de fuentes
-            return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
+            return getResolvedFont(themeWithDefaults, fontType, appliedTheme) || themeTextStyles.fontFamily;
         };
 
         // Obtener configuración según el estilo seleccionado
@@ -58,10 +78,10 @@ const ProductDetailNameComponent = ({
 
         switch (textStyle) {
             case 'paragraph':
-                fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
-                fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
-                lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
-                textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
+                fontSize = customStyles.fontSize || themeWithDefaults?.paragraph_fontSize || '16px';
+                fontWeight = customStyles.fontWeight || themeWithDefaults?.paragraph_fontWeight || 'normal';
+                lineHeight = customStyles.lineHeight || themeWithDefaults?.paragraph_lineHeight || '1.6';
+                textTransform = customStyles.textTransform || themeWithDefaults?.paragraph_textTransform || 'none';
                 break;
 
             case 'heading1':
@@ -71,10 +91,10 @@ const ProductDetailNameComponent = ({
             case 'heading5':
             case 'heading6':
                 const level = textStyle.replace('heading', '');
-                fontSize = customStyles.fontSize || themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
-                fontWeight = customStyles.fontWeight || themeSettings?.[`heading${level}_fontWeight`] || 'bold';
-                lineHeight = customStyles.lineHeight || themeSettings?.[`heading${level}_lineHeight`] || '1.2';
-                textTransform = customStyles.textTransform || themeSettings?.[`heading${level}_textTransform`] || 'none';
+                fontSize = customStyles.fontSize || themeWithDefaults?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
+                fontWeight = customStyles.fontWeight || themeWithDefaults?.[`heading${level}_fontWeight`] || 'bold';
+                lineHeight = customStyles.lineHeight || themeWithDefaults?.[`heading${level}_lineHeight`] || '1.2';
+                textTransform = customStyles.textTransform || themeWithDefaults?.[`heading${level}_textTransform`] || 'none';
                 break;
 
             case 'custom':
@@ -107,6 +127,9 @@ const ProductDetailNameComponent = ({
         const alignment = customStyles.alignment || 'left';
         const textAlign = layout === 'fill' ? alignment : 'left';
 
+        // Color final resuelto
+        const finalColor = customStyles.color || themeComponentStyles.color || themeWithDefaults.heading;
+
         return {
             ...baseStyles,
             width,
@@ -123,8 +146,7 @@ const ProductDetailNameComponent = ({
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            // Usar color del tema como fallback
-            color: customStyles.color || themeComponentStyles.color || themeWithDefaults.heading,
+            color: resolveValue(finalColor),
         };
     };
 
@@ -135,7 +157,7 @@ const ProductDetailNameComponent = ({
     };
 
     // Obtener el nombre del producto o mostrar placeholder
-    const displayName = product?.product_name || comp.content || (
+    const displayName = product?.product_name || resolvedContent || (
         <span className="text-gray-400 italic">
             Nombre del producto (se obtiene dinámicamente)
         </span>
@@ -143,7 +165,7 @@ const ProductDetailNameComponent = ({
 
     return (
         <div
-            style={getComponentStyles2()}  // ✅ Nombre diferente
+            style={getComponentStyles2()}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShoppingCart, Search, User, LogOut } from 'lucide-react';
 import CanvasItem from '../CanvasItem';
 import { Link, usePage, router } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -22,17 +22,16 @@ const HeaderComponent = ({
     setComponents,
     hoveredComponentId,
     setHoveredComponentId,
-    mode = 'frontend', // 'builder' o 'frontend',
+    mode = 'frontend', // 'builder' o 'frontend'
     availableMenus = [],
-    companyLogo // Agregar esta prop
-    ,
+    companyLogo,
     canvasRect = null,
     canvasScrollTop = 0
 }) => {
     const { props } = usePage();
     const user = props.auth?.user;
     const cart = props.cart || { items_count: 0 };
-    const headerStyles = getStyles(comp);
+
     const customStyles = comp.styles || {};
     const content = comp.content || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
@@ -55,7 +54,6 @@ const HeaderComponent = ({
 
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
-            // console.log('[Header][smart] scrollY:', currentScrollY, 'lastScrollY:', lastScrollY);
 
             if (currentScrollY < lastScrollY) {
                 // Scrolling up - mostrar header
@@ -72,41 +70,32 @@ const HeaderComponent = ({
         return () => window.removeEventListener('scroll', handleScroll);
     }, [lastScrollY, mode, stickyType]);
 
-    // Log para depuración: posiciones y estilos calculados del header dentro del canvas
-    // useEffect(() => {
-    //     const el = headerRef.current;
-    //     const parent = el?.parentElement;
-    //     try {
-    //         console.log('[Header] debug - stickyType:', stickyType, 'mode:', mode);
-    //         console.log('[Header] computed styles:', getContainerStyles());
-    //         if (el) console.log('[Header] rect:', el.getBoundingClientRect());
-    //         if (parent) console.log('[Header] parent rect:', parent.getBoundingClientRect());
-    //     } catch (err) {
-    //         console.warn('[Header] debug error', err);
-    //     }
-    // }, [stickyType, mode, isVisible, content?.height, customStyles]);
+    // ---------- RESOLUCIÓN DE ESTILOS ----------
+    const resolveStyles = (styles) => {
+        if (!styles) return {};
+        const resolved = {};
+        Object.keys(styles).forEach(key => {
+            resolved[key] = resolveStyleValue(styles[key], themeWithDefaults, appliedTheme);
+        });
+        return resolved;
+    };
 
-    // Estilos del contenedor principal del header con valores del tema
-    // components/BuilderPages/HeaderComponent.jsx
-    // En la función getContainerStyles:
+    // Resolver estilos del header principal
+    const headerStyles = resolveStyles(getStyles(comp));
 
+    // Obtener estilos del contenedor principal
     const getContainerStyles = () => {
         const baseStyles = {
             ...headerStyles,
-            width: content?.fullWidth ? '100%' : customStyles.width || '100%',
-            height: withUnit(content?.height || '70px', content?.heightUnit || 'px'),
-            display: 'flex',
-            alignItems: 'center',
-            backgroundColor: customStyles.backgroundColor || themeHeaderStyles.backgroundColor,
-            paddingTop: withUnit(customStyles.paddingTop || '20px'),
-            paddingRight: withUnit(customStyles.paddingRight || '20px'),
-            paddingBottom: withUnit(customStyles.paddingBottom || '20px'),
-            paddingLeft: withUnit(customStyles.paddingLeft || '20px'),
-            borderBottom: customStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
+            width: content?.fullWidth ? '100%' : (headerStyles.width || '100%'),
+            height: withUnit(content?.height || headerStyles.height || '70px', content?.heightUnit || 'px'),
+            display: headerStyles.display || 'flex',
+            alignItems: headerStyles.alignItems || 'center',
+            borderBottom: headerStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
             transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
         };
 
-        // SIEMPRE usar position: sticky en builder/preview
+        // En builder/preview usar sticky si está configurado
         if (mode !== 'frontend') {
             if (stickyType === 'fixed' || stickyType === 'smart') {
                 return {
@@ -119,15 +108,13 @@ const HeaderComponent = ({
             return baseStyles;
         }
 
-        // EN FRONTEND: NUNCA usar position: fixed aquí
-        // El fixed se manejará en el return del componente
+        // En frontend se maneja por separado
         return baseStyles;
     };
 
     const containerStyles = getContainerStyles();
-    // const isFixedInBuilder = (mode !== 'frontend') && (stickyType === 'fixed' || stickyType === 'smart') && canvasRect;
 
-    // Clasificar los componentes hijos por tipo
+    // ---------- CLASIFICACIÓN DE HIJOS ----------
     const classifyChildren = () => {
         if (!content?.children || !Array.isArray(content.children)) {
             return { logo: null, menu: null };
@@ -149,7 +136,7 @@ const HeaderComponent = ({
 
     const { logo, menu } = classifyChildren();
 
-    // Configuración de botones con valores por defecto seguros
+    // ---------- CONFIGURACIÓN DE BOTONES ----------
     const buttonsConfig = content?.buttons || {};
     const defaultButtonStyles = {
         iconColor: themeWithDefaults.text,
@@ -166,16 +153,25 @@ const HeaderComponent = ({
         fontSize: '16px'
     };
 
+    // Resolver estilos de cada botón
     const cartConfig = buttonsConfig.cart || { count: '0', styles: { ...defaultButtonStyles, iconColor: themeWithDefaults.primary_button_text } };
     const searchConfig = buttonsConfig.search || { styles: { ...defaultButtonStyles, backgroundColor: 'transparent' } };
     const profileConfig = buttonsConfig.profile || { styles: { ...defaultButtonStyles, backgroundColor: themeWithDefaults.secondary_button_background } };
-    const showSearch = buttonsConfig.showSearch !== false; // Por defecto mostrar
-    const buttonsGap = withUnit(buttonsConfig.buttonsGap || '10px');
 
-    // Determinar la posición del logo
+    const cartStylesResolved = resolveStyles(cartConfig.styles || {});
+    const cartConfigResolved = { ...cartConfig, styles: cartStylesResolved };
+
+    const searchStylesResolved = resolveStyles(searchConfig.styles || {});
+    const searchConfigResolved = { ...searchConfig, styles: searchStylesResolved };
+
+    const profileStylesResolved = resolveStyles(profileConfig.styles || {});
+    const profileConfigResolved = { ...profileConfig, styles: profileStylesResolved };
+
+    const showSearch = buttonsConfig.showSearch !== false;
+    const buttonsGap = withUnit(buttonsConfig.buttonsGap || '10px');
     const logoPosition = content?.logoPosition || 'left';
 
-    // Función para construir estilos de botón
+    // ---------- FUNCIÓN PARA CONSTRUIR ESTILOS DE BOTÓN ----------
     const getButtonStyles = (buttonConfig) => {
         if (!buttonConfig || !buttonConfig.styles) {
             return {
@@ -198,21 +194,15 @@ const HeaderComponent = ({
 
         const styles = buttonConfig.styles;
 
-        // Calcular opacidades
         const bgOpacity = styles.backgroundOpacity || '1';
         const borderOpacity = styles.borderOpacity || '1';
 
-        // Funciones helper para convertir colores
         const parseColor = (color) => {
             if (!color) return '0, 0, 0';
-
-            // Si es rgba, extraer los valores rgb
             if (color.startsWith('rgba')) {
                 const matches = color.match(/\d+/g);
                 return `${matches[0]}, ${matches[1]}, ${matches[2]}`;
             }
-
-            // Si es hex, convertir
             if (color.startsWith('#')) {
                 const hex = color.replace('#', '');
                 if (hex.length === 3) {
@@ -228,8 +218,6 @@ const HeaderComponent = ({
                     return `${r}, ${g}, ${b}`;
                 }
             }
-
-            // Si es nombre de color común
             const colorMap = {
                 'black': '0, 0, 0',
                 'white': '255, 255, 255',
@@ -238,7 +226,6 @@ const HeaderComponent = ({
                 'blue': '0, 0, 255',
                 'transparent': '0, 0, 0'
             };
-
             return colorMap[color.toLowerCase()] || '0, 0, 0';
         };
 
@@ -263,54 +250,33 @@ const HeaderComponent = ({
         };
     };
 
-    // Función para obtener la ruta de login/logout correcta
+    // ---------- FUNCIONES DE RUTAS ----------
     const getAuthRoute = () => {
         if (mode !== 'frontend') return '#';
-
         try {
             const hostname = window.location.hostname;
             const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
-
-            // Si estamos en un subdominio
             if (hostname.endsWith(sessionDomain)) {
                 const subdomain = hostname.split('.')[0];
-                if (user) {
-                    // Ruta de logout para subdominio
-                    return route('frontend.logout', { subdomain });
-                } else {
-                    // Ruta de login para subdominio
-                    return route('frontend.login', { subdomain });
-                }
+                return user ? route('frontend.logout', { subdomain }) : route('frontend.login', { subdomain });
             }
-
-            // Si estamos en un dominio personalizado
             const domain = hostname;
-            if (user) {
-                return route('frontend.logout.custom', { domain });
-            } else {
-                return route('frontend.login.custom', { domain });
-            }
+            return user ? route('frontend.logout.custom', { domain }) : route('frontend.login.custom', { domain });
         } catch (error) {
             console.error('Error generating auth route:', error);
             return '#';
         }
     };
 
-    // Función para obtener la ruta del carrito
     const getCartRoute = () => {
         if (mode !== 'frontend') return '#';
-
         try {
             const hostname = window.location.hostname;
             const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
-
-            // Si estamos en un subdominio
             if (hostname.endsWith(sessionDomain)) {
                 const subdomain = hostname.split('.')[0];
                 return route('frontend.cart', { subdomain });
             }
-
-            // Si estamos en un dominio personalizado
             const domain = hostname;
             return route('frontend.cart.custom', { domain });
         } catch (error) {
@@ -319,53 +285,6 @@ const HeaderComponent = ({
         }
     };
 
-    // Función para obtener la ruta del perfil
-    const getProfileRoute = () => {
-        if (mode !== 'frontend') return '#';
-
-        try {
-            const hostname = window.location.hostname;
-            const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
-
-            // Si estamos en un subdominio
-            if (hostname.endsWith(sessionDomain)) {
-                const subdomain = hostname.split('.')[0];
-                return route('frontend.profile', { subdomain });
-            }
-
-            // Si estamos en un dominio personalizado
-            const domain = hostname;
-            return route('frontend.profile.custom', { domain });
-        } catch (error) {
-            console.error('Error generating profile route:', error);
-            return '#';
-        }
-    };
-
-    // Función para obtener la ruta de pedidos
-    const getOrdersRoute = () => {
-        if (mode !== 'frontend') return '#';
-
-        try {
-            const hostname = window.location.hostname;
-            const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
-
-            // Si estamos en un subdominio
-            if (hostname.endsWith(sessionDomain)) {
-                const subdomain = hostname.split('.')[0];
-                return route('frontend.orders', { subdomain });
-            }
-
-            // Si estamos en un dominio personalizado
-            const domain = hostname;
-            return route('frontend.orders.custom', { domain });
-        } catch (error) {
-            console.error('Error generating orders route:', error);
-            return '#';
-        }
-    };
-
-    // Función para manejar logout
     const handleLogout = () => {
         if (mode === 'frontend') {
             router.post(getAuthRoute(), {}, {
@@ -379,7 +298,6 @@ const HeaderComponent = ({
         }
     };
 
-    // Obtener el conteo real del carrito o usar el configurado
     const getCartCount = () => {
         if (mode === 'frontend' && cart && cart.items_count !== undefined) {
             return cart.items_count;
@@ -387,22 +305,16 @@ const HeaderComponent = ({
         return cartConfig?.count || '0';
     };
 
-    // Renderizar botones condicionalmente
+    // ---------- RENDERIZADO DE BOTONES ----------
     const renderButtons = () => {
         const isAuthenticated = user && mode === 'frontend';
         const cartCount = getCartCount();
 
         return (
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: buttonsGap
-            }}>
-
-                {/* Buscador - solo si showSearch es true */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: buttonsGap }}>
                 {showSearch && (
                     <button
-                        style={getButtonStyles(searchConfig)}
+                        style={getButtonStyles(searchConfigResolved)}
                         title="Buscar"
                         className="hover:opacity-80"
                         onClick={() => {
@@ -415,26 +327,20 @@ const HeaderComponent = ({
                     >
                         <Search
                             size={16}
-                            style={{
-                                color: searchConfig.styles?.iconColor || themeWithDefaults.text,
-                                transition: 'color 0.2s'
-                            }}
+                            style={{ color: searchConfigResolved.styles?.iconColor || themeWithDefaults.text }}
                         />
                     </button>
                 )}
-                {/* Carrito - Redirige al carrito real */}
+
                 <Link
-                    style={getButtonStyles(cartConfig)}
+                    style={getButtonStyles(cartConfigResolved)}
                     title="Carrito"
                     className="hover:opacity-80 relative"
-                    href='/carrito-de-compras'
+                    href="/carrito-de-compras"
                 >
                     <ShoppingCart
                         size={16}
-                        style={{
-                            color: cartConfig.styles?.iconColor || themeWithDefaults.primary_button_text,
-                            transition: 'color 0.2s'
-                        }}
+                        style={{ color: cartConfigResolved.styles?.iconColor || themeWithDefaults.primary_button_text }}
                     />
                     {cartCount && cartCount !== '0' && parseInt(cartCount) > 0 && (
                         <span style={{
@@ -447,6 +353,7 @@ const HeaderComponent = ({
                             width: '18px',
                             height: '18px',
                             fontSize: '10px',
+                            display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontWeight: 'bold'
@@ -456,23 +363,18 @@ const HeaderComponent = ({
                     )}
                 </Link>
 
-                {/* Botón de Perfil/Login condicional */}
                 <div style={{ position: 'relative' }}>
                     {isAuthenticated ? (
-                        // Usuario autenticado: Mostrar botón de perfil con dropdown
                         <>
                             <button
-                                style={getButtonStyles(profileConfig)}
+                                style={getButtonStyles(profileConfigResolved)}
                                 title="Mi perfil"
                                 className="hover:opacity-80"
                                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                             >
                                 <User
                                     size={16}
-                                    style={{
-                                        color: profileConfig.styles?.iconColor || themeWithDefaults.text,
-                                        transition: 'color 0.2s'
-                                    }}
+                                    style={{ color: profileConfigResolved.styles?.iconColor || themeWithDefaults.text }}
                                 />
                             </button>
 
@@ -493,38 +395,27 @@ const HeaderComponent = ({
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    {/* Información del usuario */}
                                     <div style={{
                                         padding: '16px',
                                         borderBottom: `1px solid ${themeWithDefaults.borders}`,
                                         backgroundColor: themeWithDefaults.background
                                     }}>
-                                        <div style={{
-                                            fontSize: '14px',
-                                            fontWeight: '600',
-                                            color: '#333'
-                                        }}>
+                                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
                                             {user.name}
                                         </div>
-                                        <div style={{
-                                            fontSize: '12px',
-                                            color: '#666',
-                                            marginTop: '4px'
-                                        }}>
+                                        <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
                                             {user.email}
                                         </div>
                                     </div>
 
-                                    {/* Opciones del menú */}
                                     <Link
-                                        href='/perfil-de-usuario'
+                                        href="/perfil-de-usuario"
                                         style={{
                                             display: 'block',
                                             padding: '12px 16px',
                                             textDecoration: 'none',
                                             color: '#333',
-                                            fontSize: '14px',
-                                            transition: 'background-color 0.2s'
+                                            fontSize: '14px'
                                         }}
                                         className="hover:bg-gray-50"
                                     >
@@ -532,14 +423,13 @@ const HeaderComponent = ({
                                     </Link>
 
                                     <Link
-                                        href='/pedidos'
+                                        href="/pedidos"
                                         style={{
                                             display: 'block',
                                             padding: '12px 16px',
                                             textDecoration: 'none',
                                             color: '#333',
-                                            fontSize: '14px',
-                                            transition: 'background-color 0.2s'
+                                            fontSize: '14px'
                                         }}
                                         className="hover:bg-gray-50"
                                     >
@@ -558,7 +448,6 @@ const HeaderComponent = ({
                                             color: '#d32f2f',
                                             fontSize: '14px',
                                             cursor: 'pointer',
-                                            transition: 'background-color 0.2s',
                                             borderTop: `1px solid ${themeWithDefaults.borders}`
                                         }}
                                         className="hover:bg-red-50"
@@ -570,20 +459,13 @@ const HeaderComponent = ({
                             )}
                         </>
                     ) : (
-                        // Usuario no autenticado: Mostrar botón de login
                         <Link
-                            href={'/iniciar-sesion'}
-                            style={getButtonStyles(profileConfig)}
+                            href="/iniciar-sesion"
+                            style={getButtonStyles(profileConfigResolved)}
                             title="Iniciar sesión"
                             className="hover:opacity-80 flex items-center justify-center"
                         >
-                            <User
-                                size={16}
-                                style={{
-                                    color: profileConfig.styles?.iconColor || themeWithDefaults.text,
-                                    transition: 'color 0.2s'
-                                }}
-                            />
+                            <User size={16} style={{ color: profileConfigResolved.styles?.iconColor || themeWithDefaults.text }} />
                         </Link>
                     )}
                 </div>
@@ -593,64 +475,36 @@ const HeaderComponent = ({
 
     // Cerrar dropdown al hacer clic fuera
     useEffect(() => {
-        const handleClickOutside = () => {
-            setShowProfileDropdown(false);
-        };
-
+        const handleClickOutside = () => setShowProfileDropdown(false);
         if (showProfileDropdown) {
             document.addEventListener('click', handleClickOutside);
         }
-
-        return () => {
-            document.removeEventListener('click', handleClickOutside);
-        };
+        return () => document.removeEventListener('click', handleClickOutside);
     }, [showProfileDropdown]);
 
-    // Función para renderizar según la posición - PASAR companyLogo A LOS CanvasItem DE LOGO
+    // ---------- RENDERIZADO SEGÚN POSICIÓN DEL LOGO ----------
     const renderByPosition = () => {
-        // Caso 1: Logo a la izquierda (orden: logo -> menu -> botones)
+        const commonProps = {
+            onEditComponent: onEdit,
+            onDeleteComponent: onDelete,
+            themeSettings,
+            appliedTheme,
+            isPreview,
+            setComponents,
+            hoveredComponentId,
+            setHoveredComponentId,
+            mode,
+        };
+
         if (logoPosition === 'left') {
             return (
                 <>
-                    {/* Logo a la izquierda */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                        {logo && (
-                            <CanvasItem
-                                comp={logo}
-                                onEditComponent={onEdit}
-                                onDeleteComponent={onDelete}
-                                themeSettings={themeSettings}
-                                appliedTheme={appliedTheme}
-                                isPreview={isPreview}
-                                setComponents={setComponents}
-                                hoveredComponentId={hoveredComponentId}
-                                setHoveredComponentId={setHoveredComponentId}
-                                mode={mode}
-                                companyLogo={companyLogo} // Pasar companyLogo
-                            />
-                        )}
+                        {logo && <CanvasItem comp={logo} {...commonProps} companyLogo={companyLogo} />}
                     </div>
-
-                    {/* Menú en el centro */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        {menu && (
-                            <CanvasItem
-                                comp={menu}
-                                onEditComponent={onEdit}
-                                onDeleteComponent={onDelete}
-                                themeSettings={themeSettings}
-                                appliedTheme={appliedTheme}
-                                isPreview={isPreview}
-                                setComponents={setComponents}
-                                hoveredComponentId={hoveredComponentId}
-                                setHoveredComponentId={setHoveredComponentId}
-                                mode={mode}
-                                availableMenus={availableMenus}
-                            />
-                        )}
+                        {menu && <CanvasItem comp={menu} {...commonProps} availableMenus={availableMenus} />}
                     </div>
-
-                    {/* Botones a la derecha */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                         {renderButtons()}
                     </div>
@@ -658,49 +512,15 @@ const HeaderComponent = ({
             );
         }
 
-        // Caso 2: Logo en el centro (orden: menú -> logo -> botones)
         if (logoPosition === 'center') {
             return (
                 <>
-                    {/* Menú a la izquierda */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                        {menu && (
-                            <CanvasItem
-                                comp={menu}
-                                onEditComponent={onEdit}
-                                onDeleteComponent={onDelete}
-                                themeSettings={themeSettings}
-                                appliedTheme={appliedTheme}
-                                isPreview={isPreview}
-                                setComponents={setComponents}
-                                hoveredComponentId={hoveredComponentId}
-                                setHoveredComponentId={setHoveredComponentId}
-                                mode={mode}
-                                availableMenus={availableMenus}
-                            />
-                        )}
+                        {menu && <CanvasItem comp={menu} {...commonProps} availableMenus={availableMenus} />}
                     </div>
-
-                    {/* Logo en el centro */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        {logo && (
-                            <CanvasItem
-                                comp={logo}
-                                onEditComponent={onEdit}
-                                onDeleteComponent={onDelete}
-                                themeSettings={themeSettings}
-                                appliedTheme={appliedTheme}
-                                isPreview={isPreview}
-                                setComponents={setComponents}
-                                hoveredComponentId={hoveredComponentId}
-                                setHoveredComponentId={setHoveredComponentId}
-                                mode={mode}
-                                companyLogo={companyLogo} // Pasar companyLogo
-                            />
-                        )}
+                        {logo && <CanvasItem comp={logo} {...commonProps} companyLogo={companyLogo} />}
                     </div>
-
-                    {/* Botones a la derecha */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                         {renderButtons()}
                     </div>
@@ -708,97 +528,29 @@ const HeaderComponent = ({
             );
         }
 
-        // Caso 3: Logo a la derecha (orden: menú -> botones+logo con logo pegado a botones)
         if (logoPosition === 'right') {
             return (
                 <>
-                    {/* Menú a la izquierda */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                        {menu && (
-                            <CanvasItem
-                                comp={menu}
-                                onEditComponent={onEdit}
-                                onDeleteComponent={onDelete}
-                                themeSettings={themeSettings}
-                                appliedTheme={appliedTheme}
-                                isPreview={isPreview}
-                                setComponents={setComponents}
-                                hoveredComponentId={hoveredComponentId}
-                                setHoveredComponentId={setHoveredComponentId}
-                                mode={mode}
-                                availableMenus={availableMenus}
-                            />
-                        )}
+                        {menu && <CanvasItem comp={menu} {...commonProps} availableMenus={availableMenus} />}
                     </div>
-
-                    {/* Logo y botones juntos a la derecha */}
-                    <div style={{
-                        flex: 1,
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        gap: '10px'
-                    }}>
-                        {logo && (
-                            <CanvasItem
-                                comp={logo}
-                                onEditComponent={onEdit}
-                                onDeleteComponent={onDelete}
-                                themeSettings={themeSettings}
-                                appliedTheme={appliedTheme}
-                                isPreview={isPreview}
-                                setComponents={setComponents}
-                                hoveredComponentId={hoveredComponentId}
-                                setHoveredComponentId={setHoveredComponentId}
-                                mode={mode}
-                                companyLogo={companyLogo} // Pasar companyLogo
-                            />
-                        )}
+                    <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px' }}>
+                        {logo && <CanvasItem comp={logo} {...commonProps} companyLogo={companyLogo} />}
                         {renderButtons()}
                     </div>
                 </>
             );
         }
 
-        // Fallback: Logo a la izquierda por defecto
+        // Fallback
         return (
             <>
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-                    {logo && (
-                        <CanvasItem
-                            comp={logo}
-                            onEditComponent={onEdit}
-                            onDeleteComponent={onDelete}
-                            themeSettings={themeSettings}
-                            appliedTheme={appliedTheme}
-                            isPreview={isPreview}
-                            setComponents={setComponents}
-                            hoveredComponentId={hoveredComponentId}
-                            setHoveredComponentId={setHoveredComponentId}
-                            mode={mode}
-                            companyLogo={companyLogo} // Pasar companyLogo
-                        />
-                    )}
+                    {logo && <CanvasItem comp={logo} {...commonProps} companyLogo={companyLogo} />}
                 </div>
-
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    {menu && (
-                        <CanvasItem
-                            comp={menu}
-                            onEditComponent={onEdit}
-                            onDeleteComponent={onDelete}
-                            themeSettings={themeSettings}
-                            appliedTheme={appliedTheme}
-                            isPreview={isPreview}
-                            setComponents={setComponents}
-                            hoveredComponentId={hoveredComponentId}
-                            setHoveredComponentId={setHoveredComponentId}
-                            mode={mode}
-                            availableMenus={availableMenus}
-                        />
-                    )}
+                    {menu && <CanvasItem comp={menu} {...commonProps} availableMenus={availableMenus} />}
                 </div>
-
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                     {renderButtons()}
                 </div>
@@ -806,16 +558,13 @@ const HeaderComponent = ({
         );
     };
 
-
-    // Determinar si es sticky en frontend
+    // ---------- RENDER FINAL ----------
     const isStickyFrontend = mode === 'frontend' && (stickyType === 'fixed' || stickyType === 'smart');
 
     if (isStickyFrontend) {
         const headerHeight = content?.height || '70px';
-
-        // Crear estilos combinados basados en containerStyles
         const fixedHeaderStyles = {
-            ...containerStyles, // ← ¡ESTO YA TIENE display: flex, alignItems: center!
+            ...containerStyles,
             position: 'fixed',
             top: 0,
             left: 0,
@@ -823,39 +572,27 @@ const HeaderComponent = ({
             zIndex: 1000,
             width: '100%',
             height: headerHeight,
-            // Asegurar que no haya transformaciones no deseadas
             transform: stickyType === 'smart' ? (isVisible ? 'translateY(0)' : 'translateY(-100%)') : 'none',
         };
+        // console.log(fixedHeaderStyles)
 
         return (
             <>
-                <div
-                    style={{
-                        height: headerHeight,
-                        width: '100%',
-                        backgroundColor: 'transparent'
-                    }}
-                />
-
-                <header
-                    ref={headerRef}
-                    style={fixedHeaderStyles}
-                    onClick={(e) => { e.stopPropagation(); }}
-                >
+                <div style={{ height: headerHeight, width: '100%', backgroundColor: 'transparent' }} />
+                <header ref={headerRef} style={fixedHeaderStyles} onClick={(e) => e.stopPropagation()}>
                     {renderByPosition()}
                 </header>
             </>
         );
     }
-
-    // Para builder/preview o headers no sticky en frontend
+// console.log(containerStyles)
     return (
         <header
             ref={headerRef}
             style={containerStyles}
             onDoubleClick={isEditable ? () => onEdit(comp) : undefined}
             className={isEditable ? 'hover:opacity-80 cursor-pointer' : ''}
-            onClick={(e) => { e.stopPropagation(); }}
+            onClick={(e) => e.stopPropagation()}
         >
             {renderByPosition()}
         </header>

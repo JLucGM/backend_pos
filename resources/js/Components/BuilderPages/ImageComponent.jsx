@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { getThemeWithDefaults } from '@/utils/themeUtils';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
 const ImageComponent = ({
   comp,
@@ -13,6 +13,27 @@ const ImageComponent = ({
 }) => {
   // Obtener configuración del tema con valores por defecto
   const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+  // ===========================================
+  // FUNCIÓN PARA RESOLVER REFERENCIAS
+  // ===========================================
+  const resolveValue = (value) => {
+    return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+  };
+
+  // Obtener estilos base y resolverlos por si acaso
+  const baseStylesRaw = getStyles(comp);
+  const baseStyles = {};
+  Object.keys(baseStylesRaw).forEach(key => {
+    baseStyles[key] = resolveValue(baseStylesRaw[key]);
+  });
+
+  // Resolver estilos personalizados
+  const rawStyles = comp.styles || {};
+  const customStyles = {};
+  Object.keys(rawStyles).forEach(key => {
+    customStyles[key] = resolveValue(rawStyles[key]);
+  });
 
   // Obtener la URL de la imagen
   const getImageUrl = () => {
@@ -42,7 +63,7 @@ const ImageComponent = ({
 
   // Obtener la URL del enlace (si existe)
   const getLinkUrl = () => {
-    return comp.styles?.imageUrl || '';
+    return customStyles.imageUrl || baseStyles.imageUrl || '';
   };
 
   const imageUrl = getImageUrl();
@@ -52,11 +73,8 @@ const ImageComponent = ({
   // Determinar si tiene enlace
   const hasLink = Boolean(linkUrl && linkUrl.trim() !== '');
 
-  // Obtener estilos base
-  const baseStyles = getStyles(comp);
-
   // Obtener el aspect ratio del estilo (por defecto 'square')
-  const aspectRatio = comp.styles?.aspectRatio || baseStyles.aspectRatio || 'square';
+  const aspectRatio = customStyles.aspectRatio || baseStyles.aspectRatio || 'square';
 
   // Calcular el padding-bottom según el aspect ratio
   const getAspectRatioStyles = () => {
@@ -91,35 +109,50 @@ const ImageComponent = ({
   // Helper para añadir unidad (px) si es solo número
   const withUnit = (value, unit = 'px') => {
     if (value === undefined || value === null || value === '') return undefined;
-    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
     if (typeof value === 'string' && isNaN(Number(value))) return value;
     return `${value}${unit}`;
   };
 
-  // Estilos para la imagen que llena el contenedor usando valores del tema
+  // Resolver valores de estilo con prioridad: customStyles > baseStyles > tema
+  const borderRadius = customStyles.borderRadius || baseStyles.borderRadius || '0px';
+  const borderWidth = customStyles.borderWidth || baseStyles.borderWidth || '0px';
+  const borderStyle = customStyles.borderStyle || baseStyles.borderStyle || 'solid';
+  const borderColor = customStyles.borderColor || baseStyles.borderColor || themeWithDefaults.borders;
+  const objectFit = customStyles.objectFit || baseStyles.objectFit || 'cover';
+  const marginTop = customStyles.marginTop || baseStyles.marginTop || '0px';
+  const marginRight = customStyles.marginRight || baseStyles.marginRight || '0px';
+  const marginBottom = customStyles.marginBottom || baseStyles.marginBottom || '0px';
+  const marginLeft = customStyles.marginLeft || baseStyles.marginLeft || '0px';
+
+  // Resolver todos ellos
+  const resolvedBorderRadius = resolveValue(borderRadius);
+  const resolvedBorderWidth = resolveValue(borderWidth);
+  const resolvedBorderColor = resolveValue(borderColor);
+  const resolvedMarginTop = resolveValue(marginTop);
+  const resolvedMarginRight = resolveValue(marginRight);
+  const resolvedMarginBottom = resolveValue(marginBottom);
+  const resolvedMarginLeft = resolveValue(marginLeft);
+
+  // Estilos para la imagen que llena el contenedor
   const imageStyles = {
     position: 'absolute',
     top: 0,
     left: 0,
     width: '100%',
     height: '100%',
-    // Estilos de borde usando valores del tema
-    borderRadius: withUnit(comp.styles?.borderRadius) || baseStyles.borderRadius || '0px',
-    borderWidth: withUnit(comp.styles?.borderWidth) || baseStyles.borderWidth || '0px',
-    borderStyle: comp.styles?.borderStyle || baseStyles.borderStyle || 'solid',
-    borderColor: comp.styles?.borderColor || baseStyles.borderColor || themeWithDefaults.borders,
-    // Ajuste de imagen
-    objectFit: comp.styles?.objectFit || baseStyles.objectFit || 'cover',
-    // Márgenes personalizados (para el contenedor, no la imagen)
-    marginTop: withUnit(comp.styles?.marginTop) || baseStyles.marginTop || '0px',
-    marginRight: withUnit(comp.styles?.marginRight) || baseStyles.marginRight || '0px',
-    marginBottom: withUnit(comp.styles?.marginBottom) || baseStyles.marginBottom || '0px',
-    marginLeft: withUnit(comp.styles?.marginLeft) || baseStyles.marginLeft || '0px',
+    borderRadius: withUnit(resolvedBorderRadius),
+    borderWidth: withUnit(resolvedBorderWidth),
+    borderStyle: borderStyle,
+    borderColor: resolvedBorderColor,
+    objectFit: objectFit,
+    marginTop: withUnit(resolvedMarginTop),
+    marginRight: withUnit(resolvedMarginRight),
+    marginBottom: withUnit(resolvedMarginBottom),
+    marginLeft: withUnit(resolvedMarginLeft),
   };
 
   // Manejar clic
   const handleClick = (e) => {
-    // MODO BUILDER (no preview): editar componente
     if (mode === 'builder' && !isPreview) {
       e.preventDefault();
       e.stopPropagation();
@@ -129,13 +162,10 @@ const ImageComponent = ({
       return;
     }
 
-    // MODO FRONTEND o PREVIEW con enlace: dejar navegar
     if ((mode === 'frontend' || isPreview) && hasLink) {
-      // NO hacer preventDefault() - dejar que Link o <a> navegue
       return;
     }
 
-    // MODO FRONTEND sin enlace: no hacer nada (solo imagen)
     e.preventDefault();
     e.stopPropagation();
   };
@@ -147,8 +177,8 @@ const ImageComponent = ({
         onClick={handleClick}
         style={{
           ...containerStyles,
-          border: isPreview ? 'none' : `2px dashed ${themeWithDefaults.borders}`,
-          backgroundColor: themeWithDefaults.background,
+          border: isPreview ? 'none' : `2px dashed ${resolveValue(themeWithDefaults.borders)}`,
+          backgroundColor: resolveValue(themeWithDefaults.background),
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -157,16 +187,16 @@ const ImageComponent = ({
         className="image-placeholder"
       >
         {isPreview ? (
-          <span className="text-gray-400">[Imagen no disponible]</span>
+          <span style={{ color: resolveValue(themeWithDefaults.text) }}>[Imagen no disponible]</span>
         ) : (
           <div className="text-center p-4">
-            <div className="text-gray-400">Click para agregar imagen</div>
-            <div className="text-xs text-gray-500 mt-1">URL no configurada</div>
-            <div className="text-xs text-gray-400 mt-2">
+            <div style={{ color: resolveValue(themeWithDefaults.text) }}>Click para agregar imagen</div>
+            <div style={{ color: resolveValue(themeWithDefaults.text) }} className="text-xs mt-1">URL no configurada</div>
+            <div style={{ color: resolveValue(themeWithDefaults.text) }} className="text-xs mt-2">
               Aspect ratio: {aspectRatio}
             </div>
             {hasLink && (
-              <div className="text-xs text-blue-500 mt-1">
+              <div style={{ color: resolveValue(themeWithDefaults.links) }} className="text-xs mt-1">
                 ✓ Tiene enlace configurado
               </div>
             )}
@@ -175,7 +205,6 @@ const ImageComponent = ({
       </div>
     );
 
-    // Envolver en enlace si tiene enlace y no está en modo builder
     if (hasLink && (mode === 'frontend' || isPreview)) {
       if (linkUrl.startsWith('/')) {
         return (
@@ -201,10 +230,10 @@ const ImageComponent = ({
       onClick={handleClick}
       style={{
         ...containerStyles,
-        marginTop: imageStyles.marginTop,
-        marginRight: imageStyles.marginRight,
-        marginBottom: imageStyles.marginBottom,
-        marginLeft: imageStyles.marginLeft,
+        marginTop: withUnit(resolvedMarginTop),
+        marginRight: withUnit(resolvedMarginRight),
+        marginBottom: withUnit(resolvedMarginBottom),
+        marginLeft: withUnit(resolvedMarginLeft),
         cursor: (mode === 'builder' && !isPreview) ? 'pointer' :
           (hasLink ? 'pointer' : 'default'),
       }}
@@ -221,16 +250,14 @@ const ImageComponent = ({
           marginLeft: 0,
         }}
         onError={(e) => {
-          // Manejar error de carga de imagen usando colores del tema
           e.target.style.display = 'none';
-          e.target.parentNode.style.border = isPreview ? 'none' : `2px dashed ${themeWithDefaults.borders}`;
-          e.target.parentNode.style.backgroundColor = themeWithDefaults.background;
+          e.target.parentNode.style.border = isPreview ? 'none' : `2px dashed ${resolveValue(themeWithDefaults.borders)}`;
+          e.target.parentNode.style.backgroundColor = resolveValue(themeWithDefaults.background);
         }}
       />
     </div>
   );
 
-  // Envolver en enlace si tiene enlace y no está en modo builder
   if (hasLink && (mode === 'frontend' || isPreview)) {
     if (linkUrl.startsWith('/')) {
       return (

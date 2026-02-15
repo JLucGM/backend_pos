@@ -8,12 +8,11 @@ import ProductDetailStockComponent from './ProductDetailStockComponent';
 import QuantitySelectorComponent from './QuantitySelectorComponent';
 import ButtonComponent from '../ButtonComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
     if (value === undefined || value === null || value === '') return undefined;
-    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
     if (typeof value === 'string' && isNaN(Number(value))) return value;
     return `${value}${unit}`;
 };
@@ -33,9 +32,28 @@ const ProductDetailComponent = ({
     storeAutomaticDiscounts = [],
     appliedTheme,
 }) => {
-    // Extraer configuraciones personalizadas
-    const customStyles = comp.styles || {};
-    const productDetailConfig = comp.content || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const customStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        customStyles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver configuración del contenido
+    const rawContent = comp.content || {};
+    const productDetailConfig = {};
+    Object.keys(rawContent).forEach(key => {
+        productDetailConfig[key] = resolveValue(rawContent[key]);
+    });
 
     const children = productDetailConfig.children || [];
 
@@ -57,22 +75,19 @@ const ProductDetailComponent = ({
         return typeNames[type] || type;
     };
 
-    // Obtener configuraciones de layout y estilos
-    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-
+    // Obtener configuraciones de layout y estilos (usando valores resueltos)
     const layoutType = customStyles.layoutType || 'grid';
     const padding = customStyles.padding || '20px';
     const backgroundColor = customStyles.backgroundColor || themeWithDefaults.background;
     const maxWidth = customStyles.maxWidth || '100%';
     const gap = customStyles.gap || '60px';
 
-    // Obtener valores de padding individuales (con valores por defecto)
     const paddingTop = customStyles.paddingTop || '20px';
     const paddingRight = customStyles.paddingRight || '20px';
     const paddingBottom = customStyles.paddingBottom || '20px';
     const paddingLeft = customStyles.paddingLeft || '20px';
 
-    // Separar componentes por tipo para mejor organización
+    // Separar componentes por tipo
     const imageComponents = children.filter(child => child.type === 'productDetailImage');
     const descriptionComponents = children.filter(child => child.type === 'productDetailDescription');
     const otherComponents = children.filter(child =>
@@ -88,7 +103,7 @@ const ProductDetailComponent = ({
             paddingRight: withUnit(paddingRight),
             paddingBottom: withUnit(paddingBottom),
             paddingLeft: withUnit(paddingLeft),
-            backgroundColor,
+            backgroundColor: resolveValue(backgroundColor), // Asegurar resolución por si acaso
             maxWidth,
             margin: '0 auto',
             border: isPreview ? 'none' : '1px none #ccc',
@@ -156,7 +171,6 @@ const ProductDetailComponent = ({
         }
     };
 
-    // Función para eliminar un hijo
     const handleDeleteChild = (childId) => {
         setComponents((prev) => {
             const updateProductDetailChildren = (components) => {
@@ -188,7 +202,6 @@ const ProductDetailComponent = ({
         }
     }, [product, selectedCombination]);
 
-    // RENDERIZAR CADA HIJO
     const renderChild = (child) => {
         const commonProps = {
             comp: child,
@@ -337,7 +350,7 @@ const ProductDetailComponent = ({
                             product={product}
                             selectedCombination={selectedCombination}
                             quantity={quantity}
-                            storeAutomaticDiscounts={storeAutomaticDiscounts} // Añade esta línea
+                            storeAutomaticDiscounts={storeAutomaticDiscounts}
                         />
                     </ComponentWithHover>
                 );
@@ -346,10 +359,8 @@ const ProductDetailComponent = ({
         }
     };
 
-    // Renderizado para layout grid - separar imagen de información
     const renderGridLayout = () => {
         if (imageComponents.length === 0) {
-            // Sin imágenes, todo en una columna
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {children.map(renderChild)}
@@ -359,12 +370,9 @@ const ProductDetailComponent = ({
 
         return (
             <>
-                {/* Columna izquierda - Imágenes */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {imageComponents.map(renderChild)}
                 </div>
-
-                {/* Columna derecha - Información del producto */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {otherComponents.concat(descriptionComponents).map(renderChild)}
                 </div>
@@ -372,11 +380,8 @@ const ProductDetailComponent = ({
         );
     };
 
-    // Renderizado para layout stack - descripción al final
     const renderStackLayout = () => {
-        // Primero otros componentes, luego descripción
         const orderedComponents = [...imageComponents, ...otherComponents, ...descriptionComponents];
-
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {orderedComponents.map(renderChild)}
@@ -384,7 +389,6 @@ const ProductDetailComponent = ({
         );
     };
 
-    // Renderizar contenido basado en el layout seleccionado
     const renderContent = () => {
         switch (layoutType) {
             case 'grid':

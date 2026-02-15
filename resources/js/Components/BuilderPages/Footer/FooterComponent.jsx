@@ -2,7 +2,7 @@
 import React from 'react';
 import FooterMenuComponent from './FooterMenuComponent';
 import TextComponent from '../TextComponent';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -25,27 +25,47 @@ const FooterComponent = ({
     mode = 'frontend',
     availableMenus = []
 }) => {
-    const styles = getStyles(comp);
-    const content = comp.content || {};
+    // Obtener configuración del tema con valores por defecto
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeFooterStyles = getComponentStyles(themeWithDefaults, 'footer', appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos del componente
+    const rawStyles = getStyles(comp) || {};
+    const resolvedStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        resolvedStyles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido del componente
+    const rawContent = comp.content || {};
+    const resolvedContent = {};
+    Object.keys(rawContent).forEach(key => {
+        resolvedContent[key] = resolveValue(rawContent[key]);
+    });
 
     // Determinar si estamos en modo de edición
     const isEditable = mode === 'builder' && !isPreview;
 
-    // Estilos del contenedor principal del footer con valores del tema
+    // Estilos del contenedor principal del footer con valores resueltos
     const containerStyles = {
-        ...styles,
+        ...resolvedStyles,
         width: '100%',
-        backgroundColor: styles.backgroundColor || themeFooterStyles.backgroundColor,
-        paddingTop: withUnit(styles.paddingTop || '40px'),
-        paddingRight: withUnit(styles.paddingRight || '20px'),
-        paddingBottom: withUnit(styles.paddingBottom || '40px'),
-        paddingLeft: withUnit(styles.paddingLeft || '20px'),
+        backgroundColor: resolvedStyles.backgroundColor || themeFooterStyles.backgroundColor,
+        paddingTop: withUnit(resolvedStyles.paddingTop || '40px'),
+        paddingRight: withUnit(resolvedStyles.paddingRight || '20px'),
+        paddingBottom: withUnit(resolvedStyles.paddingBottom || '40px'),
+        paddingLeft: withUnit(resolvedStyles.paddingLeft || '20px'),
     };
 
-    // Obtener los hijos del footer
-    const children = content.children || [];
+    // Obtener los hijos del footer (usando resolvedContent)
+    const children = resolvedContent.children || [];
 
     return (
         <footer
@@ -55,11 +75,11 @@ const FooterComponent = ({
         >
             {/* Grid de columnas */}
             <div style={{
-                display: content.layout === 'flex' ? 'flex' : 'grid',
+                display: resolvedContent.layout === 'flex' ? 'flex' : 'grid',
                 flexWrap: 'wrap',
-                gridTemplateColumns: content.layout === 'flex' ? 'none' : `repeat(${content.columns || 3}, 1fr)`,
-                gap: withUnit(styles.gap || '40px'),
-                maxWidth: withUnit(styles.maxWidth || '1200px'),
+                gridTemplateColumns: resolvedContent.layout === 'flex' ? 'none' : `repeat(${resolvedContent.columns || 3}, 1fr)`,
+                gap: withUnit(resolvedStyles.gap || '40px'),
+                maxWidth: withUnit(resolvedStyles.maxWidth || '1200px'),
                 margin: '0 auto'
             }}>
                 {children.map(child => {
@@ -96,17 +116,17 @@ const FooterComponent = ({
                 })}
             </div>
 
-            {/* Copyright con valores del tema */}
-            {content.showCopyright && (
+            {/* Copyright con valores del tema (usando resolvedContent) */}
+            {resolvedContent.showCopyright && (
                 <div style={{
                     textAlign: 'center',
                     marginTop: '40px',
                     paddingTop: '20px',
-                    borderTop: `1px solid ${themeWithDefaults.borders}`,
+                    borderTop: `1px solid ${themeWithDefaults.borders}`, // themeWithDefaults ya tiene valor resuelto
                     color: themeWithDefaults.text,
                     fontSize: '14px'
                 }}>
-                    {content.copyrightText || '© 2023 Mi Empresa. Todos los derechos reservados.'}
+                    {resolvedContent.copyrightText || '© 2023 Mi Empresa. Todos los derechos reservados.'}
                 </div>
             )}
         </footer>

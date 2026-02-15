@@ -1,4 +1,5 @@
 import React from 'react';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -13,15 +14,31 @@ const ProductDetailImageComponent = ({
     getStyles,
     isPreview,
     onEdit,
-    themeSettings
+    themeSettings,
+    appliedTheme // Añadimos appliedTheme
 }) => {
-    const styles = comp.styles || {};
-    const theme = themeSettings || {};
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados del componente
+    const rawStyles = comp.styles || {};
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
 
     const getAspectRatio = () => {
         const ratio = styles.aspectRatio || 'square';
         if (ratio === 'theme') {
-            return theme.image_aspect_ratio || '1/1';
+            // Resolver el valor del tema (puede ser referencia)
+            const themeAspect = resolveValue(themeWithDefaults.image_aspect_ratio || '1/1');
+            return themeAspect;
         }
         switch (ratio) {
             case 'landscape': return '16/9';
@@ -44,13 +61,18 @@ const ProductDetailImageComponent = ({
         justifyContent: 'center'
     };
 
+    // Resolver valores de borde y radio
+    const borderThickness = resolveValue(styles.imageBorderThickness || '1px');
+    const borderColor = resolveValue(styles.imageBorderColor || '#000000');
+    const borderRadius = resolveValue(styles.imageBorderRadius || '0px');
+
     const imageStyles = {
         width: '100%',
         height: '100%',
         border: (styles.imageBorder === 'solid' || styles.imageBorder === 'dashed')
-            ? `${withUnit(styles.imageBorderThickness || '1px')} ${styles.imageBorder} ${styles.imageBorderColor || '#000000'}`
+            ? `${withUnit(borderThickness)} ${styles.imageBorder} ${borderColor}`
             : 'none',
-        borderRadius: withUnit(styles.imageBorderRadius || '0px'),
+        borderRadius: withUnit(borderRadius),
         objectFit: styles.objectFit || 'cover',
     };
 

@@ -6,7 +6,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Separator } from '@/Components/ui/separator';
 import { Button } from '@/Components/ui/button';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
-import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -27,8 +27,28 @@ const SuccessComponent = ({
     companyId,
     appliedTheme
 }) => {
-    const styles = getStyles(comp);
-    const content = comp.content || {};
+    // Obtener tema combinado
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos y contenido del componente
+    const rawStyles = comp.styles || {};
+    const rawContent = comp.content || {};
+    const styles = {};
+    const content = {};
+
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
+    Object.keys(rawContent).forEach(key => {
+        content[key] = resolveValue(rawContent[key]);
+    });
 
     // Datos de ejemplo para el builder
     const exampleOrder = {
@@ -71,7 +91,7 @@ const SuccessComponent = ({
             }
         ],
         payment_method: {
-            name: 'Tarjeta de Crédito'
+            payment_method_name: 'Tarjeta de Crédito'
         },
         shippingRate: {
             name: 'Envío Estándar',
@@ -80,9 +100,9 @@ const SuccessComponent = ({
         delivery_location: {
             address_line_1: 'Calle Principal 123',
             address_line_2: 'Apartamento 4B',
-            city: 'Ciudad Ejemplo',
-            state: 'Estado Ejemplo',
-            country: 'País Ejemplo',
+            city: { city_name: 'Ciudad Ejemplo' },
+            state: { state_name: 'Estado Ejemplo' },
+            country: { country_name: 'País Ejemplo' },
             postal_code: '12345'
         }
     };
@@ -136,7 +156,6 @@ const SuccessComponent = ({
         });
     };
 
-    // Versión simplificada
     const parseProductDetails = (productDetails) => {
         if (!productDetails) return {};
 
@@ -145,7 +164,6 @@ const SuccessComponent = ({
                 ? JSON.parse(productDetails)
                 : productDetails;
 
-            // Manejar ambos formatos
             return {
                 combination_name: parsed.attributes || parsed.combination_name || null,
                 image: parsed.image || null,
@@ -159,11 +177,19 @@ const SuccessComponent = ({
         }
     };
 
+    // Valores resueltos del tema para usar en estilos dinámicos
+    const resolvedBackground = resolveValue(themeWithDefaults.background);
+    const resolvedHeading = resolveValue(themeWithDefaults.heading);
+    const resolvedText = resolveValue(themeWithDefaults.text);
+    const resolvedLinks = resolveValue(themeWithDefaults.links);
+    const resolvedPrimaryButtonText = resolveValue(themeWithDefaults.primary_button_text);
+    const resolvedBorders = resolveValue(themeWithDefaults.borders);
+
     return (
         <div
             className="w-full"
             style={{
-                backgroundColor: styles.backgroundColor || 'transparent',
+                backgroundColor: styles.backgroundColor || resolvedBackground,
                 paddingTop: withUnit(styles.paddingTop || '40px'),
                 paddingRight: withUnit(styles.paddingRight || '20px'),
                 paddingBottom: withUnit(styles.paddingBottom || '40px'),
@@ -186,7 +212,7 @@ const SuccessComponent = ({
                 <h1
                     className="text-3xl font-bold mb-2"
                     style={{
-                        color: content.titleColor || styles.titleColor || getThemeWithDefaults(themeSettings.heading),
+                        color: content.titleColor || styles.titleColor || resolvedHeading,
                         fontSize: withUnit(content.titleSize || styles.titleSize || '32px', content.titleSizeUnit || 'px'),
                         fontWeight: content.titleWeight || styles.titleWeight || 'bold'
                     }}
@@ -197,7 +223,7 @@ const SuccessComponent = ({
                 <p
                     className="text-lg"
                     style={{
-                        color: content.subtitleColor || styles.subtitleColor || '#666666',
+                        color: content.subtitleColor || styles.subtitleColor || resolvedText,
                         fontSize: withUnit(content.subtitleSize || styles.subtitleSize || '18px', content.subtitleSizeUnit || 'px')
                     }}
                 >
@@ -208,59 +234,61 @@ const SuccessComponent = ({
             {/* Información de la orden */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 {/* Detalles principales */}
-                <Card className="lg:col-span-2">
+                <Card className="lg:col-span-2" style={{
+                    backgroundColor: resolvedBackground,
+                    borderColor: resolvedBorders
+                }}>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2" style={{ color: resolvedHeading }}>
                             <Package size={20} />
                             Detalles de la Orden
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <span className="font-medium">Número de Orden:</span>
-                            <span className="font-mono text-lg">{displayOrder.id}</span>
+                            <span className="font-medium" style={{ color: resolvedText }}>Número de Orden:</span>
+                            <span className="font-mono text-lg" style={{ color: resolvedText }}>{displayOrder.id}</span>
                         </div>
 
                         <div className="flex justify-between items-center">
-                            <span className="font-medium">Estado:</span>
+                            <span className="font-medium" style={{ color: resolvedText }}>Estado:</span>
                             <Badge className={getStatusColor(displayOrder.status)}>
                                 {getStatusText(displayOrder.status)}
                             </Badge>
                         </div>
 
                         <div className="flex justify-between items-center">
-                            <span className="font-medium">Fecha:</span>
-                            <span className="flex items-center gap-1">
+                            <span className="font-medium" style={{ color: resolvedText }}>Fecha:</span>
+                            <span className="flex items-center gap-1" style={{ color: resolvedText }}>
                                 <Calendar size={16} />
                                 {formatDate(displayOrder.created_at)}
                             </span>
                         </div>
 
                         <div className="flex justify-between items-center">
-                            <span className="font-medium">Método de Pago:</span>
-                            <span className="flex items-center gap-1">
+                            <span className="font-medium" style={{ color: resolvedText }}>Método de Pago:</span>
+                            <span className="flex items-center gap-1" style={{ color: resolvedText }}>
                                 <CreditCard size={16} />
                                 {displayOrder.payment_method?.payment_method_name || 'No especificado'}
-                                {console.log(displayOrder)}
                             </span>
                         </div>
 
                         {displayOrder.delivery_type === 'delivery' && displayOrder.delivery_location && (
                             <div>
-                                <span className="font-medium flex items-center gap-1 mb-2">
+                                <span className="font-medium flex items-center gap-1 mb-2" style={{ color: resolvedText }}>
                                     <MapPin size={16} />
                                     Dirección de Entrega:
                                 </span>
-                                <div className="text-sm text-gray-600 ml-5">
+                                <div className="text-sm ml-5" style={{ color: resolvedText }}>
                                     <div>{displayOrder.delivery_location.address_line_1}</div>
                                     {displayOrder.delivery_location.address_line_2 && (
                                         <div>{displayOrder.delivery_location.address_line_2}</div>
                                     )}
                                     <div>
-                                        {displayOrder.delivery_location.city.city_name}, {displayOrder.delivery_location.state.state_name}
+                                        {displayOrder.delivery_location.city?.city_name}, {displayOrder.delivery_location.state?.state_name}
                                     </div>
                                     <div>
-                                        {displayOrder.delivery_location.country.country_name} {displayOrder.delivery_location.postal_code}
+                                        {displayOrder.delivery_location.country?.country_name} {displayOrder.delivery_location.postal_code}
                                     </div>
                                 </div>
                             </div>
@@ -268,64 +296,71 @@ const SuccessComponent = ({
 
                         {displayOrder.shippingRate && (
                             <div className="flex justify-between items-center">
-                                <span className="font-medium flex items-center gap-1">
+                                <span className="font-medium flex items-center gap-1" style={{ color: resolvedText }}>
                                     <Truck size={16} />
                                     Método de Envío:
                                 </span>
-                                <span>{displayOrder.shippingRate.name}</span>
+                                <span style={{ color: resolvedText }}>{displayOrder.shippingRate.name}</span>
                             </div>
                         )}
                     </CardContent>
                 </Card>
 
                 {/* Resumen de totales */}
-                <Card>
+                <Card style={{
+                    backgroundColor: resolvedBackground,
+                    borderColor: resolvedBorders
+                }}>
                     <CardHeader>
-                        <CardTitle>Resumen del Pedido</CardTitle>
+                        <CardTitle style={{ color: resolvedHeading }}>Resumen del Pedido</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        <div className="flex justify-between">
+                        <div className="flex justify-between" style={{ color: resolvedText }}>
                             <span>Subtotal:</span>
                             <CurrencyDisplay amount={displayOrder.subtotal} />
                         </div>
 
                         {displayOrder.totalshipping > 0 && (
-                            <div className="flex justify-between">
+                            <div className="flex justify-between" style={{ color: resolvedText }}>
                                 <span>Envío:</span>
                                 <CurrencyDisplay amount={displayOrder.totalshipping} />
                             </div>
                         )}
 
                         {displayOrder.tax_amount > 0 && (
-                            <div className="flex justify-between">
+                            <div className="flex justify-between" style={{ color: resolvedText }}>
                                 <span>Impuestos:</span>
                                 <CurrencyDisplay amount={displayOrder.tax_amount} />
                             </div>
                         )}
 
                         {displayOrder.totaldiscounts > 0 && (
-                            <div className="flex justify-between text-green-600">
-                                <span className="flex items-center gap-1">
+                            <div className="flex justify-between">
+                                <span className="flex items-center gap-1" style={{ color: resolvedText }}>
                                     <Tag size={16} />
                                     Descuentos:
                                 </span>
-                                <CurrencyDisplay amount={-displayOrder.totaldiscounts} />
+                                <span style={{ color: '#059669' }}>
+                                    <CurrencyDisplay amount={-displayOrder.totaldiscounts} />
+                                </span>
                             </div>
                         )}
 
                         {displayOrder.gift_card_amount > 0 && (
-                            <div className="flex justify-between text-purple-600">
-                                <span className="flex items-center gap-1">
+                            <div className="flex justify-between">
+                                <span className="flex items-center gap-1" style={{ color: resolvedText }}>
                                     <Gift size={16} />
                                     Gift Card:
                                 </span>
-                                <CurrencyDisplay amount={-displayOrder.gift_card_amount} />
+                                <span style={{ color: '#7e3af2' }}>
+                                    <CurrencyDisplay amount={-displayOrder.gift_card_amount} />
+                                </span>
                             </div>
                         )}
 
-                        <Separator />
+                        <Separator style={{ backgroundColor: resolvedBorders }} />
 
-                        <div className="flex justify-between text-lg font-bold">
+                        <div className="flex justify-between text-lg font-bold" style={{ color: resolvedHeading }}>
                             <span>Total:</span>
                             <CurrencyDisplay amount={displayOrder.total} />
                         </div>
@@ -334,37 +369,34 @@ const SuccessComponent = ({
             </div>
 
             {/* Productos ordenados */}
-            <Card className="mb-8">
+            <Card className="mb-8" style={{
+                backgroundColor: resolvedBackground,
+                borderColor: resolvedBorders
+            }}>
                 <CardHeader>
-                    <CardTitle>Productos Ordenados</CardTitle>
+                    <CardTitle style={{ color: resolvedHeading }}>Productos Ordenados</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         {displayOrder.order_items?.map((item, index) => {
                             const details = parseProductDetails(item.product_details);
-                            // console.log(details)
                             return (
-                                <div key={item.id || index} className="flex items-center gap-4 p-4 border rounded-lg">
-                                    {/* {details.image && (
-                                        <img 
-                                            src={details.image} 
-                                            alt={item.name_product}
-                                            className="w-16 h-16 object-cover rounded"
-                                        />
-                                    )} */}
-
+                                <div key={item.id || index} className="flex items-center gap-4 p-4 border rounded-lg" style={{
+                                    borderColor: resolvedBorders,
+                                    backgroundColor: resolvedBackground
+                                }}>
                                     <div className="flex-1">
-                                        <h4 className="font-medium">{item.name_product}</h4>
+                                        <h4 className="font-medium" style={{ color: resolvedHeading }}>{item.name_product}</h4>
                                         {details.combination_name && (
-                                            <p className="text-sm text-gray-600">{details.combination_name}</p>
+                                            <p className="text-sm" style={{ color: resolvedText }}>{details.combination_name}</p>
                                         )}
-                                        <p className="text-sm text-gray-600">
+                                        <p className="text-sm" style={{ color: resolvedText }}>
                                             Cantidad: {item.quantity} × <CurrencyDisplay amount={item.discounted_price} />
                                         </p>
                                     </div>
 
                                     <div className="text-right">
-                                        <div className="font-medium">
+                                        <div className="font-medium" style={{ color: resolvedLinks }}>
                                             <CurrencyDisplay amount={item.subtotal} />
                                         </div>
                                     </div>
@@ -384,8 +416,8 @@ const SuccessComponent = ({
                         className="mr-4"
                         style={{
                             backgroundColor: content.continueButtonBg || 'transparent',
-                            color: content.continueButtonColor || getThemeWithDefaults(themeSettings.text),
-                            borderColor: content.continueButtonBorder || '#d1d5db'
+                            color: content.continueButtonColor || resolvedText,
+                            borderColor: content.continueButtonBorder || resolvedBorders
                         }}
                         onClick={() => {
                             if (mode === 'frontend') {
@@ -401,8 +433,8 @@ const SuccessComponent = ({
                     <Button
                         size="lg"
                         style={{
-                            backgroundColor: content.ordersButtonBg || '#3b82f6',
-                            color: content.ordersButtonColor || getThemeWithDefaults(themeSettings.primary_button_text)
+                            backgroundColor: content.ordersButtonBg || themeWithDefaults.primary_button_background,
+                            color: content.ordersButtonColor || resolvedPrimaryButtonText
                         }}
                         onClick={() => {
                             if (mode === 'frontend') {
@@ -420,8 +452,8 @@ const SuccessComponent = ({
                 <div
                     className="mt-8 p-4 rounded-lg text-center"
                     style={{
-                        backgroundColor: content.messageBackgroundColor || '#f3f4f6',
-                        color: content.messageTextColor || '#374151'
+                        backgroundColor: content.messageBackgroundColor || resolvedBackground,
+                        color: content.messageTextColor || resolvedText
                     }}
                 >
                     <p>{content.additionalMessage}</p>

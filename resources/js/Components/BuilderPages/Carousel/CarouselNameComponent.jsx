@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const CarouselNameComponent = ({
     comp,
@@ -10,22 +10,35 @@ const CarouselNameComponent = ({
     themeSettings,
     appliedTheme
 }) => {
-    const styles = comp.styles || {};
+    const rawStyles = comp.styles || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
 
     // Obtener configuración de fuente del tema usando utilidades
     const getFontFamily = () => {
         const fontType = styles.fontType;
 
         if (fontType === 'default' || !fontType) {
-            return getResolvedFont(themeWithDefaults, 'body_font');
+            return getResolvedFont(themeWithDefaults, 'body_font', appliedTheme);
         }
 
         if (fontType === 'custom' && styles.customFont) {
             return styles.customFont;
         }
 
-        return getResolvedFont(themeWithDefaults, fontType);
+        return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
     };
 
     // Usar estilo de párrafo por defecto para nombres con utilidades del tema
@@ -40,7 +53,7 @@ const CarouselNameComponent = ({
         color = styles.color || themeWithDefaults.text;
     } else {
         // Usar utilidades del tema para obtener estilos consistentes
-        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle, appliedTheme);
         fontSize = styles.fontSize || themeTextStyles.fontSize;
         fontWeight = styles.fontWeight || themeTextStyles.fontWeight;
         lineHeight = styles.lineHeight || themeTextStyles.lineHeight;

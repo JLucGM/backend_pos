@@ -543,7 +543,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         setIsAddDialogOpen(false);
         setSelectedType('');
     };
-
+// console.log('Tema aplicado:', appliedTheme);
     const handleAddComponent = (selectedType) => {
         if (!selectedType) {
             toast.error("Por favor selecciona un tipo de componente");
@@ -552,7 +552,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
         // Obtener configuración del tema con valores por defecto
         const themeWithDefaults = getThemeWithDefaults(currentThemeSettings, appliedTheme);
-        console.log(themeWithDefaults)
+        // console.log(themeWithDefaults)
         if (selectedType) {
             let content = 'Nuevo ' + selectedType;
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';

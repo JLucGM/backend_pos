@@ -3,14 +3,13 @@ import {
     getThemeWithDefaults,
     getTextStyles,
     getResolvedFont,
-
-    getComponentStyles
+    getComponentStyles,
+    resolveStyleValue
 } from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
     if (value === undefined || value === null || value === '') return undefined;
-    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
     if (typeof value === 'string' && isNaN(Number(value))) return value;
     return `${value}${unit}`;
 };
@@ -24,16 +23,33 @@ const ProductDetailDescriptionComponent = ({
     product,
     appliedTheme
 }) => {
-    const getDescriptionStyles = () => {  // ✅ Nombre diferente
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados del componente
+    const rawStyles = comp.styles || {};
+    const customStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        customStyles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido (por si contiene referencias)
+    const resolvedContent = resolveValue(comp.content);
+
+    const getDescriptionStyles = () => {
         const baseStyles = getStyles(comp);
-        const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'paragraph';
 
         // Obtener estilos del tema para el tipo de texto
-        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Ahora usa la importada
+        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle, appliedTheme);
 
         // Obtener estilos específicos del componente product-description
         const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-description', appliedTheme);
@@ -42,12 +58,11 @@ const ProductDetailDescriptionComponent = ({
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
 
-            // Si el usuario seleccionó "default" o no especificó nada, usar el tema
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return getResolvedFont(themeWithDefaults, 'heading_font');
+                    return getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme);
                 } else {
-                    return getResolvedFont(themeWithDefaults, 'body_font');
+                    return getResolvedFont(themeWithDefaults, 'body_font', appliedTheme);
                 }
             }
 
@@ -55,12 +70,10 @@ const ProductDetailDescriptionComponent = ({
                 return customStyles.customFont;
             }
 
-            // Usar getResolvedFont para resolver referencias de fuentes
-            return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
+            return getResolvedFont(themeWithDefaults, fontType, appliedTheme) || themeTextStyles.fontFamily;
         };
 
         // Obtener configuración según el estilo seleccionado
-        // ✅ CORRECCIÓN: Usar themeWithDefaults en lugar de theme (que no existe)
         let fontSize, fontWeight, lineHeight, textTransform;
 
         switch (textStyle) {
@@ -131,8 +144,7 @@ const ProductDetailDescriptionComponent = ({
             finalLineHeight = customStyles.customLineHeight;
         }
 
-        // Padding individual (usar valores del tema si existen)
-        // ✅ CORRECCIÓN: Usar themeWithDefaults
+        // Padding individual
         const paddingTop = withUnit(customStyles.paddingTop || themeWithDefaults?.spacing_small || '0px');
         const paddingRight = withUnit(customStyles.paddingRight || themeWithDefaults?.spacing_small || '0px');
         const paddingBottom = withUnit(customStyles.paddingBottom || themeWithDefaults?.spacing_small || '0px');
@@ -151,11 +163,9 @@ const ProductDetailDescriptionComponent = ({
         const backgroundColor = customStyles.backgroundColor || 'transparent';
 
         // Border radius - usar valores del tema
-        // ✅ CORRECCIÓN: Usar themeWithDefaults
         const borderRadius = withUnit(customStyles.borderRadius || themeWithDefaults?.border_radius || '0px');
 
-        // Margen - usar valores del tema (spacing_medium como valor por defecto)
-        // ✅ CORRECCIÓN: Usar themeWithDefaults
+        // Margen
         const margin = customStyles.margin || `${themeWithDefaults?.spacing_medium || '1rem'} 0`;
 
         return {
@@ -186,7 +196,7 @@ const ProductDetailDescriptionComponent = ({
     };
 
     // Obtener la descripción del producto o mostrar placeholder
-    const displayDescription = product?.product_description || comp.content || (
+    const displayDescription = product?.product_description || resolvedContent || (
         <span className="text-gray-400 italic">
             Descripción del producto (se obtiene dinámicamente)
         </span>
@@ -194,7 +204,7 @@ const ProductDetailDescriptionComponent = ({
 
     return (
         <div
-            style={getDescriptionStyles()}  // ✅ Usar nuevo nombre
+            style={getDescriptionStyles()}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >

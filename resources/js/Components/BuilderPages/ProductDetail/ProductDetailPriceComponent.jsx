@@ -1,12 +1,17 @@
 import React from 'react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont, getComponentStyles } from '@/utils/themeUtils';
+import {
+    getThemeWithDefaults,
+    getTextStyles,
+    getResolvedFont,
+    getComponentStyles,
+    resolveStyleValue
+} from '@/utils/themeUtils';
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
     if (value === undefined || value === null || value === '') return undefined;
-    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
     if (typeof value === 'string' && isNaN(Number(value))) return value;
     return `${value}${unit}`;
 };
@@ -23,20 +28,31 @@ const ProductDetailPriceComponent = ({
     appliedTheme
 }) => {
     const { settings } = usePage().props;
-
-    // Obtener themeWithDefaults una sola vez para usar en todo el componente
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const rawStyles = comp.styles || {};
+    const customStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        customStyles[key] = resolveValue(rawStyles[key]);
+    });
+
     // Función para obtener los estilos del precio
-    const getPriceStyles = () => {  // ✅ Nombre diferente
+    const getPriceStyles = () => {
         const baseStyles = getStyles(comp);
-        const customStyles = comp.styles || {};
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading3';
 
         // Obtener estilos del tema para el tipo de texto
-        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle); // ✅ Ahora usa la importada
+        const themeTextStyles = getTextStyles(themeWithDefaults, textStyle, appliedTheme);
 
         // Obtener estilos específicos del componente product-price
         const themeComponentStyles = getComponentStyles(themeWithDefaults, 'product-price', appliedTheme);
@@ -46,14 +62,14 @@ const ProductDetailPriceComponent = ({
             const fontType = customStyles.fontType || 'default';
 
             if (fontType === 'default' || !fontType) {
-                return getResolvedFont(themeWithDefaults, 'body_font');
+                return getResolvedFont(themeWithDefaults, 'body_font', appliedTheme);
             }
 
             if (fontType === 'custom' && customStyles.customFont) {
                 return customStyles.customFont;
             }
 
-            return getResolvedFont(themeWithDefaults, fontType) || themeTextStyles.fontFamily;
+            return getResolvedFont(themeWithDefaults, fontType, appliedTheme) || themeTextStyles.fontFamily;
         };
 
         // Obtener configuración según el estilo seleccionado
@@ -61,52 +77,52 @@ const ProductDetailPriceComponent = ({
 
         switch (textStyle) {
             case 'paragraph':
-                fontSize = customStyles.fontSize || themeSettings?.paragraph_fontSize || '16px';
-                fontWeight = customStyles.fontWeight || themeSettings?.paragraph_fontWeight || 'normal';
-                lineHeight = customStyles.lineHeight || themeSettings?.paragraph_lineHeight || '1.6';
-                textTransform = customStyles.textTransform || themeSettings?.paragraph_textTransform || 'none';
+                fontSize = customStyles.fontSize || themeWithDefaults?.paragraph_fontSize || '16px';
+                fontWeight = customStyles.fontWeight || themeWithDefaults?.paragraph_fontWeight || 'normal';
+                lineHeight = customStyles.lineHeight || themeWithDefaults?.paragraph_lineHeight || '1.6';
+                textTransform = customStyles.textTransform || themeWithDefaults?.paragraph_textTransform || 'none';
                 break;
 
             case 'heading1':
-                fontSize = customStyles.fontSize || themeSettings?.heading1_fontSize || '2.5rem';
-                fontWeight = customStyles.fontWeight || themeSettings?.heading1_fontWeight || 'bold';
-                lineHeight = customStyles.lineHeight || themeSettings?.heading1_lineHeight || '1.2';
-                textTransform = customStyles.textTransform || themeSettings?.heading1_textTransform || 'none';
+                fontSize = customStyles.fontSize || themeWithDefaults?.heading1_fontSize || '2.5rem';
+                fontWeight = customStyles.fontWeight || themeWithDefaults?.heading1_fontWeight || 'bold';
+                lineHeight = customStyles.lineHeight || themeWithDefaults?.heading1_lineHeight || '1.2';
+                textTransform = customStyles.textTransform || themeWithDefaults?.heading1_textTransform || 'none';
                 break;
 
             case 'heading2':
-                fontSize = customStyles.fontSize || themeSettings?.heading2_fontSize || '2rem';
-                fontWeight = customStyles.fontWeight || themeSettings?.heading2_fontWeight || 'bold';
-                lineHeight = customStyles.lineHeight || themeSettings?.heading2_lineHeight || '1.3';
-                textTransform = customStyles.textTransform || themeSettings?.heading2_textTransform || 'none';
+                fontSize = customStyles.fontSize || themeWithDefaults?.heading2_fontSize || '2rem';
+                fontWeight = customStyles.fontWeight || themeWithDefaults?.heading2_fontWeight || 'bold';
+                lineHeight = customStyles.lineHeight || themeWithDefaults?.heading2_lineHeight || '1.3';
+                textTransform = customStyles.textTransform || themeWithDefaults?.heading2_textTransform || 'none';
                 break;
 
             case 'heading3':
-                fontSize = customStyles.fontSize || themeSettings?.heading3_fontSize || '1.75rem';
-                fontWeight = customStyles.fontWeight || themeSettings?.heading3_fontWeight || 'bold';
-                lineHeight = customStyles.lineHeight || themeSettings?.heading3_lineHeight || '1.3';
-                textTransform = customStyles.textTransform || themeSettings?.heading3_textTransform || 'none';
+                fontSize = customStyles.fontSize || themeWithDefaults?.heading3_fontSize || '1.75rem';
+                fontWeight = customStyles.fontWeight || themeWithDefaults?.heading3_fontWeight || 'bold';
+                lineHeight = customStyles.lineHeight || themeWithDefaults?.heading3_lineHeight || '1.3';
+                textTransform = customStyles.textTransform || themeWithDefaults?.heading3_textTransform || 'none';
                 break;
 
             case 'heading4':
-                fontSize = customStyles.fontSize || themeSettings?.heading4_fontSize || '1.5rem';
-                fontWeight = customStyles.fontWeight || themeSettings?.heading4_fontWeight || 'bold';
-                lineHeight = customStyles.lineHeight || themeSettings?.heading4_lineHeight || '1.4';
-                textTransform = customStyles.textTransform || themeSettings?.heading4_textTransform || 'none';
+                fontSize = customStyles.fontSize || themeWithDefaults?.heading4_fontSize || '1.5rem';
+                fontWeight = customStyles.fontWeight || themeWithDefaults?.heading4_fontWeight || 'bold';
+                lineHeight = customStyles.lineHeight || themeWithDefaults?.heading4_lineHeight || '1.4';
+                textTransform = customStyles.textTransform || themeWithDefaults?.heading4_textTransform || 'none';
                 break;
 
             case 'heading5':
-                fontSize = customStyles.fontSize || themeSettings?.heading5_fontSize || '1.25rem';
-                fontWeight = customStyles.fontWeight || themeSettings?.heading5_fontWeight || 'bold';
-                lineHeight = customStyles.lineHeight || themeSettings?.heading5_lineHeight || '1.4';
-                textTransform = customStyles.textTransform || themeSettings?.heading5_textTransform || 'none';
+                fontSize = customStyles.fontSize || themeWithDefaults?.heading5_fontSize || '1.25rem';
+                fontWeight = customStyles.fontWeight || themeWithDefaults?.heading5_fontWeight || 'bold';
+                lineHeight = customStyles.lineHeight || themeWithDefaults?.heading5_lineHeight || '1.4';
+                textTransform = customStyles.textTransform || themeWithDefaults?.heading5_textTransform || 'none';
                 break;
 
             case 'heading6':
-                fontSize = customStyles.fontSize || themeSettings?.heading6_fontSize || '1rem';
-                fontWeight = customStyles.fontWeight || themeSettings?.heading6_fontWeight || 'bold';
-                lineHeight = customStyles.lineHeight || themeSettings?.heading6_lineHeight || '1.5';
-                textTransform = customStyles.textTransform || themeSettings?.heading6_textTransform || 'none';
+                fontSize = customStyles.fontSize || themeWithDefaults?.heading6_fontSize || '1rem';
+                fontWeight = customStyles.fontWeight || themeWithDefaults?.heading6_fontWeight || 'bold';
+                lineHeight = customStyles.lineHeight || themeWithDefaults?.heading6_lineHeight || '1.5';
+                textTransform = customStyles.textTransform || themeWithDefaults?.heading6_textTransform || 'none';
                 break;
 
             case 'custom':
@@ -139,17 +155,20 @@ const ProductDetailPriceComponent = ({
         const paddingBottom = customStyles.paddingBottom || '0px';
         const paddingLeft = customStyles.paddingLeft || '0px';
 
+        // Color final resuelto
+        const finalColor = customStyles.color || themeComponentStyles.color || themeWithDefaults.text;
+
         return {
             ...baseStyles,
             width,
             textAlign,
             display: layout === 'fit' ? 'inline-block' : 'block',
             fontFamily: getFontFamily(),
-            fontSize,
+            fontSize: withUnit(fontSize, customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color: customStyles.color || themeComponentStyles.color || themeWithDefaults.text,
+            color: resolveValue(finalColor),
             margin: customStyles.margin || '0 0 1rem 0',
             paddingTop: withUnit(paddingTop),
             paddingRight: withUnit(paddingRight),
@@ -176,7 +195,6 @@ const ProductDetailPriceComponent = ({
             );
         }
 
-        const customStyles = comp.styles || {};
         const price = currentPrice || product.product_price;
         const hasDiscount = product.product_price_discount && parseFloat(product.product_price_discount) > 0;
         const showDiscount = customStyles.showDiscount !== false;
@@ -187,7 +205,7 @@ const ProductDetailPriceComponent = ({
                     <span
                         className="line-through mr-2"
                         style={{
-                            color: customStyles.originalPriceColor || themeWithDefaults.text,
+                            color: resolveValue(customStyles.originalPriceColor || themeWithDefaults.text),
                             fontSize: withUnit(customStyles.originalPriceSize || '0.8em'),
                             opacity: 0.7,
                         }}
@@ -196,7 +214,7 @@ const ProductDetailPriceComponent = ({
                     </span>
                     <span
                         style={{
-                            color: customStyles.discountPriceColor || themeWithDefaults.links,
+                            color: resolveValue(customStyles.discountPriceColor || themeWithDefaults.links),
                             fontSize: withUnit(customStyles.discountPriceSize || '1.2em'),
                             fontWeight: 'bold',
                         }}
@@ -215,7 +233,6 @@ const ProductDetailPriceComponent = ({
             );
         }
 
-        // Fallback si no hay configuración de moneda
         return (
             <span style={{ fontWeight: 'bold' }}>
                 ${parseFloat(price).toFixed(2)}
@@ -225,7 +242,7 @@ const ProductDetailPriceComponent = ({
 
     return (
         <div
-            style={getPriceStyles()}  // ✅ Usar nuevo nombre
+            style={getPriceStyles()}
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
@@ -233,7 +250,7 @@ const ProductDetailPriceComponent = ({
 
             {selectedCombination && product?.combinations?.length > 0 && (
                 <div className="text-sm mt-1" style={{
-                    color: themeWithDefaults.text,
+                    color: resolveValue(themeWithDefaults.text),
                     opacity: '0.7',
                     fontSize: '0.8em',
                 }}>

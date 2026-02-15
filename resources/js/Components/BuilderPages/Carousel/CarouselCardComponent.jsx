@@ -5,7 +5,7 @@ import CarouselPriceComponent from './CarouselPriceComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
-import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const CarouselCardComponent = ({
     comp,
@@ -23,10 +23,15 @@ const CarouselCardComponent = ({
 }) => {
     const { settings } = usePage().props;
     // Asegurarnos de que comp.content existe
-    const cardConfig = comp.content || {};
-    const children = cardConfig.children || [];
-    const productData = cardConfig.productData;
+    const rawCardConfig = comp.content || {};
+    const children = rawCardConfig.children || [];
+    const productData = rawCardConfig.productData;
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ==================== FUNCIÓN PARA RESOLVER REFERENCIAS ====================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
 
     // ==================== MANEJO DE NAVEGACIÓN ====================
     const handleProductClick = (e) => {
@@ -48,25 +53,50 @@ const CarouselCardComponent = ({
 
     // ==================== RENDERIZADO FRONTEND ====================
     if (mode === 'frontend') {
+        // Resolver cardConfig
+        const cardConfig = {};
+        Object.keys(rawCardConfig).forEach(key => {
+            cardConfig[key] = resolveValue(rawCardConfig[key]);
+        });
+
         // Extraer los componentes hijos específicos
         const imageChild = children.find(child => child.type === 'carouselImage');
         const nameChild = children.find(child => child.type === 'carouselName');
         const priceChild = children.find(child => child.type === 'carouselPrice');
 
-        // Estilos para cada parte con valores del tema
-        const imageStyles = imageChild?.styles || {};
-        const nameStyles = nameChild?.styles || {};
-        const priceStyles = priceChild?.styles || {};
+        // Resolver estilos de cada hijo
+        const imageStyles = {};
+        if (imageChild?.styles) {
+            Object.keys(imageChild.styles).forEach(key => {
+                imageStyles[key] = resolveValue(imageChild.styles[key]);
+            });
+        }
+
+        const nameStyles = {};
+        if (nameChild?.styles) {
+            Object.keys(nameChild.styles).forEach(key => {
+                nameStyles[key] = resolveValue(nameChild.styles[key]);
+            });
+        }
+
+        const priceStyles = {};
+        if (priceChild?.styles) {
+            Object.keys(priceChild.styles).forEach(key => {
+                priceStyles[key] = resolveValue(priceChild.styles[key]);
+            });
+        }
 
         // Helper para añadir unidad (px) si es solo número
         const withUnit = (value, unit = 'px') => {
             if (value === undefined || value === null || value === '') return undefined;
-            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
             if (typeof value === 'string' && isNaN(Number(value))) return value;
             return `${value}${unit}`;
         };
 
-        // Configuración de la tarjeta para frontend con valores del tema
+        // Resolver shadows si es referencia (aunque ya viene resuelto de getThemeWithDefaults)
+        const shadowValue = themeWithDefaults.shadows ? resolveValue(themeWithDefaults.shadows) : 'rgba(0,0,0,0.1)';
+
+        // Configuración de la tarjeta para frontend con valores resueltos
         const cardStyle = {
             paddingTop: withUnit(cardConfig.cardPaddingTop || '10px'),
             paddingRight: withUnit(cardConfig.cardPaddingRight || '10px'),
@@ -82,7 +112,7 @@ const CarouselCardComponent = ({
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: `0 2px 8px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`,
+            boxShadow: `0 2px 8px ${shadowValue}`,
             textDecoration: 'none',
             color: 'inherit',
         };
@@ -93,7 +123,7 @@ const CarouselCardComponent = ({
                 imageStyles.aspectRatio === 'landscape' ? '4/3' : '1/1',
             position: 'relative',
             overflow: 'hidden',
-            borderRadius: imageStyles.imageBorderRadius || '0px',
+            borderRadius: withUnit(imageStyles.imageBorderRadius || '0px'),
             marginBottom: '12px',
             width: '100%',
         };
@@ -111,7 +141,7 @@ const CarouselCardComponent = ({
             transition: 'transform 0.3s ease',
         };
 
-        // Estilos del nombre del producto con valores del tema
+        // Estilos del nombre del producto con valores resueltos
         const nameStyle = {
             fontSize: withUnit(nameStyles.fontSize || '14px', nameStyles.fontSizeUnit || (nameStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight: nameStyles.fontWeight || '600',
@@ -119,33 +149,33 @@ const CarouselCardComponent = ({
             textAlign: nameStyles.alignment || 'left',
             marginBottom: '8px',
             lineHeight: nameStyles.lineHeight || '1.4',
-            fontFamily: nameStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font'),
+            fontFamily: nameStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
             textTransform: nameStyles.textTransform || 'none',
             flexGrow: 1,
         };
 
-        // Estilos del precio con valores del tema
+        // Estilos del precio con valores resueltos
         const priceStyle = {
             fontSize: withUnit(priceStyles.fontSize || '12px', priceStyles.fontSizeUnit || (priceStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')),
             fontWeight: priceStyles.fontWeight || 'normal',
             color: priceStyles.color || themeWithDefaults.text,
             textAlign: priceStyles.alignment || 'left',
             lineHeight: priceStyles.lineHeight || '1.4',
-            fontFamily: priceStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font'),
+            fontFamily: priceStyles.fontFamily || getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
             marginTop: 'auto',
         };
 
         // Efecto hover para frontend
         const handleMouseEnter = (e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            e.currentTarget.style.boxShadow = `0 4px 12px ${shadowValue}`;
             const img = e.currentTarget.querySelector('img');
             if (img) img.style.transform = 'scale(1.05)';
         };
 
         const handleMouseLeave = (e) => {
             e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = `0 2px 8px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`;
+            e.currentTarget.style.boxShadow = `0 2px 8px ${shadowValue}`;
             const img = e.currentTarget.querySelector('img');
             if (img) img.style.transform = 'scale(1)';
         };
@@ -249,12 +279,20 @@ const CarouselCardComponent = ({
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
-    // Estilos de la carta para builder con valores del tema
+    // Resolver cardConfig para builder (aunque no se usa tanto, por si acaso)
+    const cardConfig = {};
+    Object.keys(rawCardConfig).forEach(key => {
+        cardConfig[key] = resolveValue(rawCardConfig[key]);
+    });
+
+    // Resolver shadows si es referencia
+    const shadowValue = themeWithDefaults.shadows ? resolveValue(themeWithDefaults.shadows) : 'rgba(0,0,0,0.1)';
+
+    // Estilos de la carta para builder con valores resueltos
     const cardStyles = {
         ...getStyles(comp),
         paddingTop: withUnit(cardConfig.cardPaddingTop || '10px'),
@@ -266,7 +304,7 @@ const CarouselCardComponent = ({
             : 'none',
         borderRadius: withUnit(cardConfig.cardBorderRadius || '0px'),
         backgroundColor: cardConfig.cardBackgroundColor || themeWithDefaults.background,
-        boxShadow: `0 2px 4px ${themeWithDefaults.shadows ? themeWithDefaults.shadows : 'rgba(0,0,0,0.1)'}`,
+        boxShadow: `0 2px 4px ${shadowValue}`,
         height: '100%',
         cursor: !isPreview ? 'pointer' : 'default',
     };
@@ -326,6 +364,8 @@ const CarouselCardComponent = ({
                         onDelete={onDelete}
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
+                        themeSettings={themeSettings}
+                        appliedTheme={appliedTheme}
                     />
                 </ComponentWithHover>
             )}

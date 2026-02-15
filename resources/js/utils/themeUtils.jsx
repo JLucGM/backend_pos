@@ -887,6 +887,23 @@ export const useThemeStyles = (themeSettings, componentType, variant = 'primary'
     }
 };
 
+/**
+ * Resuelve un valor de estilo que puede ser una referencia al tema (ej. "theme.background")
+ * @param {any} value - El valor a resolver (puede ser string, número, objeto, etc.)
+ * @param {object} themeSettings - Configuración del tema actual (personalizaciones de página + tema base)
+ * @param {object} appliedTheme - Tema base (opcional, por si falta en themeSettings)
+ * @returns {any} - El valor resuelto
+ */
+export function resolveStyleValue(value, themeSettings, appliedTheme = null) {
+    if (typeof value === 'string') {
+        // Buscar todas las referencias "theme.xxxx" en el string y reemplazarlas
+        return value.replace(/theme\.([a-zA-Z0-9_]+)/g, (match, key) => {
+            return themeSettings?.[key] ?? appliedTheme?.settings?.[key] ?? match;
+        });
+    }
+    return value;
+}
+
 export default {
     getDefaultThemeSettings,
     getThemeWithDefaults,
@@ -898,4 +915,5 @@ export default {
     getComponentStyles,
     generateThemeCSS,
     useThemeStyles,
+    resolveStyleValue,
 };

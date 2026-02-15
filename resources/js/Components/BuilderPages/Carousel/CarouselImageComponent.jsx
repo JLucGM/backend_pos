@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const CarouselImageComponent = ({
     comp,
@@ -10,9 +10,22 @@ const CarouselImageComponent = ({
     themeSettings,
     appliedTheme
 }) => {
-    const styles = comp.styles || {};
+    const rawStyles = comp.styles || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeImageStyles = getComponentStyles(themeWithDefaults, 'image');
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos
+    const styles = {};
+    Object.keys(rawStyles).forEach(key => {
+        styles[key] = resolveValue(rawStyles[key]);
+    });
 
     const getAspectRatioStyles = () => {
         switch (styles.aspectRatio) {
@@ -46,12 +59,17 @@ const CarouselImageComponent = ({
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
-    // Estilos de imagen con valores del tema
+    // Resolver valores de themeImageStyles por si acaso (aunque ya son concretos)
+    const borderColor = resolveValue(styles.imageBorderColor || themeImageStyles.borderColor);
+    const borderRadius = resolveValue(styles.imageBorderRadius || themeImageStyles.borderRadius);
+    const objectFit = resolveValue(styles.objectFit || themeImageStyles.objectFit);
+    const borderWidth = resolveValue(styles.imageBorderThickness || themeImageStyles.borderWidth);
+
+    // Estilos de imagen con valores resueltos
     const imageStyles = {
         position: 'absolute',
         top: 0,
@@ -59,10 +77,10 @@ const CarouselImageComponent = ({
         width: '100%',
         height: '100%',
         border: styles.imageBorder === 'solid'
-            ? `${withUnit(styles.imageBorderThickness || themeImageStyles.borderWidth)} solid ${styles.imageBorderColor || themeImageStyles.borderColor}`
+            ? `${withUnit(borderWidth)} solid ${borderColor}`
             : 'none',
-        borderRadius: withUnit(styles.imageBorderRadius || themeImageStyles.borderRadius),
-        objectFit: styles.objectFit || themeImageStyles.objectFit,
+        borderRadius: withUnit(borderRadius),
+        objectFit: objectFit,
     };
 
     const handleClick = () => {

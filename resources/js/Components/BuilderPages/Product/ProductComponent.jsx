@@ -1,7 +1,7 @@
 import React from 'react';
 import ProductCardComponent from './ProductCardComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const ProductComponent = ({
     comp,
@@ -18,37 +18,56 @@ const ProductComponent = ({
     mode = 'builder', // 'builder' o 'frontend'
     companyId,
 }) => {
-    const productConfig = comp.content || {};
-    const children = productConfig.children || [];
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver contenido del componente
+    const rawContent = comp.content || {};
+    const productConfig = {};
+    Object.keys(rawContent).forEach(key => {
+        productConfig[key] = resolveValue(rawContent[key]);
+    });
+
+    // Resolver estilos base del componente
+    const rawStyles = comp.styles || {};
+    const resolvedStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        resolvedStyles[key] = resolveValue(rawStyles[key]);
+    });
+
+    const children = productConfig.children || [];
 
     // Determinar si estamos en modo frontend
     const isFrontend = mode === 'frontend';
 
-    // Configuración del grid con valores del tema
+    // Configuración del grid con valores resueltos
     const columns = productConfig.columns || 3;
     const gapX = productConfig.gapX || '10px';
     const gapY = productConfig.gapY || '10px';
     const limit = productConfig.limit || 8;
+
     // Encontrar los componentes hijos
     const titleComponent = children.find(child => child.type === 'productTitle');
     const cardComponent = children.find(child => child.type === 'productCard');
 
-    // Estilos del contenedor con valores del tema
+    // Estilos del contenedor con valores resueltos
     const baseStyles = getStyles(comp);
 
     // Asegurar que el backgroundColor del tema tenga prioridad
     const finalBackgroundColor = productConfig.backgroundColor ||
-        comp.styles?.backgroundColor ||
+        resolvedStyles.backgroundColor ||
         themeWithDefaults.background ||
         '#ffffff';
 
-    // const finalBackgroundColor = productConfig.backgroundColor || themeWithDefaults.background;
-
-
     const containerStyles = {
         ...baseStyles,
-        backgroundColor: finalBackgroundColor, // Aplicar el backgroundColor final
+        backgroundColor: finalBackgroundColor,
         padding: '20px 0',
         width: '100%',
         display: 'flex',
@@ -57,9 +76,6 @@ const ProductComponent = ({
         position: 'relative',
         boxSizing: 'border-box',
     };
-
-    // console.log('Final backgroundColor:', finalBackgroundColor);
-    // console.log('Container styles:', containerStyles);
 
     // Grid styles
     const gridStyles = {
@@ -113,12 +129,13 @@ const ProductComponent = ({
                                 onEdit={() => { }}
                                 onDelete={() => { }}
                                 themeSettings={themeSettings}
-                                isPreview={false} // IMPORTANTE: false para que se active la navegación
+                                appliedTheme={appliedTheme}
+                                isPreview={false}
                                 products={products}
                                 setComponents={() => { }}
                                 hoveredComponentId={null}
                                 setHoveredComponentId={() => { }}
-                                mode="frontend" // ESTO ACTIVA LA NAVEGACIÓN
+                                mode="frontend"
                                 companyId={companyId}
                             />
                         ))}
@@ -208,6 +225,7 @@ const ProductComponent = ({
                                 hoveredComponentId={hoveredComponentId}
                                 setHoveredComponentId={setHoveredComponentId}
                                 mode="builder"
+                                companyId={companyId}
                             />
                         </ComponentWithHover>
                     ))}

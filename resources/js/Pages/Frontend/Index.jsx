@@ -39,6 +39,7 @@ import SuccessComponent from '@/Components/BuilderPages/Success/SuccessComponent
 import AnnouncementBarComponent from '@/Components/BuilderPages/AnnouncementBar/AnnouncementBarComponent';
 import ProductListComponent from '@/Components/BuilderPages/Product/ProductListComponent';
 import LinkBioComponent from '@/Components/BuilderPages/LinkBio/LinkBioComponent';
+import PageContentComponent from '@/Components/BuilderPages/PageContentComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -77,6 +78,7 @@ const componentMap = {
     'success': SuccessComponent, // ← Agregado SuccessComponent
     'announcementBar': AnnouncementBarComponent,
     'linkBio': LinkBioComponent, // ← Agregado LinkBioComponent
+    'pageContent': PageContentComponent,
 };
 
 // ==============================================================
@@ -100,7 +102,8 @@ function renderBlock(
     currentUser = null,
     countries = [],
     states = [],
-    cities = []
+    cities = [],
+    page
 ) {
     const Component = componentMap[block.type];
 
@@ -112,6 +115,7 @@ function renderBlock(
             </div>
         );
     }
+
 
     // Props base para todos los componentes - SIMPLIFICADO
     const baseProps = {
@@ -129,6 +133,16 @@ function renderBlock(
         companyFavicon: companyFavicon,
     };
 
+    if (block.type === 'pageContent') {
+        return (
+            <PageContentComponent
+                key={block.id}
+                {...baseProps}
+                appliedTheme={themeSettings}           // Necesario para resolver estilos
+                pageContent={page.content}             // Contenido HTML de la página
+            />
+        );
+    }
     // Props específicas por tipo de componente - CORREGIDO
     switch (block.type) {
         case 'product':
@@ -371,7 +385,8 @@ export default function Index({
                     currentUser,
                     countries,
                     states,
-                    cities
+                    cities,
+                    page
                 )
             )}
 

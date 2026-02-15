@@ -1,5 +1,5 @@
 import React from 'react';
-import { getTextStyles as getThemeTextStyles, getResolvedFont, getThemeWithDefaults } from '@/utils/themeUtils';
+import { getTextStyles as getThemeTextStyles, getResolvedFont, getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
 const LinkComponent = ({
     comp,
@@ -11,6 +11,11 @@ const LinkComponent = ({
 }) => {
     // Obtener configuración del tema con valores por defecto
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // Función para resolver referencias
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
 
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
@@ -24,58 +29,67 @@ const LinkComponent = ({
         const baseStyles = getStyles(comp);
         const customStyles = comp.styles || {};
 
+        // Resolver todas las propiedades de customStyles que puedan contener referencias
+        const resolvedCustomStyles = {};
+        Object.keys(customStyles).forEach(key => {
+            resolvedCustomStyles[key] = resolveValue(customStyles[key]);
+        });
+
         // Determinar el estilo de texto seleccionado
-        const textStyle = customStyles.textStyle || 'paragraph';
+        const textStyle = resolvedCustomStyles.textStyle || 'paragraph';
 
         // Función para obtener la fuente según el tipo seleccionado
         const getFontFamily = () => {
-            const fontType = customStyles.fontType;
+            const fontType = resolvedCustomStyles.fontType;
 
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`);
+                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`, appliedTheme);
                 } else {
-                    return getResolvedFont(themeWithDefaults, 'paragraph_font');
+                    return getResolvedFont(themeWithDefaults, 'paragraph_font', appliedTheme);
                 }
             }
 
-            if (fontType === 'custom' && customStyles.customFont) {
-                return customStyles.customFont;
+            if (fontType === 'custom' && resolvedCustomStyles.customFont) {
+                return resolvedCustomStyles.customFont;
             }
 
-            return getResolvedFont(themeWithDefaults, fontType);
+            return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
         };
 
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
         let fontSize, fontWeight, lineHeight, textTransform, color;
 
         if (textStyle === 'custom') {
-            fontSize = customStyles.fontSize || themeWithDefaults.paragraph_fontSize;
-            fontWeight = customStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
-            lineHeight = customStyles.lineHeight || themeWithDefaults.paragraph_lineHeight;
-            textTransform = customStyles.textTransform || themeWithDefaults.paragraph_textTransform;
-            color = customStyles.color || themeWithDefaults.links;
+            fontSize = resolvedCustomStyles.fontSize || themeWithDefaults.paragraph_fontSize;
+            fontWeight = resolvedCustomStyles.fontWeight || themeWithDefaults.paragraph_fontWeight;
+            lineHeight = resolvedCustomStyles.lineHeight || themeWithDefaults.paragraph_lineHeight;
+            textTransform = resolvedCustomStyles.textTransform || themeWithDefaults.paragraph_textTransform;
+            color = resolvedCustomStyles.color || themeWithDefaults.links;
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
-            const themeTextStyles = getThemeTextStyles(themeWithDefaults, textStyle);
-            fontSize = customStyles.fontSize || themeTextStyles.fontSize;
-            fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
-            lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
-            textTransform = customStyles.textTransform || themeTextStyles.textTransform;
-            color = customStyles.color || themeWithDefaults.links;
+            const themeTextStyles = getThemeTextStyles(themeWithDefaults, textStyle, appliedTheme);
+            fontSize = resolvedCustomStyles.fontSize || themeTextStyles.fontSize;
+            fontWeight = resolvedCustomStyles.fontWeight || themeTextStyles.fontWeight;
+            lineHeight = resolvedCustomStyles.lineHeight || themeTextStyles.lineHeight;
+            textTransform = resolvedCustomStyles.textTransform || themeTextStyles.textTransform;
+            color = resolvedCustomStyles.color || themeWithDefaults.links;
         }
 
-        const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+        const fontSizeUnit = resolvedCustomStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
 
         // Calcular line-height si es personalizado
         let finalLineHeight = lineHeight;
         if (lineHeight === 'tight') finalLineHeight = '1.2';
         if (lineHeight === 'normal') finalLineHeight = '1.4';
         if (lineHeight === 'loose') finalLineHeight = '1.6';
-        if (customStyles.customLineHeight && lineHeight === 'custom') {
-            finalLineHeight = customStyles.customLineHeight;
+        if (resolvedCustomStyles.customLineHeight && lineHeight === 'custom') {
+            finalLineHeight = resolvedCustomStyles.customLineHeight;
         }
+
+        // Resolver hoverColor por separado (puede ser referencia)
+        const hoverColor = resolveValue(themeWithDefaults.hover_links || customStyles.hoverColor);
 
         // Estilos del enlace usando valores del tema
         const linkStyle = {
@@ -86,10 +100,11 @@ const LinkComponent = ({
             lineHeight: finalLineHeight,
             textTransform,
             color,
-            textDecoration: customStyles.textDecoration || 'underline',
+            textDecoration: resolvedCustomStyles.textDecoration || 'underline',
             cursor: 'pointer',
             display: 'inline-block',
             transition: 'color 0.2s, text-decoration 0.2s',
+            '--hover-color': hoverColor, // Para usar en hover si se desea
         };
 
         return linkStyle;
@@ -116,17 +131,18 @@ const LinkComponent = ({
     };
 
     const linkContent = getLinkContent();
+    const linkStyles = getLinkStyles();
+    const hoverColor = linkStyles['--hover-color'] || themeWithDefaults.hover_links;
 
     // Clases para hover usando colores del tema
     const hoverClasses = isPreview ? '' : 'hover:opacity-80';
-    const hoverColor = themeWithDefaults.hover_links;
 
     return (
         <a
             href={linkContent.url}
             target="_blank"
             rel="noopener noreferrer"
-            style={getLinkStyles()}
+            style={linkStyles}
             onDoubleClick={isPreview ? undefined : () => onEdit(comp)}
             className={`${hoverClasses} transition-colors`}
             onMouseEnter={(e) => {
@@ -136,7 +152,7 @@ const LinkComponent = ({
             }}
             onMouseLeave={(e) => {
                 if (!isPreview) {
-                    e.target.style.color = getLinkStyles().color;
+                    e.target.style.color = linkStyles.color;
                 }
             }}
         >

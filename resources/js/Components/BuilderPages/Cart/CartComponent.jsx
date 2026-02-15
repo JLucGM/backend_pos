@@ -1,10 +1,10 @@
-// CartComponent.jsx - VERSIÓN COMPLETA CORREGIDA
+// CartComponent.jsx - VERSIÓN COMPLETA CORREGIDA CON SOPORTE PARA REFERENCIAS AL TEMA
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import CartItemsComponent from './CartItemsComponent';
 import CartSummaryComponent from './CartSummaryComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import cartHelper from '@/Helper/cartHelper';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const CartComponent = ({
     comp,
@@ -22,11 +22,30 @@ const CartComponent = ({
     mode = 'builder',
     automaticDiscounts = []
 }) => {
-    const customStyles = comp.styles || {};
-    const cartConfig = comp.content || {};
-    const children = cartConfig.children || [];
+    const rawStyles = comp.styles || {};
+    const rawContent = comp.content || {};
+    const children = rawContent.children || [];
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart', appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados
+    const customStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        customStyles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver contenido (cartConfig)
+    const cartConfig = {};
+    Object.keys(rawContent).forEach(key => {
+        cartConfig[key] = resolveValue(rawContent[key]);
+    });
 
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
@@ -47,7 +66,7 @@ const CartComponent = ({
     const isMounted = useRef(false);
     const isLoadingRef = useRef(false);
 
-    // Obtener estilos del layout con valores del tema
+    // Obtener estilos del layout con valores resueltos y del tema
     const layoutType = customStyles.layoutType || 'grid';
     const paddingTop = customStyles.paddingTop || '20px';
     const paddingRight = customStyles.paddingRight || '20px';
@@ -71,7 +90,7 @@ const CartComponent = ({
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
-        borderRadius: themeCartStyles.borderRadius,
+        // borderRadius: themeCartStyles.borderRadius,
     };
 
     // Detectar móvil solo en frontend
@@ -271,7 +290,7 @@ const CartComponent = ({
         return () => {
             isMounted.current = false;
         };
-    }, [mode, companyId, isPreview]);
+    }, [mode, companyId, isPreview, loadCartData]);
 
     // Manejar cambios en el carrito real
     useEffect(() => {

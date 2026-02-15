@@ -1,5 +1,5 @@
 import React from 'react';
-import { getThemeWithDefaults, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getTextStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const BentoFeatureTitleComponent = ({
     comp,
@@ -12,10 +12,24 @@ const BentoFeatureTitleComponent = ({
     hoveredComponentId,
     setHoveredComponentId
 }) => {
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver estilos personalizados del componente
+    const rawStyles = comp.styles || {};
+    const customStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        customStyles[key] = resolveValue(rawStyles[key]);
+    });
+
     const getComponentStyles = () => {
         const baseStyles = getStyles(comp);
-        const customStyles = comp.styles || {};
-        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
         // Determinar el estilo de texto seleccionado
         const textStyle = customStyles.textStyle || 'heading4'; // Por defecto heading4 para títulos de características
@@ -27,9 +41,9 @@ const BentoFeatureTitleComponent = ({
             // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
-                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`);
+                    return getResolvedFont(themeWithDefaults, `${textStyle}_font`, appliedTheme);
                 } else {
-                    return getResolvedFont(themeWithDefaults, 'paragraph_font');
+                    return getResolvedFont(themeWithDefaults, 'paragraph_font', appliedTheme);
                 }
             }
 
@@ -37,7 +51,7 @@ const BentoFeatureTitleComponent = ({
                 return customStyles.customFont;
             }
 
-            return getResolvedFont(themeWithDefaults, fontType);
+            return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
         };
 
         // Obtener configuración según el estilo seleccionado usando utilidades del tema
@@ -51,7 +65,7 @@ const BentoFeatureTitleComponent = ({
             color = customStyles.color || themeWithDefaults.heading;
         } else {
             // Usar utilidades del tema para obtener estilos consistentes
-            const themeTextStyles = getTextStyles(themeWithDefaults, textStyle);
+            const themeTextStyles = getTextStyles(themeWithDefaults, textStyle, appliedTheme);
             fontSize = customStyles.fontSize || themeTextStyles.fontSize;
             fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
             lineHeight = customStyles.lineHeight || themeTextStyles.lineHeight;
@@ -79,25 +93,29 @@ const BentoFeatureTitleComponent = ({
         // Helper para añadir unidad (px) si es solo número
         const withUnit = (value, unit = 'px') => {
             if (value === undefined || value === null || value === '') return undefined;
-            // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
             if (typeof value === 'string' && isNaN(Number(value))) return value;
             return `${value}${unit}`;
         };
+
+        // Resolver colores y fondos
+        const finalColor = resolveValue(color);
+        const backgroundColor = resolveValue(customStyles.backgroundColor || 'transparent');
+        const borderRadius = resolveValue(customStyles.borderRadius) || '0px';
 
         return {
             ...baseStyles,
             width,
             textAlign,
             margin: '0 0 12px 0',
-            backgroundColor: customStyles.backgroundColor || 'transparent',
-            borderRadius: withUnit(customStyles.borderRadius) || '0px',
+            backgroundColor,
+            borderRadius: withUnit(borderRadius),
             display: layout === 'fit' ? 'inline-block' : 'block',
             fontFamily: getFontFamily(),
             fontSize: withUnit(fontSize, fontSizeUnit),
             fontWeight,
             lineHeight: finalLineHeight,
             textTransform,
-            color,
+            color: finalColor,
         };
     };
 

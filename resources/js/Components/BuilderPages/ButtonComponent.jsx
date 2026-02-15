@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
-import { getButtonStyles, getThemeWithDefaults } from '@/utils/themeUtils';
+import { getButtonStyles, getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
 const ButtonComponent = ({
     comp: originalComp,
@@ -38,10 +38,30 @@ const ButtonComponent = ({
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     // ===========================================
-    // 2. DETERMINAR SI ES UNA URL
+    // 2. FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // ===========================================
+    // 3. RESOLVER TODAS LAS PROPIEDADES DEL COMPONENTE
+    // ===========================================
+    // Resolver styles
+    const rawStyles = comp.styles || {};
+    const resolvedStyles = {};
+    Object.keys(rawStyles).forEach(key => {
+        resolvedStyles[key] = resolveValue(rawStyles[key]);
+    });
+
+    // Resolver content (puede ser string, objeto, etc.)
+    const resolvedContent = resolveValue(comp.content);
+
+    // ===========================================
+    // 4. DETERMINAR SI ES UNA URL
     // ===========================================
     const isUrl = React.useMemo(() => {
-        const url = comp.styles?.buttonUrl || comp.content;
+        const url = resolvedStyles.buttonUrl || resolvedContent;
         if (!url) return false;
 
         const urlString = String(url);
@@ -51,26 +71,25 @@ const ButtonComponent = ({
         }
 
         return false;
-    }, [comp.styles?.buttonUrl, comp.content]);
+    }, [resolvedStyles.buttonUrl, resolvedContent]);
 
     // ===========================================
-    // 3. OBTENER Y PROCESAR URL
+    // 5. OBTENER Y PROCESAR URL
     // ===========================================
     const getButtonUrl = () => {
         // Prioridad 1: URL específica en estilos
-        const urlFromStyles = comp.styles?.buttonUrl;
+        const urlFromStyles = resolvedStyles.buttonUrl;
         if (urlFromStyles) {
             return urlFromStyles;
         }
 
         // Prioridad 2: Contenido (para compatibilidad con versiones anteriores)
-        const content = comp.content;
-        if (!content) return '';
+        if (!resolvedContent) return '';
 
-        if (typeof content === 'string') {
+        if (typeof resolvedContent === 'string') {
             // Si parece una URL, usarla
-            if (content.startsWith('/') || content.startsWith('http')) {
-                return content;
+            if (resolvedContent.startsWith('/') || resolvedContent.startsWith('http')) {
+                return resolvedContent;
             }
         }
 
@@ -95,11 +114,12 @@ const ButtonComponent = ({
     const processedUrl = processUrl(buttonUrl);
 
     // ===========================================
-    // 4. OBTENER ESTILOS DEL BOTÓN
+    // 6. OBTENER ESTILOS DEL BOTÓN
     // ===========================================
     const getButtonStylesCustom = () => {
         const baseStyles = getStyles ? getStyles(comp) : {};
-        const customStyles = comp.styles || {};
+
+        // Usamos resolvedStyles en lugar de raw customStyles
 
         // Estilos base
         let styles = {
@@ -114,7 +134,7 @@ const ButtonComponent = ({
         };
 
         // Determinar tipo de botón
-        const buttonType = customStyles.buttonType || 'primary';
+        const buttonType = resolvedStyles.buttonType || 'primary';
 
         // Helper para añadir unidad (px) si es solo número
         const withUnit = (value, unit = 'px') => {
@@ -126,113 +146,113 @@ const ButtonComponent = ({
 
         // ===== ESTILOS PARA TIPO "custom" =====
         if (buttonType === 'custom') {
-            const fontSize = customStyles.fontSize || '16px';
-            const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+            const fontSize = resolvedStyles.fontSize || '16px';
+            const fontSizeUnit = resolvedStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
 
             styles = {
                 ...styles,
-                backgroundColor: customStyles.backgroundColor || themeWithDefaults.primary_button_background,
-                color: customStyles.color || themeWithDefaults.primary_button_text,
-                borderColor: customStyles.borderColor || customStyles.backgroundColor || themeWithDefaults.primary_button_border,
-                borderWidth: withUnit(customStyles.borderWidth) || themeWithDefaults.primary_button_border_thickness,
-                borderStyle: customStyles.borderStyle || 'solid',
-                borderRadius: withUnit(customStyles.borderRadius) || themeWithDefaults.primary_button_corner_radius,
-                paddingTop: withUnit(customStyles.paddingTop) || '10px',
-                paddingRight: withUnit(customStyles.paddingRight) || '10px',
-                paddingBottom: withUnit(customStyles.paddingBottom) || '10px',
-                paddingLeft: withUnit(customStyles.paddingLeft) || '10px',
+                backgroundColor: resolvedStyles.backgroundColor || themeWithDefaults.primary_button_background,
+                color: resolvedStyles.color || themeWithDefaults.primary_button_text,
+                borderColor: resolvedStyles.borderColor || resolvedStyles.backgroundColor || themeWithDefaults.primary_button_border,
+                borderWidth: withUnit(resolvedStyles.borderWidth) || themeWithDefaults.primary_button_border_thickness,
+                borderStyle: resolvedStyles.borderStyle || 'solid',
+                borderRadius: withUnit(resolvedStyles.borderRadius) || themeWithDefaults.primary_button_corner_radius,
+                paddingTop: withUnit(resolvedStyles.paddingTop) || '10px',
+                paddingRight: withUnit(resolvedStyles.paddingRight) || '10px',
+                paddingBottom: withUnit(resolvedStyles.paddingBottom) || '10px',
+                paddingLeft: withUnit(resolvedStyles.paddingLeft) || '10px',
                 fontSize: withUnit(fontSize, fontSizeUnit),
-                textTransform: customStyles.textTransform || themeWithDefaults.primary_button_text_case === 'default' ? 'none' : themeWithDefaults.primary_button_text_case,
-                fontWeight: customStyles.fontWeight || 'normal',
+                textTransform: resolvedStyles.textTransform || themeWithDefaults.primary_button_text_case === 'default' ? 'none' : themeWithDefaults.primary_button_text_case,
+                fontWeight: resolvedStyles.fontWeight || 'normal',
             };
         }
         // ===== ESTILOS PARA TIPO "primary" =====
         else if (buttonType === 'primary') {
             // Usar utilidades del tema
             const themeButtonStyles = getButtonStyles(themeWithDefaults, 'primary', appliedTheme);
-            const fontSize = customStyles.fontSize || themeButtonStyles.fontSize || '16px';
-            const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+            const fontSize = resolvedStyles.fontSize || themeButtonStyles.fontSize || '16px';
+            const fontSizeUnit = resolvedStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
 
             styles = {
                 ...styles,
-                backgroundColor: themeButtonStyles.backgroundColor || customStyles.backgroundColor,
-                color: themeButtonStyles.color || customStyles.color,
+                backgroundColor: themeButtonStyles.backgroundColor || resolvedStyles.backgroundColor,
+                color: themeButtonStyles.color || resolvedStyles.color,
                 borderColor: themeButtonStyles.borderColor || themeButtonStyles.backgroundColor,
-                borderWidth: withUnit(themeButtonStyles.borderWidth || customStyles.borderWidth),
+                borderWidth: withUnit(themeButtonStyles.borderWidth || resolvedStyles.borderWidth),
                 borderStyle: 'solid',
-                borderRadius: withUnit(themeButtonStyles.borderRadius || customStyles.borderRadius),
+                borderRadius: withUnit(themeButtonStyles.borderRadius || resolvedStyles.borderRadius),
                 fontSize: withUnit(fontSize, fontSizeUnit),
-                textTransform: themeButtonStyles.textTransform || customStyles.textTransform,
-                fontWeight: customStyles.fontWeight || 'normal',
-                paddingTop: withUnit(customStyles.paddingTop || themeButtonStyles.paddingTop || '10px'),
-                paddingRight: withUnit(customStyles.paddingRight || themeButtonStyles.paddingRight || '20px'),
-                paddingBottom: withUnit(customStyles.paddingBottom || themeButtonStyles.paddingBottom || '10px'),
-                paddingLeft: withUnit(customStyles.paddingLeft || themeButtonStyles.paddingLeft || '20px'),
+                textTransform: themeButtonStyles.textTransform || resolvedStyles.textTransform,
+                fontWeight: resolvedStyles.fontWeight || 'normal',
+                paddingTop: withUnit(resolvedStyles.paddingTop || themeButtonStyles.paddingTop || '10px'),
+                paddingRight: withUnit(resolvedStyles.paddingRight || themeButtonStyles.paddingRight || '20px'),
+                paddingBottom: withUnit(resolvedStyles.paddingBottom || themeButtonStyles.paddingBottom || '10px'),
+                paddingLeft: withUnit(resolvedStyles.paddingLeft || themeButtonStyles.paddingLeft || '20px'),
             };
         }
         // ===== ESTILOS PARA TIPO "secondary" =====
         else if (buttonType === 'secondary') {
             // Usar utilidades del tema
             const themeButtonStyles = getButtonStyles(themeWithDefaults, 'secondary', appliedTheme);
-            const fontSize = customStyles.fontSize || themeButtonStyles.fontSize || '16px';
-            const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+            const fontSize = resolvedStyles.fontSize || themeButtonStyles.fontSize || '16px';
+            const fontSizeUnit = resolvedStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
 
             styles = {
                 ...styles,
-                backgroundColor: themeButtonStyles.backgroundColor || customStyles.backgroundColor,
-                color: themeButtonStyles.color || customStyles.color,
+                backgroundColor: themeButtonStyles.backgroundColor || resolvedStyles.backgroundColor,
+                color: themeButtonStyles.color || resolvedStyles.color,
                 borderColor: themeButtonStyles.borderColor || themeButtonStyles.backgroundColor,
-                borderWidth: withUnit(themeButtonStyles.borderWidth || customStyles.borderWidth),
+                borderWidth: withUnit(themeButtonStyles.borderWidth || resolvedStyles.borderWidth),
                 borderStyle: 'solid',
-                borderRadius: withUnit(themeButtonStyles.borderRadius || customStyles.borderRadius),
+                borderRadius: withUnit(themeButtonStyles.borderRadius || resolvedStyles.borderRadius),
                 fontSize: withUnit(fontSize, fontSizeUnit),
-                textTransform: themeButtonStyles.textTransform || customStyles.textTransform,
-                fontWeight: customStyles.fontWeight || 'normal',
-                paddingTop: withUnit(customStyles.paddingTop || themeButtonStyles.paddingTop || '10px'),
-                paddingRight: withUnit(customStyles.paddingRight || themeButtonStyles.paddingRight || '20px'),
-                paddingBottom: withUnit(customStyles.paddingBottom || themeButtonStyles.paddingBottom || '10px'),
-                paddingLeft: withUnit(customStyles.paddingLeft || themeButtonStyles.paddingLeft || '20px'),
+                textTransform: themeButtonStyles.textTransform || resolvedStyles.textTransform,
+                fontWeight: resolvedStyles.fontWeight || 'normal',
+                paddingTop: withUnit(resolvedStyles.paddingTop || themeButtonStyles.paddingTop || '10px'),
+                paddingRight: withUnit(resolvedStyles.paddingRight || themeButtonStyles.paddingRight || '20px'),
+                paddingBottom: withUnit(resolvedStyles.paddingBottom || themeButtonStyles.paddingBottom || '10px'),
+                paddingLeft: withUnit(resolvedStyles.paddingLeft || themeButtonStyles.paddingLeft || '20px'),
             };
         }
         // ===== ESTILOS POR DEFECTO (si no hay tipo especificado) =====
         else {
-            const fontSize = customStyles.fontSize || '16px';
-            const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
+            const fontSize = resolvedStyles.fontSize || '16px';
+            const fontSizeUnit = resolvedStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
 
             styles = {
                 ...styles,
-                backgroundColor: customStyles.backgroundColor || themeWithDefaults.primary_button_background,
-                color: customStyles.color || themeWithDefaults.primary_button_text,
-                border: customStyles.borderWidth
-                    ? `${withUnit(customStyles.borderWidth)} solid ${customStyles.borderColor || themeWithDefaults.primary_button_border}`
+                backgroundColor: resolvedStyles.backgroundColor || themeWithDefaults.primary_button_background,
+                color: resolvedStyles.color || themeWithDefaults.primary_button_text,
+                border: resolvedStyles.borderWidth
+                    ? `${withUnit(resolvedStyles.borderWidth)} solid ${resolvedStyles.borderColor || themeWithDefaults.primary_button_border}`
                     : `${withUnit(themeWithDefaults.primary_button_border_thickness)} solid ${themeWithDefaults.primary_button_border}`,
-                borderRadius: withUnit(customStyles.borderRadius) || themeWithDefaults.primary_button_corner_radius,
+                borderRadius: withUnit(resolvedStyles.borderRadius) || themeWithDefaults.primary_button_corner_radius,
                 fontSize: withUnit(fontSize, fontSizeUnit),
-                fontWeight: customStyles.fontWeight || 'normal',
-                paddingTop: withUnit(customStyles.paddingTop || '10px'),
-                paddingRight: withUnit(customStyles.paddingRight || '20px'),
-                paddingBottom: withUnit(customStyles.paddingBottom || '10px'),
-                paddingLeft: withUnit(customStyles.paddingLeft || '20px'),
+                fontWeight: resolvedStyles.fontWeight || 'normal',
+                paddingTop: withUnit(resolvedStyles.paddingTop || '10px'),
+                paddingRight: withUnit(resolvedStyles.paddingRight || '20px'),
+                paddingBottom: withUnit(resolvedStyles.paddingBottom || '10px'),
+                paddingLeft: withUnit(resolvedStyles.paddingLeft || '20px'),
             };
         }
 
         // Ajustar ancho según layout
-        const layout = customStyles.layout || 'fit';
+        const layout = resolvedStyles.layout || 'fit';
         if (layout === 'fill') {
             styles.width = '100%';
             // Para botones de ancho completo, el texto se alinea según textAlign
-            styles.textAlign = customStyles.textAlign || 'center';
+            styles.textAlign = resolvedStyles.textAlign || 'center';
         }
 
         // Aplicar estilos de hover
         if (isHovered) {
-            if (buttonType === 'custom' && customStyles.hoverBackgroundColor) {
-                styles.backgroundColor = customStyles.hoverBackgroundColor;
-                styles.borderColor = customStyles.hoverBorderColor || customStyles.hoverBackgroundColor;
-                styles.color = customStyles.hoverColor || styles.color;
+            if (buttonType === 'custom' && resolvedStyles.hoverBackgroundColor) {
+                styles.backgroundColor = resolvedStyles.hoverBackgroundColor;
+                styles.borderColor = resolvedStyles.hoverBorderColor || resolvedStyles.hoverBackgroundColor;
+                styles.color = resolvedStyles.hoverColor || styles.color;
             } else if (buttonType === 'primary') {
                 const themeButtonStyles = getButtonStyles(themeWithDefaults, 'primary', appliedTheme);
-                const hoverBg = themeButtonStyles['--hover-bg'] || customStyles.hoverBackgroundColor;
+                const hoverBg = themeButtonStyles['--hover-bg'] || resolvedStyles.hoverBackgroundColor;
                 const hoverBorder = themeButtonStyles['--hover-border'] || hoverBg;
                 const hoverColor = themeButtonStyles['--hover-color'] || styles.color;
 
@@ -241,7 +261,7 @@ const ButtonComponent = ({
                 styles.color = hoverColor;
             } else if (buttonType === 'secondary') {
                 const themeButtonStyles = getButtonStyles(themeWithDefaults, 'secondary', appliedTheme);
-                const hoverBg = themeButtonStyles['--hover-bg'] || customStyles.hoverBackgroundColor;
+                const hoverBg = themeButtonStyles['--hover-bg'] || resolvedStyles.hoverBackgroundColor;
                 const hoverBorder = themeButtonStyles['--hover-border'] || hoverBg;
                 const hoverColor = themeButtonStyles['--hover-color'] || styles.color;
 
@@ -260,7 +280,7 @@ const ButtonComponent = ({
     };
 
     // ===========================================
-    // 5. MANEJAR CLIC
+    // 7. MANEJAR CLIC
     // ===========================================
     const handleClick = (e) => {
 
@@ -300,43 +320,41 @@ const ButtonComponent = ({
     };
 
     // ===========================================
-    // 6. OBTENER TEXTO DEL BOTÓN
+    // 8. OBTENER TEXTO DEL BOTÓN
     // ===========================================
     const getButtonText = () => {
         // Prioridad 1: Texto específico para botón en estilos
-        if (comp.styles?.buttonText && comp.styles.buttonText.trim() !== '') {
-            return String(comp.styles.buttonText);
+        if (resolvedStyles.buttonText && resolvedStyles.buttonText.trim() !== '') {
+            return String(resolvedStyles.buttonText);
         }
 
-        // Prioridad 2: Contenido directo del componente
-        const content = comp.content;
-
+        // Prioridad 2: Contenido directo del componente (ya resuelto)
         // Si es una URL, devolver texto descriptivo según tipo
-        if (isUrl && typeof content === 'string') {
-            if (content.includes('detalles-del-producto')) {
+        if (isUrl && typeof resolvedContent === 'string') {
+            if (resolvedContent.includes('detalles-del-producto')) {
                 return 'Ver Producto';
-            } else if (content.startsWith('/')) {
+            } else if (resolvedContent.startsWith('/')) {
                 return 'Ir a Página';
-            } else if (content.startsWith('http')) {
+            } else if (resolvedContent.startsWith('http')) {
                 return 'Visitar Enlace';
             }
         }
 
         // Si el contenido existe y no es una URL, usarlo
-        if (content && typeof content === 'string' && content.trim() !== '') {
+        if (resolvedContent && typeof resolvedContent === 'string' && resolvedContent.trim() !== '') {
             // Verificar que no sea una URL
-            if (!content.startsWith('/') && !content.startsWith('http')) {
-                return content;
+            if (!resolvedContent.startsWith('/') && !resolvedContent.startsWith('http')) {
+                return resolvedContent;
             }
         }
 
-        // Si es un objeto con texto
-        if (content && typeof content === 'object') {
-            if (content.text && String(content.text).trim() !== '') {
-                return String(content.text);
+        // Si es un objeto con texto (pero ya resolvimos content, así que no debería pasar)
+        if (resolvedContent && typeof resolvedContent === 'object') {
+            if (resolvedContent.text && String(resolvedContent.text).trim() !== '') {
+                return String(resolvedContent.text);
             }
-            if (content.content && String(content.content).trim() !== '') {
-                return String(content.content);
+            if (resolvedContent.content && String(resolvedContent.content).trim() !== '') {
+                return String(resolvedContent.content);
             }
         }
 
@@ -345,20 +363,17 @@ const ButtonComponent = ({
     };
 
     // ===========================================
-    // 7. OBTENER ESTILOS Y TEXTO
+    // 9. OBTENER ESTILOS Y TEXTO
     // ===========================================
     const buttonStyles = getButtonStylesCustom();
     const buttonText = getButtonText();
-    const customStyles = comp.styles || {};
-    const layout = customStyles.layout || 'fit';
-    const align = customStyles.align || 'start';
+    const layout = resolvedStyles.layout || 'fit';
+    const align = resolvedStyles.align || 'start';
 
     // ===========================================
-    // 8. FUNCIÓN PARA CREAR EL ELEMENTO DEL BOTÓN
+    // 10. FUNCIÓN PARA CREAR EL ELEMENTO DEL BOTÓN
     // ===========================================
     const createButtonElement = () => {
-        const buttonTextValue = getButtonText();
-
         // Para modo BUILDER sin preview
         if (mode === 'builder' && !isPreview) {
             // Siempre usar un <button> en modo builder para mantener consistencia
@@ -371,7 +386,7 @@ const ButtonComponent = ({
                     className="button-builder"
                     type="button"
                 >
-                    {buttonTextValue}
+                    {buttonText}
                 </button>
             );
         }
@@ -389,7 +404,7 @@ const ButtonComponent = ({
                         onMouseLeave={() => setIsHovered(false)}
                         className="button-link-inertia"
                     >
-                        {buttonTextValue}
+                        {buttonText}
                     </Link>
                 );
             }
@@ -406,7 +421,7 @@ const ButtonComponent = ({
                         rel="noopener noreferrer"
                         className="button-link-external"
                     >
-                        {buttonTextValue}
+                        {buttonText}
                     </a>
                 );
             }
@@ -422,13 +437,13 @@ const ButtonComponent = ({
                 className="button-normal"
                 type="button"
             >
-                {buttonTextValue}
+                {buttonText}
             </button>
         );
     };
 
     // ===========================================
-    // 9. LÓGICA DE RENDERIZADO CON POSICIÓN
+    // 11. LÓGICA DE RENDERIZADO CON POSICIÓN
     // ===========================================
     const buttonElement = createButtonElement();
 

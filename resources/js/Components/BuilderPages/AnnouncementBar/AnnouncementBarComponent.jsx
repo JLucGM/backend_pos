@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ComponentWithHover from '../ComponentWithHover';
 import AnnouncementComponent from './AnnouncementComponent';
-import { getThemeWithDefaults, getComponentStyles } from '@/utils/themeUtils';
+import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
 
 const AnnouncementBarComponent = ({
     comp,
@@ -24,13 +24,32 @@ const AnnouncementBarComponent = ({
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeAnnouncementStyles = getComponentStyles(themeWithDefaults, 'announcement-bar');
 
+    // ===========================================
+    // FUNCIÓN PARA RESOLVER REFERENCIAS
+    // ===========================================
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
+
+    // Resolver todas las propiedades de customStyles
+    const resolvedCustomStyles = {};
+    Object.keys(customStyles).forEach(key => {
+        resolvedCustomStyles[key] = resolveValue(customStyles[key]);
+    });
+
+    // Resolver propiedades de announcementConfig (si las hay)
+    const resolvedConfig = {};
+    Object.keys(announcementConfig).forEach(key => {
+        resolvedConfig[key] = resolveValue(announcementConfig[key]);
+    });
+
     // Estados para el carrusel
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(true);
     const intervalRef = useRef(null);
 
-    // Configuración del carrusel
-    const autoplayTime = (announcementConfig.autoplayTime || 5) * 1000; // Convertir a milisegundos
+    // Configuración del carrusel (usar valores resueltos)
+    const autoplayTime = (resolvedConfig.autoplayTime || 5) * 1000; // Convertir a milisegundos
     const showArrows = children.length > 1;
     const isCarouselMode = children.length > 0; // Siempre mostrar como carrusel si hay anuncios
 
@@ -88,14 +107,14 @@ const AnnouncementBarComponent = ({
         return `${value}${unit}`;
     };
 
-    // Estilos del contenedor principal con valores del tema
+    // Estilos del contenedor principal con valores del tema (usar resolvedCustomStyles)
     const containerStyles = {
         ...getStyles(comp),
-        backgroundColor: customStyles.backgroundColor || themeAnnouncementStyles.backgroundColor,
-        paddingTop: withUnit(customStyles.paddingTop) || themeAnnouncementStyles.paddingTop,
-        paddingBottom: withUnit(customStyles.paddingBottom) || themeAnnouncementStyles.paddingBottom,
-        paddingLeft: withUnit(customStyles.paddingLeft || '20px'),
-        paddingRight: withUnit(customStyles.paddingRight || '20px'),
+        backgroundColor: resolvedCustomStyles.backgroundColor || themeAnnouncementStyles.backgroundColor,
+        paddingTop: withUnit(resolvedCustomStyles.paddingTop) || themeAnnouncementStyles.paddingTop,
+        paddingBottom: withUnit(resolvedCustomStyles.paddingBottom) || themeAnnouncementStyles.paddingBottom,
+        paddingLeft: withUnit(resolvedCustomStyles.paddingLeft || '20px'),
+        paddingRight: withUnit(resolvedCustomStyles.paddingRight || '20px'),
         position: 'relative',
         overflow: 'hidden',
         minHeight: '50px',
@@ -115,22 +134,22 @@ const AnnouncementBarComponent = ({
         position: 'relative',
     };
 
-    // Estilos de las flechas - personalizables
+    // Estilos de las flechas - personalizables (usar resolvedCustomStyles)
     const arrowStyles = {
         position: 'absolute',
         top: '50%',
         transform: 'translateY(-50%)',
-        backgroundColor: customStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)',
-        opacity: customStyles.arrowOpacity || 1,
-        border: `${withUnit(customStyles.arrowBorderWidth) || '0px'} solid ${customStyles.arrowBorderColor || 'transparent'}`,
-        borderRadius: withUnit(customStyles.arrowBorderRadius) || '50%',
-        width: withUnit(customStyles.arrowSize) || '32px',
-        height: withUnit(customStyles.arrowSize) || '32px',
+        backgroundColor: resolvedCustomStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)',
+        opacity: resolvedCustomStyles.arrowOpacity || 1,
+        border: `${withUnit(resolvedCustomStyles.arrowBorderWidth) || '0px'} solid ${resolvedCustomStyles.arrowBorderColor || 'transparent'}`,
+        borderRadius: withUnit(resolvedCustomStyles.arrowBorderRadius) || '50%',
+        width: withUnit(resolvedCustomStyles.arrowSize) || '32px',
+        height: withUnit(resolvedCustomStyles.arrowSize) || '32px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
-        color: customStyles.arrowIconColor || '#ffffff',
+        color: resolvedCustomStyles.arrowIconColor || '#ffffff',
         zIndex: 10,
         transition: 'all 0.2s ease',
     };
@@ -156,6 +175,7 @@ const AnnouncementBarComponent = ({
             hoveredComponentId,
             setHoveredComponentId,
             themeSettings,
+            appliedTheme, // Pasamos appliedTheme para que los hijos también resuelvan
             mode
         };
 
@@ -184,7 +204,7 @@ const AnnouncementBarComponent = ({
         return (
             <div style={containerStyles}>
                 <div style={{
-                    color: customStyles.backgroundColor === themeAnnouncementStyles.backgroundColor ? themeAnnouncementStyles.color : '#666666',
+                    color: resolvedCustomStyles.backgroundColor === themeAnnouncementStyles.backgroundColor ? themeAnnouncementStyles.color : '#666666',
                     textAlign: 'center',
                     opacity: 0.7,
                     fontSize: '14px'
@@ -213,19 +233,19 @@ const AnnouncementBarComponent = ({
                         style={leftArrowStyles}
                         onClick={goToPrevious}
                         onMouseEnter={(e) => {
-                            if (customStyles.arrowHoverBackgroundColor) {
-                                e.target.style.backgroundColor = customStyles.arrowHoverBackgroundColor;
+                            if (resolvedCustomStyles.arrowHoverBackgroundColor) {
+                                e.target.style.backgroundColor = resolvedCustomStyles.arrowHoverBackgroundColor;
                             } else {
                                 // Efecto hover por defecto: aumentar opacidad
-                                const currentBg = customStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)';
+                                const currentBg = resolvedCustomStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)';
                                 e.target.style.backgroundColor = currentBg.replace(/[\d.]+\)$/, '0.4)');
                             }
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = customStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)';
+                            e.target.style.backgroundColor = resolvedCustomStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)';
                         }}
                     >
-                        <ChevronLeft size={parseInt(customStyles.arrowIconSize) || 16} />
+                        <ChevronLeft size={parseInt(resolvedCustomStyles.arrowIconSize) || 16} />
                     </button>
                 )}
 
@@ -241,19 +261,19 @@ const AnnouncementBarComponent = ({
                         style={rightArrowStyles}
                         onClick={goToNext}
                         onMouseEnter={(e) => {
-                            if (customStyles.arrowHoverBackgroundColor) {
-                                e.target.style.backgroundColor = customStyles.arrowHoverBackgroundColor;
+                            if (resolvedCustomStyles.arrowHoverBackgroundColor) {
+                                e.target.style.backgroundColor = resolvedCustomStyles.arrowHoverBackgroundColor;
                             } else {
                                 // Efecto hover por defecto: aumentar opacidad
-                                const currentBg = customStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)';
+                                const currentBg = resolvedCustomStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)';
                                 e.target.style.backgroundColor = currentBg.replace(/[\d.]+\)$/, '0.4)');
                             }
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = customStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)';
+                            e.target.style.backgroundColor = resolvedCustomStyles.arrowBackgroundColor || 'rgba(255, 255, 255, 0.2)';
                         }}
                     >
-                        <ChevronRight size={parseInt(customStyles.arrowIconSize) || 16} />
+                        <ChevronRight size={parseInt(resolvedCustomStyles.arrowIconSize) || 16} />
                     </button>
                 )}
             </div>
