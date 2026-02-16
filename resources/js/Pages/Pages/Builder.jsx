@@ -83,6 +83,8 @@ import AddComponentDropdown from '@/Components/BuilderPages/AddComponentDropdown
 import { customStyles } from '@/hooks/custom-select';
 import { useSelectOptions } from '@/hooks/useSelectOptions';
 import LinkBioEditDialog from './partials/LinkBio/LinkBioEditDialog';
+import ImageCarouselEditDialog from './partials/ImageCarouselEditDialog';
+import ImageCarouselAccordionEditDialog from './partials/ImageCarouselAccordionEditDialog';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -148,6 +150,8 @@ const componentDialogMap = {
     announcementBar: AnnouncementBarEditDialog,
     announcement: AnnouncementEditDialog,
     linkBio: LinkBioEditDialog,
+        imageCarousel: ImageCarouselEditDialog,
+            imageCarouselAccordion: ImageCarouselAccordionEditDialog,
 };
 
 // Componente para renderizar el diálogo apropiado
@@ -543,7 +547,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         setIsAddDialogOpen(false);
         setSelectedType('');
     };
-// console.log('Tema aplicado:', appliedTheme);
+    // console.log('Tema aplicado:', appliedTheme);
     const handleAddComponent = (selectedType) => {
         if (!selectedType) {
             toast.error("Por favor selecciona un tipo de componente");
@@ -2381,6 +2385,64 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 setSelectedType('');
                 return;
             }
+
+            // En Builder.jsx, dentro de handleAddComponent
+            if (selectedType === 'imageCarousel') {
+                const carouselId = Date.now();
+                const images = []; // Array vacío para las imágenes
+
+                const content = {
+                    images: images,
+                    autoplay: false,
+                    autoplaySpeed: 3000,
+                    displayMode: 'card',
+                    aspectRatio: 'square',
+                    slidesToShow: 1,
+                    infinite: true,
+                    showArrows: true,
+                    showDots: true,
+                };
+
+                const newItem = {
+                    id: carouselId,
+                    type: 'imageCarousel',
+                    content,
+                    styles: {
+                        backgroundColor: 'theme.background',
+                        paddingTop: '20px',
+                        paddingRight: '20px',
+                        paddingBottom: '20px',
+                        paddingLeft: '20px',
+                    }
+                };
+
+                addComponentToState(newItem);
+                return;
+            }
+
+            // Dentro de handleAddComponent
+if (selectedType === 'imageCarouselAccordion') {
+    const carouselId = Date.now();
+    const content = {
+        images: [], // sin imágenes por defecto
+        titleColor: '#ffffff',
+        subtitleColor: '#e5e7eb',
+    };
+    const newItem = {
+        id: carouselId,
+        type: 'imageCarouselAccordion',
+        content,
+        styles: {
+            backgroundColor: 'theme.background',
+            paddingTop: '20px',
+            paddingRight: '20px',
+            paddingBottom: '20px',
+            paddingLeft: '20px',
+        },
+    };
+    addComponentToState(newItem);
+    return;
+}
 
             const newItem = {
                 id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),

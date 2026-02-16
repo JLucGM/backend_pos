@@ -10,7 +10,7 @@ import {
 } from "@/Components/ui/dropdown-menu";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-import { Search, Type, Image, Layout, PanelTop, PanelBottom, DivideIcon, Megaphone, Package, Grid, ShoppingCart, CreditCard, User, Users, CheckCircle, FileText, Link as LinkIcon, Video, TrendingUp, Grid3x3, Layers, Bell, PlusCircle } from 'lucide-react';
+import { Search, Type, Image, Layout, PanelTop, PanelBottom, DivideIcon, Megaphone, Package, Grid, ShoppingCart, CreditCard, User, Users, CheckCircle, FileText, Link as LinkIcon, Video, TrendingUp, Grid3x3, Layers, Bell, PlusCircle, ImageIcon } from 'lucide-react';
 import { ScrollArea } from "@/Components/ui/scroll-area";
 
 // Definir todos los componentes organizados por categorías
@@ -213,6 +213,20 @@ const ALL_COMPONENTS = [
     icon: <LinkIcon className="h-4 w-4" />,
     description: 'Página de enlaces tipo "link in bio"'
   },
+  {
+    type: 'imageCarousel',
+    label: 'Carrusel de Imágenes',
+    category: 'content',
+    icon: <ImageIcon className="h-4 w-4" />,
+    description: 'Carrusel con imágenes, título y texto'
+},
+{
+    type: 'imageCarouselAccordion',
+    label: 'Carrusel Acordeón',
+    category: 'content',
+    icon: <ImageIcon className="h-4 w-4" />,
+    description: 'Carrusel tipo acordeón con imágenes y textos'
+},
 ];
 
 // Categorías para agrupar

@@ -40,6 +40,8 @@ import AnnouncementBarComponent from '@/Components/BuilderPages/AnnouncementBar/
 import ProductListComponent from '@/Components/BuilderPages/Product/ProductListComponent';
 import LinkBioComponent from '@/Components/BuilderPages/LinkBio/LinkBioComponent';
 import PageContentComponent from '@/Components/BuilderPages/PageContentComponent';
+import ImageCarouselAccordionComponent from '@/Components/BuilderPages/ImageCarouselAccordionComponent';
+import ImageCarouselComponent from '@/Components/BuilderPages/ImageCarouselComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -79,6 +81,8 @@ const componentMap = {
     'announcementBar': AnnouncementBarComponent,
     'linkBio': LinkBioComponent, // ← Agregado LinkBioComponent
     'pageContent': PageContentComponent,
+    'imageCarousel': ImageCarouselComponent,
+    'imageCarouselAccordion': ImageCarouselAccordionComponent,
 };
 
 // ==============================================================
@@ -298,7 +302,7 @@ export default function Index({
     states = [],
     cities = [],
 }) {
-    console.log(shippingRates);
+    // console.log(shippingRates);
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
     if (typeof page.layout === 'string' && page.layout.trim() !== '') {

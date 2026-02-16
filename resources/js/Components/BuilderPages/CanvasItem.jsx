@@ -57,6 +57,8 @@ import AnnouncementBarComponent from './AnnouncementBar/AnnouncementBarComponent
 import AnnouncementComponent from './AnnouncementBar/AnnouncementComponent';
 import LinkBioComponent from './LinkBio/LinkBioComponent';
 import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
+import ImageCarouselComponent from './ImageCarouselComponent';
+import ImageCarouselAccordionComponent from './ImageCarouselAccordionComponent';
 
 const CanvasItem = ({
     comp,
@@ -949,6 +951,29 @@ const CanvasItem = ({
                         setHoveredComponentId={setHoveredComponentId}
                     />
                 );
+                case 'imageCarousel':
+    return (
+        <ImageCarouselComponent
+            {...commonProps}
+            onEdit={() => onEditComponent(comp)}
+            onDelete={() => onDeleteComponent(comp.id)}
+            setComponents={setComponents}
+            hoveredComponentId={hoveredComponentId}
+            setHoveredComponentId={setHoveredComponentId}
+        />
+    );
+
+    case 'imageCarouselAccordion':
+    return (
+        <ImageCarouselAccordionComponent
+            {...commonProps}
+            onEdit={() => onEditComponent(comp)}
+            onDelete={() => onDeleteComponent(comp.id)}
+            setComponents={setComponents}
+            hoveredComponentId={hoveredComponentId}
+            setHoveredComponentId={setHoveredComponentId}
+        />
+    );
             default:
                 return (
                     <div
