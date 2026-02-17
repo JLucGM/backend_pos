@@ -1,5 +1,5 @@
 // components/BuilderPages/LinkBio/LinkBioEditDialog.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Button } from '@/Components/ui/button';
 import { ImageIcon, Plus, Trash2, X } from 'lucide-react';
 import ImageSelector from '@/Components/BuilderPages/ImageSelector';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const LinkBioEditDialog = ({
     editContent,
@@ -15,6 +17,7 @@ const LinkBioEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true,
     allImages = [],
     page
@@ -23,11 +26,20 @@ const LinkBioEditDialog = ({
     const [localStyles, setLocalStyles] = useState(editStyles || {});
     const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
 
+    const themeWithDefaults = useMemo(
+        () => getThemeWithDefaults(themeSettings, appliedTheme),
+        [themeSettings, appliedTheme]
+    );
+
+    const resolveValue = useCallback(
+        (value) => resolveStyleValue(value, themeWithDefaults, appliedTheme),
+        [themeWithDefaults, appliedTheme]
+    );
+
     // Estados para gradiente - con valores por defecto
     const [gradientColors, setGradientColors] = useState(['#667eea', '#764ba2']);
     const [gradientAngle, setGradientAngle] = useState(45);
 
-    // Ángulos predefinidos
     const angleOptions = [
         { value: 0, label: '0° (derecha)' },
         { value: 45, label: '45°' },
@@ -39,17 +51,14 @@ const LinkBioEditDialog = ({
         { value: 315, label: '315°' }
     ];
 
-    // Inicializar solo una vez cuando cambia el contenido del gradiente
+    // Sincronizar gradiente desde localContent
     useEffect(() => {
         if (localContent.backgroundType === 'gradient' && localContent.gradientColors) {
             try {
-                // Extraer colores del gradiente existente
                 const match = localContent.gradientColors.match(/#[0-9a-fA-F]{6}/g);
                 if (match && match.length >= 2) {
                     setGradientColors(match);
                 }
-
-                // Extraer ángulo del gradiente existente
                 const angleMatch = localContent.gradientColors.match(/(\d+)deg/);
                 if (angleMatch && angleMatch[1]) {
                     setGradientAngle(parseInt(angleMatch[1]));
@@ -60,7 +69,7 @@ const LinkBioEditDialog = ({
         }
     }, [localContent.backgroundType]); // Solo cuando cambia el tipo de fondo
 
-    // Efecto para actualizar el contenido cuando cambian los colores o el ángulo
+    // Actualizar localContent cuando cambian colores o ángulo
     useEffect(() => {
         if (localContent.backgroundType === 'gradient') {
             const validColors = gradientColors.filter(color =>
@@ -71,13 +80,12 @@ const LinkBioEditDialog = ({
                 const colorsString = validColors.join(', ');
                 const gradientString = `linear-gradient(${gradientAngle}deg, ${colorsString})`;
 
-                // Solo actualizar si realmente cambió
                 if (localContent.gradientColors !== gradientString) {
                     updateContent('gradientColors', gradientString);
                 }
             }
         }
-    }, [gradientColors, gradientAngle]); // Solo cuando cambian colores o ángulo
+    }, [gradientColors, gradientAngle]);
 
     // Sincronizar cambios del padre
     useEffect(() => {
@@ -92,57 +100,62 @@ const LinkBioEditDialog = ({
         }
     }, [editStyles]);
 
-    // Sincronizar cambios locales con el padre
+    // Debounce para enviar cambios al padre (evita parpadeos)
+    const timeoutRef = useRef(null);
     useEffect(() => {
         if (isLiveEdit) {
-            setEditContent(localContent);
-            setEditStyles(localStyles);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => {
+                setEditContent(localContent);
+                setEditStyles(localStyles);
+            }, 200);
         }
+        return () => clearTimeout(timeoutRef.current);
     }, [localContent, localStyles, isLiveEdit, setEditContent, setEditStyles]);
 
-    const updateContent = (key, value) => {
+    const updateContent = useCallback((key, value) => {
         setLocalContent(prev => ({ ...prev, [key]: value }));
-    };
+    }, []);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setLocalStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, []);
 
     // Funciones para manejar gradientes
-    const addColor = () => {
+    const addColor = useCallback(() => {
         if (gradientColors.length < 5) {
             setGradientColors([...gradientColors, '#ffffff']);
         }
-    };
+    }, [gradientColors]);
 
-    const removeColor = (index) => {
+    const removeColor = useCallback((index) => {
         if (gradientColors.length > 2) {
             const newColors = [...gradientColors];
             newColors.splice(index, 1);
             setGradientColors(newColors);
         }
-    };
+    }, [gradientColors]);
 
-    const updateColor = (index, value) => {
+    const updateColor = useCallback((index, value) => {
         const newColors = [...gradientColors];
         newColors[index] = value;
         setGradientColors(newColors);
-    };
+    }, [gradientColors]);
 
-    // Funciones para manejar selección de imagen
-    const handleBackgroundImageSelect = (imageData) => {
+    const handleBackgroundImageSelect = useCallback((imageData) => {
         updateContent('backgroundImage', imageData.src);
-        // Opcional: también podríamos guardar metadata como product_id, media_id, etc.
         setIsImageSelectorOpen(false);
-    };
+    }, [updateContent]);
 
-    const handleClearBackgroundImage = () => {
+    const handleClearBackgroundImage = useCallback(() => {
         updateContent('backgroundImage', '');
-    };
+    }, [updateContent]);
+
+    // Valores resueltos para colores sólidos
+    const bgColor = resolveValue(localContent.backgroundColor) || '#ffffff';
 
     return (
         <div className="space-y-4">
-
             <div>
                 <Label htmlFor="maxWidth">Ancho Máximo del Contenido (px)</Label>
                 <Input
@@ -190,21 +203,11 @@ const LinkBioEditDialog = ({
             {localContent.backgroundType === 'color' && (
                 <div>
                     <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="backgroundColor"
-                            value={localContent.backgroundColor || '#ffffff'}
-                            onChange={(e) => updateContent('backgroundColor', e.target.value)}
-                            placeholder="#ffffff"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={localContent.backgroundColor || '#ffffff'}
-                            onChange={(e) => updateContent('backgroundColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={bgColor}
+                        onChange={(hex) => updateContent('backgroundColor', hex)}
+                        showOpacity={false}
+                    />
                 </div>
             )}
 
@@ -252,7 +255,6 @@ const LinkBioEditDialog = ({
                             </div>
                         )}
 
-                        {/* Input de respaldo para URL manual */}
                         <div className="mt-2">
                             <Label htmlFor="backgroundImageUrl" className="text-xs text-gray-500">
                                 O ingresa una URL manualmente
@@ -337,7 +339,6 @@ const LinkBioEditDialog = ({
 
             {localContent.backgroundType === 'gradient' && (
                 <div className="space-y-4">
-                    {/* Ángulo del gradiente */}
                     <div>
                         <Label htmlFor="gradientAngle">Dirección del Gradiente</Label>
                         <div className="grid grid-cols-4 gap-2 mt-2">
@@ -355,7 +356,6 @@ const LinkBioEditDialog = ({
                         </div>
                     </div>
 
-                    {/* Colores del gradiente */}
                     <div>
                         <div className="flex justify-between items-center mb-2">
                             <Label>Colores del Gradiente</Label>
@@ -366,18 +366,11 @@ const LinkBioEditDialog = ({
 
                         {gradientColors.map((color, index) => (
                             <div key={index} className="flex items-center gap-2 mb-2">
-                                <div className="flex-1 flex gap-2">
-                                    <Input
-                                        type="color"
+                                <div className="flex-1">
+                                    <ColorPicker
                                         value={color}
-                                        onChange={(e) => updateColor(index, e.target.value)}
-                                        className="w-12 h-10 p-1"
-                                    />
-                                    <Input
-                                        value={color}
-                                        onChange={(e) => updateColor(index, e.target.value)}
-                                        placeholder="#000000"
-                                        className="flex-1"
+                                        onChange={(hex) => updateColor(index, hex)}
+                                        showOpacity={false}
                                     />
                                 </div>
 
@@ -409,7 +402,6 @@ const LinkBioEditDialog = ({
                         )}
                     </div>
 
-                    {/* Vista previa del gradiente */}
                     <div className="mt-4">
                         <Label>Vista Previa</Label>
                         <div
@@ -427,7 +419,6 @@ const LinkBioEditDialog = ({
                         </p>
                     </div>
 
-                    {/* Gradientes predefinidos */}
                     <div className="mt-4">
                         <Label>Gradientes Predefinidos</Label>
                         <div className="grid grid-cols-2 gap-2 mt-2">
@@ -494,4 +485,4 @@ const LinkBioEditDialog = ({
     );
 };
 
-export default LinkBioEditDialog;
+export default React.memo(LinkBioEditDialog);

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
@@ -7,6 +7,8 @@ import { Separator } from '@/Components/ui/separator';
 import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const LinkEditDialog = ({
     editContent,
@@ -14,10 +16,16 @@ const LinkEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    // Memoizar resolveValue
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -25,11 +33,13 @@ const LinkEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    // Memoizar updateStyle
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    const resetToDefaults = () => {
+    // Memoizar resetToDefaults
+    const resetToDefaults = useCallback(() => {
         setEditStyles(prev => ({
             ...prev,
             fontSize: themeSettings?.paragraph_fontSize || '16px',
@@ -41,7 +51,11 @@ const LinkEditDialog = ({
             color: themeSettings?.links ? themeSettings.links : '#0000EE',
             textDecoration: 'underline',
         }));
-    };
+    }, [themeSettings, setEditStyles]);
+
+    // Valores resueltos para los ColorPicker
+    const colorValue = resolveValue(editStyles.color) || (themeSettings?.links ? resolveValue(themeSettings.links) : '#0000EE');
+    const hoverColorValue = resolveValue(editStyles.hoverColor) || (themeSettings?.hover_links ? resolveValue(themeSettings.hover_links) : '#0000FF');
 
     return (
         <div className="space-y-4">
@@ -251,42 +265,24 @@ const LinkEditDialog = ({
 
             <Separator className="my-4" />
 
+            {/* Color del enlace */}
             <div>
                 <Label htmlFor="color">Color del enlace</Label>
-                <div className="flex gap-2">
-                    <Input
-                        id="color"
-                        value={editStyles.color || (themeSettings?.links ? themeSettings.links : '#0000EE')}
-                        onChange={(e) => updateStyle('color', e.target.value)}
-                        placeholder="#0000EE"
-                        className="flex-1"
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles.color || (themeSettings?.links ? themeSettings.links : '#0000EE')}
-                        onChange={(e) => updateStyle('color', e.target.value)}
-                        className="w-12"
-                    />
-                </div>
+                <ColorPicker
+                    value={colorValue}
+                    onChange={(hex) => updateStyle('color', hex)}
+                    showOpacity={false}
+                />
             </div>
 
+            {/* Color hover */}
             <div>
                 <Label htmlFor="hoverColor">Color al pasar el mouse</Label>
-                <div className="flex gap-2">
-                    <Input
-                        id="hoverColor"
-                        value={editStyles.hoverColor || (themeSettings?.hover_links ? themeSettings.hover_links : '#0000FF')}
-                        onChange={(e) => updateStyle('hoverColor', e.target.value)}
-                        placeholder="#0000FF"
-                        className="flex-1"
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles.hoverColor || (themeSettings?.hover_links ? themeSettings.hover_links : '#0000FF')}
-                        onChange={(e) => updateStyle('hoverColor', e.target.value)}
-                        className="w-12"
-                    />
-                </div>
+                <ColorPicker
+                    value={hoverColorValue}
+                    onChange={(hex) => updateStyle('hoverColor', hex)}
+                    showOpacity={false}
+                />
             </div>
 
             <div>
@@ -328,4 +324,4 @@ const LinkEditDialog = ({
     );
 };
 
-export default LinkEditDialog;
+export default React.memo(LinkEditDialog);

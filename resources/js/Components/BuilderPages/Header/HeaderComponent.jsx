@@ -91,7 +91,7 @@ const HeaderComponent = ({
             height: withUnit(content?.height || headerStyles.height || '70px', content?.heightUnit || 'px'),
             display: headerStyles.display || 'flex',
             alignItems: headerStyles.alignItems || 'center',
-            borderBottom: headerStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
+            borderBottom:  headerStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
             transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
         };
 

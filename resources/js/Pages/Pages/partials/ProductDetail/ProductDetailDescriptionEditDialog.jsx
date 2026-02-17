@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,6 +7,8 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const ProductDetailDescriptionEditDialog = ({
     editContent,
@@ -14,10 +16,14 @@ const ProductDetailDescriptionEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -25,15 +31,14 @@ const ProductDetailDescriptionEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const handleStyleChange = (key, value) => {
+    const handleStyleChange = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
 
-    // Función para restablecer a valores por defecto del tema
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         const textStyle = editStyles.textStyle || 'paragraph';
 
         let defaultStyles = {};
@@ -63,15 +68,17 @@ const ProductDetailDescriptionEditDialog = ({
             ...prev,
             ...defaultStyles
         }));
-    };
+    }, [editStyles.textStyle, themeSettings, setEditStyles]);
 
-    // Obtener valor actual de fontType
     const currentFontType = editStyles.fontType || 'default';
     const isCustomStyle = editStyles.textStyle === 'custom';
 
+    const colorValue = resolveValue(editStyles.color) || '#000000';
+    const bgColorValue = resolveValue(editStyles.backgroundColor);
+    const borderColorValue = resolveValue(editStyles.borderColor) || '#e5e7eb';
+
     return (
         <div className="space-y-4">
-            {/* Botón para restablecer a valores por defecto */}
             <div className="flex justify-end">
                 <Button
                     type="button"
@@ -85,7 +92,6 @@ const ProductDetailDescriptionEditDialog = ({
                 </Button>
             </div>
 
-            {/* Estilo de Texto - Opciones predefinidas */}
             <div>
                 <Label htmlFor="textStyle">Estilo de Texto</Label>
                 <Select
@@ -93,7 +99,6 @@ const ProductDetailDescriptionEditDialog = ({
                     onValueChange={(value) => {
                         handleStyleChange('textStyle', value);
 
-                        // Si se selecciona un estilo predefinido, actualizar los valores automáticamente
                         if (value === 'paragraph' && themeSettings) {
                             handleStyleChange('fontSize', themeSettings.paragraph_fontSize || '16px');
                             handleStyleChange('fontWeight', themeSettings.paragraph_fontWeight || 'normal');
@@ -146,7 +151,6 @@ const ProductDetailDescriptionEditDialog = ({
 
             <Separator className="my-4" />
 
-            {/* Controles de tipografía avanzada solo si es custom */}
             {isCustomStyle && (
                 <>
                     <div className="grid grid-cols-2 gap-4">
@@ -286,7 +290,6 @@ const ProductDetailDescriptionEditDialog = ({
                 </>
             )}
 
-            {/* Selección de fuente - DISPONIBLE PARA TODOS LOS ESTILOS */}
             <div>
                 <Label htmlFor="fontType">Tipo de Fuente</Label>
                 <Select
@@ -329,7 +332,6 @@ const ProductDetailDescriptionEditDialog = ({
                 </div>
             )}
 
-            {/* Transformación de texto */}
             <div>
                 <Label htmlFor="textTransform">Transformación de texto</Label>
                 <Select
@@ -350,15 +352,13 @@ const ProductDetailDescriptionEditDialog = ({
 
             <Separator className="my-4" />
 
-            {/* Controles de estilo adicionales */}
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <Label htmlFor="color">Color</Label>
-                    <Input
-                        id="color"
-                        type="color"
-                        value={editStyles.color || '#000000'}
-                        onChange={(e) => handleStyleChange('color', e.target.value)}
+                    <ColorPicker
+                        value={colorValue}
+                        onChange={(hex) => handleStyleChange('color', hex)}
+                        showOpacity={false}
                     />
                 </div>
 
@@ -454,12 +454,21 @@ const ProductDetailDescriptionEditDialog = ({
 
             <div>
                 <Label htmlFor="backgroundColor">Color de fondo</Label>
-                <Input
-                    id="backgroundColor"
-                    type="color"
-                    value={editStyles.backgroundColor || 'transparent'}
-                    onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
-                />
+                <div className="flex items-center gap-2">
+                    <ColorPicker
+                        value={bgColorValue && bgColorValue !== 'transparent' ? bgColorValue : '#ffffff'}
+                        onChange={(hex) => handleStyleChange('backgroundColor', hex)}
+                        showOpacity={false}
+                    />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStyleChange('backgroundColor', 'transparent')}
+                    >
+                        Sin fondo
+                    </Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -486,20 +495,18 @@ const ProductDetailDescriptionEditDialog = ({
                 </div>
             </div>
 
-            {editStyles.borderWidth !== '0px' && (
+            {parseInt(editStyles.borderWidth) > 0 && (
                 <div>
                     <Label htmlFor="borderColor">Color del borde</Label>
-                    <Input
-                        id="borderColor"
-                        type="color"
-                        value={editStyles.borderColor || '#e5e7eb'}
-                        onChange={(e) => handleStyleChange('borderColor', e.target.value)}
+                    <ColorPicker
+                        value={borderColorValue}
+                        onChange={(hex) => handleStyleChange('borderColor', hex)}
+                        showOpacity={false}
                     />
                 </div>
             )}
-
         </div>
     );
 };
 
-export default ProductDetailDescriptionEditDialog;
+export default React.memo(ProductDetailDescriptionEditDialog);

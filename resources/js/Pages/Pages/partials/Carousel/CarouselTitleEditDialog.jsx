@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+// components/BuilderPages/partials/CarouselTitleEditDialog.jsx
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -6,6 +7,8 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const CarouselTitleEditDialog = ({
     editContent,
@@ -13,10 +16,16 @@ const CarouselTitleEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -24,11 +33,11 @@ const CarouselTitleEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         setEditStyles(prev => ({
             ...prev,
             fontSize: themeSettings?.heading2_fontSize || '32px',
@@ -38,7 +47,9 @@ const CarouselTitleEditDialog = ({
             fontType: 'default',
             customFont: '',
         }));
-    };
+    }, [themeSettings, setEditStyles]);
+
+    const colorValue = resolveValue(editStyles.color) || '#000000';
 
     return (
         <div className="space-y-4">
@@ -86,6 +97,15 @@ const CarouselTitleEditDialog = ({
             </div>
 
             <Separator className="my-4" />
+
+<div>
+                <Label htmlFor="color">Color del Texto</Label>
+                <ColorPicker
+                    value={colorValue}
+                    onChange={(hex) => updateStyle('color', hex)}
+                    showOpacity={false}
+                />
+            </div>
 
             <div>
                 <Label htmlFor="textStyle">Estilo de Texto</Label>
@@ -229,21 +249,19 @@ const CarouselTitleEditDialog = ({
                 </Select>
             </div>
 
-            {
-                editStyles.fontType === 'custom' && (
-                    <div>
-                        <Label htmlFor="customFont">Fuente Personalizada</Label>
-                        <Input
-                            id="customFont"
-                            value={editStyles.customFont || ''}
-                            onChange={(e) => updateStyle('customFont', e.target.value)}
-                            placeholder="'Roboto', sans-serif"
-                        />
-                    </div>
-                )
-            }
+            {editStyles.fontType === 'custom' && (
+                <div>
+                    <Label htmlFor="customFont">Fuente Personalizada</Label>
+                    <Input
+                        id="customFont"
+                        value={editStyles.customFont || ''}
+                        onChange={(e) => updateStyle('customFont', e.target.value)}
+                        placeholder="'Roboto', sans-serif"
+                    />
+                </div>
+            )}
 
-            <div>
+            {/* <div>
                 <Label htmlFor="layout">Layout</Label>
                 <Select
                     value={editStyles.layout || 'fit'}
@@ -257,7 +275,7 @@ const CarouselTitleEditDialog = ({
                         <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
                     </SelectContent>
                 </Select>
-            </div>
+            </div> */}
 
             <div>
                 <Label htmlFor="alignment">Alineación</Label>
@@ -276,17 +294,9 @@ const CarouselTitleEditDialog = ({
                 </Select>
             </div>
 
-            <div>
-                <Label htmlFor="color">Color del Texto</Label>
-                <Input
-                    id="color"
-                    type="color"
-                    value={editStyles.color || '#000000'}
-                    onChange={(e) => updateStyle('color', e.target.value)}
-                />
-            </div>
-        </div >
+            
+        </div>
     );
 };
 
-export default CarouselTitleEditDialog;
+export default React.memo(CarouselTitleEditDialog);

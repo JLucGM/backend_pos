@@ -1,13 +1,26 @@
 // components/BuilderPages/partials/ProductEditDialog.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const ProductEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -15,12 +28,14 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateProductConfig = (key, value) => {
+    const updateProductConfig = useCallback((key, value) => {
         setEditContent(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditContent]);
+
+    const bgColor = resolveValue(editContent.backgroundColor) || '#ffffff';
 
     return (
         <div className="space-y-4">
@@ -56,11 +71,10 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
 
             <div>
                 <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                <Input
-                    id="backgroundColor"
-                    type="color"
-                    value={editContent.backgroundColor || '#ffffff'}
-                    onChange={(e) => updateProductConfig('backgroundColor', e.target.value)}
+                <ColorPicker
+                    value={bgColor}
+                    onChange={(hex) => updateProductConfig('backgroundColor', hex)}
+                    showOpacity={false}
                 />
             </div>
 
@@ -70,7 +84,7 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                     <Input
                         id="gapX"
                         type="number"
-                        value={parseInt(editContent.gapX) || 10}
+                        value={parseInt(editContent.carousel_gapX) || 10}
                         onChange={(e) => updateProductConfig('gapX', `${e.target.value}px`)}
                     />
                 </div>
@@ -88,4 +102,4 @@ const ProductEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
     );
 };
 
-export default ProductEditDialog;
+export default React.memo(ProductEditDialog);

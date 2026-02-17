@@ -1,20 +1,50 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker'; // Asegurar que sea la versión controlada
 
-const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true, themeSettings }) => {
+const LoginEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    isLiveEdit = true,
+    themeSettings,
+    appliedTheme
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
             // Las actualizaciones se manejan automáticamente
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
+    // Memoizar funciones de actualización
+    const handleContentChange = useCallback((key, value) => {
+        setEditContent(prev => ({ ...prev, [key]: value }));
+    }, [setEditContent]);
+
+    const handleStylesChange = useCallback((key, value) => {
+        setEditStyles(prev => ({ ...prev, [key]: value }));
+    }, [setEditStyles]);
+
+    // Valores resueltos para ColorPicker
+    const bgColorValue = resolveValue(editStyles?.backgroundColor) || '#ffffff';
+    const titleColorValue = resolveValue(editStyles?.titleColor) || resolveValue(themeSettings?.heading) || '#000000';
+    const subtitleColorValue = resolveValue(editStyles?.subtitleColor) || resolveValue(themeSettings?.heading) || '#000000';
+    const buttonBgColorValue = resolveValue(editStyles?.buttonBackgroundColor) || resolveValue(themeSettings?.primary_button_background) || '#3b82f6';
+    const borderColor = resolveValue(editStyles?.borderColor) || resolveValue(themeSettings?.borderColor) || '#3b82f6';
 
     return (
         <div className="space-y-4">
@@ -23,7 +53,43 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                 <Input
                     type="text"
                     value={editContent?.title || 'Iniciar Sesión'}
-                    onChange={(e) => setEditContent({ ...editContent, title: e.target.value })}
+                    onChange={(e) => handleContentChange('title', e.target.value)}
+                />
+            </div>
+
+            {/* Tamaño del titulo */}
+            <div className="space-y-2">
+                <Label htmlFor="titleSize">Tamaño del título</Label>
+                <div className="flex gap-2">
+                    <Input
+                        id="titleSize"
+                        type="number"
+                        value={parseInt(editStyles?.titleSize) || 28}
+                        onChange={(e) => handleStylesChange('titleSize', e.target.value)}
+                        className="flex-1"
+                    />
+                    <Select
+                        value={editStyles?.titleSizeUnit || (editStyles?.titleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                        onValueChange={(value) => handleStylesChange('titleSizeUnit', value)}
+                    >
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="rem">rem</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            {/* Color del título */}
+            <div>
+                <Label>Color del título</Label>
+                <ColorPicker
+                    value={titleColorValue}
+                    onChange={(hex) => handleStylesChange('titleColor', hex)}
+                    showOpacity={false}
                 />
             </div>
 
@@ -32,7 +98,43 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                 <Input
                     type="text"
                     value={editContent?.subtitle || 'Ingresa a tu cuenta'}
-                    onChange={(e) => setEditContent({ ...editContent, subtitle: e.target.value })}
+                    onChange={(e) => handleContentChange('subtitle', e.target.value)}
+                />
+            </div>
+
+            {/* Tamaño del subtitulo */}
+            <div className="space-y-2">
+                <Label htmlFor="subtitleSize">Tamaño del subtítulo</Label>
+                <div className="flex gap-2">
+                    <Input
+                        id="subtitleSize"
+                        type="number"
+                        value={parseInt(editStyles?.subtitleSize) || 16}
+                        onChange={(e) => handleStylesChange('subtitleSize', e.target.value)}
+                        className="flex-1"
+                    />
+                    <Select
+                        value={editStyles?.subtitleSizeUnit || (editStyles?.subtitleSize?.toString().includes('rem') ? 'rem' : 'px')}
+                        onValueChange={(value) => handleStylesChange('subtitleSizeUnit', value)}
+                    >
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="px">px</SelectItem>
+                            <SelectItem value="rem">rem</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            {/* Color del subtítulo */}
+            <div>
+                <Label>Color del título</Label>
+                <ColorPicker
+                    value={subtitleColorValue}
+                    onChange={(hex) => handleStylesChange('subtitleColor', hex)}
+                    showOpacity={false}
                 />
             </div>
 
@@ -43,7 +145,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                     <Label>Mostrar campo de email</Label>
                     <Switch
                         checked={editContent?.showEmail !== false}
-                        onCheckedChange={(checked) => setEditContent({ ...editContent, showEmail: checked })}
+                        onCheckedChange={(checked) => handleContentChange('showEmail', checked)}
                     />
                 </div>
 
@@ -51,7 +153,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                     <Label>Mostrar campo de contraseña</Label>
                     <Switch
                         checked={editContent?.showPassword !== false}
-                        onCheckedChange={(checked) => setEditContent({ ...editContent, showPassword: checked })}
+                        onCheckedChange={(checked) => handleContentChange('showPassword', checked)}
                     />
                 </div>
 
@@ -59,7 +161,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                     <Label>Mostrar "Recordarme"</Label>
                     <Switch
                         checked={editContent?.showRemember === true}
-                        onCheckedChange={(checked) => setEditContent({ ...editContent, showRemember: checked })}
+                        onCheckedChange={(checked) => handleContentChange('showRemember', checked)}
                     />
                 </div>
 
@@ -69,7 +171,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                         <Input
                             type="text"
                             value={editContent?.rememberText || 'Recordarme'}
-                            onChange={(e) => setEditContent({ ...editContent, rememberText: e.target.value })}
+                            onChange={(e) => handleContentChange('rememberText', e.target.value)}
                         />
                     </div>
                 )}
@@ -82,7 +184,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                     <Label>Mostrar enlace de registro</Label>
                     <Switch
                         checked={editContent?.showRegisterLink !== false}
-                        onCheckedChange={(checked) => setEditContent({ ...editContent, showRegisterLink: checked })}
+                        onCheckedChange={(checked) => handleContentChange('showRegisterLink', checked)}
                     />
                 </div>
 
@@ -92,7 +194,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                         <Input
                             type="text"
                             value={editContent?.registerText || '¿No tienes una cuenta? Regístrate'}
-                            onChange={(e) => setEditContent({ ...editContent, registerText: e.target.value })}
+                            onChange={(e) => handleContentChange('registerText', e.target.value)}
                         />
                     </div>
                 )}
@@ -101,7 +203,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                     <Label>Mostrar "Olvidé mi contraseña"</Label>
                     <Switch
                         checked={editContent?.showForgotPassword === true}
-                        onCheckedChange={(checked) => setEditContent({ ...editContent, showForgotPassword: checked })}
+                        onCheckedChange={(checked) => handleContentChange('showForgotPassword', checked)}
                     />
                 </div>
 
@@ -111,7 +213,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                         <Input
                             type="text"
                             value={editContent?.forgotPasswordText || '¿Olvidaste tu contraseña?'}
-                            onChange={(e) => setEditContent({ ...editContent, forgotPasswordText: e.target.value })}
+                            onChange={(e) => handleContentChange('forgotPasswordText', e.target.value)}
                         />
                     </div>
                 )}
@@ -122,7 +224,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                 <Input
                     type="text"
                     value={editContent?.buttonText || 'Iniciar Sesión'}
-                    onChange={(e) => setEditContent({ ...editContent, buttonText: e.target.value })}
+                    onChange={(e) => handleContentChange('buttonText', e.target.value)}
                 />
             </div>
 
@@ -136,13 +238,13 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                         id="maxWidth"
                         type="number"
                         value={parseInt(editStyles?.maxWidth) || 400}
-                        onChange={(e) => setEditStyles({ ...editStyles, maxWidth: e.target.value })}
+                        onChange={(e) => handleStylesChange('maxWidth', e.target.value)}
                         placeholder="400"
                         className="flex-1"
                     />
                     <Select
                         value={editStyles?.maxWidthUnit || (editStyles?.maxWidth?.toString().includes('%') ? '%' : 'px')}
-                        onValueChange={(value) => setEditStyles({ ...editStyles, maxWidthUnit: value })}
+                        onValueChange={(value) => handleStylesChange('maxWidthUnit', value)}
                     >
                         <SelectTrigger className="w-[80px]">
                             <SelectValue />
@@ -162,7 +264,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                         id="paddingTop"
                         type="number"
                         value={parseInt(editStyles?.paddingTop) || parseInt(editStyles?.padding) || 32}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingTop: e.target.value })}
+                        onChange={(e) => handleStylesChange('paddingTop', e.target.value)}
                         placeholder="32"
                     />
                 </div>
@@ -172,7 +274,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                         id="paddingBottom"
                         type="number"
                         value={parseInt(editStyles?.paddingBottom) || parseInt(editStyles?.padding) || 32}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingBottom: e.target.value })}
+                        onChange={(e) => handleStylesChange('paddingBottom', e.target.value)}
                         placeholder="32"
                     />
                 </div>
@@ -182,7 +284,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                         id="paddingLeft"
                         type="number"
                         value={parseInt(editStyles?.paddingLeft) || parseInt(editStyles?.padding) || 32}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingLeft: e.target.value })}
+                        onChange={(e) => handleStylesChange('paddingLeft', e.target.value)}
                         placeholder="32"
                     />
                 </div>
@@ -192,7 +294,7 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                         id="paddingRight"
                         type="number"
                         value={parseInt(editStyles?.paddingRight) || parseInt(editStyles?.padding) || 32}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingRight: e.target.value })}
+                        onChange={(e) => handleStylesChange('paddingRight', e.target.value)}
                         placeholder="32"
                     />
                 </div>
@@ -204,114 +306,45 @@ const LoginEditDialog = ({ editContent, setEditContent, editStyles, setEditStyle
                     id="borderRadius"
                     type="number"
                     value={parseInt(editStyles?.borderRadius) || 12}
-                    onChange={(e) => setEditStyles({ ...editStyles, borderRadius: e.target.value })}
+                    onChange={(e) => handleStylesChange('borderRadius', e.target.value)}
                     placeholder="12"
                 />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="titleSize">Tamaño del título</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="titleSize"
-                            type="number"
-                            value={parseInt(editStyles?.titleSize) || 28}
-                            onChange={(e) => setEditStyles({ ...editStyles, titleSize: e.target.value })}
-                            className="flex-1"
-                        />
-                        <Select
-                            value={editStyles?.titleSizeUnit || (editStyles?.titleSize?.toString().includes('rem') ? 'rem' : 'px')}
-                            onValueChange={(value) => setEditStyles({ ...editStyles, titleSizeUnit: value })}
-                        >
-                            <SelectTrigger className="w-[80px]">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="px">px</SelectItem>
-                                <SelectItem value="rem">rem</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="subtitleSize">Tamaño del subtítulo</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="subtitleSize"
-                            type="number"
-                            value={parseInt(editStyles?.subtitleSize) || 16}
-                            onChange={(e) => setEditStyles({ ...editStyles, subtitleSize: e.target.value })}
-                            className="flex-1"
-                        />
-                        <Select
-                            value={editStyles?.subtitleSizeUnit || (editStyles?.subtitleSize?.toString().includes('rem') ? 'rem' : 'px')}
-                            onValueChange={(value) => setEditStyles({ ...editStyles, subtitleSizeUnit: value })}
-                        >
-                            <SelectTrigger className="w-[80px]">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="px">px</SelectItem>
-                                <SelectItem value="rem">rem</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
+            <div>
+                <Label>Color border</Label>
+                <ColorPicker
+                    value={borderColor}
+                    onChange={(hex) => handleStylesChange('borderColor', hex)}
+                    showOpacity={false}
+                />
             </div>
 
+
+            {/* Color de fondo del formulario */}
             <div>
-                <Label htmlFor="backgroundColor">Color de fondo del formulario</Label>
-                <div className="flex gap-2">
-                    <Input
-                        type="text"
-                        value={editStyles?.backgroundColor || '#ffffff'}
-                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles?.backgroundColor || '#ffffff'}
-                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                        className="w-12"
-                    />
-                </div>
+                <Label>Color de fondo del formulario</Label>
+                <ColorPicker
+                    value={bgColorValue}
+                    onChange={(hex) => handleStylesChange('backgroundColor', hex)}
+                    showOpacity={false}
+                />
             </div>
 
-            <div>
-                <Label htmlFor="titleColor">Color del título</Label>
-                <div className="flex gap-2">
-                    <Input
-                        type="text"
-                        value={editStyles?.titleColor || themeSettings?.heading || '#000000'}
-                        onChange={(e) => setEditStyles({ ...editStyles, titleColor: e.target.value })}
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles?.titleColor || '#000000'}
-                        onChange={(e) => setEditStyles({ ...editStyles, titleColor: e.target.value })}
-                        className="w-12"
-                    />
-                </div>
-            </div>
 
+
+            {/* Color de fondo del botón */}
             <div>
-                <Label htmlFor="buttonBackgroundColor">Color de fondo del botón</Label>
-                <div className="flex gap-2">
-                    <Input
-                        type="text"
-                        value={editStyles?.buttonBackgroundColor || themeSettings?.primary_button_background || '#3b82f6'}
-                        onChange={(e) => setEditStyles({ ...editStyles, buttonBackgroundColor: e.target.value })}
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles?.buttonBackgroundColor || '#3b82f6'}
-                        onChange={(e) => setEditStyles({ ...editStyles, buttonBackgroundColor: e.target.value })}
-                        className="w-12"
-                    />
-                </div>
+                <Label>Color de fondo del botón</Label>
+                <ColorPicker
+                    value={buttonBgColorValue}
+                    onChange={(hex) => handleStylesChange('buttonBackgroundColor', hex)}
+                    showOpacity={false}
+                />
             </div>
+            
         </div>
     );
 };
 
-export default LoginEditDialog;
+export default React.memo(LoginEditDialog);

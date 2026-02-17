@@ -122,7 +122,7 @@ const FooterComponent = ({
                     textAlign: 'center',
                     marginTop: '40px',
                     paddingTop: '20px',
-                    borderTop: `1px solid ${themeWithDefaults.borders}`, // themeWithDefaults ya tiene valor resuelto
+                    borderTop: `${ resolvedStyles.borderWidth ||'1'}px solid ${ resolvedStyles.borders ||themeWithDefaults.borders}`, // themeWithDefaults ya tiene valor resuelto
                     color: themeWithDefaults.text,
                     fontSize: '14px'
                 }}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -8,6 +8,8 @@ import { Separator } from '@/Components/ui/separator';
 import { Switch } from '@/Components/ui/switch';
 import { Plus, X, ImageIcon, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 import ImageSelector from '@/Components/BuilderPages/ImageSelector';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const ImageCarouselEditDialog = ({
     editContent,
@@ -15,40 +17,43 @@ const ImageCarouselEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     allImages,
     page,
 }) => {
     const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
+
     const images = editContent.images || [];
 
-    const updateCarouselConfig = (key, value) => {
+    // Memoizar funciones de actualización
+    const updateCarouselConfig = useCallback((key, value) => {
         setEditContent(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditContent]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    // Agregar nueva imagen
-    const handleAddImage = () => {
+    const handleAddImage = useCallback(() => {
         if (images.length >= 9) {
             alert('Máximo 9 imágenes permitidas');
             return;
         }
         setSelectedImageIndex(null);
         setIsImageSelectorOpen(true);
-    };
+    }, [images.length]);
 
-    // Editar imagen existente (cambiar src)
-    const handleEditImage = (index) => {
+    const handleEditImage = useCallback((index) => {
         setSelectedImageIndex(index);
         setIsImageSelectorOpen(true);
-    };
+    }, []);
 
-    // Seleccionar imagen desde el selector
-    const handleImageSelect = (imageData) => {
+    const handleImageSelect = useCallback((imageData) => {
         const imageSrc = imageData.url || imageData.src;
         if (selectedImageIndex === null) {
             const newImages = [...images, {
@@ -66,23 +71,20 @@ const ImageCarouselEditDialog = ({
             setEditContent(prev => ({ ...prev, images: newImages }));
         }
         setIsImageSelectorOpen(false);
-    };
+    }, [images, selectedImageIndex, setEditContent]);
 
-    // Eliminar imagen
-    const handleRemoveImage = (index) => {
+    const handleRemoveImage = useCallback((index) => {
         const newImages = images.filter((_, i) => i !== index);
         setEditContent(prev => ({ ...prev, images: newImages }));
-    };
+    }, [images, setEditContent]);
 
-    // Actualizar título o texto de una imagen
-    const handleImageFieldChange = (index, field, value) => {
+    const handleImageFieldChange = useCallback((index, field, value) => {
         const newImages = [...images];
         newImages[index][field] = value;
         setEditContent(prev => ({ ...prev, images: newImages }));
-    };
+    }, [images, setEditContent]);
 
-    // Reordenar imágenes
-    const moveImage = (index, direction) => {
+    const moveImage = useCallback((index, direction) => {
         if (direction === 'up' && index > 0) {
             const newImages = [...images];
             [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
@@ -92,9 +94,25 @@ const ImageCarouselEditDialog = ({
             [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
             setEditContent(prev => ({ ...prev, images: newImages }));
         }
-    };
+    }, [images, setEditContent]);
 
-    // Renderizar controles de tipografía para título
+    // Valores resueltos para colores (usando useMemo para estabilidad)
+    const resolvedColors = useMemo(() => ({
+        titleColor: resolveValue(editContent.titleColor) || '#000000',
+        textColor: resolveValue(editContent.textColor) || '#666666',
+        cardBorderColor: resolveValue(editContent.cardBorderColor) || '#cccccc',
+        cardBackgroundColor: resolveValue(editContent.cardBackgroundColor) || '#ffffff',
+        containerBackgroundColor: resolveValue(editStyles.backgroundColor) || '#ffffff',
+    }), [
+        editContent.titleColor,
+        editContent.textColor,
+        editContent.cardBorderColor,
+        editContent.cardBackgroundColor,
+        editStyles.backgroundColor,
+        resolveValue
+    ]);
+
+    // --- Subcomponentes de renderizado (mantenidos como funciones internas) ---
     const renderTitleTypography = () => {
         const textStyle = editContent.titleTextStyle || 'heading3';
         const fontSize = editContent.titleFontSize || (textStyle === 'custom' ? '20' : themeSettings?.[`${textStyle}_fontSize`]?.replace('px', '') || '20');
@@ -293,17 +311,16 @@ const ImageCarouselEditDialog = ({
 
                 <div>
                     <Label>Color del texto</Label>
-                    <Input
-                        type="color"
-                        value={color}
-                        onChange={(e) => updateCarouselConfig('titleColor', e.target.value)}
+                    <ColorPicker
+                        value={resolvedColors.titleColor}
+                        onChange={(hex) => updateCarouselConfig('titleColor', hex)}
+                        showOpacity={false}
                     />
                 </div>
             </div>
         );
     };
 
-    // Renderizar controles de tipografía para texto
     const renderTextTypography = () => {
         const textStyle = editContent.textTextStyle || 'paragraph';
         const fontSize = editContent.textFontSize || (textStyle === 'custom' ? '14' : themeSettings?.[`${textStyle}_fontSize`]?.replace('px', '') || '14');
@@ -498,17 +515,16 @@ const ImageCarouselEditDialog = ({
 
                 <div>
                     <Label>Color del texto</Label>
-                    <Input
-                        type="color"
-                        value={color}
-                        onChange={(e) => updateCarouselConfig('textColor', e.target.value)}
+                    <ColorPicker
+                        value={resolvedColors.textColor}
+                        onChange={(hex) => updateCarouselConfig('textColor', hex)}
+                        showOpacity={false}
                     />
                 </div>
             </div>
         );
     };
 
-    // Renderizar controles de tarjeta
     const renderCardControls = () => {
         const padding = editContent.cardPadding || '16px';
         const borderWidth = editContent.cardBorderWidth || '0';
@@ -617,10 +633,10 @@ const ImageCarouselEditDialog = ({
 
                         <div>
                             <Label>Color del borde</Label>
-                            <Input
-                                type="color"
-                                value={borderColor}
-                                onChange={(e) => updateCarouselConfig('cardBorderColor', e.target.value)}
+                            <ColorPicker
+                                value={resolvedColors.cardBorderColor}
+                                onChange={(hex) => updateCarouselConfig('cardBorderColor', hex)}
+                                showOpacity={false}
                             />
                         </div>
                     </>
@@ -638,10 +654,10 @@ const ImageCarouselEditDialog = ({
 
                 <div>
                     <Label>Color de fondo</Label>
-                    <Input
-                        type="color"
-                        value={backgroundColor}
-                        onChange={(e) => updateCarouselConfig('cardBackgroundColor', e.target.value)}
+                    <ColorPicker
+                        value={resolvedColors.cardBackgroundColor}
+                        onChange={(hex) => updateCarouselConfig('cardBackgroundColor', hex)}
+                        showOpacity={false}
                     />
                 </div>
 
@@ -853,46 +869,12 @@ const ImageCarouselEditDialog = ({
                 <h3 className="font-medium">Estilos del contenedor</h3>
                 <div>
                     <Label>Color de fondo</Label>
-                    <Input
-                        type="color"
-                        value={editStyles.backgroundColor || '#ffffff'}
-                        onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                    <ColorPicker
+                        value={resolvedColors.containerBackgroundColor}
+                        onChange={(hex) => updateStyle('backgroundColor', hex)}
+                        showOpacity={false}
                     />
                 </div>
-                {/* <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Label>Padding arriba (px)</Label>
-                        <Input
-                            type="number"
-                            value={parseInt(editStyles.paddingTop) || 20}
-                            onChange={(e) => updateStyle('paddingTop', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label>Padding derecha (px)</Label>
-                        <Input
-                            type="number"
-                            value={parseInt(editStyles.paddingRight) || 20}
-                            onChange={(e) => updateStyle('paddingRight', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label>Padding abajo (px)</Label>
-                        <Input
-                            type="number"
-                            value={parseInt(editStyles.paddingBottom) || 20}
-                            onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label>Padding izquierda (px)</Label>
-                        <Input
-                            type="number"
-                            value={parseInt(editStyles.paddingLeft) || 20}
-                            onChange={(e) => updateStyle('paddingLeft', e.target.value)}
-                        />
-                    </div>
-                </div> */}
             </div>
 
             {/* Selector de imágenes */}
@@ -907,4 +889,4 @@ const ImageCarouselEditDialog = ({
     );
 };
 
-export default ImageCarouselEditDialog;
+export default React.memo(ImageCarouselEditDialog);

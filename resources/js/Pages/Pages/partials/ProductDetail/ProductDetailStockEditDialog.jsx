@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
@@ -9,6 +9,8 @@ import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const ProductDetailStockEditDialog = ({
     editContent,
@@ -16,10 +18,14 @@ const ProductDetailStockEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -27,22 +33,21 @@ const ProductDetailStockEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const handleStyleChange = (key, value) => {
+    const handleStyleChange = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
 
-    const handleContentChange = (key, value) => {
+    const handleContentChange = useCallback((key, value) => {
         setEditContent(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditContent]);
 
-    // Función para restablecer a valores por defecto del tema
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         const textStyle = editStyles.textStyle || 'paragraph';
 
         let defaultStyles = {};
@@ -60,10 +65,17 @@ const ProductDetailStockEditDialog = ({
             ...prev,
             ...defaultStyles
         }));
-    };
+    }, [editStyles.textStyle, themeSettings, setEditStyles]);
 
-    // Obtener valor actual de fontType
     const currentFontType = editStyles.fontType || 'default';
+
+    // Valores resueltos para colores
+    const inStockBgColor = resolveValue(editStyles.inStockBgColor) || '#dcfce7';
+    const inStockColor = resolveValue(editStyles.inStockColor) || '#166534';
+    const inStockBorderColor = resolveValue(editStyles.inStockBorderColor) || '#bbf7d0';
+    const outOfStockBgColor = resolveValue(editStyles.outOfStockBgColor) || '#fee2e2';
+    const outOfStockColor = resolveValue(editStyles.outOfStockColor) || '#991b1b';
+    const outOfStockBorderColor = resolveValue(editStyles.outOfStockBorderColor) || '#fecaca';
 
     return (
         <div className="space-y-4">
@@ -162,7 +174,7 @@ const ProductDetailStockEditDialog = ({
                 </TabsContent>
 
                 <TabsContent value="styles" className="space-y-4">
-                    {/* Estilo de Texto */}
+                    {/* Estilo del Texto */}
                     <div className="space-y-4">
                         <h4 className="font-medium">Estilo del Texto</h4>
 
@@ -226,16 +238,16 @@ const ProductDetailStockEditDialog = ({
                                         Por defecto (usar fuente del tema para este estilo)
                                     </SelectItem>
                                     <SelectItem value="body_font">
-                                        Body Font ({themeSettings?.body_font || 'Inter'})
+                                        Body Font ({themeWithDefaults.body_font || 'Inter'})
                                     </SelectItem>
                                     <SelectItem value="heading_font">
-                                        Heading Font ({themeSettings?.heading_font || 'Inter'})
+                                        Heading Font ({themeWithDefaults.heading_font || 'Inter'})
                                     </SelectItem>
                                     <SelectItem value="subheading_font">
-                                        Subheading Font ({themeSettings?.subheading_font || 'Inter'})
+                                        Subheading Font ({themeWithDefaults.subheading_font || 'Inter'})
                                     </SelectItem>
                                     <SelectItem value="accent_font">
-                                        Accent Font ({themeSettings?.accent_font || 'Inter'})
+                                        Accent Font ({themeWithDefaults.accent_font || 'Inter'})
                                     </SelectItem>
                                     <SelectItem value="custom">Personalizada</SelectItem>
                                 </SelectContent>
@@ -328,30 +340,54 @@ const ProductDetailStockEditDialog = ({
                         <div className="grid grid-cols-3 gap-3">
                             <div>
                                 <Label htmlFor="inStockBgColor" className="text-xs">Color fondo</Label>
-                                <Input
-                                    id="inStockBgColor"
-                                    type="color"
-                                    value={editStyles.inStockBgColor || '#dcfce7'}
-                                    onChange={(e) => handleStyleChange('inStockBgColor', e.target.value)}
-                                />
+                                <div className="flex items-center gap-2 mt-1">
+                                    <ColorPicker
+                                        value={inStockBgColor}
+                                        onChange={(hex) => handleStyleChange('inStockBgColor', hex)}
+                                        showOpacity={false}
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleStyleChange('inStockBgColor', 'theme.success_color')}
+                                    >
+                                        Tema
+                                    </Button>
+                                </div>
                             </div>
                             <div>
                                 <Label htmlFor="inStockColor" className="text-xs">Color texto</Label>
-                                <Input
-                                    id="inStockColor"
-                                    type="color"
-                                    value={editStyles.inStockColor || '#166534'}
-                                    onChange={(e) => handleStyleChange('inStockColor', e.target.value)}
-                                />
+                                <div className="flex items-center gap-2 mt-1">
+                                    <ColorPicker
+                                        value={inStockColor}
+                                        onChange={(hex) => handleStyleChange('inStockColor', hex)}
+                                        showOpacity={false}
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleStyleChange('inStockColor', 'theme.success_color')}
+                                    >
+                                        Tema
+                                    </Button>
+                                </div>
                             </div>
                             <div>
                                 <Label htmlFor="inStockBorderColor" className="text-xs">Color borde</Label>
-                                <Input
-                                    id="inStockBorderColor"
-                                    type="color"
-                                    value={editStyles.inStockBorderColor || '#bbf7d0'}
-                                    onChange={(e) => handleStyleChange('inStockBorderColor', e.target.value)}
-                                />
+                                <div className="flex items-center gap-2 mt-1">
+                                    <ColorPicker
+                                        value={inStockBorderColor}
+                                        onChange={(hex) => handleStyleChange('inStockBorderColor', hex)}
+                                        showOpacity={false}
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleStyleChange('inStockBorderColor', 'theme.success_color')}
+                                    >
+                                        Tema
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -361,30 +397,54 @@ const ProductDetailStockEditDialog = ({
                         <div className="grid grid-cols-3 gap-3">
                             <div>
                                 <Label htmlFor="outOfStockBgColor" className="text-xs">Color fondo</Label>
-                                <Input
-                                    id="outOfStockBgColor"
-                                    type="color"
-                                    value={editStyles.outOfStockBgColor || '#fee2e2'}
-                                    onChange={(e) => handleStyleChange('outOfStockBgColor', e.target.value)}
-                                />
+                                <div className="flex items-center gap-2 mt-1">
+                                    <ColorPicker
+                                        value={outOfStockBgColor}
+                                        onChange={(hex) => handleStyleChange('outOfStockBgColor', hex)}
+                                        showOpacity={false}
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleStyleChange('outOfStockBgColor', 'theme.danger_color')}
+                                    >
+                                        Tema
+                                    </Button>
+                                </div>
                             </div>
                             <div>
                                 <Label htmlFor="outOfStockColor" className="text-xs">Color texto</Label>
-                                <Input
-                                    id="outOfStockColor"
-                                    type="color"
-                                    value={editStyles.outOfStockColor || '#991b1b'}
-                                    onChange={(e) => handleStyleChange('outOfStockColor', e.target.value)}
-                                />
+                                <div className="flex items-center gap-2 mt-1">
+                                    <ColorPicker
+                                        value={outOfStockColor}
+                                        onChange={(hex) => handleStyleChange('outOfStockColor', hex)}
+                                        showOpacity={false}
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleStyleChange('outOfStockColor', 'theme.danger_color')}
+                                    >
+                                        Tema
+                                    </Button>
+                                </div>
                             </div>
                             <div>
                                 <Label htmlFor="outOfStockBorderColor" className="text-xs">Color borde</Label>
-                                <Input
-                                    id="outOfStockBorderColor"
-                                    type="color"
-                                    value={editStyles.outOfStockBorderColor || '#fecaca'}
-                                    onChange={(e) => handleStyleChange('outOfStockBorderColor', e.target.value)}
-                                />
+                                <div className="flex items-center gap-2 mt-1">
+                                    <ColorPicker
+                                        value={outOfStockBorderColor}
+                                        onChange={(hex) => handleStyleChange('outOfStockBorderColor', hex)}
+                                        showOpacity={false}
+                                    />
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleStyleChange('outOfStockBorderColor', 'theme.danger_color')}
+                                    >
+                                        Tema
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -394,4 +454,4 @@ const ProductDetailStockEditDialog = ({
     );
 };
 
-export default ProductDetailStockEditDialog;
+export default React.memo(ProductDetailStockEditDialog);

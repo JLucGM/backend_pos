@@ -1,20 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Badge } from '@/Components/ui/badge';
 import { Info } from 'lucide-react';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const ProductDetailImageEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
     setEditStyles,
-    themeSettings, // Recibir themeSettings
+    themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -24,12 +30,14 @@ const ProductDetailImageEditDialog = ({
 
     const theme = themeSettings || {};
 
-    const handleStyleChange = (key, value) => {
+    const handleStyleChange = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
+
+    const borderColorValue = resolveValue(editStyles.imageBorderColor) || '#000000';
 
     return (
         <div className="space-y-4">
@@ -93,20 +101,11 @@ const ProductDetailImageEditDialog = ({
                             <Label htmlFor="imageBorderColor">
                                 Color del borde
                             </Label>
-                            <div className="flex gap-2">
-                                <Input
-                                    id="imageBorderColor"
-                                    type="color"
-                                    className="w-12 p-1 h-9"
-                                    value={editStyles.imageBorderColor || '#000000'}
-                                    onChange={(e) => handleStyleChange('imageBorderColor', e.target.value)}
-                                />
-                                <Input
-                                    value={editStyles.imageBorderColor || '#000000'}
-                                    onChange={(e) => handleStyleChange('imageBorderColor', e.target.value)}
-                                    placeholder="#000000"
-                                />
-                            </div>
+                            <ColorPicker
+                                value={borderColorValue}
+                                onChange={(hex) => handleStyleChange('imageBorderColor', hex)}
+                                showOpacity={false}
+                            />
                         </div>
                     </>
                 )}
@@ -164,4 +163,4 @@ const ProductDetailImageEditDialog = ({
     );
 };
 
-export default ProductDetailImageEditDialog;
+export default React.memo(ProductDetailImageEditDialog);

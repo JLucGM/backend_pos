@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,20 +7,28 @@ import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-export default function ProfileEditDialog({
+const ProfileEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
-}) {
+}) => {
     const content = editContent || {};
     const styles = editStyles || {};
 
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -28,19 +36,24 @@ export default function ProfileEditDialog({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateContent = (key, value) => {
+    const updateContent = useCallback((key, value) => {
         setEditContent(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditContent]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
+
+    // Valores resueltos para colores
+    const bgColor = resolveValue(styles.backgroundColor) || '#ffffff';
+    const titleColor = resolveValue(styles.titleColor) || '#000000';
+    const cardBgColor = resolveValue(styles.cardBackgroundColor) || '#ffffff';
 
     return (
         <div className="space-y-6">
@@ -174,11 +187,10 @@ export default function ProfileEditDialog({
                             </div>
                             <div>
                                 <Label htmlFor="backgroundColor">Color de fondo</Label>
-                                <Input
-                                    id="backgroundColor"
-                                    type="color"
-                                    value={styles.backgroundColor || '#ffffff'}
-                                    onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                                <ColorPicker
+                                    value={bgColor}
+                                    onChange={(hex) => updateStyle('backgroundColor', hex)}
+                                    showOpacity={false}
                                 />
                             </div>
                         </div>
@@ -239,11 +251,10 @@ export default function ProfileEditDialog({
                         <div className="grid grid-cols-2 gap-4 mt-2">
                             <div>
                                 <Label htmlFor="titleColor">Color</Label>
-                                <Input
-                                    id="titleColor"
-                                    type="color"
-                                    value={styles.titleColor || '#000000'}
-                                    onChange={(e) => updateStyle('titleColor', e.target.value)}
+                                <ColorPicker
+                                    value={titleColor}
+                                    onChange={(hex) => updateStyle('titleColor', hex)}
+                                    showOpacity={false}
                                 />
                             </div>
                             <div>
@@ -309,11 +320,10 @@ export default function ProfileEditDialog({
                         <div className="grid grid-cols-2 gap-4 mt-2">
                             <div>
                                 <Label htmlFor="cardBackgroundColor">Color de fondo</Label>
-                                <Input
-                                    id="cardBackgroundColor"
-                                    type="color"
-                                    value={styles.cardBackgroundColor || '#ffffff'}
-                                    onChange={(e) => updateStyle('cardBackgroundColor', e.target.value)}
+                                <ColorPicker
+                                    value={cardBgColor}
+                                    onChange={(hex) => updateStyle('cardBackgroundColor', hex)}
+                                    showOpacity={false}
                                 />
                             </div>
                             <div>
@@ -364,4 +374,6 @@ export default function ProfileEditDialog({
             </Tabs>
         </div>
     );
-}
+};
+
+export default React.memo(ProfileEditDialog);

@@ -1,14 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
+import { Button } from '@/Components/ui/button';
 
-const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSearch }) => {
+const SearchButtonEditor = ({
+  buttonConfig,
+  showSearch,
+  onUpdate,
+  onUpdateShowSearch,
+  themeSettings,
+  appliedTheme
+}) => {
   const [localStyles, setLocalStyles] = useState(buttonConfig?.styles || {});
-  const [localShowSearch, setLocalShowSearch] = useState(showSearch !== false); // Por defecto true
+  const [localShowSearch, setLocalShowSearch] = useState(showSearch !== false);
 
-  // Sincronizar cambios locales con el estado global después de un delay
+  const resolveValue = useCallback((value) => {
+    return resolveStyleValue(value, themeSettings, appliedTheme);
+  }, [themeSettings, appliedTheme]);
+
+  const updateStyle = useCallback((key, value) => {
+    setLocalStyles(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleIconColorChange = useCallback((hex) => updateStyle('iconColor', hex), [updateStyle]);
+  const handleBackgroundColorChange = useCallback((hex) => updateStyle('backgroundColor', hex), [updateStyle]);
+  const handleBorderColorChange = useCallback((hex) => updateStyle('borderColor', hex), [updateStyle]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       onUpdate({
@@ -17,9 +38,8 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
       });
     }, 100);
     return () => clearTimeout(timer);
-  }, [localStyles]);
+  }, [localStyles, onUpdate, buttonConfig]);
 
-  // Sincronizar cambios de showSearch
   useEffect(() => {
     if (onUpdateShowSearch) {
       const timer = setTimeout(() => {
@@ -27,11 +47,12 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [localShowSearch]);
+  }, [localShowSearch, onUpdateShowSearch]);
 
-  const updateStyle = (key, value) => {
-    setLocalStyles(prev => ({ ...prev, [key]: value }));
-  };
+  const iconColor = resolveValue(localStyles.iconColor) || '#000000';
+  const borderColor = resolveValue(localStyles.borderColor) || '#000000';
+  const backgroundColorValue = resolveValue(localStyles.backgroundColor);
+  const bgColor = (backgroundColorValue && backgroundColorValue !== 'transparent') ? backgroundColorValue : '#ffffff';
 
   return (
     <div className="space-y-2">
@@ -49,45 +70,34 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
 
       {localShowSearch && (
         <>
-          {/* Color del icono */}
           <div>
-            <Label htmlFor="search-iconColor" className="text-xs">Color del icono</Label>
-            <div className="flex gap-2">
-              <Input
-                id="search-iconColor"
-                value={localStyles.iconColor || '#000000'}
-                onChange={(e) => updateStyle('iconColor', e.target.value)}
-                className="flex-1 h-8 text-xs"
+            <Label className="text-xs">Color del icono</Label>
+            <ColorPicker
+              value={iconColor}
+              onChange={handleIconColorChange}
+              showOpacity={false}
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">Color de fondo</Label>
+            <div className="flex items-center gap-2">
+              <ColorPicker
+                value={bgColor}
+                onChange={handleBackgroundColorChange}
+                showOpacity={false}
               />
-              <Input
-                type="color"
-                value={localStyles.iconColor || '#000000'}
-                onChange={(e) => updateStyle('iconColor', e.target.value)}
-                className="w-8 h-8"
-              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => updateStyle('backgroundColor', 'transparent')}
+              >
+                Sin fondo
+              </Button>
             </div>
           </div>
 
-          {/* Color de fondo */}
-          <div>
-            <Label htmlFor="search-backgroundColor" className="text-xs">Color de fondo</Label>
-            <div className="flex gap-2">
-              <Input
-                id="search-backgroundColor"
-                value={localStyles.backgroundColor || 'transparent'}
-                onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                className="flex-1 h-8 text-xs"
-              />
-              <Input
-                type="color"
-                value={localStyles.backgroundColor || '#ffffff'}
-                onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                className="w-8 h-8"
-              />
-            </div>
-          </div>
-
-          {/* Opacidad del fondo */}
           <div>
             <Label htmlFor="search-backgroundOpacity" className="text-xs">Opacidad del fondo (0-1)</Label>
             <Input
@@ -104,7 +114,6 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
 
           <Separator />
 
-          {/* Configuración del borde */}
           <div className="grid grid-cols-1 gap-2">
             <div>
               <Label htmlFor="search-borderWidth" className="text-xs">Ancho borde</Label>
@@ -119,12 +128,11 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
             </div>
 
             <div>
-              <Label htmlFor="search-borderColor" className="text-xs">Color borde</Label>
-              <Input
-                type="color"
-                value={localStyles.borderColor || '#000000'}
-                onChange={(e) => updateStyle('borderColor', e.target.value)}
-                className="h-8 w-full"
+              <Label className="text-xs">Color borde</Label>
+              <ColorPicker
+                value={borderColor}
+                onChange={handleBorderColorChange}
+                showOpacity={false}
               />
             </div>
 
@@ -143,7 +151,6 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
             </div>
           </div>
 
-          {/* Radio de borde */}
           <div>
             <Label htmlFor="search-borderRadius" className="text-xs">Radio de borde</Label>
             <Input
@@ -158,7 +165,6 @@ const SearchButtonEditor = ({ buttonConfig, showSearch, onUpdate, onUpdateShowSe
 
           <Separator />
 
-          {/* Tamaño */}
           <div className="grid grid-cols-3 gap-2">
             <div>
               <Label htmlFor="search-width" className="text-xs">Ancho</Label>

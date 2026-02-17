@@ -125,7 +125,7 @@ const CheckoutSummaryComponent = ({
         paddingBottom: withUnit(styles.paddingBottom || '24px'),
         paddingLeft: withUnit(styles.paddingLeft || '24px'),
         borderRadius: withUnit(styles.borderRadius || themeWithDefaults.border_radius_medium || '8px'),
-        border: `1px solid ${resolveValue(themeWithDefaults.borders)}`,
+        border: `${ styles.borderWidth || "1"}px solid ${resolveValue(withUnit(styles.borders) || themeWithDefaults.borders)}`,
     };
 
     const titleStyles = {

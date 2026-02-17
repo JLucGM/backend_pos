@@ -1,18 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/Components/ui/color-picker';
 
 const AnnouncementBarEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
     setEditStyles,
+    themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -20,19 +28,26 @@ const AnnouncementBarEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateContent = (key, value) => {
+    const updateContent = useCallback((key, value) => {
         setEditContent(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditContent]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
     // Asegurar que editContent sea un objeto
     const content = typeof editContent === 'object' ? editContent : {};
+
+    // Valores resueltos para los ColorPicker
+    const bgColor = resolveValue(editStyles.backgroundColor) || '#000000';
+    const arrowBgColor = resolveValue(editStyles.arrowBackgroundColor) || '#000000';
+    const arrowIconColor = resolveValue(editStyles.arrowIconColor) || '#ffffff';
+    const arrowBorderColor = resolveValue(editStyles.arrowBorderColor) || '#ffffff';
+    const arrowHoverBgColor = resolveValue(editStyles.arrowHoverBackgroundColor) || 'rgba(255,255,255,0.4)';
 
     return (
         <div className="space-y-4">
@@ -67,21 +82,11 @@ const AnnouncementBarEditDialog = ({
 
                 <div>
                     <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                    <div className="flex gap-2 mt-1">
-                        <Input
-                            id="backgroundColor"
-                            value={editStyles.backgroundColor || '#000000'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.backgroundColor || '#000000'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={bgColor}
+                        onChange={(hex) => updateStyle('backgroundColor', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 <div>
@@ -139,21 +144,11 @@ const AnnouncementBarEditDialog = ({
 
                 <div>
                     <Label htmlFor="arrowBackgroundColor">Color de Fondo de las Flechas</Label>
-                    <div className="flex gap-2 mt-1">
-                        <Input
-                            id="arrowBackgroundColor"
-                            value={editStyles.arrowBackgroundColor || '#000000'}
-                            onChange={(e) => updateStyle('arrowBackgroundColor', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.arrowBackgroundColor || '#000000'}
-                            onChange={(e) => updateStyle('arrowBackgroundColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={arrowBgColor}
+                        onChange={(hex) => updateStyle('arrowBackgroundColor', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 <div>
@@ -203,21 +198,11 @@ const AnnouncementBarEditDialog = ({
 
                 <div>
                     <Label htmlFor="arrowIconColor">Color del Ícono</Label>
-                    <div className="flex gap-2 mt-1">
-                        <Input
-                            id="arrowIconColor"
-                            value={editStyles.arrowIconColor || '#ffffff'}
-                            onChange={(e) => updateStyle('arrowIconColor', e.target.value)}
-                            placeholder="#ffffff"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.arrowIconColor || '#ffffff'}
-                            onChange={(e) => updateStyle('arrowIconColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={arrowIconColor}
+                        onChange={(hex) => updateStyle('arrowIconColor', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 <div>
@@ -246,46 +231,27 @@ const AnnouncementBarEditDialog = ({
 
                 <div>
                     <Label htmlFor="arrowBorderColor">Color del Borde</Label>
-                    <div className="flex gap-2 mt-1">
-                        <Input
-                            id="arrowBorderColor"
-                            value={editStyles.arrowBorderColor || 'transparent'}
-                            onChange={(e) => updateStyle('arrowBorderColor', e.target.value)}
-                            placeholder="transparent"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.arrowBorderColor === 'transparent' ? '#ffffff' : editStyles.arrowBorderColor || '#ffffff'}
-                            onChange={(e) => updateStyle('arrowBorderColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={arrowBorderColor}
+                        onChange={(hex) => updateStyle('arrowBorderColor', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 <div>
                     <Label htmlFor="arrowHoverBackgroundColor">Color de Fondo al Hover (Opcional)</Label>
-                    <div className="flex gap-2 mt-1">
-                        <Input
-                            id="arrowHoverBackgroundColor"
-                            value={editStyles.arrowHoverBackgroundColor || ''}
-                            onChange={(e) => updateStyle('arrowHoverBackgroundColor', e.target.value)}
-                            placeholder="rgba(255, 255, 255, 0.4)"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value="#ffffff"
-                            onChange={(e) => {
-                                const hex = e.target.value;
-                                const rgb = hex.match(/\w\w/g).map(x => parseInt(x, 16));
-                                updateStyle('arrowHoverBackgroundColor', `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.4)`);
-                            }}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={arrowHoverBgColor}
+                        onChange={(hex, opacity) => {
+                            const color = opacity < 1
+                                ? `rgba(${parseInt(hex.slice(1,3),16)}, ${parseInt(hex.slice(3,5),16)}, ${parseInt(hex.slice(5,7),16)}, ${opacity})`
+                                : hex;
+                            updateStyle('arrowHoverBackgroundColor', color);
+                        }}
+                        showOpacity={true}
+                    />
                     <p className="text-xs text-gray-500 mt-1">
-                        Si se deja vacío, se usará el efecto hover automático
+                        Ajusta el color y la opacidad según necesites.
                     </p>
                 </div>
             </div>

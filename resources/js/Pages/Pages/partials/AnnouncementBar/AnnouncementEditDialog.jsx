@@ -1,9 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker'; // Ajusta la ruta
 
 const AnnouncementEditDialog = ({
     editContent,
@@ -11,6 +13,7 @@ const AnnouncementEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true,
     dynamicPages = [],
     products = []
@@ -20,6 +23,11 @@ const AnnouncementEditDialog = ({
     const [selectedProduct, setSelectedProduct] = useState('');
     const [customUrl, setCustomUrl] = useState('');
     const [isInitialized, setIsInitialized] = useState(false);
+
+    // Memoizar resolveValue
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     // Debounce for live updates
     const debouncedContent = useDebounce(editContent, 300);
@@ -43,17 +51,14 @@ const AnnouncementEditDialog = ({
         const currentUrl = content.navigationUrl || '';
         const currentUrlString = String(currentUrl);
 
-        // Inicializar el tipo de enlace
         if (currentUrlString && currentUrlString.trim() !== '') {
             if (typeof currentUrlString === 'string' && currentUrlString.startsWith('/')) {
-                // Verificar si es una página dinámica
                 const pageSlug = currentUrlString.replace('/', '');
                 const page = dynamicPages.find(p => p.slug === pageSlug);
                 if (page) {
                     setLinkType('page');
                     setSelectedPage(page.slug);
                 } else {
-                    // Verificar si es un producto
                     const productMatch = currentUrlString.match(/\/detalles-del-producto\?product=(.+)/);
                     if (productMatch) {
                         const productSlug = productMatch[1];
@@ -82,7 +87,7 @@ const AnnouncementEditDialog = ({
 
         setIsInitialized(true);
         prevEditContentRef.current = editContent;
-    }, [content.navigationUrl, dynamicPages, products, isInitialized]);
+    }, [content.navigationUrl, dynamicPages, products, isInitialized]); // Dependencias estables
 
     // 2. ACTUALIZAR LA URL cuando cambian los controles
     useEffect(() => {
@@ -109,16 +114,16 @@ const AnnouncementEditDialog = ({
                 break;
         }
 
-        // Solo actualizar si realmente cambió
         const currentUrl = content.navigationUrl || '';
         const currentUrlString = String(currentUrl);
 
         if (newUrl !== currentUrlString) {
             updateContent('navigationUrl', newUrl);
         }
-    }, [linkType, selectedPage, selectedProduct, customUrl, isInitialized, content.navigationUrl]);
+    }, [linkType, selectedPage, selectedProduct, customUrl, isInitialized, content.navigationUrl]); // content.navigationUrl puede causar ciclo, pero está bien porque comparamos antes de actualizar
 
-    const updateContent = (key, value) => {
+    // Memoizar funciones de actualización
+    const updateContent = useCallback((key, value) => {
         setEditContent(prev => {
             const currentContent = typeof prev === 'object' ? prev : { text: prev || '' };
             return {
@@ -126,29 +131,29 @@ const AnnouncementEditDialog = ({
                 [key]: value
             };
         });
-    };
+    }, [setEditContent]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    // Manejar cambio de texto del anuncio
-    const handleTextChange = (value) => {
+    const handleTextChange = useCallback((value) => {
         updateContent('text', value);
-    };
+    }, [updateContent]);
 
-    // Manejar cambio de URL personalizada
-    const handleCustomUrlChange = (value) => {
+    const handleCustomUrlChange = useCallback((value) => {
         setCustomUrl(value);
         if (linkType === 'custom') {
             updateContent('navigationUrl', value);
         }
-    };
+    }, [linkType, updateContent]);
 
-    // Obtener el texto actual del anuncio
-    const getCurrentText = () => {
+    const getCurrentText = useCallback(() => {
         return content.text || '';
-    };
+    }, [content.text]);
+
+    // Valores resueltos para ColorPicker
+    const colorValue = resolveValue(editStyles.color) || '#ffffff';
 
     return (
         <div className="space-y-4">
@@ -336,21 +341,11 @@ const AnnouncementEditDialog = ({
 
                 <div>
                     <Label htmlFor="color">Color del Texto</Label>
-                    <div className="flex gap-2 mt-1">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#ffffff'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#ffffff"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#ffffff'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={colorValue}                     // ← controlado
+                        onChange={(hex) => updateStyle('color', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 <div>
@@ -416,4 +411,4 @@ const AnnouncementEditDialog = ({
     );
 };
 
-export default AnnouncementEditDialog;
+export default React.memo(AnnouncementEditDialog);

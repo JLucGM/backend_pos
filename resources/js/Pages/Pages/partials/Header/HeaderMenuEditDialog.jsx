@@ -1,5 +1,5 @@
 // components/BuilderPages/partials/HeaderMenuEditDialog.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,10 +7,25 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, availableMenus, isLiveEdit = true }) => {
+const HeaderMenuEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    availableMenus,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -18,9 +33,9 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
     // Estado para el menú seleccionado
     const [selectedMenuId, setSelectedMenuId] = useState(
@@ -30,7 +45,6 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
     // Efecto para convertir editContent si es un array (estructura antigua)
     useEffect(() => {
         if (Array.isArray(editContent)) {
-            // Convertir estructura antigua a nueva
             setEditContent({
                 menuId: null,
             });
@@ -38,9 +52,9 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
         } else if (editContent?.menuId) {
             setSelectedMenuId(editContent.menuId.toString());
         }
-    }, []);
+    }, [editContent, setEditContent]);
 
-    const handleMenuChange = (menuId) => {
+    const handleMenuChange = useCallback((menuId) => {
         setSelectedMenuId(menuId);
 
         if (menuId === 'none') {
@@ -52,10 +66,9 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                 menuId: parseInt(menuId),
             });
         }
-    };
+    }, [setEditContent]);
 
-    // Función para restablecer tipografía a valores por defecto
-    const resetTypographyToDefaults = () => {
+    const resetTypographyToDefaults = useCallback(() => {
         const defaultStyles = {
             fontSize: '16px',
             fontWeight: 'normal',
@@ -68,10 +81,17 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
             ...prev,
             ...defaultStyles
         }));
-    };
+    }, [setEditStyles]);
 
-    // Determinar el tipo de fuente actual
     const currentFontType = editStyles.fontType || 'default';
+
+    // Valores resueltos para ColorPicker
+    const colorValue = resolveValue(editStyles.color) || '#000000';
+    const buttonBackgroundColor = resolveValue(editStyles.buttonBackgroundColor);
+    const buttonBgColorForPicker = (buttonBackgroundColor && buttonBackgroundColor !== 'transparent') ? buttonBackgroundColor : '#ffffff';
+    const hoverColorValue = resolveValue(editStyles.hoverColor) || '#000000';
+    const hoverBgColorValue = resolveValue(editStyles.hoverBackgroundColor) || '#f3f4f6';
+    const borderColorValue = resolveValue(editStyles.borderColor) || '#000000';
 
     return (
         <div className="space-y-4">
@@ -89,7 +109,7 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                 </Button>
             </div>
 
-            {/* TIPOGRAFÍA COMPLETA - IGUAL QUE TEXTCOMPONENT */}
+            {/* Menú Dinámico */}
             <div>
                 <h4 className="font-medium mb-3">Menú Dinámico</h4>
                 <Select value={selectedMenuId} onValueChange={handleMenuChange}>
@@ -112,6 +132,7 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
 
             <Separator className="my-4" />
 
+            {/* Tipografía de los botones */}
             <div>
                 <h4 className="font-medium mb-3">Tipografía de los botones</h4>
 
@@ -135,14 +156,6 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 <SelectItem value="custom">Personalizado</SelectItem>
                             </SelectContent>
                         </Select>
-                        {/* <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateStyle('fontSize', '16px')}
-                        >
-                            Por defecto
-                        </Button> */}
                     </div>
                 </div>
 
@@ -179,14 +192,6 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 <SelectItem value="800">Extra Negrita</SelectItem>
                             </SelectContent>
                         </Select>
-                        {/* <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateStyle('fontWeight', 'normal')}
-                        >
-                            Por defecto
-                        </Button> */}
                     </div>
                 </div>
 
@@ -209,18 +214,10 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 <SelectItem value="capitalize">Capitalizar Palabras</SelectItem>
                             </SelectContent>
                         </Select>
-                        {/* <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateStyle('textTransform', 'none')}
-                        >
-                            Por defecto
-                        </Button> */}
                     </div>
                 </div>
 
-                {/* Altura de línea (para consistencia con TextComponent) */}
+                {/* Altura de línea */}
                 <div className="mb-3">
                     <Label htmlFor="lineHeight">Altura de línea</Label>
                     <div className="flex gap-2">
@@ -239,14 +236,6 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                                 <SelectItem value="custom">Personalizada</SelectItem>
                             </SelectContent>
                         </Select>
-                        {/* <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateStyle('lineHeight', 'normal')}
-                        >
-                            Por defecto
-                        </Button> */}
                     </div>
                 </div>
 
@@ -264,7 +253,7 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
 
                 <Separator className="my-4" />
 
-                {/* Tipo de fuente - SISTEMA COMPLETO COMO TEXTCOMPONENT */}
+                {/* Tipo de fuente */}
                 <div className="mb-3">
                     <Label htmlFor="fontType">Tipo de Fuente</Label>
                     <Select
@@ -317,97 +306,51 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                 {/* Color del texto */}
                 <div className="mb-3">
                     <Label htmlFor="color">Color del texto</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
-                        />
-                        {/* <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateStyle('color', '#000000')}
-                        >
-                            Por defecto
-                        </Button> */}
-                    </div>
+                    <ColorPicker
+                        value={colorValue}
+                        onChange={(hex) => updateStyle('color', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
-                {/* Color de fondo de los botones */}
+                {/* Color de fondo de los botones (con soporte para transparente) */}
                 <div className="mb-3">
                     <Label htmlFor="buttonBackgroundColor">Color de fondo de los botones</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="buttonBackgroundColor"
-                            value={editStyles.buttonBackgroundColor || 'transparent'}
-                            onChange={(e) => updateStyle('buttonBackgroundColor', e.target.value)}
-                            placeholder="transparent"
-                            className="flex-1"
+                    <div className="flex items-center gap-2">
+                        <ColorPicker
+                            value={buttonBgColorForPicker}
+                            onChange={(hex) => updateStyle('buttonBackgroundColor', hex)}
+                            showOpacity={false}
                         />
-                        <Input
-                            type="color"
-                            value={editStyles.buttonBackgroundColor === 'transparent' ? '#ffffff' : editStyles.buttonBackgroundColor || '#ffffff'}
-                            onChange={(e) => updateStyle('buttonBackgroundColor', e.target.value === '#ffffff' ? 'transparent' : e.target.value)}
-                            className="w-12"
-                        />
-                        {/* <Button
+                        <Button
                             type="button"
                             variant="outline"
                             size="sm"
                             onClick={() => updateStyle('buttonBackgroundColor', 'transparent')}
                         >
-                            Por defecto
-                        </Button> */}
+                            Sin fondo
+                        </Button>
                     </div>
                 </div>
 
                 {/* Color hover del texto */}
                 <div className="mb-3">
                     <Label htmlFor="hoverColor">Color hover (texto)</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="hoverColor"
-                            value={editStyles.hoverColor || ''}
-                            onChange={(e) => updateStyle('hoverColor', e.target.value)}
-                            placeholder="#000000 (igual al color normal)"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.hoverColor || '#000000'}
-                            onChange={(e) => updateStyle('hoverColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={hoverColorValue}
+                        onChange={(hex) => updateStyle('hoverColor', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 {/* Color de fondo hover */}
                 <div className="mb-3">
                     <Label htmlFor="hoverBackgroundColor">Color de fondo hover</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="hoverBackgroundColor"
-                            value={editStyles.hoverBackgroundColor || ''}
-                            onChange={(e) => updateStyle('hoverBackgroundColor', e.target.value)}
-                            placeholder="#f3f4f6 (gris claro)"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.hoverBackgroundColor || '#f3f4f6'}
-                            onChange={(e) => updateStyle('hoverBackgroundColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={hoverBgColorValue}
+                        onChange={(hex) => updateStyle('hoverBackgroundColor', hex)}
+                        showOpacity={false}
+                    />
                 </div>
             </div>
 
@@ -455,29 +398,11 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                 {/* Color del borde */}
                 <div className="mb-3">
                     <Label htmlFor="borderColor">Color del borde</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="borderColor"
-                            value={editStyles.borderColor || '#000000'}
-                            onChange={(e) => updateStyle('borderColor', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.borderColor || '#000000'}
-                            onChange={(e) => updateStyle('borderColor', e.target.value)}
-                            className="w-12"
-                        />
-                        {/* <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => updateStyle('borderColor', '#000000')}
-                        >
-                            Por defecto
-                        </Button> */}
-                    </div>
+                    <ColorPicker
+                        value={borderColorValue}
+                        onChange={(hex) => updateStyle('borderColor', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 {/* Border-radius */}
@@ -565,4 +490,4 @@ const HeaderMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
     );
 };
 
-export default HeaderMenuEditDialog;
+export default React.memo(HeaderMenuEditDialog);

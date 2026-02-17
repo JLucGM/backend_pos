@@ -1,13 +1,25 @@
 // components/BuilderPages/partials/ProductImageEditDialog.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Input } from '@/Components/ui/input';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
-const ProductImageEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const ProductImageEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -15,12 +27,12 @@ const ProductImageEditDialog = ({ editContent, setEditContent, editStyles, setEd
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
 
     return (
         <div className="space-y-4">
@@ -103,4 +115,4 @@ const ProductImageEditDialog = ({ editContent, setEditContent, editStyles, setEd
     );
 };
 
-export default ProductImageEditDialog;
+export default React.memo(ProductImageEditDialog);

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,6 +7,8 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const BentoFeatureTitleEditDialog = ({
     editContent,
@@ -14,10 +16,16 @@ const BentoFeatureTitleEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -25,11 +33,11 @@ const BentoFeatureTitleEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         const textStyle = editStyles.textStyle || 'heading4';
 
         if (textStyle.startsWith('heading')) {
@@ -44,7 +52,9 @@ const BentoFeatureTitleEditDialog = ({
                 customFont: '',
             }));
         }
-    };
+    }, [editStyles.textStyle, themeSettings, setEditStyles]);
+
+    const colorValue = resolveValue(editStyles.color) || '#1f2937';
 
     return (
         <div className="space-y-4">
@@ -244,7 +254,6 @@ const BentoFeatureTitleEditDialog = ({
             )}
 
             <div className="pt-4 border-t">
-                <h4 className="font-medium mb-3">Estilo de contenedor</h4>
 
                 <div>
                     <Label htmlFor="layout">Layout</Label>
@@ -283,25 +292,15 @@ const BentoFeatureTitleEditDialog = ({
 
                 <div>
                     <Label htmlFor="color">Color</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#1f2937'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#1f2937"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#1f2937'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={colorValue}
+                        onChange={(hex) => updateStyle('color', hex)}
+                        showOpacity={false}
+                    />
                 </div>
             </div>
         </div>
     );
 };
 
-export default BentoFeatureTitleEditDialog;
+export default React.memo(BentoFeatureTitleEditDialog);

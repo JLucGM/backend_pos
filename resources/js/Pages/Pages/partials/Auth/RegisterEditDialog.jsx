@@ -5,10 +5,27 @@ import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker'; // Ajusta la ruta según tu proyecto
 
-const RegisterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const RegisterEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    isLiveEdit = true,
+    themeSettings,
+    appliedTheme
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    // Obtener tema combinado con valores por defecto
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -159,21 +176,14 @@ const RegisterEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
                 </div>
             </div>
 
+            {/* Color de fondo */}
             <div>
                 <Label htmlFor="backgroundColor">Color de fondo</Label>
-                <div className="flex gap-2">
-                    <Input
-                        type="text"
-                        value={editStyles?.backgroundColor || '#ffffff'}
-                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles?.backgroundColor || '#ffffff'}
-                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                        className="w-12"
-                    />
-                </div>
+                <ColorPicker
+                    defaultColor={resolveValue(editStyles?.backgroundColor) || resolveValue(themeWithDefaults.background) || '#ffffff'}
+                    onChange={(hex) => setEditStyles({ ...editStyles, backgroundColor: hex })}
+                    showOpacity={false}
+                />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -281,21 +291,14 @@ const RegisterEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
                 </div>
             </div>
 
+            {/* Color de fondo del botón */}
             <div>
                 <Label htmlFor="buttonBackgroundColor">Color de fondo del botón</Label>
-                <div className="flex gap-2">
-                    <Input
-                        type="text"
-                        value={editStyles?.buttonBackgroundColor || '#10b981'}
-                        onChange={(e) => setEditStyles({ ...editStyles, buttonBackgroundColor: e.target.value })}
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles?.buttonBackgroundColor || '#10b981'}
-                        onChange={(e) => setEditStyles({ ...editStyles, buttonBackgroundColor: e.target.value })}
-                        className="w-12"
-                    />
-                </div>
+                <ColorPicker
+                    defaultColor={resolveValue(editStyles?.buttonBackgroundColor) || resolveValue(themeWithDefaults.primary_button_background) || '#10b981'}
+                    onChange={(hex) => setEditStyles({ ...editStyles, buttonBackgroundColor: hex })}
+                    showOpacity={false}
+                />
             </div>
         </div>
     );

@@ -122,7 +122,7 @@ const BannerComponent = ({
         alignItems: getVerticalAlignment(),
         justifyContent: getHorizontalAlignment(),
     };
-
+// console.log(containerStyles)
     // Estilos para la capa de contenido interno
     const contentStyles = {
         display: 'flex',

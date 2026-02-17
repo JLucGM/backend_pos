@@ -1,12 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Input } from '@/Components/ui/input';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
-const CarouselImageEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const CarouselImageEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    // Preparado para resolver referencias al tema si se añaden campos de color en el futuro
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -14,21 +27,15 @@ const CarouselImageEditDialog = ({ editContent, setEditContent, editStyles, setE
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
 
     return (
         <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">
-                    La imagen del producto se obtiene automáticamente de la base de datos.
-                </p>
-            </div>
-
             <div>
                 <Label htmlFor="aspectRatio">Aspect Ratio</Label>
                 <Select
@@ -102,4 +109,4 @@ const CarouselImageEditDialog = ({ editContent, setEditContent, editStyles, setE
     );
 };
 
-export default CarouselImageEditDialog;
+export default React.memo(CarouselImageEditDialog);

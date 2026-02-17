@@ -8,6 +8,7 @@ import { Badge } from "@/Components/ui/badge"
 import SummaryCard from '@/Components/SummaryCard';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import SubscriptionStatus from '@/Components/SubscriptionStatus';
+import { ColorPicker } from '@/Components/ui/color-picker';
 
 export default function Dashboard({ user, usersCount, orders, ordersCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod, company, currentSubscription }) {
     const userAuth = usePage().props.auth.user;
@@ -71,6 +72,7 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
                         className="col-span-2" 
                     />
 
+<ColorPicker />
                     {/* <DivSection className="col-span-3">
                         <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Usuarios Registrados por Mes</h3>
                         <ChartContainer config={chartConfig} className="min-h-[200px] w-full ">

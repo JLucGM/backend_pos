@@ -1156,10 +1156,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 cardBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
                                 cardBorderOpacity: themeWithDefaults.opacity_100 || '1',
                                 cardBorderRadius: themeWithDefaults.border_radius_small || '0px',
-                                cardPaddingTop: '10px',
-                                cardPaddingRight: '10px',
-                                cardPaddingBottom: '10px',
-                                cardPaddingLeft: '10px',
+                                cardPaddingTop: '0',
+                                cardPaddingRight: '0',
+                                cardPaddingBottom: '0',
+                                cardPaddingLeft: '0',
                                 imageBorder: 'none',
                                 imageBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
                                 imageBorderOpacity: themeWithDefaults.opacity_100 || '1',
@@ -2408,11 +2408,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     type: 'imageCarousel',
                     content,
                     styles: {
-                        backgroundColor: 'theme.background',
-                        paddingTop: '20px',
-                        paddingRight: '20px',
-                        paddingBottom: '20px',
-                        paddingLeft: '20px',
+                        backgroundColor: themeWithDefaults.background || '#ffffff',
+                        paddingTop: '0',
+                        paddingRight: '0',
+                        paddingBottom: '0',
+                        paddingLeft: '0',
                     }
                 };
 
@@ -2433,7 +2433,7 @@ if (selectedType === 'imageCarouselAccordion') {
         type: 'imageCarouselAccordion',
         content,
         styles: {
-            backgroundColor: 'theme.background',
+            backgroundColor: themeWithDefaults.background || '#ffffff',
             paddingTop: '20px',
             paddingRight: '20px',
             paddingBottom: '20px',

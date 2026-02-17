@@ -1,19 +1,46 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const CartSummaryEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
             // Las actualizaciones se manejan automáticamente
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
+    const updateContent = useCallback((key, value) => {
+        setEditContent(prev => ({ ...prev, [key]: value }));
+    }, [setEditContent]);
+
+    const updateStyle = useCallback((key, value) => {
+        setEditStyles(prev => ({ ...prev, [key]: value }));
+    }, [setEditStyles]);
+
+    const bgColor = resolveValue(editStyles?.backgroundColor) || '#f9fafb';
+    const borderColor = resolveValue(editStyles?.borderColor) || '#f9fafb';
 
     return (
         <div className="space-y-4">
@@ -22,7 +49,7 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                 <Input
                     type="text"
                     value={editContent?.title || 'Resumen del pedido'}
-                    onChange={(e) => setEditContent({ ...editContent, title: e.target.value })}
+                    onChange={(e) => updateContent('title', e.target.value)}
                 />
             </div>
 
@@ -31,11 +58,9 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                     <Label>Mostrar subtotal</Label>
                     <Switch
                         checked={editContent?.showSubtotal !== false}
-                        onCheckedChange={(checked) => setEditContent({ ...editContent, showSubtotal: checked })}
+                        onCheckedChange={(checked) => updateContent('showSubtotal', checked)}
                     />
                 </div>
-
-
             </div>
             <Separator className="my-4" />
 
@@ -44,28 +69,19 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                 <Input
                     type="text"
                     value={editContent?.checkoutButtonText || 'Proceder al pago'}
-                    onChange={(e) => setEditContent({ ...editContent, checkoutButtonText: e.target.value })}
+                    onChange={(e) => updateContent('checkoutButtonText', e.target.value)}
                 />
             </div>
 
             <Separator className="my-4" />
 
-
             <div>
                 <Label htmlFor="backgroundColor">Color de fondo</Label>
-                <div className="flex gap-2">
-                    <Input
-                        type="text"
-                        value={editStyles?.backgroundColor || '#f9fafb'}
-                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles?.backgroundColor || '#f9fafb'}
-                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                        className="w-12"
-                    />
-                </div>
+                <ColorPicker
+                    value={bgColor}
+                    onChange={(hex) => updateStyle('backgroundColor', hex)}
+                    showOpacity={false}
+                />
             </div>
 
             <Separator className="my-4" />
@@ -76,7 +92,7 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                     <Input
                         type="number"
                         value={parseInt(editStyles.paddingTop) || 20}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingTop: e.target.value })}
+                        onChange={(e) => updateStyle('paddingTop', e.target.value)}
                     />
                 </div>
                 <div>
@@ -84,7 +100,7 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                     <Input
                         type="number"
                         value={parseInt(editStyles.paddingBottom) || 20}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingBottom: e.target.value })}
+                        onChange={(e) => updateStyle('paddingBottom', e.target.value)}
                     />
                 </div>
             </div>
@@ -95,7 +111,7 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                     <Input
                         type="number"
                         value={parseInt(editStyles.paddingLeft) || 20}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingLeft: e.target.value })}
+                        onChange={(e) => updateStyle('paddingLeft', e.target.value)}
                     />
                 </div>
                 <div>
@@ -103,13 +119,12 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                     <Input
                         type="number"
                         value={parseInt(editStyles.paddingRight) || 20}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingRight: e.target.value })}
+                        onChange={(e) => updateStyle('paddingRight', e.target.value)}
                     />
                 </div>
             </div>
 
             <Separator className="my-4" />
-
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -118,7 +133,7 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                         id="borderRadius"
                         type="number"
                         value={parseInt(editStyles.borderRadius) || 0}
-                        onChange={(e) => setEditStyles({ ...editStyles, borderRadius: e.target.value })}
+                        onChange={(e) => updateStyle('borderRadius', e.target.value)}
                         placeholder="8"
                     />
                 </div>
@@ -129,26 +144,18 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                         id="borderWidth"
                         type="number"
                         value={parseInt(editStyles.borderWidth) || 0}
-                        onChange={(e) => setEditStyles({ ...editStyles, borderWidth: e.target.value })}
+                        onChange={(e) => updateStyle('borderWidth', e.target.value)}
                         placeholder="1"
                     />
                 </div>
-                {editStyles.borderWidth !== '0px' && (
+                {parseInt(editStyles.borderWidth) > 0 && (
                     <div className='col-span-full'>
                         <Label htmlFor="borderColor">Color del borde</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                type="text"
-                                value={editStyles?.borderColor || '#f9fafb'}
-                                onChange={(e) => setEditStyles({ ...editStyles, borderColor: e.target.value })}
-                            />
-                            <Input
-                                type="color"
-                                value={editStyles?.borderColor || '#f9fafb'}
-                                onChange={(e) => setEditStyles({ ...editStyles, borderColor: e.target.value })}
-                                className="w-12"
-                            />
-                        </div>
+                        <ColorPicker
+                            value={borderColor}
+                            onChange={(hex) => updateStyle('borderColor', hex)}
+                            showOpacity={false}
+                        />
                     </div>
                 )}
             </div>
@@ -160,12 +167,12 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
                         id="totalFontSize"
                         type="number"
                         value={parseInt(editStyles?.totalFontSize) || 24}
-                        onChange={(e) => setEditStyles({ ...editStyles, totalFontSize: e.target.value })}
+                        onChange={(e) => updateStyle('totalFontSize', e.target.value)}
                         className="flex-1"
                     />
                     <Select
                         value={editStyles.totalFontSizeUnit || (editStyles.totalFontSize?.toString().includes('rem') ? 'rem' : 'px')}
-                        onValueChange={(value) => setEditStyles({ ...editStyles, totalFontSizeUnit: value })}
+                        onValueChange={(value) => updateStyle('totalFontSizeUnit', value)}
                     >
                         <SelectTrigger className="w-[80px]">
                             <SelectValue />
@@ -182,4 +189,4 @@ const CartSummaryEditDialog = ({ editContent, setEditContent, editStyles, setEdi
     );
 };
 
-export default CartSummaryEditDialog;
+export default React.memo(CartSummaryEditDialog);

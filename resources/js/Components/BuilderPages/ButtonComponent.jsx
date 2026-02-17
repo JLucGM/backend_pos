@@ -130,7 +130,7 @@ const ButtonComponent = ({
             textDecoration: 'none',
             display: 'inline-block',
             outline: 'none',
-            border: 'none',
+            // border: 'none',
         };
 
         // Determinar tipo de botón

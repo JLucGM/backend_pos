@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -6,6 +6,8 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const ProductNameEditDialog = ({
     editContent,
@@ -13,10 +15,14 @@ const ProductNameEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -24,11 +30,11 @@ const ProductNameEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         const textStyle = editStyles.textStyle || 'paragraph';
 
         if (textStyle === 'paragraph' && themeSettings) {
@@ -42,7 +48,9 @@ const ProductNameEditDialog = ({
                 customFont: '',
             }));
         }
-    };
+    }, [editStyles.textStyle, themeSettings, setEditStyles]);
+
+    const colorValue = resolveValue(editStyles.color) || '#000000';
 
     return (
         <div className="space-y-4">
@@ -194,16 +202,16 @@ const ProductNameEditDialog = ({
                             Por defecto (usar fuente del tema para este estilo)
                         </SelectItem>
                         <SelectItem value="body_font">
-                            Body Font ({themeSettings?.body_font || 'Inter'})
+                            Body Font ({themeWithDefaults.body_font || 'Inter'})
                         </SelectItem>
                         <SelectItem value="heading_font">
-                            Heading Font ({themeSettings?.heading_font || 'Inter'})
+                            Heading Font ({themeWithDefaults.heading_font || 'Inter'})
                         </SelectItem>
                         <SelectItem value="subheading_font">
-                            Subheading Font ({themeSettings?.subheading_font || 'Inter'})
+                            Subheading Font ({themeWithDefaults.subheading_font || 'Inter'})
                         </SelectItem>
                         <SelectItem value="accent_font">
-                            Accent Font ({themeSettings?.accent_font || 'Inter'})
+                            Accent Font ({themeWithDefaults.accent_font || 'Inter'})
                         </SelectItem>
                         <SelectItem value="custom">Personalizada</SelectItem>
                     </SelectContent>
@@ -262,20 +270,19 @@ const ProductNameEditDialog = ({
 
                 <div>
                     <Label htmlFor="color">Color</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
+                    <div className="flex items-center gap-2">
+                        <ColorPicker
+                            value={colorValue}
+                            onChange={(hex) => updateStyle('color', hex)}
+                            showOpacity={false}
                         />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
-                        />
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateStyle('color', 'theme.text')}
+                        >
+                            Tema
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -283,4 +290,4 @@ const ProductNameEditDialog = ({
     );
 };
 
-export default ProductNameEditDialog;
+export default React.memo(ProductNameEditDialog);

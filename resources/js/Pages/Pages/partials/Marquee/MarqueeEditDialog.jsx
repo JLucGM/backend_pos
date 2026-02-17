@@ -1,9 +1,12 @@
 // components/Builder/dialogs/MarqueeEditDialog.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { Button } from '@/Components/ui/button';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const MarqueeEditDialog = ({
     editContent,
@@ -11,10 +14,16 @@ const MarqueeEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true,
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -22,16 +31,19 @@ const MarqueeEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
+
+    const textColor = resolveValue(editStyles.color) || '#000000';
+    const bgColor = resolveValue(editStyles.backgroundColor);
+    const defaultBgColor = (bgColor && bgColor !== 'transparent') ? bgColor : '#ffffff';
 
     return (
         <div className="space-y-4">
-            {/* Texto del Marquee */}
             <div>
                 <Label htmlFor="marquee-text">Texto del Marquee</Label>
                 <Input
@@ -42,7 +54,17 @@ const MarqueeEditDialog = ({
                 />
             </div>
 
-            {/* Selección de fuente */}
+            <div className="flex items-center space-x-2">
+                <input
+                    type="checkbox"
+                    id="marquee-interactive"
+                    checked={editStyles.interactive !== false}
+                    onChange={(e) => updateStyle('interactive', e.target.checked)}
+                    className="rounded border-gray-300"
+                />
+                <Label htmlFor="marquee-interactive">Interactivo (pausa al pasar el mouse)</Label>
+            </div>
+
             <div>
                 <Label htmlFor="fontType">Tipo de Fuente</Label>
                 <Select
@@ -82,7 +104,6 @@ const MarqueeEditDialog = ({
                 </div>
             )}
 
-            {/* Velocidad */}
             <div>
                 <Label htmlFor="marquee-speed">Velocidad (1-10)</Label>
                 <Input
@@ -100,7 +121,6 @@ const MarqueeEditDialog = ({
                 </div>
             </div>
 
-            {/* Dirección */}
             <div>
                 <Label htmlFor="marquee-direction">Dirección</Label>
                 <Select
@@ -117,8 +137,7 @@ const MarqueeEditDialog = ({
                 </Select>
             </div>
 
-            {/* Layout */}
-            <div>
+            {/* <div>
                 <Label htmlFor="layout">Layout</Label>
                 <Select
                     value={editStyles.layout || 'fill'}
@@ -132,9 +151,8 @@ const MarqueeEditDialog = ({
                         <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
                     </SelectContent>
                 </Select>
-            </div>
+            </div> */}
 
-            {/* Tamaño de texto */}
             <div>
                 <Label htmlFor="marquee-fontSize">Tamaño de texto</Label>
                 <div className="flex gap-2">
@@ -162,7 +180,6 @@ const MarqueeEditDialog = ({
                 </div>
             </div>
 
-            {/* Grosor de texto */}
             <div>
                 <Label htmlFor="marquee-fontWeight">Grosor del texto</Label>
                 <Select
@@ -181,45 +198,34 @@ const MarqueeEditDialog = ({
                 </Select>
             </div>
 
-            {/* Color de texto */}
             <div>
                 <Label htmlFor="marquee-color">Color del texto</Label>
-                <div className="flex gap-2">
-                    <Input
-                        id="marquee-color"
-                        value={editStyles.color || '#000000'}
-                        onChange={(e) => updateStyle('color', e.target.value)}
-                        placeholder="#000000"
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles.color || '#000000'}
-                        onChange={(e) => updateStyle('color', e.target.value)}
-                        className="w-12"
-                    />
-                </div>
+                <ColorPicker
+                    value={textColor}
+                    onChange={(hex) => updateStyle('color', hex)}
+                    showOpacity={false}
+                />
             </div>
 
-            {/* Color de fondo */}
             <div>
                 <Label htmlFor="marquee-backgroundColor">Color de fondo</Label>
-                <div className="flex gap-2">
-                    <Input
-                        id="marquee-backgroundColor"
-                        value={editStyles.backgroundColor || 'transparent'}
-                        onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                        placeholder="transparent"
+                <div className="flex items-center gap-2">
+                    <ColorPicker
+                        value={defaultBgColor}
+                        onChange={(hex) => updateStyle('backgroundColor', hex)}
+                        showOpacity={false}
                     />
-                    <Input
-                        type="color"
-                        value={editStyles.backgroundColor === 'transparent' ? '#ffffff' : editStyles.backgroundColor || '#ffffff'}
-                        onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                        className="w-12"
-                    />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateStyle('backgroundColor', 'transparent')}
+                    >
+                        Sin fondo
+                    </Button>
                 </div>
             </div>
 
-            {/* Padding individual */}
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <Label htmlFor="marquee-paddingTop">Padding Superior</Label>
@@ -263,8 +269,7 @@ const MarqueeEditDialog = ({
                 </div>
             </div>
 
-            {/* Border Radius */}
-            <div>
+            {/* <div>
                 <Label htmlFor="marquee-borderRadius">Radio de Borde</Label>
                 <Input
                     id="marquee-borderRadius"
@@ -273,21 +278,9 @@ const MarqueeEditDialog = ({
                     onChange={(e) => updateStyle('borderRadius', e.target.value)}
                     placeholder="0"
                 />
-            </div>
-
-            {/* Interactivo */}
-            <div className="flex items-center space-x-2">
-                <input
-                    type="checkbox"
-                    id="marquee-interactive"
-                    checked={editStyles.interactive !== false}
-                    onChange={(e) => updateStyle('interactive', e.target.checked)}
-                    className="rounded border-gray-300"
-                />
-                <Label htmlFor="marquee-interactive">Interactivo (pausa al pasar el mouse)</Label>
-            </div>
+            </div> */}
         </div>
     );
 };
 
-export default MarqueeEditDialog;
+export default React.memo(MarqueeEditDialog);

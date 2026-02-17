@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
@@ -7,12 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { toast } from 'sonner';
 import { Palette, RefreshCw, Copy, Eye } from 'lucide-react';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker'; // Ajusta la ruta según tu proyecto
 
 const ThemeCustomizerDialog = ({
     open,
     onOpenChange,
     page,
     themeSettings,
+    appliedTheme,
     hasCopiedTheme,
     onCopyTheme,
     onSave,
@@ -29,12 +32,16 @@ const ThemeCustomizerDialog = ({
         { label: 'Georgia', value: "'Georgia', serif" },
         { label: 'Arial', value: "'Arial', sans-serif" },
         { label: 'Helvetica', value: "'Helvetica', sans-serif" },
-        // Agregar las combinaciones que vienen por defecto
         { label: 'Arial/Helvetica', value: "'Arial', 'Helvetica', sans-serif" },
         { label: 'Georgia/Times', value: "'Georgia', 'Times New Roman', serif" },
     ]);
 
     const [localSettings, setLocalSettings] = useState({});
+
+    // Memoizar resolveValue para evitar que cambie en cada render
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     // Valores por defecto mínimos para fuentes (solo se usarán si themeSettings está vacío)
     const defaultFontSettings = {
@@ -46,20 +53,20 @@ const ThemeCustomizerDialog = ({
 
     useEffect(() => {
         if (themeSettings && typeof themeSettings === 'object' && Object.keys(themeSettings).length > 0) {
-            // Si themeSettings tiene datos, usarlo directamente
+            // Mantener las referencias originales, no resolverlas aún
             setLocalSettings(themeSettings);
         } else {
-            // Si themeSettings está vacío, usar los valores por defecto mínimos
             setLocalSettings(defaultFontSettings);
         }
     }, [themeSettings]);
 
-    const handleChange = (key, value) => {
+    // Memoizar handleChange
+    const handleChange = useCallback((key, value) => {
         setLocalSettings(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, []);
 
     const handleSave = () => {
         onSave(localSettings);
@@ -77,37 +84,16 @@ const ThemeCustomizerDialog = ({
         }
     };
 
-    // Función para renderizar un color picker
-    const ColorPicker = ({ label, value, onChange, placeholder }) => (
-        <div>
-            <Label>{label}</Label>
-            <div className="flex gap-2 mt-1">
-                <Input
-                    value={value || ''}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder={placeholder}
-                />
-                <div
-                    className="w-10 h-10 rounded border cursor-pointer"
-                    style={{
-                        backgroundColor: value ? value : '#ffffff'
-                    }}
-                    title="Vista previa del color"
-                />
-            </div>
-        </div>
-    );
-
     // Función para obtener el valor de fuente resuelto
-    const getResolvedFont = (fontKey) => {
+    const getResolvedFont = useCallback((fontKey) => {
         const fontValue = localSettings[fontKey];
         if (!fontValue || fontValue === 'body_font') return localSettings.body_font;
         if (fontValue === 'heading_font') return localSettings.heading_font;
         if (fontValue === 'subheading_font') return localSettings.subheading_font;
         if (fontValue === 'accent_font') return localSettings.accent_font;
         if (fontValue === 'custom') return localSettings[`${fontKey}_custom`];
-        return fontValue;
-    };
+        return resolveValue(fontValue); // Si es una referencia como 'theme.xxx', resolver
+    }, [localSettings, resolveValue]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -159,42 +145,54 @@ const ThemeCustomizerDialog = ({
                                                 Colores Generales
                                             </h4>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <ColorPicker
-                                                    label="Color de Fondo"
-                                                    value={localSettings.background}
-                                                    onChange={(value) => handleChange('background', value)}
-                                                    placeholder="#ffffff"
-                                                />
-                                                <ColorPicker
-                                                    label="Color de Títulos"
-                                                    value={localSettings.heading}
-                                                    onChange={(value) => handleChange('heading', value)}
-                                                    placeholder="#0a0a0a"
-                                                />
-                                                <ColorPicker
-                                                    label="Color de Texto"
-                                                    value={localSettings.text}
-                                                    onChange={(value) => handleChange('text', value)}
-                                                    placeholder="#0a0a0a"
-                                                />
-                                                <ColorPicker
-                                                    label="Color de Enlaces"
-                                                    value={localSettings.links}
-                                                    onChange={(value) => handleChange('links', value)}
-                                                    placeholder="#0080ff"
-                                                />
-                                                <ColorPicker
-                                                    label="Color de Enlaces (Hover)"
-                                                    value={localSettings.hover_links}
-                                                    onChange={(value) => handleChange('hover_links', value)}
-                                                    placeholder="#0066cc"
-                                                />
-                                                <ColorPicker
-                                                    label="Color de Bordes"
-                                                    value={localSettings.borders}
-                                                    onChange={(value) => handleChange('borders', value)}
-                                                    placeholder="#f5f5f5"
-                                                />
+                                                <div>
+                                                    <Label>Color de Fondo</Label>
+                                                    <ColorPicker
+                                                        value={resolveValue(localSettings.background) || '#ffffff'}
+                                                        onChange={(hex) => handleChange('background', hex)}
+                                                        showOpacity={false}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Color de Títulos</Label>
+                                                    <ColorPicker
+                                                        value={resolveValue(localSettings.heading) || '#0a0a0a'}
+                                                        onChange={(hex) => handleChange('heading', hex)}
+                                                        showOpacity={false}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Color de Texto</Label>
+                                                    <ColorPicker
+                                                        value={resolveValue(localSettings.text) || '#0a0a0a'}
+                                                        onChange={(hex) => handleChange('text', hex)}
+                                                        showOpacity={false}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Color de Enlaces</Label>
+                                                    <ColorPicker
+                                                        value={resolveValue(localSettings.links) || '#0080ff'}
+                                                        onChange={(hex) => handleChange('links', hex)}
+                                                        showOpacity={false}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Color de Enlaces (Hover)</Label>
+                                                    <ColorPicker
+                                                        value={resolveValue(localSettings.hover_links) || '#0066cc'}
+                                                        onChange={(hex) => handleChange('hover_links', hex)}
+                                                        showOpacity={false}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>Color de Bordes</Label>
+                                                    <ColorPicker
+                                                        value={resolveValue(localSettings.borders) || '#f5f5f5'}
+                                                        onChange={(hex) => handleChange('borders', hex)}
+                                                        showOpacity={false}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
 
@@ -224,24 +222,30 @@ const ThemeCustomizerDialog = ({
                                                 <div className="pl-4 border-l-2 border-blue-200">
                                                     <h5 className="text-sm font-medium mb-2">Estado Normal</h5>
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <ColorPicker
-                                                            label="Color de Fondo"
-                                                            value={localSettings.primary_button_background}
-                                                            onChange={(value) => handleChange('primary_button_background', value)}
-                                                            placeholder="#d6eaff"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Texto"
-                                                            value={localSettings.primary_button_text}
-                                                            onChange={(value) => handleChange('primary_button_text', value)}
-                                                            placeholder="#0a0a0a"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Borde"
-                                                            value={localSettings.primary_button_border}
-                                                            onChange={(value) => handleChange('primary_button_border', value)}
-                                                            placeholder="#d6eaff"
-                                                        />
+                                                        <div>
+                                                            <Label>Color de Fondo</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.primary_button_background) || '#d6eaff'}
+                                                                onChange={(hex) => handleChange('primary_button_background', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Texto</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.primary_button_text) || '#0a0a0a'}
+                                                                onChange={(hex) => handleChange('primary_button_text', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Borde</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.primary_button_border) || '#d6eaff'}
+                                                                onChange={(hex) => handleChange('primary_button_border', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
                                                         <div>
                                                             <Label>Grosor de Borde</Label>
                                                             <Select
@@ -290,24 +294,30 @@ const ThemeCustomizerDialog = ({
                                                 <div className="pl-4 border-l-2 border-blue-200">
                                                     <h5 className="text-sm font-medium mb-2">Estado Hover</h5>
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <ColorPicker
-                                                            label="Color de Fondo (Hover)"
-                                                            value={localSettings.primary_button_hover_background}
-                                                            onChange={(value) => handleChange('primary_button_hover_background', value)}
-                                                            placeholder="#add6ff"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Texto (Hover)"
-                                                            value={localSettings.primary_button_hover_text}
-                                                            onChange={(value) => handleChange('primary_button_hover_text', value)}
-                                                            placeholder="#0a0a0a"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Borde (Hover)"
-                                                            value={localSettings.primary_button_hover_border}
-                                                            onChange={(value) => handleChange('primary_button_hover_border', value)}
-                                                            placeholder="#add6ff"
-                                                        />
+                                                        <div>
+                                                            <Label>Color de Fondo (Hover)</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.primary_button_hover_background) || '#add6ff'}
+                                                                onChange={(hex) => handleChange('primary_button_hover_background', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Texto (Hover)</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.primary_button_hover_text) || '#0a0a0a'}
+                                                                onChange={(hex) => handleChange('primary_button_hover_text', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Borde (Hover)</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.primary_button_hover_border) || '#add6ff'}
+                                                                onChange={(hex) => handleChange('primary_button_hover_border', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -320,24 +330,30 @@ const ThemeCustomizerDialog = ({
                                                 <div className="pl-4 border-l-2 border-gray-200">
                                                     <h5 className="text-sm font-medium mb-2">Estado Normal</h5>
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <ColorPicker
-                                                            label="Color de Fondo"
-                                                            value={localSettings.secondary_button_background}
-                                                            onChange={(value) => handleChange('secondary_button_background', value)}
-                                                            placeholder="#f5f5f5"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Texto"
-                                                            value={localSettings.secondary_button_text}
-                                                            onChange={(value) => handleChange('secondary_button_text', value)}
-                                                            placeholder="#0a0a0a"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Borde"
-                                                            value={localSettings.secondary_button_border}
-                                                            onChange={(value) => handleChange('secondary_button_border', value)}
-                                                            placeholder="#f5f5f5"
-                                                        />
+                                                        <div>
+                                                            <Label>Color de Fondo</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.secondary_button_background) || '#f5f5f5'}
+                                                                onChange={(hex) => handleChange('secondary_button_background', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Texto</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.secondary_button_text) || '#0a0a0a'}
+                                                                onChange={(hex) => handleChange('secondary_button_text', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Borde</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.secondary_button_border) || '#f5f5f5'}
+                                                                onChange={(hex) => handleChange('secondary_button_border', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
                                                         <div>
                                                             <Label>Grosor de Borde</Label>
                                                             <Select
@@ -386,24 +402,30 @@ const ThemeCustomizerDialog = ({
                                                 <div className="pl-4 border-l-2 border-gray-200">
                                                     <h5 className="text-sm font-medium mb-2">Estado Hover</h5>
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <ColorPicker
-                                                            label="Color de Fondo (Hover)"
-                                                            value={localSettings.secondary_button_hover_background}
-                                                            onChange={(value) => handleChange('secondary_button_hover_background', value)}
-                                                            placeholder="#e6e6e6"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Texto (Hover)"
-                                                            value={localSettings.secondary_button_hover_text}
-                                                            onChange={(value) => handleChange('secondary_button_hover_text', value)}
-                                                            placeholder="#0a0a0a"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Borde (Hover)"
-                                                            value={localSettings.secondary_button_hover_border}
-                                                            onChange={(value) => handleChange('secondary_button_hover_border', value)}
-                                                            placeholder="#e6e6e6"
-                                                        />
+                                                        <div>
+                                                            <Label>Color de Fondo (Hover)</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.secondary_button_hover_background) || '#e6e6e6'}
+                                                                onChange={(hex) => handleChange('secondary_button_hover_background', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Texto (Hover)</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.secondary_button_hover_text) || '#0a0a0a'}
+                                                                onChange={(hex) => handleChange('secondary_button_hover_text', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Borde (Hover)</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.secondary_button_hover_border) || '#e6e6e6'}
+                                                                onChange={(hex) => handleChange('secondary_button_hover_border', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -420,24 +442,30 @@ const ThemeCustomizerDialog = ({
                                                 <div className="pl-4 border-l-2 border-green-200">
                                                     <h5 className="text-sm font-medium mb-2">Estado Normal</h5>
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <ColorPicker
-                                                            label="Color de Fondo"
-                                                            value={localSettings.input_background}
-                                                            onChange={(value) => handleChange('input_background', value)}
-                                                            placeholder="#ffffff"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Texto"
-                                                            value={localSettings.input_text}
-                                                            onChange={(value) => handleChange('input_text', value)}
-                                                            placeholder="#0a0a0a"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Borde"
-                                                            value={localSettings.input_border}
-                                                            onChange={(value) => handleChange('input_border', value)}
-                                                            placeholder="#f5f5f5"
-                                                        />
+                                                        <div>
+                                                            <Label>Color de Fondo</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.input_background) || '#ffffff'}
+                                                                onChange={(hex) => handleChange('input_background', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Texto</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.input_text) || '#0a0a0a'}
+                                                                onChange={(hex) => handleChange('input_text', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Borde</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.input_border) || '#f5f5f5'}
+                                                                onChange={(hex) => handleChange('input_border', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
                                                         <div>
                                                             <Label>Grosor de Borde</Label>
                                                             <Select
@@ -469,24 +497,30 @@ const ThemeCustomizerDialog = ({
                                                 <div className="pl-4 border-l-2 border-green-200">
                                                     <h5 className="text-sm font-medium mb-2">Estados Hover y Focus</h5>
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <ColorPicker
-                                                            label="Color de Fondo (Hover)"
-                                                            value={localSettings.input_hover_background}
-                                                            onChange={(value) => handleChange('input_hover_background', value)}
-                                                            placeholder="#ffffff"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Fondo (Focus)"
-                                                            value={localSettings.input_focus_background}
-                                                            onChange={(value) => handleChange('input_focus_background', value)}
-                                                            placeholder="#ffffff"
-                                                        />
-                                                        <ColorPicker
-                                                            label="Color de Borde (Focus)"
-                                                            value={localSettings.input_focus_border}
-                                                            onChange={(value) => handleChange('input_focus_border', value)}
-                                                            placeholder="#d6eaff"
-                                                        />
+                                                        <div>
+                                                            <Label>Color de Fondo (Hover)</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.input_hover_background) || '#ffffff'}
+                                                                onChange={(hex) => handleChange('input_hover_background', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Fondo (Focus)</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.input_focus_background) || '#ffffff'}
+                                                                onChange={(hex) => handleChange('input_focus_background', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <Label>Color de Borde (Focus)</Label>
+                                                            <ColorPicker
+                                                                value={resolveValue(localSettings.input_focus_border) || '#d6eaff'}
+                                                                onChange={(hex) => handleChange('input_focus_border', hex)}
+                                                                showOpacity={false}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -786,8 +820,6 @@ const ThemeCustomizerDialog = ({
                             </div>
                         </Tabs>
 
-
-
                         <DialogFooter className="gap-2 mt-4">
                             <Button variant="outline" onClick={handleReset}>
                                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -807,4 +839,4 @@ const ThemeCustomizerDialog = ({
     );
 };
 
-export default ThemeCustomizerDialog;
+export default React.memo(ThemeCustomizerDialog);

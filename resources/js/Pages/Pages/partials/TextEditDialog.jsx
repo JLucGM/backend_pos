@@ -1,5 +1,5 @@
 // components/Builder/dialogs/TextEditDialog.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,10 +7,25 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker'; // Ajusta la ruta según tu proyecto
 
-const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, isLiveEdit = true }) => {
+const TextEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    // Memoizar resolveValue
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -18,12 +33,13 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    // Memoizar updateStyle
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
     // Función para restablecer a valores por defecto según el estilo seleccionado
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         const textStyle = editStyles.textStyle || 'paragraph';
 
         let defaultStyles = {};
@@ -52,10 +68,8 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
         setEditStyles(prev => ({
             ...prev,
             ...defaultStyles,
-            // Mantener layout, padding, color, etc. que el usuario haya configurado
-            // Solo restablecemos tipografía
         }));
-    };
+    }, [editStyles.textStyle, themeSettings, setEditStyles]);
 
     // Determinar qué controles mostrar
     const isCustomStyle = editStyles.textStyle === 'custom';
@@ -63,16 +77,16 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
     const isParagraphStyle = editStyles.textStyle === 'paragraph';
 
     // Obtener la fuente predeterminada según el estilo
-    const getDefaultFontType = () => {
+    const getDefaultFontType = useCallback(() => {
         if (editStyles.textStyle === 'paragraph') {
             return 'body_font';
         } else if (editStyles.textStyle?.startsWith('heading')) {
             return 'heading_font';
         }
         return 'body_font';
-    };
+    }, [editStyles.textStyle]);
 
-    const getTextValue = () => {
+    const getTextValue = useCallback(() => {
         if (!editContent) return '';
 
         if (typeof editContent === 'string') {
@@ -84,10 +98,15 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
         }
 
         return String(editContent);
-    };
+    }, [editContent]);
 
     // Obtener el valor actual de fontType o usar el predeterminado
     const currentFontType = editStyles.fontType || 'default';
+
+    // Valores resueltos para los ColorPicker
+    const textColor = resolveValue(editStyles.color) || '#000000';
+    const bgColor = resolveValue(editStyles.backgroundColor);
+    const defaultBgColor = (bgColor && bgColor !== 'transparent') ? bgColor : '#ffffff';
 
     return (
         <div className="space-y-4">
@@ -132,7 +151,6 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
                             <SelectItem value="capitalize">Capitalizar</SelectItem>
                         </SelectContent>
                     </Select>
-
                 </div>
             </div>
             <Separator className="my-4" />
@@ -428,19 +446,11 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
                 {/* Color */}
                 <div>
                     <Label htmlFor="color">Color</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
+                    <div className="flex gap-2 items-center">
+                        <ColorPicker
+                            value={textColor}
+                            onChange={(hex) => updateStyle('color', hex)}
+                            showOpacity={false}
                         />
                         <Button
                             type="button"
@@ -497,19 +507,11 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
                 {/* Background */}
                 <div>
                     <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="backgroundColor"
-                            value={editStyles.backgroundColor || 'transparent'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            placeholder="transparent"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.backgroundColor === 'transparent' ? '#ffffff' : editStyles.backgroundColor || '#ffffff'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            className="w-12"
+                    <div className="flex gap-2 items-center">
+                        <ColorPicker
+                            value={defaultBgColor}
+                            onChange={(hex) => updateStyle('backgroundColor', hex)}
+                            showOpacity={false}
                         />
                         <Button
                             type="button"
@@ -548,4 +550,4 @@ const TextEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles
     );
 };
 
-export default TextEditDialog;
+export default React.memo(TextEditDialog);

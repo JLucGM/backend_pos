@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -7,6 +7,8 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Separator } from '@/Components/ui/separator';
 import { Plus, X, ImageIcon, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 import ImageSelector from '@/Components/BuilderPages/ImageSelector';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const ImageCarouselAccordionEditDialog = ({
     editContent,
@@ -14,41 +16,43 @@ const ImageCarouselAccordionEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     allImages,
     page,
 }) => {
     const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
+
     const images = editContent.images || [];
 
-    const updateCarouselConfig = (key, value) => {
+    const updateCarouselConfig = useCallback((key, value) => {
         setEditContent(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditContent]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    // Agregar nueva imagen
-    const handleAddImage = () => {
+    const handleAddImage = useCallback(() => {
         if (images.length >= 9) {
             alert('Máximo 9 imágenes permitidas');
             return;
         }
         setSelectedImageIndex(null);
         setIsImageSelectorOpen(true);
-    };
+    }, [images.length]);
 
-    // Editar imagen existente (cambiar src)
-    const handleEditImage = (index) => {
+    const handleEditImage = useCallback((index) => {
         setSelectedImageIndex(index);
         setIsImageSelectorOpen(true);
-    };
+    }, []);
 
-    // Seleccionar imagen desde el selector
-    const handleImageSelect = (imageData) => {
-        const imageSrc = imageData.url || imageData.src; // compatible con ambos formatos
+    const handleImageSelect = useCallback((imageData) => {
+        const imageSrc = imageData.url || imageData.src;
         if (selectedImageIndex === null) {
             const newImages = [...images, {
                 src: imageSrc,
@@ -65,23 +69,20 @@ const ImageCarouselAccordionEditDialog = ({
             setEditContent(prev => ({ ...prev, images: newImages }));
         }
         setIsImageSelectorOpen(false);
-    };
+    }, [images, selectedImageIndex, setEditContent]);
 
-    // Eliminar imagen
-    const handleRemoveImage = (index) => {
+    const handleRemoveImage = useCallback((index) => {
         const newImages = images.filter((_, i) => i !== index);
         setEditContent(prev => ({ ...prev, images: newImages }));
-    };
+    }, [images, setEditContent]);
 
-    // Actualizar título o subtítulo de una imagen
-    const handleImageFieldChange = (index, field, value) => {
+    const handleImageFieldChange = useCallback((index, field, value) => {
         const newImages = [...images];
         newImages[index][field] = value;
         setEditContent(prev => ({ ...prev, images: newImages }));
-    };
+    }, [images, setEditContent]);
 
-    // Reordenar imágenes
-    const moveImage = (index, direction) => {
+    const moveImage = useCallback((index, direction) => {
         if (direction === 'up' && index > 0) {
             const newImages = [...images];
             [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
@@ -91,9 +92,23 @@ const ImageCarouselAccordionEditDialog = ({
             [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
             setEditContent(prev => ({ ...prev, images: newImages }));
         }
-    };
+    }, [images, setEditContent]);
 
-    // Renderizar controles de tipografía para título (global)
+    // Valores resueltos para colores
+    const resolvedColors = useMemo(() => ({
+        titleColor: resolveValue(editContent.titleColor) || '#ffffff',
+        subtitleColor: resolveValue(editContent.subtitleColor) || '#e5e7eb',
+        borderColor: resolveValue(editContent.borderColor) || '#000000',
+        containerBackgroundColor: resolveValue(editStyles.backgroundColor) || '#ffffff',
+    }), [
+        editContent.titleColor,
+        editContent.subtitleColor,
+        editContent.borderColor,
+        editStyles.backgroundColor,
+        resolveValue
+    ]);
+
+    // Funciones de renderizado (pueden quedar internas, pero con las optimizaciones de useCallback no es necesario)
     const renderTitleTypography = () => {
         const textStyle = editContent.titleTextStyle || 'heading2';
         const fontSize = editContent.titleFontSize || (textStyle === 'custom' ? '32' : themeSettings?.[`${textStyle}_fontSize`]?.replace('px', '') || '32');
@@ -103,7 +118,6 @@ const ImageCarouselAccordionEditDialog = ({
         const textTransform = editContent.titleTextTransform || 'none';
         const fontType = editContent.titleFontType || 'default';
         const customFont = editContent.titleCustomFont || '';
-        const color = editContent.titleColor || '#ffffff';
         const customLineHeight = editContent.titleCustomLineHeight || '';
 
         return (
@@ -293,17 +307,16 @@ const ImageCarouselAccordionEditDialog = ({
 
                 <div>
                     <Label>Color del texto</Label>
-                    <Input
-                        type="color"
-                        value={color}
-                        onChange={(e) => updateCarouselConfig('titleColor', e.target.value)}
+                    <ColorPicker
+                        value={resolvedColors.titleColor}
+                        onChange={(hex) => updateCarouselConfig('titleColor', hex)}
+                        showOpacity={false}
                     />
                 </div>
             </div>
         );
     };
 
-    // Renderizar controles de tipografía para subtítulo (global)
     const renderSubtitleTypography = () => {
         const textStyle = editContent.subtitleTextStyle || 'paragraph';
         const fontSize = editContent.subtitleFontSize || (textStyle === 'custom' ? '16' : themeSettings?.[`${textStyle}_fontSize`]?.replace('px', '') || '16');
@@ -313,7 +326,6 @@ const ImageCarouselAccordionEditDialog = ({
         const textTransform = editContent.subtitleTextTransform || 'none';
         const fontType = editContent.subtitleFontType || 'default';
         const customFont = editContent.subtitleCustomFont || '';
-        const color = editContent.subtitleColor || '#e5e7eb';
         const customLineHeight = editContent.subtitleCustomLineHeight || '';
 
         return (
@@ -499,21 +511,19 @@ const ImageCarouselAccordionEditDialog = ({
 
                 <div>
                     <Label>Color del texto</Label>
-                    <Input
-                        type="color"
-                        value={color}
-                        onChange={(e) => updateCarouselConfig('subtitleColor', e.target.value)}
+                    <ColorPicker
+                        value={resolvedColors.subtitleColor}
+                        onChange={(hex) => updateCarouselConfig('subtitleColor', hex)}
+                        showOpacity={false}
                     />
                 </div>
             </div>
         );
     };
 
-    // Renderizar controles de borde de imagen (global)
     const renderBorderControls = () => {
         const borderWidth = editContent.borderWidth || '0';
         const borderStyle = editContent.borderStyle || 'solid';
-        const borderColor = editContent.borderColor || '#000000';
         const borderRadius = editContent.borderRadius || '0';
 
         return (
@@ -566,10 +576,10 @@ const ImageCarouselAccordionEditDialog = ({
 
                         <div>
                             <Label>Color del borde</Label>
-                            <Input
-                                type="color"
-                                value={borderColor}
-                                onChange={(e) => updateCarouselConfig('borderColor', e.target.value)}
+                            <ColorPicker
+                                value={resolvedColors.borderColor}
+                                onChange={(hex) => updateCarouselConfig('borderColor', hex)}
+                                showOpacity={false}
                             />
                         </div>
                     </>
@@ -611,31 +621,31 @@ const ImageCarouselAccordionEditDialog = ({
                                     <div className="flex items-start gap-4">
                                         <div className="flex flex-col">
 
-                                        {/* Miniatura */}
-                                        <div className="w-20 h-20 mx-auto mb-4 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
-                                            {img.src ? (
-                                                <img src={img.src} alt="" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <ImageIcon size={24} className="text-gray-400" />
-                                                </div>
-                                            )}
-                                        </div>
+                                            {/* Miniatura */}
+                                            <div className="w-20 h-20 mx-auto mb-4 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
+                                                {img.src ? (
+                                                    <img src={img.src} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <ImageIcon size={24} className="text-gray-400" />
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                        {/* Campos de título y subtítulo */}
-                                        <div className="flex-1 space-y-2">
-                                            <Input
-                                                placeholder="Título principal"
-                                                value={img.title || ''}
-                                                onChange={(e) => handleImageFieldChange(idx, 'title', e.target.value)}
+                                            {/* Campos de título y subtítulo */}
+                                            <div className="flex-1 space-y-2">
+                                                <Input
+                                                    placeholder="Título principal"
+                                                    value={img.title || ''}
+                                                    onChange={(e) => handleImageFieldChange(idx, 'title', e.target.value)}
                                                 />
-                                            <Input
-                                                placeholder="Subtítulo (opcional)"
-                                                value={img.subtitle || ''}
-                                                onChange={(e) => handleImageFieldChange(idx, 'subtitle', e.target.value)}
-                                            />
+                                                <Input
+                                                    placeholder="Subtítulo (opcional)"
+                                                    value={img.subtitle || ''}
+                                                    onChange={(e) => handleImageFieldChange(idx, 'subtitle', e.target.value)}
+                                                />
+                                            </div>
                                         </div>
-                                                </div>
 
                                         {/* Botones de acción */}
                                         <div className="flex flex-col gap-1">
@@ -699,46 +709,12 @@ const ImageCarouselAccordionEditDialog = ({
                 <h3 className="font-medium">Estilos del contenedor</h3>
                 <div>
                     <Label>Color de fondo</Label>
-                    <Input
-                        type="color"
-                        value={editStyles.backgroundColor || '#ffffff'}
-                        onChange={(e) => updateStyle('backgroundColor', e.target.value)}
+                    <ColorPicker
+                        value={resolvedColors.containerBackgroundColor}
+                        onChange={(hex) => updateStyle('backgroundColor', hex)}
+                        showOpacity={false}
                     />
                 </div>
-                {/* <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Label>Padding arriba (px)</Label>
-                        <Input
-                            type="number"
-                            value={parseInt(editStyles.paddingTop) || 20}
-                            onChange={(e) => updateStyle('paddingTop', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label>Padding derecha (px)</Label>
-                        <Input
-                            type="number"
-                            value={parseInt(editStyles.paddingRight) || 20}
-                            onChange={(e) => updateStyle('paddingRight', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label>Padding abajo (px)</Label>
-                        <Input
-                            type="number"
-                            value={parseInt(editStyles.paddingBottom) || 20}
-                            onChange={(e) => updateStyle('paddingBottom', e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <Label>Padding izquierda (px)</Label>
-                        <Input
-                            type="number"
-                            value={parseInt(editStyles.paddingLeft) || 20}
-                            onChange={(e) => updateStyle('paddingLeft', e.target.value)}
-                        />
-                    </div>
-                </div> */}
             </div>
 
             {/* Selector de imágenes */}
@@ -753,4 +729,4 @@ const ImageCarouselAccordionEditDialog = ({
     );
 };
 
-export default ImageCarouselAccordionEditDialog;
+export default React.memo(ImageCarouselAccordionEditDialog);

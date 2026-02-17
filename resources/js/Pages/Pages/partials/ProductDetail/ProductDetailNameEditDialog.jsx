@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,6 +7,8 @@ import { RotateCcw, Info } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { Badge } from '@/Components/ui/badge';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const ProductDetailNameEditDialog = ({
     editContent,
@@ -14,10 +16,14 @@ const ProductDetailNameEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -25,57 +31,52 @@ const ProductDetailNameEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const theme = themeSettings || {};
-
-    const handleStyleChange = (key, value) => {
+    const handleStyleChange = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
 
-    // Función para mostrar valor del tema
     const renderThemeReference = (themeKey, label) => {
-        const themeValue = theme[themeKey];
-        if (!themeValue) return null;
-
+        const rawValue = themeWithDefaults[themeKey];
+        if (!rawValue) return null;
+        const resolved = resolveValue(rawValue);
         return (
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                 <Info size={12} />
                 <span>{label} del tema: </span>
                 <Badge variant="outline" className="text-xs">
-                    {themeValue}
+                    {resolved}
                 </Badge>
             </div>
         );
     };
 
-    // Función para restablecer a valores por defecto del tema
-    const resetToThemeDefaults = () => {
+    const resetToThemeDefaults = useCallback(() => {
         const textStyle = editStyles.textStyle || 'heading1';
 
         let defaultStyles = {};
 
         if (textStyle === 'paragraph') {
             defaultStyles = {
-                fontSize: theme.paragraph_fontSize || '16px',
-                fontWeight: theme.paragraph_fontWeight || 'normal',
-                lineHeight: theme.paragraph_lineHeight || '1.6',
-                textTransform: theme.paragraph_textTransform || 'none',
-                color: theme.heading || '#000000',
+                fontSize: themeSettings?.paragraph_fontSize || '16px',
+                fontWeight: themeSettings?.paragraph_fontWeight || 'normal',
+                lineHeight: themeSettings?.paragraph_lineHeight || '1.6',
+                textTransform: themeSettings?.paragraph_textTransform || 'none',
+                color: 'theme.heading',
             };
         } else if (textStyle.startsWith('heading')) {
             const level = textStyle.replace('heading', '');
             defaultStyles = {
-                fontSize: theme[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`,
-                fontWeight: theme[`heading${level}_fontWeight`] || 'bold',
-                lineHeight: theme[`heading${level}_lineHeight`] || '1.2',
-                textTransform: theme[`heading${level}_textTransform`] || 'none',
-                color: theme.heading || '#000000',
+                fontSize: themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`,
+                fontWeight: themeSettings?.[`heading${level}_fontWeight`] || 'bold',
+                lineHeight: themeSettings?.[`heading${level}_lineHeight`] || '1.2',
+                textTransform: themeSettings?.[`heading${level}_textTransform`] || 'none',
+                color: 'theme.heading',
             };
         }
 
-        // Solo actualizar si hay valores del tema disponibles
         if (Object.keys(defaultStyles).length > 0) {
             setEditStyles(prev => ({
                 ...prev,
@@ -84,37 +85,14 @@ const ProductDetailNameEditDialog = ({
                 customFont: '',
             }));
         }
-    };
+    }, [editStyles.textStyle, themeSettings, setEditStyles]);
 
-    // Obtener valor actual de fontType
     const currentFontType = editStyles.fontType || 'default';
     const isCustomStyle = editStyles.textStyle === 'custom';
+    const colorValue = resolveValue(editStyles.color) || resolveValue(themeWithDefaults.heading) || '#000000';
 
     return (
         <div className="space-y-4">
-            {/* Sección de referencia al tema */}
-            {/* <div className="p-3 bg-blue-50 rounded-md border border-blue-200">
-                <h4 className="text-sm font-medium text-blue-800 mb-2">
-                    <Info className="inline mr-1" size={14} />
-                    Valores del tema actual
-                </h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                        <span className="text-gray-600">Color heading: </span>
-                        <div className="inline-block w-3 h-3 rounded-full ml-1 border"
-                            style={{ backgroundColor: theme.heading ? `hsl(${theme.heading})` : '#000000' }}
-                        />
-                    </div>
-                    <div>
-                        <span className="text-gray-600">Fuente heading: </span>
-                        <Badge variant="secondary" className="ml-1 text-xs">
-                            {theme.heading_font || 'Inter'}
-                        </Badge>
-                    </div>
-                </div>
-            </div> */}
-
-            {/* Botón para restablecer a valores del tema */}
             <div className="flex justify-end">
                 <Button
                     type="button"
@@ -128,12 +106,8 @@ const ProductDetailNameEditDialog = ({
                 </Button>
             </div>
 
-            {/* Estilo de Texto - Opciones predefinidas */}
             <div>
-                <Label htmlFor="textStyle">
-                    Estilo de Texto
-                    {/* {renderThemeReference('heading_font', 'Fuente base')} */}
-                </Label>
+                <Label htmlFor="textStyle">Estilo de Texto</Label>
                 <Select
                     value={editStyles.textStyle || 'heading1'}
                     onValueChange={(value) => handleStyleChange('textStyle', value)}
@@ -143,25 +117,25 @@ const ProductDetailNameEditDialog = ({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="heading1">
-                            Heading 1 - {theme.heading1_fontSize || '2.5rem'}
+                            Heading 1 - {themeSettings?.heading1_fontSize || '2.5rem'}
                         </SelectItem>
                         <SelectItem value="heading2">
-                            Heading 2 - {theme.heading2_fontSize || '2rem'}
+                            Heading 2 - {themeSettings?.heading2_fontSize || '2rem'}
                         </SelectItem>
                         <SelectItem value="heading3">
-                            Heading 3 - {theme.heading3_fontSize || '1.75rem'}
+                            Heading 3 - {themeSettings?.heading3_fontSize || '1.75rem'}
                         </SelectItem>
                         <SelectItem value="heading4">
-                            Heading 4 - {theme.heading4_fontSize || '1.5rem'}
+                            Heading 4 - {themeSettings?.heading4_fontSize || '1.5rem'}
                         </SelectItem>
                         <SelectItem value="heading5">
-                            Heading 5 - {theme.heading5_fontSize || '1.25rem'}
+                            Heading 5 - {themeSettings?.heading5_fontSize || '1.25rem'}
                         </SelectItem>
                         <SelectItem value="heading6">
-                            Heading 6 - {theme.heading6_fontSize || '1rem'}
+                            Heading 6 - {themeSettings?.heading6_fontSize || '1rem'}
                         </SelectItem>
                         <SelectItem value="paragraph">
-                            Párrafo - {theme.paragraph_fontSize || '16px'}
+                            Párrafo - {themeSettings?.paragraph_fontSize || '16px'}
                         </SelectItem>
                         <SelectItem value="custom">
                             Personalizado
@@ -170,13 +144,10 @@ const ProductDetailNameEditDialog = ({
                 </Select>
             </div>
 
-            {/* Controles de tipografía avanzada solo si es custom */}
             {isCustomStyle && (
                 <>
                     <div>
-                        <Label htmlFor="fontSize">
-                            Tamaño de fuente
-                        </Label>
+                        <Label htmlFor="fontSize">Tamaño de fuente</Label>
                         <div className="flex gap-2">
                             <Input
                                 id="fontSize"
@@ -207,10 +178,10 @@ const ProductDetailNameEditDialog = ({
                                     const textStyle = editStyles.textStyle;
                                     let themeVal = '32px';
                                     if (textStyle === 'paragraph') {
-                                        themeVal = theme.paragraph_fontSize || '16px';
+                                        themeVal = themeSettings?.paragraph_fontSize || '16px';
                                     } else if (textStyle?.startsWith('heading')) {
                                         const level = textStyle.replace('heading', '');
-                                        themeVal = theme[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
+                                        themeVal = themeSettings?.[`heading${level}_fontSize`] || `${3.5 - (level * 0.25)}rem`;
                                     }
                                     handleStyleChange('fontSize', parseInt(themeVal) || 32);
                                     handleStyleChange('fontSizeUnit', themeVal.toString().includes('rem') ? 'rem' : 'px');
@@ -223,11 +194,7 @@ const ProductDetailNameEditDialog = ({
                     </div>
 
                     <div>
-                        <Label htmlFor="fontWeight">
-                            Peso de fuente
-                            {/* {editStyles.textStyle?.startsWith('heading') && 
-                                renderThemeReference(`${editStyles.textStyle}_fontWeight`, 'Valor del tema')} */}
-                        </Label>
+                        <Label htmlFor="fontWeight">Peso de fuente</Label>
                         <div className="flex gap-2">
                             <Select
                                 value={editStyles.fontWeight || 'bold'}
@@ -247,25 +214,6 @@ const ProductDetailNameEditDialog = ({
                                     <SelectItem value="900">Black (900)</SelectItem>
                                 </SelectContent>
                             </Select>
-                            {/* <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                    const textStyle = editStyles.textStyle;
-                                    if (textStyle === 'paragraph') {
-                                        handleStyleChange('fontWeight', theme.paragraph_fontWeight || 'normal');
-                                    } else if (textStyle?.startsWith('heading')) {
-                                        const level = textStyle.replace('heading', '');
-                                        handleStyleChange('fontWeight', theme[`heading${level}_fontWeight`] || 'bold');
-                                    } else {
-                                        handleStyleChange('fontWeight', 'bold');
-                                    }
-                                }}
-                                className="whitespace-nowrap"
-                            >
-                                Tema
-                            </Button> */}
                         </div>
                     </div>
 
@@ -273,12 +221,8 @@ const ProductDetailNameEditDialog = ({
                 </>
             )}
 
-            {/* Selección de fuente - DISPONIBLE PARA TODOS LOS ESTILOS */}
             <div>
-                <Label htmlFor="fontType">
-                    Tipo de Fuente
-                    {/* {renderThemeReference('heading_font', 'Fuente por defecto')} */}
-                </Label>
+                <Label htmlFor="fontType">Tipo de Fuente</Label>
                 <Select
                     value={currentFontType}
                     onValueChange={(value) => handleStyleChange('fontType', value)}
@@ -292,20 +236,16 @@ const ProductDetailNameEditDialog = ({
                                 <span>Por defecto</span>
                                 {editStyles.textStyle?.startsWith('heading') ? (
                                     <Badge variant="outline" className="text-xs">
-                                        {theme.heading_font || 'Inter'}
+                                        {themeWithDefaults.heading_font || 'Inter'}
                                     </Badge>
-                                )
-                                    : (
-                                        null
-                                    )
-                                }
+                                ) : null}
                             </span>
                         </SelectItem>
                         <SelectItem value="body_font">
                             <span className="flex items-center gap-2">
                                 <span>Body Font</span>
                                 <Badge variant="outline" className="text-xs">
-                                    {theme.body_font || 'Inter'}
+                                    {themeWithDefaults.body_font || 'Inter'}
                                 </Badge>
                             </span>
                         </SelectItem>
@@ -313,7 +253,7 @@ const ProductDetailNameEditDialog = ({
                             <span className="flex items-center gap-2">
                                 <span>Heading Font</span>
                                 <Badge variant="outline" className="text-xs">
-                                    {theme.heading_font || 'Inter'}
+                                    {themeWithDefaults.heading_font || 'Inter'}
                                 </Badge>
                             </span>
                         </SelectItem>
@@ -321,7 +261,7 @@ const ProductDetailNameEditDialog = ({
                             <span className="flex items-center gap-2">
                                 <span>Subheading Font</span>
                                 <Badge variant="outline" className="text-xs">
-                                    {theme.subheading_font || 'Inter'}
+                                    {themeWithDefaults.subheading_font || 'Inter'}
                                 </Badge>
                             </span>
                         </SelectItem>
@@ -329,7 +269,7 @@ const ProductDetailNameEditDialog = ({
                             <span className="flex items-center gap-2">
                                 <span>Accent Font</span>
                                 <Badge variant="outline" className="text-xs">
-                                    {theme.accent_font || 'Georgia'}
+                                    {themeWithDefaults.accent_font || 'Georgia'}
                                 </Badge>
                             </span>
                         </SelectItem>
@@ -355,7 +295,6 @@ const ProductDetailNameEditDialog = ({
 
             <Separator className="my-4" />
 
-            {/* Altura de línea */}
             <div>
                 <Label htmlFor="lineHeight">
                     Altura de línea
@@ -386,10 +325,10 @@ const ProductDetailNameEditDialog = ({
                         onClick={() => {
                             const textStyle = editStyles.textStyle;
                             if (textStyle === 'paragraph') {
-                                handleStyleChange('lineHeight', theme.paragraph_lineHeight || '1.6');
+                                handleStyleChange('lineHeight', themeSettings?.paragraph_lineHeight || '1.6');
                             } else if (textStyle?.startsWith('heading')) {
                                 const level = textStyle.replace('heading', '');
-                                handleStyleChange('lineHeight', theme[`heading${level}_lineHeight`] || '1.2');
+                                handleStyleChange('lineHeight', themeSettings?.[`heading${level}_lineHeight`] || '1.2');
                             } else {
                                 handleStyleChange('lineHeight', '1.2');
                             }
@@ -410,7 +349,6 @@ const ProductDetailNameEditDialog = ({
                 )}
             </div>
 
-            {/* Transformación de texto */}
             <div>
                 <Label htmlFor="textTransform">
                     Transformación de texto
@@ -435,32 +373,23 @@ const ProductDetailNameEditDialog = ({
 
             <Separator className="my-4" />
 
-            {/* Controles de estilo adicionales */}
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <Label htmlFor="color">
                         Color
                         {renderThemeReference('heading', 'Color del tema')}
                     </Label>
-                    <div className="flex gap-2 mt-1">
-                        <Input
-                            id="color"
-                            type="color"
-                            value={editStyles.color || theme.heading || '#000000'}
-                            onChange={(e) => handleStyleChange('color', e.target.value)}
-                            className="flex-1"
-                        />
-                        <div
-                            className="w-10 h-10 rounded border"
-                            style={{
-                                backgroundColor: editStyles.color || theme.heading ? `hsl(${theme.heading})` : '#000000'
-                            }}
+                    <div className="flex items-center gap-2 mt-1">
+                        <ColorPicker
+                            value={colorValue}
+                            onChange={(hex) => handleStyleChange('color', hex)}
+                            showOpacity={false}
                         />
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleStyleChange('color', theme.heading || '#000000')}
+                            onClick={() => handleStyleChange('color', 'theme.heading')}
                         >
                             Tema
                         </Button>
@@ -485,7 +414,6 @@ const ProductDetailNameEditDialog = ({
                 </div>
             </div>
 
-            {/* Layout */}
             <div>
                 <Label htmlFor="layout">Layout</Label>
                 <Select
@@ -502,7 +430,6 @@ const ProductDetailNameEditDialog = ({
                 </Select>
             </div>
 
-            {/* Margen */}
             <div>
                 <Label htmlFor="margin">Margen</Label>
                 <Input
@@ -516,4 +443,4 @@ const ProductDetailNameEditDialog = ({
     );
 };
 
-export default ProductDetailNameEditDialog;
+export default React.memo(ProductDetailNameEditDialog);

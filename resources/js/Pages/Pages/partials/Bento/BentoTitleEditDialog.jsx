@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,6 +7,8 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const BentoTitleEditDialog = ({
     editContent,
@@ -14,10 +16,16 @@ const BentoTitleEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -25,11 +33,11 @@ const BentoTitleEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         const textStyle = editStyles.textStyle || 'heading1';
 
         if (textStyle.startsWith('heading')) {
@@ -44,10 +52,13 @@ const BentoTitleEditDialog = ({
                 customFont: '',
             }));
         }
-    };
+    }, [editStyles.textStyle, themeSettings, setEditStyles]);
 
     const isCustomStyle = editStyles.textStyle === 'custom';
-    const isHeadingStyle = editStyles.textStyle?.startsWith('heading');
+
+    const colorValue = resolveValue(editStyles.color) || '#000000';
+    const bgColor = resolveValue(editStyles.backgroundColor);
+    const defaultBgColor = (bgColor && bgColor !== 'transparent') ? bgColor : '#ffffff';
 
     return (
         <div className="space-y-4">
@@ -250,7 +261,6 @@ const BentoTitleEditDialog = ({
             )}
 
             <div className="pt-4 border-t">
-                <h4 className="font-medium mb-3">Estilo de contenedor</h4>
 
                 <div>
                     <Label htmlFor="layout">Layout</Label>
@@ -289,21 +299,11 @@ const BentoTitleEditDialog = ({
 
                 <div>
                     <Label htmlFor="color">Color</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={colorValue}
+                        onChange={(hex) => updateStyle('color', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 <Label>Padding</Label>
@@ -348,20 +348,20 @@ const BentoTitleEditDialog = ({
 
                 <div>
                     <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="backgroundColor"
-                            value={editStyles.backgroundColor || 'transparent'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            placeholder="transparent"
-                            className="flex-1"
+                    <div className="flex items-center gap-2">
+                        <ColorPicker
+                            value={defaultBgColor}
+                            onChange={(hex) => updateStyle('backgroundColor', hex)}
+                            showOpacity={false}
                         />
-                        <Input
-                            type="color"
-                            value={editStyles.backgroundColor === 'transparent' ? '#ffffff' : editStyles.backgroundColor || '#ffffff'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            className="w-12"
-                        />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateStyle('backgroundColor', 'transparent')}
+                        >
+                            Sin fondo
+                        </Button>
                     </div>
                 </div>
 
@@ -380,4 +380,4 @@ const BentoTitleEditDialog = ({
     );
 };
 
-export default BentoTitleEditDialog;
+export default React.memo(BentoTitleEditDialog);

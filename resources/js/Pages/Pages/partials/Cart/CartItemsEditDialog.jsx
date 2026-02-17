@@ -1,20 +1,47 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, isLiveEdit = true }) => {
+const CartItemsEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
             // Las actualizaciones se manejan automáticamente
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
+
+    const updateContent = useCallback((key, value) => {
+        setEditContent(prev => ({ ...prev, [key]: value }));
+    }, [setEditContent]);
+
+    const updateStyle = useCallback((key, value) => {
+        setEditStyles(prev => ({ ...prev, [key]: value }));
+    }, [setEditStyles]);
+
+    const bgColor = resolveValue(editStyles?.backgroundColor) || '#ffffff';
+    const rowBackground = resolveValue(editStyles?.background) ;
+    const borderColor = resolveValue(editStyles?.borderColor) || '#e5e7eb';
 
     return (
         <div className="space-y-4">
@@ -23,7 +50,7 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                 <Input
                     type="text"
                     value={editContent?.title || 'Tu carrito'}
-                    onChange={(e) => setEditContent({ ...editContent, title: e.target.value })}
+                    onChange={(e) => updateContent('title', e.target.value)}
                 />
             </div>
 
@@ -32,7 +59,7 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                 <Input
                     type="text"
                     value={editContent?.emptyMessage || 'Tu carrito está vacío'}
-                    onChange={(e) => setEditContent({ ...editContent, emptyMessage: e.target.value })}
+                    onChange={(e) => updateContent('emptyMessage', e.target.value)}
                 />
             </div>
 
@@ -41,7 +68,7 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                     <Label>Mostrar imagen del producto</Label>
                     <Switch
                         checked={editContent?.showImage !== false}
-                        onCheckedChange={(checked) => setEditContent({ ...editContent, showImage: checked })}
+                        onCheckedChange={(checked) => updateContent('showImage', checked)}
                     />
                 </div>
 
@@ -49,7 +76,7 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                     <Label>Mostrar combinación seleccionada</Label>
                     <Switch
                         checked={editContent?.showCombination !== false}
-                        onCheckedChange={(checked) => setEditContent({ ...editContent, showCombination: checked })}
+                        onCheckedChange={(checked) => updateContent('showCombination', checked)}
                     />
                 </div>
 
@@ -57,13 +84,30 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                     <Label>Mostrar stock disponible</Label>
                     <Switch
                         checked={editContent?.showStock === true}
-                        onCheckedChange={(checked) => setEditContent({ ...editContent, showStock: checked })}
+                        onCheckedChange={(checked) => updateContent('showStock', checked)}
                     />
                 </div>
             </div>
 
             <Separator className="my-4" />
 
+ <div>
+                <Label htmlFor="backgroundColor">Color de fondo</Label>
+                <ColorPicker
+                    value={bgColor}
+                    onChange={(hex) => updateStyle('backgroundColor', hex)}
+                    showOpacity={false}
+                />
+            </div>
+            <div>
+                <Label htmlFor="rowBackground">Color de fondo</Label>
+                <ColorPicker
+                    value={rowBackground}
+                    onChange={(hex) => updateStyle('rowBackground', hex)}
+                    showOpacity={false}
+                />
+            </div>
+            
             <div>
                 <Label htmlFor="imageSize">Tamaño de imagen</Label>
                 <div className="flex gap-2">
@@ -71,12 +115,12 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                         id="imageSize"
                         type="number"
                         value={parseInt(editStyles?.imageSize) || 80}
-                        onChange={(e) => setEditStyles({ ...editStyles, imageSize: e.target.value })}
+                        onChange={(e) => updateStyle('imageSize', e.target.value)}
                         className="flex-1"
                     />
                     <Select
                         value={editStyles.imageSizeUnit || (editStyles.imageSize?.toString().includes('rem') ? 'rem' : 'px')}
-                        onValueChange={(value) => setEditStyles({ ...editStyles, imageSizeUnit: value })}
+                        onValueChange={(value) => updateStyle('imageSizeUnit', value)}
                     >
                         <SelectTrigger className="w-[80px]">
                             <SelectValue />
@@ -90,25 +134,9 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                 </div>
             </div>
 
-            <div>
-                <Label htmlFor="backgroundColor">Color de fondo</Label>
-                <div className="flex gap-2">
-                    <Input
-                        type="text"
-                        value={editStyles?.backgroundColor || '#ffffff'}
-                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                    />
-                    <Input
-                        type="color"
-                        value={editStyles?.backgroundColor || '#ffffff'}
-                        onChange={(e) => setEditStyles({ ...editStyles, backgroundColor: e.target.value })}
-                        className="w-12"
-                    />
-                </div>
-            </div>
+           
 
             <Separator className="my-4" />
-
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -116,7 +144,7 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                     <Input
                         type="number"
                         value={parseInt(editStyles.paddingTop) || 20}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingTop: e.target.value })}
+                        onChange={(e) => updateStyle('paddingTop', e.target.value)}
                         placeholder="20"
                     />
                 </div>
@@ -125,7 +153,7 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                     <Input
                         type="number"
                         value={parseInt(editStyles.paddingBottom) || 20}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingBottom: e.target.value })}
+                        onChange={(e) => updateStyle('paddingBottom', e.target.value)}
                         placeholder="20"
                     />
                 </div>
@@ -137,7 +165,7 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                     <Input
                         type="number"
                         value={parseInt(editStyles.paddingLeft) || 20}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingLeft: e.target.value })}
+                        onChange={(e) => updateStyle('paddingLeft', e.target.value)}
                         placeholder="20"
                     />
                 </div>
@@ -146,14 +174,13 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                     <Input
                         type="number"
                         value={parseInt(editStyles.paddingRight) || 20}
-                        onChange={(e) => setEditStyles({ ...editStyles, paddingRight: e.target.value })}
+                        onChange={(e) => updateStyle('paddingRight', e.target.value)}
                         placeholder="20"
                     />
                 </div>
             </div>
 
             <Separator className="my-4" />
-
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -162,7 +189,7 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                         id="borderRadius"
                         type="number"
                         value={parseInt(editStyles.borderRadius) || 0}
-                        onChange={(e) => setEditStyles({ ...editStyles, borderRadius: e.target.value })}
+                        onChange={(e) => updateStyle('borderRadius', e.target.value)}
                         placeholder="0"
                     />
                 </div>
@@ -173,18 +200,17 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
                         id="borderWidth"
                         type="number"
                         value={parseInt(editStyles.borderWidth) || 0}
-                        onChange={(e) => setEditStyles({ ...editStyles, borderWidth: e.target.value })}
+                        onChange={(e) => updateStyle('borderWidth', e.target.value)}
                         placeholder="0"
                     />
                 </div>
-                {editStyles.borderWidth !== '0px' && (
-                    <div>
+                {parseInt(editStyles.borderWidth) > 0 && (
+                    <div className="col-span-2">
                         <Label htmlFor="borderColor">Color del borde</Label>
-                        <Input
-                            id="borderColor"
-                            type="color"
-                            value={editStyles.borderColor || '#e5e7eb'}
-                            onChange={(e) => setEditStyles({ ...editStyles, borderColor: e.target.value })}
+                        <ColorPicker
+                            value={borderColor}
+                            onChange={(hex) => updateStyle('borderColor', hex)}
+                            showOpacity={false}
                         />
                     </div>
                 )}
@@ -193,4 +219,4 @@ const CartItemsEditDialog = ({ editContent, setEditContent, editStyles, setEditS
     );
 };
 
-export default CartItemsEditDialog;
+export default React.memo(CartItemsEditDialog);

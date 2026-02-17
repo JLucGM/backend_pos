@@ -1,12 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 
-const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const CarouselCardEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    // Se obtienen por si en el futuro se necesitan
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = (value) => resolveStyleValue(value, themeWithDefaults, appliedTheme);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -14,12 +27,12 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateCardConfig = (key, value) => {
+    const updateCardConfig = useCallback((key, value) => {
         setEditContent(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditContent]);
 
     return (
         <div className="space-y-4">
@@ -83,7 +96,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                     <Input
                         id="cardPaddingTop"
                         type="number"
-                        value={parseInt(editContent.cardPaddingTop) || 10}
+                        value={parseInt(editContent.cardPaddingTop) || 0}
                         onChange={(e) => updateCardConfig('cardPaddingTop', e.target.value)}
                     />
                 </div>
@@ -92,7 +105,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                     <Input
                         id="cardPaddingRight"
                         type="number"
-                        value={parseInt(editContent.cardPaddingRight) || 10}
+                        value={parseInt(editContent.cardPaddingRight) || 0}
                         onChange={(e) => updateCardConfig('cardPaddingRight', e.target.value)}
                     />
                 </div>
@@ -101,7 +114,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                     <Input
                         id="cardPaddingBottom"
                         type="number"
-                        value={parseInt(editContent.cardPaddingBottom) || 10}
+                        value={parseInt(editContent.cardPaddingBottom) || 0}
                         onChange={(e) => updateCardConfig('cardPaddingBottom', e.target.value)}
                     />
                 </div>
@@ -110,7 +123,7 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
                     <Input
                         id="cardPaddingLeft"
                         type="number"
-                        value={parseInt(editContent.cardPaddingLeft) || 10}
+                        value={parseInt(editContent.cardPaddingLeft) || 0}
                         onChange={(e) => updateCardConfig('cardPaddingLeft', e.target.value)}
                     />
                 </div>
@@ -119,4 +132,4 @@ const CarouselCardEditDialog = ({ editContent, setEditContent, editStyles, setEd
     );
 };
 
-export default CarouselCardEditDialog;
+export default React.memo(CarouselCardEditDialog);

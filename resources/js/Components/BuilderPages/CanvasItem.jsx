@@ -924,6 +924,7 @@ const CanvasItem = ({
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                         mode={isPreview ? 'frontend' : 'builder'}
+                        
                     />
                 );
             case 'announcement':

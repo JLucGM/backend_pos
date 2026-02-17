@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -6,6 +6,8 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const BannerTextEditDialog = ({
     editContent,
@@ -13,10 +15,15 @@ const BannerTextEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -24,11 +31,11 @@ const BannerTextEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         setEditStyles(prev => ({
             ...prev,
             fontSize: themeSettings?.paragraph_fontSize || '16px',
@@ -38,7 +45,9 @@ const BannerTextEditDialog = ({
             fontType: 'default',
             customFont: '',
         }));
-    };
+    }, [themeSettings, setEditStyles]);
+
+    const colorValue = resolveValue(editStyles.color) || '#000000';
 
     return (
         <div className="space-y-4">
@@ -268,21 +277,11 @@ const BannerTextEditDialog = ({
 
                 <div>
                     <Label htmlFor="color">Color</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={colorValue}
+                        onChange={(hex) => updateStyle('color', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 <Label>Padding</Label>
@@ -326,38 +325,6 @@ const BannerTextEditDialog = ({
                 </div>
 
                 {/* <div>
-                    <Label htmlFor="background">Color de Fondo</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="background"
-                            value={editStyles.background || 'transparent'}
-                            onChange={(e) => updateStyle('background', e.target.value)}
-                            placeholder="transparent"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.background === 'transparent' ? '#ffffff' : editStyles.background || '#ffffff'}
-                            onChange={(e) => updateStyle('background', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
-                </div>
-
-                <div>
-                    <Label htmlFor="backgroundOpacity">Opacidad del Fondo (0-1)</Label>
-                    <Input
-                        id="backgroundOpacity"
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={editStyles.backgroundOpacity || 1}
-                        onChange={(e) => updateStyle('backgroundOpacity', e.target.value)}
-                    />
-                </div> */}
-
-                <div>
                     <Label htmlFor="borderRadius">Radio de Borde</Label>
                     <Input
                         id="borderRadius"
@@ -366,10 +333,10 @@ const BannerTextEditDialog = ({
                         onChange={(e) => updateStyle('borderRadius', e.target.value)}
                         className="flex-1"
                     />
-                </div>
+                </div> */}
             </div>
         </div>
     );
 };
 
-export default BannerTextEditDialog;
+export default React.memo(BannerTextEditDialog);

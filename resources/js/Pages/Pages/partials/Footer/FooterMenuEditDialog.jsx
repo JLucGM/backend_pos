@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -6,10 +6,26 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, availableMenus, isLiveEdit = true }) => {
+const FooterMenuEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    availableMenus,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -17,9 +33,9 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
     // Estado para el menú seleccionado
     const [selectedMenuId, setSelectedMenuId] = useState(
@@ -29,20 +45,18 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
     // Efecto para convertir editContent si es un array (estructura antigua)
     useEffect(() => {
         if (Array.isArray(editContent)) {
-            // Convertir estructura antigua a nueva
             setEditContent({
                 menuId: null,
                 items: editContent
             });
             setSelectedMenuId('none');
         }
-    }, []);
+    }, [editContent, setEditContent]);
 
-    const handleMenuChange = (menuId) => {
+    const handleMenuChange = useCallback((menuId) => {
         setSelectedMenuId(menuId);
 
         if (menuId === 'none') {
-            // Sin menú seleccionado
             setEditContent({
                 menuId: null,
                 items: []
@@ -54,10 +68,9 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                 items: selectedMenu ? selectedMenu.items : []
             });
         }
-    };
+    }, [availableMenus, setEditContent]);
 
-    // Función para restablecer tipografía a valores por defecto
-    const resetTypographyToDefaults = () => {
+    const resetTypographyToDefaults = useCallback(() => {
         const defaultStyles = {
             fontSize: '14px',
             fontWeight: 'normal',
@@ -71,14 +84,13 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
             ...prev,
             ...defaultStyles
         }));
-    };
+    }, [setEditStyles]);
 
-    // Determinar el tipo de fuente actual
     const currentFontType = editStyles.fontType || 'default';
+    const colorValue = resolveValue(editStyles.color) || '#666666';
 
     return (
         <div className="space-y-4">
-            {/* Botón para restablecer tipografía */}
             <div className="flex justify-end">
                 <Button
                     type="button"
@@ -92,7 +104,6 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                 </Button>
             </div>
 
-            {/* MENÚ DINÁMICO - IGUAL QUE HEADER */}
             <div>
                 <h4 className="font-medium mb-3">Menú Dinámico</h4>
                 <Select value={selectedMenuId} onValueChange={handleMenuChange}>
@@ -108,16 +119,12 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                         ))}
                     </SelectContent>
                 </Select>
-                <p className="text-sm text-gray-500 mt-1">
-                    Selecciona un menú dinámico para usar en el footer. Los items se cargarán automáticamente.
-                </p>
+
             </div>
 
             <Separator className="my-4" />
 
-            {/* DISPLAY Y DIRECCIÓN */}
             <div>
-                <h4 className="font-medium mb-3">Diseño del Menú</h4>
 
                 <div className="mb-3">
                     <Label htmlFor="display">Tipo de visualización</Label>
@@ -136,7 +143,6 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                     </Select>
                 </div>
 
-                {/* Gap entre elementos */}
                 <div className="mb-3">
                     <Label htmlFor="gap">Espaciado entre elementos</Label>
                     <Select
@@ -188,11 +194,16 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
 
             <Separator className="my-4" />
 
-            {/* TIPOGRAFÍA */}
-            <div>
-                <h4 className="font-medium mb-3">Tipografía</h4>
+            <div className="mb-3">
+                <Label htmlFor="color">Color del texto</Label>
+                <ColorPicker
+                    value={colorValue}
+                    onChange={(hex) => updateStyle('color', hex)}
+                    showOpacity={false}
+                />
+            </div>
 
-                {/* Tamaño de fuente */}
+            <div>
                 <div className="mb-3">
                     <Label htmlFor="fontSize">Tamaño de fuente</Label>
                     <Select
@@ -242,7 +253,6 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                     </div>
                 )}
 
-                {/* Peso de fuente */}
                 <div className="mb-3">
                     <Label htmlFor="fontWeight">Peso de fuente</Label>
                     <Select
@@ -263,7 +273,6 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                     </Select>
                 </div>
 
-                {/* Transformación de texto */}
                 <div className="mb-3">
                     <Label htmlFor="textTransform">Transformación de texto</Label>
                     <Select
@@ -283,7 +292,6 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                     </Select>
                 </div>
 
-                {/* Tipo de fuente */}
                 <div className="mb-3">
                     <Label htmlFor="fontType">Tipo de Fuente</Label>
                     <Select
@@ -321,73 +329,8 @@ const FooterMenuEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                 )}
             </div>
 
-            <Separator className="my-4" />
-
-            {/* COLORES */}
-            <div>
-                <h4 className="font-medium mb-3">Colores</h4>
-
-                {/* Color del texto */}
-                <div className="mb-3">
-                    <Label htmlFor="color">Color del texto</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#666666'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#666666"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#666666'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
-                </div>
-
-                {/* Color hover */}
-                <div className="mb-3">
-                    <Label htmlFor="hoverColor">Color hover</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="hoverColor"
-                            value={editStyles.hoverColor || '#007bff'}
-                            onChange={(e) => updateStyle('hoverColor', e.target.value)}
-                            placeholder="#007bff"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.hoverColor || '#007bff'}
-                            onChange={(e) => updateStyle('hoverColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
-                </div>
-
-                {/* Subrayado al hacer hover */}
-                <div className="mb-3">
-                    <Label htmlFor="hoverDecoration">Efecto hover</Label>
-                    <Select
-                        value={editStyles.hoverDecoration || 'underline'}
-                        onValueChange={(value) => updateStyle('hoverDecoration', value)}
-                    >
-                        <SelectTrigger>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="none">Ninguno</SelectItem>
-                            <SelectItem value="underline">Subrayado</SelectItem>
-                            <SelectItem value="overline">Línea superior</SelectItem>
-                            <SelectItem value="line-through">Tachado</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
         </div>
     );
 };
 
-export default FooterMenuEditDialog;
+export default React.memo(FooterMenuEditDialog);

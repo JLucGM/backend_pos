@@ -1,13 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Slider } from '@/Components/ui/slider';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const BentoFeatureEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    isLiveEdit = true,
+    themeSettings,
+    appliedTheme
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -15,35 +30,28 @@ const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEd
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const handleContentChange = (key, value) => {
+    const handleContentChange = useCallback((key, value) => {
         setEditContent(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditContent]);
+
+    // Valores resueltos para colores
+    const bgColor = resolveValue(editContent.backgroundColor) || resolveValue(themeWithDefaults.background) || '#f8fafc';
+    const borderColor = resolveValue(editContent.borderColor) || resolveValue(themeWithDefaults.borders) || '#e5e7eb';
 
     return (
         <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Configuración de la Característica</h3>
 
             {/* Color de fondo */}
             <div className="space-y-2">
                 <Label htmlFor="backgroundColor">Color de fondo</Label>
-                <div className="flex items-center gap-2">
-                    <Input
-                        id="backgroundColor"
-                        type="color"
-                        value={editContent.backgroundColor || '#f8fafc'}
-                        onChange={(e) => handleContentChange('backgroundColor', e.target.value)}
-                        className="w-12 h-10"
-                    />
-                    <Input
-                        type="text"
-                        value={editContent.backgroundColor || '#f8fafc'}
-                        onChange={(e) => handleContentChange('backgroundColor', e.target.value)}
-                        placeholder="#f8fafc"
-                    />
-                </div>
+                <ColorPicker
+                    value={bgColor}
+                    onChange={(hex) => handleContentChange('backgroundColor', hex)}
+                    showOpacity={false}
+                />
             </div>
 
             {/* Imagen de fondo */}
@@ -90,21 +98,11 @@ const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEd
 
                     <div className="space-y-2">
                         <Label htmlFor="borderColor">Color del border</Label>
-                        <div className="flex items-center gap-2">
-                            <Input
-                                id="borderColor"
-                                type="color"
-                                value={editContent.borderColor || '#e5e7eb'}
-                                onChange={(e) => handleContentChange('borderColor', e.target.value)}
-                                className="w-12 h-10"
-                            />
-                            <Input
-                                type="text"
-                                value={editContent.borderColor || '#e5e7eb'}
-                                onChange={(e) => handleContentChange('borderColor', e.target.value)}
-                                placeholder="#e5e7eb"
-                            />
-                        </div>
+                        <ColorPicker
+                            value={borderColor}
+                            onChange={(hex) => handleContentChange('borderColor', hex)}
+                            showOpacity={false}
+                        />
                     </div>
                 </>
             )}
@@ -133,26 +131,8 @@ const BentoFeatureEditDialog = ({ editContent, setEditContent, editStyles, setEd
                 />
             </div>
 
-            {/* Opacidad */}
-            <div className="space-y-2">
-                <Label htmlFor="opacity">Opacidad</Label>
-                <div className="space-y-2">
-                    <Slider
-                        value={[editContent.opacity !== undefined ? editContent.opacity * 100 : 100]}
-                        onValueChange={(value) => handleContentChange('opacity', value[0] / 100)}
-                        max={100}
-                        step={1}
-                        className="w-full"
-                    />
-                    <div className="flex justify-between text-sm text-gray-600">
-                        <span>0%</span>
-                        <span>{editContent.opacity !== undefined ? Math.round(editContent.opacity * 100) : 100}%</span>
-                        <span>100%</span>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };
 
-export default BentoFeatureEditDialog;
+export default React.memo(BentoFeatureEditDialog);

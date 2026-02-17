@@ -32,13 +32,12 @@ const BentoTitleComponent = ({
         const baseStyles = getStyles(comp);
 
         // Determinar el estilo de texto seleccionado
-        const textStyle = customStyles.textStyle || 'heading1'; // Por defecto heading1 para títulos de bento
+        const textStyle = customStyles.textStyle || 'heading1';
 
         // Función para obtener la fuente usando utilidades del tema
         const getFontFamily = () => {
             const fontType = customStyles.fontType;
 
-            // Si el usuario seleccionó "default" o no especificó nada
             if (fontType === 'default' || !fontType) {
                 if (textStyle.startsWith('heading')) {
                     return getResolvedFont(themeWithDefaults, `${textStyle}_font`, appliedTheme);
@@ -54,7 +53,7 @@ const BentoTitleComponent = ({
             return getResolvedFont(themeWithDefaults, fontType, appliedTheme);
         };
 
-        // Obtener configuración según el estilo seleccionado usando utilidades del tema
+        // Obtener configuración según el estilo seleccionado
         let fontSize, fontWeight, lineHeight, textTransform, color;
 
         if (textStyle === 'custom') {
@@ -64,7 +63,6 @@ const BentoTitleComponent = ({
             textTransform = customStyles.textTransform || themeWithDefaults.heading1_textTransform;
             color = customStyles.color || themeWithDefaults.heading;
         } else {
-            // Usar utilidades del tema para obtener estilos consistentes
             const themeTextStyles = getTextStyles(themeWithDefaults, textStyle, appliedTheme);
             fontSize = customStyles.fontSize || themeTextStyles.fontSize;
             fontWeight = customStyles.fontWeight || themeTextStyles.fontWeight;
@@ -75,7 +73,7 @@ const BentoTitleComponent = ({
 
         const fontSizeUnit = customStyles.fontSizeUnit || (fontSize?.toString().includes('rem') ? 'rem' : 'px');
 
-        // Calcular line-height si es personalizado
+        // Calcular line-height
         let finalLineHeight = lineHeight;
         if (lineHeight === 'tight') finalLineHeight = '1.2';
         if (lineHeight === 'normal') finalLineHeight = '1.4';
@@ -96,7 +94,6 @@ const BentoTitleComponent = ({
         const paddingBottom = customStyles.paddingBottom || '0px';
         const paddingLeft = customStyles.paddingLeft || '0px';
 
-        // Helper para añadir unidad (px) si es solo número
         const withUnit = (value, unit = 'px') => {
             if (value === undefined || value === null || value === '') return undefined;
             if (typeof value === 'string' && isNaN(Number(value))) return value;
@@ -106,6 +103,11 @@ const BentoTitleComponent = ({
         // Color final resuelto
         const finalColor = resolveValue(color);
 
+        // 🔹 Manejo especial para el color de fondo: si es 'transparent', lo dejamos tal cual
+        const backgroundColor = rawStyles.backgroundColor === 'transparent' 
+            ? 'transparent' 
+            : resolveValue(rawStyles.backgroundColor || 'transparent');
+
         return {
             ...baseStyles,
             width,
@@ -114,7 +116,7 @@ const BentoTitleComponent = ({
             paddingRight: withUnit(paddingRight),
             paddingBottom: withUnit(paddingBottom),
             paddingLeft: withUnit(paddingLeft),
-            backgroundColor: resolveValue(customStyles.backgroundColor || 'transparent'),
+            backgroundColor, // Usamos la variable con manejo especial
             borderRadius: withUnit(resolveValue(customStyles.borderRadius) || '0px'),
             display: layout === 'fit' ? 'inline-block' : 'block',
             fontFamily: getFontFamily(),

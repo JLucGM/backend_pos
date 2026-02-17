@@ -83,7 +83,7 @@ const CheckoutPaymentComponent = ({
         paddingBottom: withUnit(styles.paddingBottom || '24px'),
         paddingLeft: withUnit(styles.paddingLeft || '24px'),
         borderRadius: withUnit(styles.borderRadius || themeCheckoutStyles.borderRadius || '8px'),
-        border: `1px solid ${resolveValue(themeWithDefaults.borders)}`,
+        border: `${styles.borderWidth}px solid ${withUnit(styles.borders) || resolveValue(themeWithDefaults.borders)}`,
     };
 
     const titleStyles = {

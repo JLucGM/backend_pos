@@ -100,7 +100,7 @@ const CheckoutDiscountGiftCardComponent = ({
         paddingBottom: withUnit(styles.paddingBottom || '16px'),
         paddingLeft: withUnit(styles.paddingLeft || '16px'),
         borderRadius: withUnit(styles.borderRadius || '8px'),
-        border: `1px solid ${resolveValue(themeWithDefaults.borders)}`,
+        border: `${styles.borderWidth}px solid ${withUnit(styles.borders || '#ffffff') || resolveValue(themeWithDefaults.borders)}`,
     };
 
     const titleStyles = {

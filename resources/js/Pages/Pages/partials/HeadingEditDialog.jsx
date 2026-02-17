@@ -1,5 +1,5 @@
 // components/BuilderPages/partials/HeadingEditDialog.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,10 +7,25 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, isLiveEdit = true }) => {
+const HeadingEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    // Memoizar resolveValue
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -18,12 +33,13 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    // Memoizar updateStyle
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
     // Extraer el texto del contenido (puede ser string u objeto)
-    const getTextValue = () => {
+    const getTextValue = useCallback(() => {
         if (!editContent) return '';
 
         if (typeof editContent === 'string') {
@@ -35,16 +51,15 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
         }
 
         return String(editContent);
-    };
+    }, [editContent]);
 
     // Manejar cambio de texto
-    const handleTextChange = (value) => {
-        // Asegurarnos de que editContent siempre sea un string para heading
+    const handleTextChange = useCallback((value) => {
         setEditContent(value);
-    };
+    }, [setEditContent]);
 
     // Función para restablecer a valores por defecto según el heading
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         const textStyle = editStyles.textStyle || 'heading2';
 
         if (textStyle.startsWith('heading')) {
@@ -63,22 +78,25 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                 ...defaultStyles,
             }));
         }
-    };
+    }, [editStyles.textStyle, themeSettings, setEditStyles]);
 
     // Determinar qué controles mostrar
     const isCustomStyle = editStyles.textStyle === 'custom';
     const isHeadingStyle = editStyles.textStyle?.startsWith('heading');
 
     // Obtener la fuente predeterminada según el estilo
-    const getDefaultFontType = () => {
+    const getDefaultFontType = useCallback(() => {
         if (editStyles.textStyle?.startsWith('heading')) {
             return 'heading_font';
         }
         return 'body_font';
-    };
+    }, [editStyles.textStyle]);
 
     // Obtener el valor actual de fontType o usar el predeterminado
     const currentFontType = editStyles.fontType || 'default';
+
+    // Valor resuelto para el color
+    const colorValue = resolveValue(editStyles.color) || '#000000';
 
     return (
         <div className="space-y-4">
@@ -99,7 +117,7 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
             <Label htmlFor="content">Contenido</Label>
             <textarea
                 id="content"
-                value={getTextValue()}  // Usar getTextValue() en lugar de editContent directamente
+                value={getTextValue()}
                 onChange={(e) => handleTextChange(e.target.value)}
                 className="w-full h-20 p-2 border rounded"
             />
@@ -366,21 +384,11 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                 {/* Color */}
                 <div>
                     <Label htmlFor="color">Color</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#000000'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={colorValue}
+                        onChange={(hex) => updateStyle('color', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 {/* Padding */}
@@ -423,28 +431,8 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                     </div>
                 </div>
 
-                {/* Background */}
-                {/* <div>
-                    <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="backgroundColor"
-                            value={editStyles.backgroundColor || 'transparent'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            placeholder="transparent"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.backgroundColor === 'transparent' ? '#ffffff' : editStyles.backgroundColor || '#ffffff'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
-                </div> */}
-
                 {/* Border-Radius */}
-                <div>
+                {/* <div>
                     <Label htmlFor="borderRadius">Radio de Borde</Label>
                     <Input
                         id="borderRadius"
@@ -453,10 +441,10 @@ const HeadingEditDialog = ({ editContent, setEditContent, editStyles, setEditSty
                         onChange={(e) => updateStyle('borderRadius', e.target.value)}
                         className="flex-1"
                     />
-                </div>
+                </div> */}
             </div>
         </div>
     );
 };
 
-export default HeadingEditDialog;
+export default React.memo(HeadingEditDialog);

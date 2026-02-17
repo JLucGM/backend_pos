@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Input } from '@/Components/ui/input';
@@ -6,6 +6,8 @@ import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const CarouselPriceEditDialog = ({
     editContent,
@@ -13,10 +15,14 @@ const CarouselPriceEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -24,11 +30,11 @@ const CarouselPriceEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    const resetToDefaults = () => {
+    const resetToDefaults = useCallback(() => {
         setEditStyles(prev => ({
             ...prev,
             fontSize: themeSettings?.paragraph_fontSize || '14px',
@@ -38,7 +44,9 @@ const CarouselPriceEditDialog = ({
             fontType: 'default',
             customFont: '',
         }));
-    };
+    }, [themeSettings, setEditStyles]);
+
+    const colorValue = resolveValue(editStyles.color) || '#666666';
 
     return (
         <div className="space-y-4">
@@ -56,6 +64,15 @@ const CarouselPriceEditDialog = ({
             </div>
 
             <div>
+                <Label htmlFor="priceColor">Color del Texto</Label>
+                <ColorPicker
+                    value={colorValue}
+                    onChange={(hex) => updateStyle('color', hex)}
+                    showOpacity={false}
+                />
+            </div>
+
+            {/* <div>
                 <Label htmlFor="priceLayout">Layout</Label>
                 <Select
                     value={editStyles.layout || 'fit'}
@@ -69,7 +86,7 @@ const CarouselPriceEditDialog = ({
                         <SelectItem value="fill">Fill (Ancho completo)</SelectItem>
                     </SelectContent>
                 </Select>
-            </div>
+            </div> */}
 
             <div>
                 <Label htmlFor="priceAlignment">Alineación</Label>
@@ -248,17 +265,9 @@ const CarouselPriceEditDialog = ({
                 </div>
             )}
 
-            <div>
-                <Label htmlFor="priceColor">Color del Texto</Label>
-                <Input
-                    id="priceColor"
-                    type="color"
-                    value={editStyles.color || '#666666'}
-                    onChange={(e) => updateStyle('color', e.target.value)}
-                />
-            </div>
+            
         </div>
     );
 };
 
-export default CarouselPriceEditDialog;
+export default React.memo(CarouselPriceEditDialog);

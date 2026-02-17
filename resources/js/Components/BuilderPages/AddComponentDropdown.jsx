@@ -51,29 +51,29 @@ const ALL_COMPONENTS = [
     icon: <Bell className="h-4 w-4" />,
     description: 'Barra para anuncios o promociones'
   },
-  {
-    type: 'pageContent',
-    label: 'Contenido de Página',
-    category: 'structure',
-    icon: <FileText className="h-4 w-4" />,
-    description: 'Contenido dinámico de la página'
-  },
+  // {
+  //   type: 'pageContent',
+  //   label: 'Contenido de Página',
+  //   category: 'structure',
+  //   icon: <FileText className="h-4 w-4" />,
+  //   description: 'Contenido dinámico de la página'
+  // },
 
   // Contenido
-  {
-    type: 'text',
-    label: 'Texto',
-    category: 'content',
-    icon: <Type className="h-4 w-4" />,
-    description: 'Bloque de texto'
-  },
-  {
-    type: 'heading',
-    label: 'Encabezado',
-    category: 'content',
-    icon: <Type className="h-4 w-4" />,
-    description: 'Título o subtítulo'
-  },
+  // {
+  //   type: 'text',
+  //   label: 'Texto',
+  //   category: 'content',
+  //   icon: <Type className="h-4 w-4" />,
+  //   description: 'Bloque de texto'
+  // },
+  // {
+  //   type: 'heading',
+  //   label: 'Encabezado',
+  //   category: 'content',
+  //   icon: <Type className="h-4 w-4" />,
+  //   description: 'Título o subtítulo'
+  // },
   {
     type: 'image',
     label: 'Imagen',
@@ -88,13 +88,13 @@ const ALL_COMPONENTS = [
     icon: <TrendingUp className="h-4 w-4" />,
     description: 'Botón interactivo'
   },
-  {
-    type: 'link',
-    label: 'Enlace',
-    category: 'content',
-    icon: <LinkIcon className="h-4 w-4" />,
-    description: 'Enlace de navegación'
-  },
+  // {
+  //   type: 'link',
+  //   label: 'Enlace',
+  //   category: 'content',
+  //   icon: <LinkIcon className="h-4 w-4" />,
+  //   description: 'Enlace de navegación'
+  // },
   {
     type: 'marquee',
     label: 'Texto en Movimiento',
@@ -102,13 +102,13 @@ const ALL_COMPONENTS = [
     icon: <Type className="h-4 w-4" />,
     description: 'Texto que se desplaza'
   },
-  {
-    type: 'video',
-    label: 'Video',
-    category: 'content',
-    icon: <Video className="h-4 w-4" />,
-    description: 'Reproductor de video'
-  },
+  // {
+  //   type: 'video',
+  //   label: 'Video',
+  //   category: 'content',
+  //   icon: <Video className="h-4 w-4" />,
+  //   description: 'Reproductor de video'
+  // },
 
   // Productos
   {

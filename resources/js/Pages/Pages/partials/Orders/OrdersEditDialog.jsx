@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -7,16 +7,25 @@ import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const OrdersEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
     setEditStyles,
+    themeSettings,
+    appliedTheme,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -24,19 +33,25 @@ const OrdersEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateContent = (key, value) => {
+    const updateContent = useCallback((key, value) => {
         setEditContent(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditContent]);
 
-    const updateStyles = (key, value) => {
+    const updateStyles = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
+
+    // Colores resueltos
+    const bgColor = resolveValue(editStyles.backgroundColor) || '#ffffff';
+    const cardBgColor = resolveValue(editStyles.cardBackgroundColor) || '#ffffff';
+    const cardBorderColor = resolveValue(editStyles.cardBorderColor) || '#e5e7eb';
+    const titleColor = resolveValue(editStyles.titleColor) || '#000000';
 
     return (
         <div className="space-y-4">
@@ -194,11 +209,10 @@ const OrdersEditDialog = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="backgroundColor">Color de fondo</Label>
-                            <Input
-                                id="backgroundColor"
-                                type="color"
-                                value={editStyles.backgroundColor || '#ffffff'}
-                                onChange={(e) => updateStyles('backgroundColor', e.target.value)}
+                            <ColorPicker
+                                value={bgColor}
+                                onChange={(hex) => updateStyles('backgroundColor', hex)}
+                                showOpacity={false}
                             />
                         </div>
 
@@ -288,21 +302,19 @@ const OrdersEditDialog = ({
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="cardBackgroundColor">Color de fondo de tarjetas</Label>
-                                <Input
-                                    id="cardBackgroundColor"
-                                    type="color"
-                                    value={editStyles.cardBackgroundColor || '#ffffff'}
-                                    onChange={(e) => updateStyles('cardBackgroundColor', e.target.value)}
+                                <ColorPicker
+                                    value={cardBgColor}
+                                    onChange={(hex) => updateStyles('cardBackgroundColor', hex)}
+                                    showOpacity={false}
                                 />
                             </div>
 
                             <div>
                                 <Label htmlFor="cardBorderColor">Color del borde de tarjetas</Label>
-                                <Input
-                                    id="cardBorderColor"
-                                    type="color"
-                                    value={editStyles.cardBorderColor || '#e5e7eb'}
-                                    onChange={(e) => updateStyles('cardBorderColor', e.target.value)}
+                                <ColorPicker
+                                    value={cardBorderColor}
+                                    onChange={(hex) => updateStyles('cardBorderColor', hex)}
+                                    showOpacity={false}
                                 />
                             </div>
                         </div>
@@ -341,11 +353,10 @@ const OrdersEditDialog = ({
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="titleColor">Color del título</Label>
-                                <Input
-                                    id="titleColor"
-                                    type="color"
-                                    value={editStyles.titleColor || '#000000'}
-                                    onChange={(e) => updateStyles('titleColor', e.target.value)}
+                                <ColorPicker
+                                    value={titleColor}
+                                    onChange={(hex) => updateStyles('titleColor', hex)}
+                                    showOpacity={false}
                                 />
                             </div>
 
@@ -382,4 +393,4 @@ const OrdersEditDialog = ({
     );
 };
 
-export default OrdersEditDialog;
+export default React.memo(OrdersEditDialog);

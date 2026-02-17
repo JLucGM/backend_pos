@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -8,15 +8,29 @@ import { Info } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 // Importar los componentes de botones
 import CartButtonEditor from './CartButtonEditor';
 import SearchButtonEditor from './SearchButtonEditor';
 import ProfileButtonEditor from './ProfileButtonEditor';
 
-const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const HeaderEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    isLiveEdit = true,
+    themeSettings,
+    appliedTheme
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -24,28 +38,26 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateContent = (key, value) => {
+    const updateContent = useCallback((key, value) => {
         setEditContent(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditContent]);
 
-    const updateNestedContent = (path, key, value) => {
+    const updateNestedContent = useCallback((path, key, value) => {
         setEditContent(prev => {
             const newContent = { ...prev };
             let current = newContent;
 
-            // Navegar hasta el objeto padre
             for (const p of path) {
                 if (!current[p]) current[p] = {};
                 current = current[p];
             }
 
-            // Actualizar la propiedad
             current[key] = value;
             return newContent;
         });
-    };
+    }, [setEditContent]);
 
-    const updateButtonConfig = (buttonName, newConfig) => {
+    const updateButtonConfig = useCallback((buttonName, newConfig) => {
         setEditContent(prev => {
             const newContent = { ...prev };
             if (!newContent.buttons) newContent.buttons = {};
@@ -57,15 +69,14 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             };
             return newContent;
         });
-    };
+    }, [setEditContent]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    const getPositionInfo = () => {
+    const getPositionInfo = useCallback(() => {
         const logoPos = editContent?.logoPosition || 'left';
-
         if (logoPos === 'left') {
             return "Orden: Logo → Menú → Botones (Carrito, Buscador, Perfil)";
         } else if (logoPos === 'center') {
@@ -74,7 +85,11 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             return "Orden: Menú → Logo (pegado a botones) → Botones";
         }
         return "";
-    };
+    }, [editContent?.logoPosition]);
+
+    const bgColor = resolveValue(editStyles.backgroundColor) || '#ffffff';
+    const borders = resolveValue(editStyles?.borders) || '#ffffff';
+
 
     return (
         <Tabs defaultValue="general" className="w-full">
@@ -160,20 +175,11 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
 
                 <div>
                     <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="backgroundColor"
-                            value={editStyles.backgroundColor || '#ffffff'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.backgroundColor || '#ffffff'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={bgColor}
+                        onChange={(hex) => updateStyle('backgroundColor', hex)}
+                        showOpacity={false}
+                    />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -207,18 +213,10 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         onChange={(e) => updateStyle('borderBottom', e.target.value)}
                     />
                 </div>
+                
             </TabsContent>
 
             <TabsContent value="buttons" className="space-y-6">
-                {/* <div className="flex items-center justify-between">
-                    <Label htmlFor="showSearch">Mostrar botón de búsqueda</Label>
-                    <Switch
-                        id="showSearch"
-                        checked={editContent?.buttons?.showSearch !== false}
-                        onCheckedChange={(checked) => updateNestedContent(['buttons'], 'showSearch', checked)}
-                    />
-                </div> */}
-
                 <div>
                     <Label htmlFor="buttonsGap">Espaciado entre botones</Label>
                     <Input
@@ -239,6 +237,8 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         <CartButtonEditor
                             buttonConfig={editContent?.buttons?.cart || {}}
                             onUpdate={(newConfig) => updateButtonConfig('cart', newConfig)}
+                            themeSettings={themeSettings}
+                            appliedTheme={appliedTheme}
                         />
                         <Separator className='my-4' />
                         <SearchButtonEditor
@@ -246,12 +246,15 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                             showSearch={editContent?.buttons?.showSearch}
                             onUpdate={(newConfig) => updateButtonConfig('search', newConfig)}
                             onUpdateShowSearch={(value) => updateNestedContent(['buttons'], 'showSearch', value)}
+                            themeSettings={themeSettings}
+                            appliedTheme={appliedTheme}
                         />
-
                         <Separator className='my-4' />
                         <ProfileButtonEditor
                             buttonConfig={editContent?.buttons?.profile || {}}
                             onUpdate={(newConfig) => updateButtonConfig('profile', newConfig)}
+                            themeSettings={themeSettings}
+                            appliedTheme={appliedTheme}
                         />
                     </div>
                 </div>
@@ -260,4 +263,4 @@ const HeaderEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
     );
 };
 
-export default HeaderEditDialog;
+export default React.memo(HeaderEditDialog);

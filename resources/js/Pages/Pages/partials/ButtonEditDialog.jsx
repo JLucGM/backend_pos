@@ -1,18 +1,34 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, isLiveEdit = true, dynamicPages = [], products = [] }) => {
+const ButtonEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true,
+    dynamicPages = [],
+    products = []
+}) => {
     const [linkType, setLinkType] = useState('none');
     const [selectedPage, setSelectedPage] = useState('');
     const [selectedProduct, setSelectedProduct] = useState('');
     const [customUrl, setCustomUrl] = useState('');
     const [isInitialized, setIsInitialized] = useState(false);
 
-    // Debounce for live updates
+    // Memoizar resolveValue
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
+
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
 
@@ -25,26 +41,21 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
     const prevEditStylesRef = useRef(editStyles);
     const prevEditContentRef = useRef(editContent);
 
-    // 1. INICIALIZACIÓN UNA VEZ - sin reaccionar a cambios posteriores
+    // 1. INICIALIZACIÓN UNA VEZ
     useEffect(() => {
-        // Solo inicializar una vez
         if (isInitialized) return;
 
-        // Asegurarse de que currentUrl sea una cadena
         const currentUrl = editStyles?.buttonUrl || editContent || '';
-        const currentUrlString = String(currentUrl); // Convertir a string seguro
+        const currentUrlString = String(currentUrl);
 
-        // Inicializar el tipo de enlace
         if (currentUrlString && currentUrlString.trim() !== '') {
             if (typeof currentUrlString === 'string' && currentUrlString.startsWith('/')) {
-                // Verificar si es una página dinámica
                 const pageSlug = currentUrlString.replace('/', '');
                 const page = dynamicPages.find(p => p.slug === pageSlug);
                 if (page) {
                     setLinkType('page');
                     setSelectedPage(page.slug);
                 } else {
-                    // Verificar si es un producto
                     const productMatch = currentUrlString.match(/\/detalles-del-producto\?product=(.+)/);
                     if (productMatch) {
                         const productSlug = productMatch[1];
@@ -72,24 +83,19 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         }
 
         setIsInitialized(true);
-
-        // Guardar valores iniciales
         prevEditStylesRef.current = editStyles;
         prevEditContentRef.current = editContent;
     }, [editStyles, editContent, dynamicPages, products, isInitialized]);
 
     // 2. SINCRONIZACIÓN MANUAL cuando cambia la URL desde fuera
     useEffect(() => {
-        // Solo actualizar si realmente cambió la URL
         const currentUrl = editStyles?.buttonUrl || editContent || '';
         const prevUrl = prevEditStylesRef.current?.buttonUrl || prevEditContentRef.current || '';
 
-        // Convertir ambos a strings para comparación
         const currentUrlString = String(currentUrl);
         const prevUrlString = String(prevUrl);
 
         if (currentUrlString !== prevUrlString && currentUrlString.trim() !== '') {
-            // Reinicializar con la nueva URL
             setIsInitialized(false);
             setLinkType('none');
             setSelectedPage('');
@@ -97,7 +103,6 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             setCustomUrl('');
         }
 
-        // Actualizar referencias
         prevEditStylesRef.current = editStyles;
         prevEditContentRef.current = editContent;
     }, [editStyles?.buttonUrl, editContent]);
@@ -127,50 +132,48 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                 break;
         }
 
-        // Solo actualizar si realmente cambió
         const currentUrl = editStyles?.buttonUrl || editContent || '';
         const currentUrlString = String(currentUrl);
 
         if (newUrl !== currentUrlString) {
-            // Guardar la URL en buttonUrl de los estilos
             setEditStyles(prev => ({ ...prev, buttonUrl: newUrl }));
-
-            // Si el contenido actual era la misma URL, limpiarlo para mantener solo el texto
             if (editContent === currentUrl) {
                 setEditContent(editStyles?.buttonText || '');
             }
         }
-    }, [linkType, selectedPage, selectedProduct, customUrl, isInitialized]);
+    }, [linkType, selectedPage, selectedProduct, customUrl, isInitialized, editStyles?.buttonUrl, editContent, setEditStyles, setEditContent]);
 
-    const updateStyle = (key, value) => {
+    // Memoizar funciones de actualización
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    // Manejar cambio de texto del botón
-    const handleTextChange = (value) => {
-        // Guardar en buttonText de los estilos
+    const handleTextChange = useCallback((value) => {
         updateStyle('buttonText', value);
-
-        // También actualizar el contenido principal si no es una URL
         const currentUrl = editStyles?.buttonUrl || editContent || '';
         if (editContent && !currentUrl.startsWith('/') && !currentUrl.startsWith('http')) {
             setEditContent(value);
         }
-    };
+    }, [updateStyle, editStyles?.buttonUrl, editContent, setEditContent]);
 
-    // Manejar cambio de URL personalizada
-    const handleCustomUrlChange = (value) => {
+    const handleCustomUrlChange = useCallback((value) => {
         setCustomUrl(value);
         if (linkType === 'custom') {
-            // Actualizar inmediatamente
             setEditStyles(prev => ({ ...prev, buttonUrl: value }));
         }
-    };
+    }, [linkType, setEditStyles]);
 
-    // Obtener el texto actual del botón
-    const getCurrentText = () => {
+    const getCurrentText = useCallback(() => {
         return editStyles?.buttonText || editContent || '';
-    };
+    }, [editStyles?.buttonText, editContent]);
+
+    // Valores resueltos para los ColorPicker
+    const colorValue = resolveValue(editStyles.color) || '#ffffff';
+    const bgColorValue = resolveValue(editStyles.backgroundColor) || '#007bff';
+    const borderColorValue = resolveValue(editStyles.borderColor) || resolveValue(editStyles.backgroundColor) || '#007bff';
+    const hoverColorValue = resolveValue(editStyles.hoverColor) || '#ffffff';
+    const hoverBgColorValue = resolveValue(editStyles.hoverBackgroundColor) || '#0056b3';
+    const hoverBorderColorValue = resolveValue(editStyles.hoverBorderColor) || '#0056b3';
 
     return (
         <div className="space-y-4">
@@ -199,7 +202,6 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         onValueChange={(value) => {
                             setLinkType(value);
                             if (value === 'custom') {
-                                // Inicializar customUrl si está vacío
                                 const currentUrl = editStyles?.buttonUrl || editContent || '';
                                 if (currentUrl && !customUrl) {
                                     setCustomUrl(currentUrl);
@@ -300,14 +302,6 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         </p>
                     </div>
                 )}
-
-                {/* {linkType === 'none' && (
-                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                        <p className="text-sm text-yellow-800">
-                            El botón no tendrá enlace. Se usará para acciones como "Agregar al carrito".
-                        </p>
-                    </div>
-                )} */}
             </div>
 
             <Separator className="my-4" />
@@ -386,7 +380,6 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     </SelectContent>
                 </Select>
             </div>
-
 
             {/* Solo mostrar opciones de personalización completas si el tipo es "custom" */}
             {editStyles.buttonType === 'custom' && (
@@ -469,57 +462,27 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
 
                     {/* Color de Texto */}
                     <Label htmlFor="color">Color de Texto</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="color"
-                            value={editStyles.color || '#ffffff'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            placeholder="#ffffff"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.color || '#ffffff'}
-                            onChange={(e) => updateStyle('color', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={colorValue}
+                        onChange={(hex) => updateStyle('color', hex)}
+                        showOpacity={false}
+                    />
 
                     {/* Color de Fondo */}
                     <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="backgroundColor"
-                            value={editStyles.backgroundColor || '#007bff'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            placeholder="#007bff"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.backgroundColor || '#007bff'}
-                            onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                            className="w-12"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={bgColorValue}
+                        onChange={(hex) => updateStyle('backgroundColor', hex)}
+                        showOpacity={false}
+                    />
 
                     {/* Color de Borde */}
                     <Label htmlFor="borderColor">Color de Borde</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            id="borderColor"
-                            value={editStyles.borderColor || editStyles.backgroundColor || '#007bff'}
-                            onChange={(e) => updateStyle('borderColor', e.target.value)}
-                            placeholder="#007bff"
-                            className="flex-1"
-                        />
-                        <Input
-                            type="color"
-                            value={editStyles.borderColor || editStyles.backgroundColor || '#007bff'}
-                            onChange={(e) => updateStyle('borderColor', e.target.value)}
-                            className="w-12 h-10 p-1"
-                        />
-                    </div>
+                    <ColorPicker
+                        value={borderColorValue}
+                        onChange={(hex) => updateStyle('borderColor', hex)}
+                        showOpacity={false}
+                    />
 
                     {/* Grosor del Borde */}
                     <Label htmlFor="borderWidth">Grosor del Borde (px)</Label>
@@ -552,55 +515,25 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         <h4 className="font-medium mb-2">Estilos de Hover</h4>
 
                         <Label htmlFor="hoverColor">Color de Texto (Hover)</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                id="hoverColor"
-                                value={editStyles.hoverColor || ''}
-                                onChange={(e) => updateStyle('hoverColor', e.target.value)}
-                                placeholder="#ffffff"
-                                className="flex-1"
-                            />
-                            <Input
-                                type="color"
-                                value={editStyles.hoverColor || '#ffffff'}
-                                onChange={(e) => updateStyle('hoverColor', e.target.value)}
-                                className="w-12"
-                            />
-                        </div>
+                        <ColorPicker
+                            value={hoverColorValue}
+                            onChange={(hex) => updateStyle('hoverColor', hex)}
+                            showOpacity={false}
+                        />
 
                         <Label htmlFor="hoverBackgroundColor">Color de Fondo (Hover)</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                id="hoverBackgroundColor"
-                                value={editStyles.hoverBackgroundColor || ''}
-                                onChange={(e) => updateStyle('hoverBackgroundColor', e.target.value)}
-                                placeholder="#0056b3"
-                                className="flex-1"
-                            />
-                            <Input
-                                type="color"
-                                value={editStyles.hoverBackgroundColor || '#0056b3'}
-                                onChange={(e) => updateStyle('hoverBackgroundColor', e.target.value)}
-                                className="w-12"
-                            />
-                        </div>
+                        <ColorPicker
+                            value={hoverBgColorValue}
+                            onChange={(hex) => updateStyle('hoverBackgroundColor', hex)}
+                            showOpacity={false}
+                        />
 
                         <Label htmlFor="hoverBorderColor">Color de Borde (Hover)</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                id="hoverBorderColor"
-                                value={editStyles.hoverBorderColor || ''}
-                                onChange={(e) => updateStyle('hoverBorderColor', e.target.value)}
-                                placeholder="#0056b3"
-                                className="flex-1"
-                            />
-                            <Input
-                                type="color"
-                                value={editStyles.hoverBorderColor || '#0056b3'}
-                                onChange={(e) => updateStyle('hoverBorderColor', e.target.value)}
-                                className="w-12"
-                            />
-                        </div>
+                        <ColorPicker
+                            value={hoverBorderColorValue}
+                            onChange={(hex) => updateStyle('hoverBorderColor', hex)}
+                            showOpacity={false}
+                        />
                     </div>
                     <Separator className="my-4" />
                 </>
@@ -652,7 +585,6 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
             {/* Si es primary o secondary, mostrar solo las opciones que pueden sobrescribir */}
             {(editStyles.buttonType === 'primary' || editStyles.buttonType === 'secondary') && (
                 <div className="space-y-4">
-                    {/* Opciones de sobrescritura específicas */}
                     <div className="flex flex-col gap-4">
                         <div>
                             <Label htmlFor="borderRadius">Radio de Borde Personalizado</Label>
@@ -697,4 +629,4 @@ const ButtonEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
     );
 };
 
-export default ButtonEditDialog;
+export default React.memo(ButtonEditDialog);

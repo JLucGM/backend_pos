@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -6,17 +6,23 @@ import { Switch } from '@/Components/ui/switch';
 import { Button } from '@/Components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const QuantitySelectorEditDialog = ({
     editContent,
     setEditContent,
     editStyles,
     setEditStyles,
-    themeSettings, // Añadir themeSettings como prop
-
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true,
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -24,22 +30,21 @@ const QuantitySelectorEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const handleStyleChange = (key, value) => {
+    const handleStyleChange = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
 
-    const handleContentChange = (key, value) => {
+    const handleContentChange = useCallback((key, value) => {
         setEditContent(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditContent]);
 
-    // Función para restablecer a valores del tema
-    const resetToThemeDefaults = () => {
+    const resetToThemeDefaults = useCallback(() => {
         const defaultStyles = {
             labelColor: themeSettings?.quantity_labelColor || themeSettings?.text_color || '#666666',
             borderColor: themeSettings?.quantity_borderColor || themeSettings?.border_color || '#d1d5db',
@@ -54,26 +59,43 @@ const QuantitySelectorEditDialog = ({
             ...prev,
             ...defaultStyles
         }));
-    };
+    }, [themeSettings, setEditStyles]);
 
-    // Función para obtener valor del tema para mostrar en tooltips
     const getThemeValue = (key) => {
         const themeMap = {
-            'labelColor': themeSettings?.quantity_labelColor || themeSettings?.text_color,
-            'borderColor': themeSettings?.quantity_borderColor || themeSettings?.border_color,
-            'buttonColor': themeSettings?.quantity_buttonColor || themeSettings?.primary_color,
-            'inputColor': themeSettings?.quantity_inputColor || themeSettings?.text_color,
-            'borderRadius': themeSettings?.quantity_borderRadius || themeSettings?.border_radius,
-            'buttonSize': themeSettings?.quantity_buttonSize || themeSettings?.button_font_size,
-            'inputSize': themeSettings?.quantity_inputSize || themeSettings?.input_font_size,
+            labelColor: themeSettings?.quantity_labelColor || themeSettings?.text_color,
+            borderColor: themeSettings?.quantity_borderColor || themeSettings?.border_color,
+            buttonColor: themeSettings?.quantity_buttonColor || themeSettings?.primary_color,
+            inputColor: themeSettings?.quantity_inputColor || themeSettings?.text_color,
+            borderRadius: themeSettings?.quantity_borderRadius || themeSettings?.border_radius,
+            buttonSize: themeSettings?.quantity_buttonSize || themeSettings?.button_font_size,
+            inputSize: themeSettings?.quantity_inputSize || themeSettings?.input_font_size,
         };
-
         return themeMap[key];
     };
 
+    const getResolvedColor = (styleKey, fallbackKey) => {
+        const styleValue = editStyles[styleKey];
+        if (styleValue) return resolveValue(styleValue);
+        const themeRef = getThemeValue(fallbackKey);
+        if (themeRef) return resolveValue(themeRef);
+        const fallbackMap = {
+            labelColor: '#666666',
+            borderColor: '#d1d5db',
+            buttonColor: '#374151',
+            inputColor: '#000000',
+        };
+        return fallbackMap[fallbackKey] || '#000000';
+    };
+
+    // Valores resueltos para los ColorPicker
+    const labelColorValue = getResolvedColor('labelColor', 'labelColor');
+    const borderColorValue = getResolvedColor('borderColor', 'borderColor');
+    const buttonColorValue = getResolvedColor('buttonColor', 'buttonColor');
+    const inputColorValue = getResolvedColor('inputColor', 'inputColor');
+
     return (
         <div className="space-y-4">
-            {/* Botón para restablecer a valores del tema */}
             <div className="flex justify-end">
                 <Button
                     type="button"
@@ -121,17 +143,19 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="labelColor">Color de la etiqueta</Label>
                     <div className="flex items-center gap-2">
-                        <Input
-                            id="labelColor"
-                            type="color"
-                            value={editStyles.labelColor || getThemeValue('labelColor') || '#666666'}
-                            onChange={(e) => handleStyleChange('labelColor', e.target.value)}
+                        <ColorPicker
+                            value={labelColorValue}
+                            onChange={(hex) => handleStyleChange('labelColor', hex)}
+                            showOpacity={false}
                         />
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleStyleChange('labelColor', getThemeValue('labelColor') || '#666666')}
+                            onClick={() => {
+                                const themeVal = getThemeValue('labelColor');
+                                if (themeVal) handleStyleChange('labelColor', resolveValue(themeVal));
+                            }}
                         >
                             Tema
                         </Button>
@@ -140,17 +164,19 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="borderColor">Color del borde</Label>
                     <div className="flex items-center gap-2">
-                        <Input
-                            id="borderColor"
-                            type="color"
-                            value={editStyles.borderColor || getThemeValue('borderColor') || '#d1d5db'}
-                            onChange={(e) => handleStyleChange('borderColor', e.target.value)}
+                        <ColorPicker
+                            value={borderColorValue}
+                            onChange={(hex) => handleStyleChange('borderColor', hex)}
+                            showOpacity={false}
                         />
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleStyleChange('borderColor', getThemeValue('borderColor') || '#d1d5db')}
+                            onClick={() => {
+                                const themeVal = getThemeValue('borderColor');
+                                if (themeVal) handleStyleChange('borderColor', resolveValue(themeVal));
+                            }}
                         >
                             Tema
                         </Button>
@@ -162,17 +188,19 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="buttonColor">Color de botones</Label>
                     <div className="flex items-center gap-2">
-                        <Input
-                            id="buttonColor"
-                            type="color"
-                            value={editStyles.buttonColor || getThemeValue('buttonColor') || '#374151'}
-                            onChange={(e) => handleStyleChange('buttonColor', e.target.value)}
+                        <ColorPicker
+                            value={buttonColorValue}
+                            onChange={(hex) => handleStyleChange('buttonColor', hex)}
+                            showOpacity={false}
                         />
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleStyleChange('buttonColor', getThemeValue('buttonColor') || '#374151')}
+                            onClick={() => {
+                                const themeVal = getThemeValue('buttonColor');
+                                if (themeVal) handleStyleChange('buttonColor', resolveValue(themeVal));
+                            }}
                         >
                             Tema
                         </Button>
@@ -181,17 +209,19 @@ const QuantitySelectorEditDialog = ({
                 <div>
                     <Label htmlFor="inputColor">Color del input</Label>
                     <div className="flex items-center gap-2">
-                        <Input
-                            id="inputColor"
-                            type="color"
-                            value={editStyles.inputColor || getThemeValue('inputColor') || '#000000'}
-                            onChange={(e) => handleStyleChange('inputColor', e.target.value)}
+                        <ColorPicker
+                            value={inputColorValue}
+                            onChange={(hex) => handleStyleChange('inputColor', hex)}
+                            showOpacity={false}
                         />
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleStyleChange('inputColor', getThemeValue('inputColor') || '#000000')}
+                            onClick={() => {
+                                const themeVal = getThemeValue('inputColor');
+                                if (themeVal) handleStyleChange('inputColor', resolveValue(themeVal));
+                            }}
                         >
                             Tema
                         </Button>
@@ -228,8 +258,12 @@ const QuantitySelectorEditDialog = ({
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                            handleStyleChange('borderRadius', parseInt(getThemeValue('borderRadius')) || 6);
-                            handleStyleChange('borderRadiusUnit', getThemeValue('borderRadius')?.toString().includes('rem') ? 'rem' : 'px');
+                            const themeVal = getThemeValue('borderRadius');
+                            if (themeVal) {
+                                const num = parseInt(resolveValue(themeVal)) || 6;
+                                handleStyleChange('borderRadius', num.toString());
+                                handleStyleChange('borderRadiusUnit', themeVal.toString().includes('rem') ? 'rem' : 'px');
+                            }
                         }}
                     >
                         Tema
@@ -295,4 +329,4 @@ const QuantitySelectorEditDialog = ({
     );
 };
 
-export default QuantitySelectorEditDialog;
+export default React.memo(QuantitySelectorEditDialog);

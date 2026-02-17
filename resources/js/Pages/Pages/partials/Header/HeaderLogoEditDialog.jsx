@@ -1,13 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue } from '@/utils/themeUtils';
 
-const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, themeSettings, isLiveEdit = true, companyLogo }) => {
+const HeaderLogoEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true,
+    companyLogo
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeSettings, appliedTheme);
+    }, [themeSettings, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -15,11 +29,10 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
 
-    // Opciones para objectFit
     const objectFitOptions = [
         { value: 'contain', label: 'Contener (mantener proporción)' },
         { value: 'cover', label: 'Cubrir (rellena el contenedor)' },
@@ -28,16 +41,14 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
         { value: 'scale-down', label: 'Reducir escala' },
     ];
 
-    // Manejar cambio entre usar logo de compañía o personalizado
-    const handleUseCompanyLogoChange = (useCompany) => {
+    const handleUseCompanyLogoChange = useCallback((useCompany) => {
         if (useCompany) {
             setEditContent(null); // null indica usar logo de compañía
         } else {
             setEditContent('Logo'); // Valor por defecto
         }
-    };
+    }, [setEditContent]);
 
-    // Determinar si estamos usando logo de compañía
     const isUsingCompanyLogo = editContent === null || editContent === 'Logo';
 
     return (
@@ -129,7 +140,6 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                     </div>
                 </div>
 
-                {/* Controles para max-width y max-height */}
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="maxWidth">Ancho máximo</Label>
@@ -158,7 +168,6 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                     </div>
                 </div>
 
-                {/* Control para objectFit */}
                 <div>
                     <Label htmlFor="objectFit">Ajuste de imagen</Label>
                     <Select
@@ -232,80 +241,8 @@ const HeaderLogoEditDialog = ({ editContent, setEditContent, editStyles, setEdit
                     </div>
                 </div>
             </div>
-
-            {/* Sección: Opciones avanzadas */}
-            <div className="space-y-4 pt-4 border-t">
-                <h4 className="font-medium">Opciones avanzadas</h4>
-
-                {/* Opacidad */}
-                <div>
-                    <Label htmlFor="opacity">Opacidad (%)</Label>
-                    <div className="flex items-center space-x-2">
-                        <Input
-                            id="opacity"
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={parseInt(editStyles.opacity) || 100}
-                            onChange={(e) => updateStyle('opacity', e.target.value)}
-                            className="flex-1"
-                        />
-                        <span className="text-sm text-gray-500 w-12 text-right">
-                            {parseInt(editStyles.opacity) || 100}%
-                        </span>
-                    </div>
-                </div>
-
-                {/* Borde */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Label htmlFor="borderWidth">Ancho del borde</Label>
-                        <div className="flex items-center space-x-2">
-                            <Input
-                                id="borderWidth"
-                                type="number"
-                                value={parseInt(editStyles.borderWidth) || 0}
-                                onChange={(e) => updateStyle('borderWidth', e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <Label htmlFor="borderRadius">Radio del borde</Label>
-                        <div className="flex items-center space-x-2">
-                            <Input
-                                id="borderRadius"
-                                type="number"
-                                value={parseInt(editStyles.borderRadius) || 0}
-                                onChange={(e) => updateStyle('borderRadius', e.target.value)}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Color del borde (opcional) */}
-                <div>
-                    <Label htmlFor="borderColor">Color del borde</Label>
-                    <div className="flex items-center space-x-2">
-                        <Input
-                            id="borderColor"
-                            type="color"
-                            value={editStyles.borderColor || '#000000'}
-                            onChange={(e) => updateStyle('borderColor', e.target.value)}
-                            className="w-12 h-10 p-1"
-                        />
-                        <Input
-                            type="text"
-                            value={editStyles.borderColor || '#000000'}
-                            onChange={(e) => updateStyle('borderColor', e.target.value)}
-                            placeholder="#000000"
-                            className="flex-1"
-                        />
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };
 
-export default HeaderLogoEditDialog;
+export default React.memo(HeaderLogoEditDialog);

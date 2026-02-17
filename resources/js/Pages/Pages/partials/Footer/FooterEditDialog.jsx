@@ -4,11 +4,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/Components/ui/textarea";
 import { useDebounce } from "@/hooks/Builder/useDebounce";
 import { Switch } from "@/Components/ui/switch";
-import { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
+import { resolveStyleValue, getThemeWithDefaults } from "@/utils/themeUtils";
+import { ColorPicker } from "@/components/ui/color-picker";
 
-const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const FooterEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -16,13 +31,16 @@ const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateContent = (key, value) => {
+    const updateContent = useCallback((key, value) => {
         setEditContent(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditContent]);
 
-    const updateStyle = (key, value) => {
+    const updateStyle = useCallback((key, value) => {
         setEditStyles(prev => ({ ...prev, [key]: value }));
-    };
+    }, [setEditStyles]);
+
+    const bgColor = resolveValue(editStyles.backgroundColor) || '#f8fafc';
+    const borders = resolveValue(editStyles?.borders) || '#ffffff';
 
     return (
         <div className="space-y-6">
@@ -85,10 +103,20 @@ const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         </SelectContent>
                     </Select>
                 </div>
+                
+                {/* Color de Fondo */}
+                <div>
+                    <Label htmlFor="backgroundColor">Color de Fondo</Label>
+                    <ColorPicker
+                        value={bgColor}
+                        onChange={(hex) => updateStyle('backgroundColor', hex)}
+                        showOpacity={false}
+                    />
+                </div>
             </div>
 
             {/* Redes Sociales */}
-            <div>
+            {/* <div>
                 <h4 className="font-medium mb-3">Redes Sociales</h4>
 
                 <div className="flex items-center justify-between mb-4">
@@ -170,41 +198,37 @@ const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                         </div>
                     </div>
                 )}
-            </div>
+            </div> */}
 
             {/* Estilos */}
             <div className="pt-4 border-t">
-                <h4 className="font-medium mb-3">Estilos del Footer</h4>
 
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                id="backgroundColor"
-                                value={editStyles.backgroundColor || '#f8fafc'}
-                                onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                                className="flex-1"
-                            />
-                            <Input
-                                type="color"
-                                value={editStyles.backgroundColor || '#f8fafc'}
-                                onChange={(e) => updateStyle('backgroundColor', e.target.value)}
-                                className="w-12"
-                            />
-                        </div>
-                    </div>
 
-                    <div>
-                        <Label htmlFor="borderTop">Borde Superior</Label>
+                <div className="grid grid-cols-1 gap-4 mb-4">
+                    
+                    <div className="space-y-2">
+                        <Label htmlFor="borderWidth">Ancho de borde</Label>
                         <Input
-                            id="borderTop"
-                            value={editStyles.borderTop || '1px solid #e5e7eb'}
-                            onChange={(e) => updateStyle('borderTop', e.target.value)}
+                            id="borderWidth"
+                            type="number"
+                            value={parseInt(editStyles.borderWidth) || 1}
+                            onChange={(e) => updateStyle('borderWidth', e.target.value)}
+                            placeholder="8"
                         />
                     </div>
 
                     <div>
+                        <Label htmlFor="borders">Color del border</Label>
+                        <ColorPicker
+                            value={borders}
+                            onChange={(hex) => updateStyle('borders', hex)}
+                            showOpacity={false}
+                        />
+                    </div>
+
+
+                
+                    {/* <div>
                         <Label htmlFor="maxWidth">Ancho Máximo</Label>
                         <div className="flex gap-2">
                             <Input
@@ -228,7 +252,7 @@ const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                                 </SelectContent>
                             </Select>
                         </div>
-                    </div>
+                    </div> */}
 
                     <div>
                         <Label htmlFor="gap">Espaciado (Gap)</Label>
@@ -242,7 +266,7 @@ const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
                     </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="paddingTop">Superior</Label>
                         <Input
@@ -289,4 +313,4 @@ const FooterEditDialog = ({ editContent, setEditContent, editStyles, setEditStyl
     );
 };
 
-export default FooterEditDialog;
+export default React.memo(FooterEditDialog);

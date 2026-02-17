@@ -1,18 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
 const ProductDetailEditDialog = ({
     editStyles,
     setEditStyles,
     themeSettings,
+    appliedTheme,
     editContent,
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => resolveStyleValue(value, themeWithDefaults, appliedTheme), [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -20,51 +26,47 @@ const ProductDetailEditDialog = ({
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const handleStyleChange = (key, value) => {
+    const handleStyleChange = useCallback((key, value) => {
         setEditStyles(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditStyles]);
 
-    // Función para manejar el cambio del ancho como porcentaje
-    const handleWidthChange = (value) => {
+    const handleWidthChange = useCallback((value) => {
         setEditStyles(prev => ({
             ...prev,
             maxWidth: `${value}%`
         }));
-    };
+    }, [setEditStyles]);
 
-    // Obtener el valor numérico del ancho (sin el %)
-    const getWidthValue = () => {
+    const getWidthValue = useCallback(() => {
         const maxWidth = editStyles.maxWidth || '100%';
         if (maxWidth.includes('%')) {
             return parseInt(maxWidth) || 100;
         }
-        // Si el valor está en px, convertirlo a un porcentaje aproximado
-        // basado en que 1200px ≈ 100% en pantallas grandes
         if (maxWidth.includes('px')) {
             const pxValue = parseInt(maxWidth) || 1200;
             return Math.min(100, Math.floor((pxValue / 1200) * 100));
         }
         return 100;
-    };
+    }, [editStyles.maxWidth]);
 
     const widthValue = getWidthValue();
+    const bgColor = resolveValue(editStyles.backgroundColor) || '#ffffff';
 
     return (
         <div className="space-y-4">
             <div>
                 <Label htmlFor="backgroundColor">Color de fondo</Label>
-                <Input
-                    id="backgroundColor"
-                    type="color"
-                    value={editStyles.backgroundColor || '#ffffff'}
-                    onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
+                <ColorPicker
+                    value={bgColor}
+                    onChange={(hex) => handleStyleChange('backgroundColor', hex)}
+                    showOpacity={false}
                 />
             </div>
 
-            <div>
+            {/* <div>
                 <Label htmlFor="maxWidth">Ancho del contenedor ({widthValue}%)</Label>
                 <div className="space-y-2">
                     <div className="flex items-center gap-4">
@@ -96,7 +98,7 @@ const ProductDetailEditDialog = ({
                 <p className="text-xs text-gray-500 mt-1">
                     100% = Ancho total del navegador
                 </p>
-            </div>
+            </div> */}
 
             <div>
                 <Label htmlFor="layoutType">Diseño</Label>
@@ -172,4 +174,4 @@ const ProductDetailEditDialog = ({
     );
 };
 
-export default ProductDetailEditDialog;
+export default React.memo(ProductDetailEditDialog);

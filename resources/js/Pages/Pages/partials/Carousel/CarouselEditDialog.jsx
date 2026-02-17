@@ -1,14 +1,29 @@
 // components/BuilderPages/partials/CarouselEditDialog.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
+import { resolveStyleValue, getThemeWithDefaults } from '@/utils/themeUtils';
+import { ColorPicker } from '@/components/ui/color-picker';
 
-const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditStyles, isLiveEdit = true }) => {
+const CarouselEditDialog = ({
+    editContent,
+    setEditContent,
+    editStyles,
+    setEditStyles,
+    themeSettings,
+    appliedTheme,
+    isLiveEdit = true
+}) => {
     const debouncedContent = useDebounce(editContent, 300);
     const debouncedStyles = useDebounce(editStyles, 300);
+
+    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+    const resolveValue = useCallback((value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    }, [themeWithDefaults, appliedTheme]);
 
     useEffect(() => {
         if (isLiveEdit) {
@@ -16,17 +31,18 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
         }
     }, [debouncedContent, debouncedStyles, isLiveEdit]);
 
-    const updateCarouselConfig = (key, value) => {
+    const updateCarouselConfig = useCallback((key, value) => {
         setEditContent(prev => ({
             ...prev,
             [key]: value
         }));
-    };
+    }, [setEditContent]);
+
+    const bgColor = resolveValue(editContent.backgroundColor) || '#ffffff';
 
     return (
         <div className="space-y-4">
             <div className="">
-
                 <Label htmlFor="limit">Conteo de Productos</Label>
                 <Input
                     id="limit"
@@ -57,18 +73,16 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
 
             <Separator />
 
-
             <div className="">
                 <Label htmlFor="backgroundColor">Color de Fondo</Label>
-                <Input
-                    id="backgroundColor"
-                    type="color"
-                    value={editContent.backgroundColor || '#ffffff'}
-                    onChange={(e) => updateCarouselConfig('backgroundColor', e.target.value)}
+                <ColorPicker
+                    value={bgColor}
+                    onChange={(hex) => updateCarouselConfig('backgroundColor', hex)}
+                    showOpacity={false}
                 />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
                 <div>
                     <Label htmlFor="gapX">Gap Horizontal (px)</Label>
                     <Input
@@ -88,10 +102,8 @@ const CarouselEditDialog = ({ editContent, setEditContent, editStyles, setEditSt
                     />
                 </div>
             </div>
-
-
         </div>
     );
 };
 
-export default CarouselEditDialog;
+export default React.memo(CarouselEditDialog);
