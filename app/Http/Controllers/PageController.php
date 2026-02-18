@@ -326,13 +326,14 @@ class PageController extends RoutingController
         $page->load('template.theme', 'theme', 'company.setting.media', 'company.setting.currency');
 
         $dynamicPages = $page->company->pages()
-            ->select('title', 'slug', 'id')
+            ->select('title', 'slug', 'id', 'page_type')
             // ->where('is_published', true)
             ->get()
             ->map(function ($pageItem) {
                 return [
                     'id' => $pageItem->id,
                     'title' => $pageItem->title,
+                    'page_type' => $pageItem->page_type,
                     'slug' => $pageItem->slug,
                 ];
             });

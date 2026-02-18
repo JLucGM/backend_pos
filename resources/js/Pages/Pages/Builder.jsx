@@ -6,7 +6,7 @@ import { Head, router } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { toast } from 'sonner';
-import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical, Palette, Dot, Home } from 'lucide-react';
+import { X, Undo, Redo, Monitor, Tablet, ArrowLeftToLine, Eye, Save, Plus, GripVertical, Palette, Dot, Home, ChevronDown } from 'lucide-react';
 import ComponentTree from '@/Components/BuilderPages/ComponentTree';
 import Canvas from '@/Components/BuilderPages/Canvas';
 import { addToHistory } from '@/utils/Builder/builderUtils';
@@ -15,7 +15,16 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import ThemeCustomizerDialog from './partials/ThemeCustomizerDialog';
 import { Badge } from '@/Components/ui/badge';
 import { getThemeWithDefaults } from '@/utils/themeUtils';
-import Select from 'react-select';
+
+// Importar componentes de dropdown de shadcn
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu";
 
 // Importar todos los diálogos
 import TextEditDialog from './partials/TextEditDialog';
@@ -80,8 +89,6 @@ import SuccessEditDialog from './partials/Success/SuccessEditDialog';
 import AnnouncementBarEditDialog from './partials/AnnouncementBar/AnnouncementBarEditDialog';
 import AnnouncementEditDialog from './partials/AnnouncementBar/AnnouncementEditDialog';
 import AddComponentDropdown from '@/Components/BuilderPages/AddComponentDropdown';
-import { customStyles } from '@/hooks/custom-select';
-import { useSelectOptions } from '@/hooks/useSelectOptions';
 import LinkBioEditDialog from './partials/LinkBio/LinkBioEditDialog';
 import ImageCarouselEditDialog from './partials/ImageCarouselEditDialog';
 import ImageCarouselAccordionEditDialog from './partials/ImageCarouselAccordionEditDialog';
@@ -150,8 +157,8 @@ const componentDialogMap = {
     announcementBar: AnnouncementBarEditDialog,
     announcement: AnnouncementEditDialog,
     linkBio: LinkBioEditDialog,
-        imageCarousel: ImageCarouselEditDialog,
-            imageCarouselAccordion: ImageCarouselAccordionEditDialog,
+    imageCarousel: ImageCarouselEditDialog,
+    imageCarouselAccordion: ImageCarouselAccordionEditDialog,
 };
 
 // Componente para renderizar el diálogo apropiado
@@ -164,7 +171,7 @@ const EditDialogRenderer = ({
     themeSettings,
     availableMenus,
     products,
-    dynamicPages, // Agregar esto
+    dynamicPages,
     allImages,
     page,
 }) => {
@@ -254,7 +261,21 @@ export default function Builder({ page, products, availableTemplates, themes, pa
     const [hasCopiedTheme, setHasCopiedTheme] = useState(!!page.theme_settings);
     const [expandedItems, setExpandedItems] = useState(new Set());
 
-    const { pageOptions } = useSelectOptions([], [], [], [], [], [], [], dynamicPages || [], page.slug);
+    // --- Agrupación de páginas para el dropdown ---
+    const groupedPages = (dynamicPages || []).reduce((acc, p) => {
+        const type = p.page_type || 'custom';
+        if (!acc[type]) acc[type] = [];
+        acc[type].push(p);
+        return acc;
+    }, {});
+
+    const groupLabels = {
+        essential: 'Páginas esenciales',
+        policy: 'Políticas',
+        custom: 'Páginas personalizadas',
+        link_bio: 'Link Bio',
+    };
+    // ---------------------------------------------
 
     // Función para obtener el tema aplicado
     const getAppliedTheme = () => {
@@ -481,8 +502,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
     useEffect(() => {
         if (editingComponent) {
-            // console.log('Builder syncing edits for', editingComponent.id, { editStyles, editContent });
-
             // Actualizar el componente en el estado mientras se edita
             setComponents((prev) => {
                 const updateComponentInTree = (components, targetId, newData) => {
@@ -547,7 +566,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         setIsAddDialogOpen(false);
         setSelectedType('');
     };
-    // console.log('Tema aplicado:', appliedTheme);
+
     const handleAddComponent = (selectedType) => {
         if (!selectedType) {
             toast.error("Por favor selecciona un tipo de componente");
@@ -556,7 +575,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
         // Obtener configuración del tema con valores por defecto
         const themeWithDefaults = getThemeWithDefaults(currentThemeSettings, appliedTheme);
-        // console.log(themeWithDefaults)
+        
         if (selectedType) {
             let content = 'Nuevo ' + selectedType;
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
@@ -2421,28 +2440,28 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             }
 
             // Dentro de handleAddComponent
-if (selectedType === 'imageCarouselAccordion') {
-    const carouselId = Date.now();
-    const content = {
-        images: [], // sin imágenes por defecto
-        titleColor: '#ffffff',
-        subtitleColor: '#e5e7eb',
-    };
-    const newItem = {
-        id: carouselId,
-        type: 'imageCarouselAccordion',
-        content,
-        styles: {
-            backgroundColor: themeWithDefaults.background || '#ffffff',
-            paddingTop: '20px',
-            paddingRight: '20px',
-            paddingBottom: '20px',
-            paddingLeft: '20px',
-        },
-    };
-    addComponentToState(newItem);
-    return;
-}
+            if (selectedType === 'imageCarouselAccordion') {
+                const carouselId = Date.now();
+                const content = {
+                    images: [], // sin imágenes por defecto
+                    titleColor: '#ffffff',
+                    subtitleColor: '#e5e7eb',
+                };
+                const newItem = {
+                    id: carouselId,
+                    type: 'imageCarouselAccordion',
+                    content,
+                    styles: {
+                        backgroundColor: themeWithDefaults.background || '#ffffff',
+                        paddingTop: '20px',
+                        paddingRight: '20px',
+                        paddingBottom: '20px',
+                        paddingLeft: '20px',
+                    },
+                };
+                addComponentToState(newItem);
+                return;
+            }
 
             const newItem = {
                 id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
@@ -2524,10 +2543,6 @@ if (selectedType === 'imageCarouselAccordion') {
             };
 
             const targetComponent = findComponent(components, over.id);
-            // const isContainer = [
-            //     'container', 'banner', 'product', 'carousel',
-            //     'bento', 'productCard', 'carouselCard', 'bentoFeature', 'checkout'
-            // ].includes(targetComponent?.type);
 
             // Lógica normal para no contenedores
             const overElement = document.getElementById(`component-${over.id}`);
@@ -2659,7 +2674,6 @@ if (selectedType === 'imageCarouselAccordion') {
                     if (found) return found;
                 }
             }
-
 
             return null;
         };
@@ -2932,7 +2946,7 @@ if (selectedType === 'imageCarouselAccordion') {
         <div className="min-h-screen bg-gray-50">
             <Head title={`${page.title}`} />
             {isPreviewMode ? (
-                <div>
+                <ScrollArea className="h-screen">
                     <Button
                         className="fixed top-10 right-10 z-50"
                         variant="destructive"
@@ -2965,7 +2979,7 @@ if (selectedType === 'imageCarouselAccordion') {
                             cities={cities}
                         />
                     </div>
-                </div>
+                </ScrollArea>
             ) : (
                 <>
                     {/* Layout de builder */}
@@ -2989,48 +3003,50 @@ if (selectedType === 'imageCarouselAccordion') {
                                 </TooltipTrigger>
                                 <TooltipContent>Tema actual</TooltipContent>
                             </Tooltip>
+                            
+                            {/* Dropdown de navegación entre páginas */}
                             <div className="mx-auto">
-                                <Select
-                                    options={pageOptions}
-                                    value={pageOptions.find(option => option.value === page.slug) || null}
-                                    onChange={(selectedOption) => {
-                                        if (selectedOption && selectedOption.value !== page.slug) {
-                                            // Confirmar si hay cambios sin guardar
-                                            if (hasUnsavedChanges) {
-                                                const confirm = window.confirm(
-                                                    'Tienes cambios sin guardar en esta página. ¿Estás seguro de que quieres cambiar de página? Se perderán los cambios no guardados.'
-                                                );
-                                                if (!confirm) return;
-                                            }
-                                            router.visit(route('pages.builder', selectedOption.value));
-                                        }
-                                    }}
-                                    isSearchable
-                                    styles={customStyles}
-                                    formatOptionLabel={(option, { context }) => (
-                                        <div className="flex items-center justify-between w-full">
-                                            <div className="flex items-center">
-                                                {option.isHomepage && (
-                                                    <Home size={14} className="mr-2 text-green-600" />
-                                                )}
-                                                <span className="truncate">{option.label}</span>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="flex items-center gap-2">
+                                            {page.slug === 'inicio' && <Home size={14} className="text-green-600" />}
+                                            <span className="max-w-[200px] truncate">{page.title}</span>
+                                            <ChevronDown size={14} />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="center" className="w-64 max-h-96 overflow-y-auto">
+                                        {Object.entries(groupedPages).map(([type, pages], index, array) => (
+                                            <div key={type}>
+                                                {index > 0 && <DropdownMenuSeparator />}
+                                                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                                    {groupLabels[type] || type}
+                                                </DropdownMenuLabel>
+                                                {pages.map((p) => (
+                                                    <DropdownMenuItem
+                                                        key={p.id}
+                                                        className={`flex items-center gap-2 cursor-pointer ${p.slug === page.slug ? 'bg-accent' : ''}`}
+                                                        onClick={() => {
+                                                            if (p.slug !== page.slug) {
+                                                                if (hasUnsavedChanges) {
+                                                                    const confirm = window.confirm(
+                                                                        'Tienes cambios sin guardar en esta página. ¿Estás seguro de que quieres cambiar de página? Se perderán los cambios no guardados.'
+                                                                    );
+                                                                    if (!confirm) return;
+                                                                }
+                                                                router.visit(route('pages.builder', p.slug));
+                                                            }
+                                                        }}
+                                                    >
+                                                        {p.slug === 'inicio' && <Home size={14} className="text-green-600" />}
+                                                        <span className="truncate">{p.title}</span>
+                                                    </DropdownMenuItem>
+                                                ))}
                                             </div>
-                                            {/* <div className="flex items-center space-x-1 ml-2">
-                                                {option.isCurrent && (
-                                                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                                        Actual
-                                                    </span>
-                                                )}
-                                            </div> */}
-                                        </div>
-                                    )}
-                                    menuPortalTarget={document.body}
-                                    menuPosition="fixed"
-                                    noOptionsMessage={({ inputValue }) =>
-                                        inputValue ? `No se encontraron páginas para "${inputValue}"` : 'No hay páginas disponibles'
-                                    }
-                                />
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
+
                             <div className="flex gap-2">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -3140,16 +3156,6 @@ if (selectedType === 'imageCarouselAccordion') {
                             ) : (
                                 // MODO NORMAL - Mostrar árbol de componentes
                                 <>
-                                    {/* {!isPreviewMode && (
-                                        <>
-                                            <ApplyTemplate
-                                                page={page}
-                                                templates={availableTemplates}
-                                                onTemplateApplied={() => router.reload()}
-                                            />
-                                        </>
-                                    )} */}
-
                                     <DndContext
                                         sensors={sensors}
                                         collisionDetection={closestCenter}
