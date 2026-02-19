@@ -581,50 +581,6 @@ const ButtonEditDialog = ({
                     />
                 </div>
             )}
-
-            {/* Si es primary o secondary, mostrar solo las opciones que pueden sobrescribir */}
-            {(editStyles.buttonType === 'primary' || editStyles.buttonType === 'secondary') && (
-                <div className="space-y-4">
-                    <div className="flex flex-col gap-4">
-                        <div>
-                            <Label htmlFor="borderRadius">Radio de Borde Personalizado</Label>
-                            <Input
-                                id="borderRadius"
-                                type="number"
-                                placeholder="8"
-                                value={parseInt(editStyles.borderRadius) || ''}
-                                onChange={(e) => updateStyle('borderRadius', e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <Label htmlFor="fontSize">Tamaño de Fuente Personalizado</Label>
-                            <div className="flex gap-2">
-                                <Input
-                                    id="fontSize"
-                                    type="number"
-                                    placeholder="18"
-                                    value={parseInt(editStyles.fontSize) || ''}
-                                    onChange={(e) => updateStyle('fontSize', e.target.value)}
-                                    className="flex-1"
-                                />
-                                <Select
-                                    value={editStyles.fontSizeUnit || (editStyles.fontSize?.toString().includes('rem') ? 'rem' : 'px')}
-                                    onValueChange={(value) => updateStyle('fontSizeUnit', value)}
-                                >
-                                    <SelectTrigger className="w-[80px]">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="px">px</SelectItem>
-                                        <SelectItem value="rem">rem</SelectItem>
-                                        <SelectItem value="em">em</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

@@ -53,15 +53,15 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
 
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                 {/* Estado de Suscripción */}
-                <SubscriptionStatus company={company} currentSubscription={currentSubscription} />
+                {/* <SubscriptionStatus company={company} currentSubscription={currentSubscription} /> */}
 
                 {/* Debug temporal - remover después */}
-                {process.env.NODE_ENV === 'development' && (
+                {/* {process.env.NODE_ENV === 'development' && (
                     <div className="p-2 bg-yellow-100 border rounded text-xs">
                         <strong>Debug:</strong> totalTodayOrdersAmount = {totalTodayOrdersAmount}, 
                         currency = {settings?.currency?.symbol || 'null'}
                     </div>
-                )}
+                )} */}
                 <div className="grid auto-rows-min gap-4 lg:grid-cols-6">
                     <SummaryCard label="Órdenes Totales" value={ordersCount} className="col-span-2" />
                     <SummaryCard label="Usuarios Totales" value={usersCount} className="col-span-1" />
@@ -72,7 +72,6 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
                         className="col-span-2" 
                     />
 
-<ColorPicker />
                     {/* <DivSection className="col-span-3">
                         <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Usuarios Registrados por Mes</h3>
                         <ChartContainer config={chartConfig} className="min-h-[200px] w-full ">

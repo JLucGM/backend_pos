@@ -215,6 +215,48 @@ const ContainerEditDialog = ({
                         />
                     </div>
                 </div>
+
+                <div className="">
+    <Label>Margen</Label>
+    <div className="grid grid-cols-2 gap-4">
+        <div>
+            <Label htmlFor="marginTop">Arriba</Label>
+            <Input
+                id="marginTop"
+                type="number"
+                value={parseInt(editStyles.marginTop) || 0}
+                onChange={(e) => updateStyle('marginTop', e.target.value)}
+            />
+        </div>
+        <div>
+            <Label htmlFor="marginRight">Derecha</Label>
+            <Input
+                id="marginRight"
+                type="number"
+                value={parseInt(editStyles.marginRight) || 0}
+                onChange={(e) => updateStyle('marginRight', e.target.value)}
+            />
+        </div>
+        <div>
+            <Label htmlFor="marginBottom">Abajo</Label>
+            <Input
+                id="marginBottom"
+                type="number"
+                value={parseInt(editStyles.marginBottom) || 0}
+                onChange={(e) => updateStyle('marginBottom', e.target.value)}
+            />
+        </div>
+        <div>
+            <Label htmlFor="marginLeft">Izquierda</Label>
+            <Input
+                id="marginLeft"
+                type="number"
+                value={parseInt(editStyles.marginLeft) || 0}
+                onChange={(e) => updateStyle('marginLeft', e.target.value)}
+            />
+        </div>
+    </div>
+</div>
             </div>
 
 

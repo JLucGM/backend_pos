@@ -53,6 +53,11 @@ const ContainerComponent = ({
   const paddingBottom = withUnit(resolveValue(customStyles.paddingBottom) || '0px');
   const paddingLeft = withUnit(resolveValue(customStyles.paddingLeft) || '0px');
 
+  const marginTop = withUnit(resolveValue(customStyles.marginTop) || '0px');
+const marginRight = withUnit(resolveValue(customStyles.marginRight) || '0px');
+const marginBottom = withUnit(resolveValue(customStyles.marginBottom) || '0px');
+const marginLeft = withUnit(resolveValue(customStyles.marginLeft) || '0px');
+
   // Alignment y dirección
   const alignment = customStyles.alignment || 'left';
   const direction = customStyles.direction || 'row';
@@ -90,11 +95,15 @@ const ContainerComponent = ({
   // Estilos del contenedor
   const containerStyles = {
     ...getStyles(comp),
-    width: '100%',
+    width: 'auto',
     paddingTop,
     paddingRight,
     paddingBottom,
     paddingLeft,
+    marginTop,
+    marginRight,
+    marginBottom,
+    marginLeft,
     // Fondo: si hay imagen, se muestra; si no, solo color
     backgroundColor: backgroundImage ? 'transparent' : backgroundColor,
     backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',

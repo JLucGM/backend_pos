@@ -18,12 +18,12 @@ import { getThemeWithDefaults } from '@/utils/themeUtils';
 
 // Importar componentes de dropdown de shadcn
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
 
 // Importar todos los diálogos
@@ -575,7 +575,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
         // Obtener configuración del tema con valores por defecto
         const themeWithDefaults = getThemeWithDefaults(currentThemeSettings, appliedTheme);
-        
+
         if (selectedType) {
             let content = 'Nuevo ' + selectedType;
             if (selectedType === 'video') content = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
@@ -988,7 +988,11 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         paddingTop: '20px',
                         paddingRight: '20px',
                         paddingBottom: '20px',
-                        paddingLeft: '20px'
+                        paddingLeft: '20px',
+                        marginTop: '0px',
+                        marginRight: '0px',
+                        marginBottom: '0px',
+                        marginLeft: '0px'
                     }
                 };
 
@@ -1175,10 +1179,10 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 cardBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
                                 cardBorderOpacity: themeWithDefaults.opacity_100 || '1',
                                 cardBorderRadius: themeWithDefaults.border_radius_small || '0px',
-                                cardPaddingTop: '0',
-                                cardPaddingRight: '0',
-                                cardPaddingBottom: '0',
-                                cardPaddingLeft: '0',
+                                cardPaddingTop: '0px',
+                                cardPaddingRight: '0px',
+                                cardPaddingBottom: '0px',
+                                cardPaddingLeft: '0px',
                                 imageBorder: 'none',
                                 imageBorderThickness: themeWithDefaults.border_thickness_hairline || '1px',
                                 imageBorderOpacity: themeWithDefaults.opacity_100 || '1',
@@ -3003,7 +3007,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 </TooltipTrigger>
                                 <TooltipContent>Tema actual</TooltipContent>
                             </Tooltip>
-                            
+
                             {/* Dropdown de navegación entre páginas */}
                             <div className="mx-auto">
                                 <DropdownMenu>

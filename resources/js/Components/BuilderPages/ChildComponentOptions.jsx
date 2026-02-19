@@ -88,7 +88,7 @@ const ALL_COMPONENT_OPTIONS = [
 // Definir qué componentes pueden tener qué tipos de hijos
 const ALLOWED_CHILD_TYPES = {
     // Contenedor: permite casi todos los componentes
-    container: ['text', 'heading', 'button', 'link', 'marquee', 'divider'],
+    container: ['text', 'heading', 'button', 'link', 'marquee', 'divider', 'image'],
 
     // Producto: permite componentes básicos pero no video
     product: ['text', 'heading', 'button', 'link'],
