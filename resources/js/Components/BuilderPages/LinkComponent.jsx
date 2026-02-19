@@ -112,29 +112,33 @@ const LinkComponent = ({
 
     // EXTRAER EL CONTENIDO DEL ENLACE
     const getLinkContent = () => {
-        if (!comp.content) return { url: '#', text: 'Enlace' };
+        const styles = comp.styles || {};
 
-        // Si content es una cadena, asumimos que es la URL
-        if (typeof comp.content === 'string') {
-            return { url: comp.content, text: comp.content };
-        }
-
-        // Si content es un objeto, extraer url y text
-        if (typeof comp.content === 'object' && comp.content !== null) {
+        // Si comp.content es un objeto con url y text, lo usamos
+        if (comp.content && typeof comp.content === 'object') {
             return {
                 url: comp.content.url || comp.content.href || '#',
-                text: comp.content.text || comp.content.label || 'Enlace'
+                text: comp.content.text || comp.content.label || styles.linkText || 'Enlace'
             };
         }
 
-        return { url: '#', text: 'Enlace' };
+        // Si comp.content es una cadena (la URL), usamos esa URL y buscamos el texto en styles.linkText
+        if (typeof comp.content === 'string') {
+            return {
+                url: comp.content,
+                text: styles.linkText || comp.content  // Si no hay linkText, se muestra la URL como texto
+            };
+        }
+
+        // Fallback por si no hay contenido
+        return { url: '#', text: styles.linkText || 'Enlace' };
     };
 
     const linkContent = getLinkContent();
     const linkStyles = getLinkStyles();
     const hoverColor = linkStyles['--hover-color'] || themeWithDefaults.hover_links;
-
-    // Clases para hover usando colores del tema
+    console.log(linkContent)
+    // Clases para hover usando colores del temas
     const hoverClasses = isPreview ? '' : 'hover:opacity-80';
 
     return (
