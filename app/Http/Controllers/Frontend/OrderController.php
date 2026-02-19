@@ -23,7 +23,7 @@ class OrderController extends Controller
             ->with(['items', 'paymentMethod', 'shippingRate'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        
+        dd($orders);
         return Inertia::render('Frontend/Orders/Index', [
             'orders' => $orders,
             'companyName' => $company->company_name,

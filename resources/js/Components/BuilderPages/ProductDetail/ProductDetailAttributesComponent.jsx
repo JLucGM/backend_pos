@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     getThemeWithDefaults,
-    getComponentStyles,
     getResolvedFont,
     resolveStyleValue
 } from '@/utils/themeUtils';
@@ -18,6 +17,7 @@ const ProductDetailAttributesComponent = ({
     product,
     themeSettings,
     onCombinationChange,
+    selectedCombination,
     appliedTheme
 }) => {
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
@@ -36,7 +36,7 @@ const ProductDetailAttributesComponent = ({
         styles[key] = resolveValue(rawStyles[key]);
     });
 
-    // Resolver contenido (por si tiene referencias)
+    // Resolver contenido
     const rawContent = comp.content || {};
     const content = {};
     Object.keys(rawContent).forEach(key => {
@@ -45,7 +45,13 @@ const ProductDetailAttributesComponent = ({
 
     const [selectedValues, setSelectedValues] = useState({});
     const [availableCombinations, setAvailableCombinations] = useState([]);
-    const [currentCombination, setCurrentCombination] = useState(null);
+    const prevCombinationRef = useRef(null);
+
+    // Helper para convertir a número (entero) y comparar de forma segura
+    const toNum = (val) => {
+        if (val === null || val === undefined) return null;
+        return Number(val);
+    };
 
     // Extraer atributos únicos del producto
     const extractAttributes = () => {
@@ -57,21 +63,24 @@ const ProductDetailAttributesComponent = ({
 
         product.combinations.forEach(combination => {
             combination.attribute_values.forEach(attr => {
-                if (!attributesMap[attr.attribute_id]) {
-                    attributesMap[attr.attribute_id] = {
-                        id: attr.attribute_id,
+                const attrId = toNum(attr.attribute_id);
+                const valueId = toNum(attr.value_id);
+
+                if (!attributesMap[attrId]) {
+                    attributesMap[attrId] = {
+                        id: attrId,
                         name: attr.attribute_name,
                         values: []
                     };
                 }
 
-                const valueExists = attributesMap[attr.attribute_id].values.some(
-                    v => v.value_id === attr.value_id
+                const valueExists = attributesMap[attrId].values.some(
+                    v => v.value_id === valueId
                 );
 
                 if (!valueExists) {
-                    attributesMap[attr.attribute_id].values.push({
-                        value_id: attr.value_id,
+                    attributesMap[attrId].values.push({
+                        value_id: valueId,
                         value_name: attr.value_name
                     });
                 }
@@ -81,15 +90,15 @@ const ProductDetailAttributesComponent = ({
         return Object.values(attributesMap);
     };
 
-    // Filtrar combinaciones disponibles basadas en selecciones
+    // Filtrar combinaciones disponibles basadas en selecciones (usando números)
     const filterCombinations = () => {
-        if (!product || !product.combinations) return [];
+        if (!product?.combinations) return [];
 
         return product.combinations.filter(combination => {
-            return Object.entries(selectedValues).every(([attributeId, valueId]) => {
+            return Object.entries(selectedValues).every(([attrId, valueId]) => {
                 return combination.attribute_values.some(attr =>
-                    attr.attribute_id.toString() === attributeId &&
-                    attr.value_id.toString() === valueId
+                    toNum(attr.attribute_id) === toNum(attrId) &&
+                    toNum(attr.value_id) === toNum(valueId)
                 );
             });
         });
@@ -97,19 +106,18 @@ const ProductDetailAttributesComponent = ({
 
     // Encontrar combinación exacta
     const findExactCombination = () => {
-        if (!product || !product.combinations) return null;
+        if (!product?.combinations) return null;
 
         const attributes = extractAttributes();
-
         if (Object.keys(selectedValues).length < attributes.length) {
             return null;
         }
 
         return product.combinations.find(combination => {
-            return Object.entries(selectedValues).every(([attributeId, valueId]) => {
+            return Object.entries(selectedValues).every(([attrId, valueId]) => {
                 return combination.attribute_values.some(attr =>
-                    attr.attribute_id.toString() === attributeId &&
-                    attr.value_id.toString() === valueId
+                    toNum(attr.attribute_id) === toNum(attrId) &&
+                    toNum(attr.value_id) === toNum(valueId)
                 );
             });
         });
@@ -117,65 +125,88 @@ const ProductDetailAttributesComponent = ({
 
     // Obtener stock para la combinación actual
     const getCurrentStock = () => {
-        if (!currentCombination || !product?.stocks) return 0;
-
-        const stock = product.stocks.find(s => s.combination_id === currentCombination.id);
+        if (!selectedCombination || !product?.stocks) return 0;
+        const stock = product.stocks.find(s => toNum(s.combination_id) === toNum(selectedCombination.id));
         return stock ? stock.quantity : 0;
     };
 
+    // Función de disponibilidad: verifica si un valor es alcanzable con las selecciones actuales
+    const isValueAvailable = useCallback((attributeId, valueId) => {
+        if (!product?.combinations) return false;
+        const numAttrId = toNum(attributeId);
+        const numValueId = toNum(valueId);
+
+        return product.combinations.some(combination => {
+            // La combinación debe contener este valor
+            if (!combination.attribute_values.some(av => toNum(av.attribute_id) === numAttrId && toNum(av.value_id) === numValueId)) {
+                return false;
+            }
+            // Debe coincidir con los valores seleccionados en otros atributos
+            return Object.entries(selectedValues).every(([otherAttrId, otherValId]) => {
+                if (toNum(otherAttrId) === numAttrId) return true; // Ignoramos el atributo actual
+                return combination.attribute_values.some(av =>
+                    toNum(av.attribute_id) === toNum(otherAttrId) && toNum(av.value_id) === toNum(otherValId)
+                );
+            });
+        });
+    }, [product, selectedValues]);
+
     // Manejar cambio de atributo
     const handleAttributeChange = (attributeId, valueId) => {
-        const newSelectedValues = {
-            ...selectedValues,
-            [attributeId]: valueId
-        };
-        setSelectedValues(newSelectedValues);
-
-        const exactCombination = findExactCombination();
-        setCurrentCombination(exactCombination);
-
-        if (onCombinationChange) {
-            onCombinationChange(exactCombination);
-        }
+        const numAttrId = toNum(attributeId);
+        const numValueId = toNum(valueId);
+        setSelectedValues(prev => ({
+            ...prev,
+            [numAttrId]: numValueId
+        }));
     };
 
-    // Efecto para inicializar atributos
+    // Inicializar selecciones cuando cambia el producto o la combinación externa
     useEffect(() => {
         const attributes = extractAttributes();
 
         if (attributes.length === 0) {
             setSelectedValues({});
             setAvailableCombinations([]);
-            setCurrentCombination(null);
-            if (onCombinationChange) onCombinationChange(null);
             return;
         }
 
-        const initialSelections = {};
-        attributes.forEach(attr => {
-            if (attr.values.length > 0) {
-                initialSelections[attr.id] = attr.values[0].value_id;
-            }
-        });
+        // Si hay una combinación seleccionada externamente, sincronizar selectedValues
+        if (selectedCombination) {
+            const initialSelections = {};
+            selectedCombination.attribute_values.forEach(attr => {
+                initialSelections[toNum(attr.attribute_id)] = toNum(attr.value_id);
+            });
+            setSelectedValues(initialSelections);
+        } else {
+            // Por defecto, seleccionar el primer valor de cada atributo
+            const initialSelections = {};
+            attributes.forEach(attr => {
+                if (attr.values.length > 0) {
+                    initialSelections[attr.id] = attr.values[0].value_id;
+                }
+            });
+            setSelectedValues(initialSelections);
+        }
+    }, [product, selectedCombination]);
 
-        setSelectedValues(initialSelections);
-    }, [product]);
-
-    // Efecto para actualizar combinaciones disponibles
+    // Actualizar combinaciones disponibles y notificar al padre solo si cambió
     useEffect(() => {
         const filtered = filterCombinations();
         setAvailableCombinations(filtered);
 
         const exact = findExactCombination();
-        setCurrentCombination(exact);
-
-        if (onCombinationChange) {
-            onCombinationChange(exact);
+        // Comparar con la combinación anterior para evitar bucles
+        if (JSON.stringify(prevCombinationRef.current) !== JSON.stringify(exact)) {
+            prevCombinationRef.current = exact;
+            if (onCombinationChange) {
+                onCombinationChange(exact);
+            }
         }
-    }, [selectedValues, product]);
+    }, [selectedValues, product, onCombinationChange]);
 
     // ===========================================
-    // FUNCIONES DE ESTILOS CON VALORES RESUELTOS
+    // FUNCIONES DE ESTILOS (COMPLETAS)
     // ===========================================
     const getFontStyles = (type = 'title') => {
         if (type === 'title') {
@@ -255,14 +286,14 @@ const ProductDetailAttributesComponent = ({
         }
     };
 
-    // Estilos del contenedor con valores resueltos
+    // Estilos del contenedor
     const containerStyles = {
         marginBottom: resolveValue(themeWithDefaults?.spacing_large || '2rem'),
         padding: resolveValue(themeWithDefaults?.spacing_small || '0.5rem'),
-        ...styles, // estilos personalizados ya resueltos
+        ...styles,
     };
 
-    // Estilos para botones seleccionados y no seleccionados
+    // Estilos para botones
     const getButtonStyles = (isSelected) => {
         const baseStyles = {
             padding: `${resolveValue(themeWithDefaults?.spacing_small || '0.5rem')} ${resolveValue(themeWithDefaults?.spacing_medium || '1rem')}`,
@@ -297,13 +328,13 @@ const ProductDetailAttributesComponent = ({
     const attributes = extractAttributes();
 
     if (attributes.length === 0) {
+        // Placeholder en builder
         if (!product) {
             return (
                 <div style={containerStyles} className="product-attributes">
                     <h3 className="text-lg font-semibold mb-4" style={getFontStyles('title')}>
                         {content.title || 'Opciones del Producto'}
                     </h3>
-
                     <div className="mb-4">
                         <label className="block text-sm font-medium mb-2" style={getFontStyles('label')}>
                             Talla:
@@ -321,7 +352,6 @@ const ProductDetailAttributesComponent = ({
                             ))}
                         </div>
                     </div>
-
                     <div className="text-sm text-gray-500 italic">
                         (En el frontend, se mostrarán las combinaciones reales del producto)
                     </div>
@@ -346,23 +376,18 @@ const ProductDetailAttributesComponent = ({
                     <div className="flex flex-wrap gap-2">
                         {attribute.values.map(value => {
                             const isSelected = selectedValues[attribute.id] === value.value_id;
-                            const isDisabled = !availableCombinations.some(combination =>
-                                combination.attribute_values.some(attr =>
-                                    attr.attribute_id === attribute.id &&
-                                    attr.value_id === value.value_id
-                                )
-                            );
+                            const available = isValueAvailable(attribute.id, value.value_id);
 
                             return (
                                 <button
                                     key={value.value_id}
                                     type="button"
-                                    onClick={() => !isDisabled && handleAttributeChange(attribute.id, value.value_id)}
-                                    disabled={isDisabled}
+                                    onClick={() => available && handleAttributeChange(attribute.id, value.value_id)}
+                                    disabled={!available}
                                     style={{
                                         ...getButtonStyles(isSelected),
-                                        opacity: isDisabled ? 0.5 : 1,
-                                        cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                        opacity: !available ? 0.5 : 1,
+                                        cursor: !available ? 'not-allowed' : 'pointer',
                                     }}
                                 >
                                     {value.value_name}
@@ -373,7 +398,7 @@ const ProductDetailAttributesComponent = ({
                 </div>
             ))}
 
-            {currentCombination && (
+            {selectedCombination && (
                 <div className="mt-4 p-3 rounded-md" style={{
                     backgroundColor: resolveValue(themeWithDefaults.background),
                     borderColor: resolveValue(themeWithDefaults.borders),
@@ -392,7 +417,7 @@ const ProductDetailAttributesComponent = ({
                             color: resolveValue(themeWithDefaults.heading),
                             fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
                         }}>
-                            {currentCombination.attribute_values.map(attr => attr.value_name).join(' / ')}
+                            {selectedCombination.attribute_values.map(attr => attr.value_name).join(' / ')}
                         </span>
                     </div>
 

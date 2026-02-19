@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import CarouselTitleComponent from './CarouselTitleComponent';
 import CarouselCardComponent from './CarouselCardComponent';
 import TextComponent from '../TextComponent';
@@ -29,8 +29,10 @@ const CarouselComponent = ({
     const rawContent = comp.content || {};
     const rawStyles = comp.styles || {};
     const children = rawContent.children || [];
-    const carouselRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [slideWidth, setSlideWidth] = useState(0);
+    const slidesContainerRef = useRef(null);
+    const resizeObserverRef = useRef(null);
 
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeCarouselStyles = getComponentStyles(themeWithDefaults, 'carousel', appliedTheme);
@@ -66,6 +68,7 @@ const CarouselComponent = ({
     const slidesToShow = config.slidesToShow || 3;
     const gapX = config.gapX || themeWithDefaults.carousel_gapX;
     const gapY = config.gapY || themeWithDefaults.carousel_gapY;
+    const infinite = config.infinite !== false; // se puede agregar esta opción si se desea
 
     // Función para obtener el nombre del tipo de componente
     const getComponentTypeName = (type) => {
@@ -192,26 +195,59 @@ const CarouselComponent = ({
 
     const productsToShow = products ? products.slice(0, limit) : [];
 
-    // Carrusel navigation
+    // Navegación del carrusel
     const nextSlide = () => {
         if (currentIndex < productsToShow.length - slidesToShow) {
             setCurrentIndex(prev => prev + 1);
+        } else if (infinite) {
+            setCurrentIndex(0);
         }
     };
 
     const prevSlide = () => {
         if (currentIndex > 0) {
             setCurrentIndex(prev => prev - 1);
+        } else if (infinite) {
+            setCurrentIndex(productsToShow.length - slidesToShow);
         }
     };
 
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
+        // Si ya es string y tiene algún caracter no numérico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
+
+    // ===== LÓGICA DE ANIMACIÓN (transform) =====
+    const updateSlideWidth = useCallback(() => {
+        if (slidesContainerRef.current && slidesContainerRef.current.children.length > 0) {
+            const firstSlide = slidesContainerRef.current.children[0];
+            const width = firstSlide.getBoundingClientRect().width;
+            setSlideWidth(width + (parseInt(gapX) || 0));
+        }
+    }, [gapX]);
+
+    useEffect(() => {
+        updateSlideWidth();
+        if (slidesContainerRef.current) {
+            resizeObserverRef.current = new ResizeObserver(updateSlideWidth);
+            resizeObserverRef.current.observe(slidesContainerRef.current.parentElement);
+        }
+        return () => {
+            if (resizeObserverRef.current) {
+                resizeObserverRef.current.disconnect();
+            }
+        };
+    }, [updateSlideWidth, productsToShow.length]);
+
+    useEffect(() => {
+        if (slidesContainerRef.current && slideWidth > 0) {
+            const offset = -currentIndex * slideWidth;
+            slidesContainerRef.current.style.transform = `translateX(${offset}px)`;
+        }
+    }, [currentIndex, slideWidth]);
 
     return (
         <div
@@ -264,7 +300,7 @@ const CarouselComponent = ({
                     <>
                         <Button
                             onClick={prevSlide}
-                            disabled={currentIndex === 0}
+                            disabled={!infinite && currentIndex === 0}
                             className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                             size="icon"
                         >
@@ -273,7 +309,7 @@ const CarouselComponent = ({
 
                         <Button
                             onClick={nextSlide}
-                            disabled={currentIndex >= productsToShow.length - slidesToShow}
+                            disabled={!infinite && currentIndex >= productsToShow.length - slidesToShow}
                             className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                             size="icon"
                         >
@@ -282,53 +318,55 @@ const CarouselComponent = ({
                     </>
                 )}
 
-                {/* Carrusel de productos */}
-                <div
-                    ref={carouselRef}
-                    className="flex transition-all duration-300 ease-in-out"
-                    style={{
-                        gap: withUnit(gapX),
-                        padding: `${withUnit(gapY)} 0`,
-                    }}
-                >
-                    {products.map((product, index) => (
-                        <div
-                            key={product.id}
-                            style={{
-                                flex: `0 0 calc(${100 / slidesToShow}% - ${(parseInt(gapX) || 0) * (slidesToShow - 1) / slidesToShow}px)`,
-                                minWidth: 0,
-                            }}
-                        >
-                            <ComponentWithHover
-                                component={safeCardComponent}
-                                isPreview={isPreview}
-                                hoveredComponentId={hoveredComponentId}
-                                setHoveredComponentId={setHoveredComponentId}
-                                getComponentTypeName={getComponentTypeName}
+                {/* Carrusel con overflow hidden y transform */}
+                <div className="overflow-hidden">
+                    <div
+                        ref={slidesContainerRef}
+                        className="flex transition-transform duration-300 ease-in-out will-change-transform"
+                        style={{
+                            gap: withUnit(gapX),
+                            padding: `${withUnit(gapY)} 0`,
+                        }}
+                    >
+                        {productsToShow.map((product, index) => (
+                            <div
+                                key={product.id}
+                                style={{
+                                    flex: `0 0 calc(${100 / slidesToShow}% - ${(parseInt(gapX) || 0) * (slidesToShow - 1) / slidesToShow}px)`,
+                                    minWidth: 0,
+                                }}
                             >
-                                <CarouselCardComponent
-                                    comp={{
-                                        ...safeCardComponent,
-                                        content: {
-                                            ...safeCardComponent.content,
-                                            productData: product
-                                        }
-                                    }}
-                                    getStyles={getStyles}
-                                    onEdit={onEdit}
-                                    onDelete={onDelete}
-                                    themeSettings={themeSettings}
-                                    appliedTheme={appliedTheme} // Pasar appliedTheme
+                                <ComponentWithHover
+                                    component={safeCardComponent}
                                     isPreview={isPreview}
-                                    products={products}
-                                    setComponents={setComponents}
                                     hoveredComponentId={hoveredComponentId}
                                     setHoveredComponentId={setHoveredComponentId}
-                                    mode={mode} // Pasar mode prop
-                                />
-                            </ComponentWithHover>
-                        </div>
-                    ))}
+                                    getComponentTypeName={getComponentTypeName}
+                                >
+                                    <CarouselCardComponent
+                                        comp={{
+                                            ...safeCardComponent,
+                                            content: {
+                                                ...safeCardComponent.content,
+                                                productData: product
+                                            }
+                                        }}
+                                        getStyles={getStyles}
+                                        onEdit={onEdit}
+                                        onDelete={onDelete}
+                                        themeSettings={themeSettings}
+                                        appliedTheme={appliedTheme} // Pasar appliedTheme
+                                        isPreview={isPreview}
+                                        products={products}
+                                        setComponents={setComponents}
+                                        hoveredComponentId={hoveredComponentId}
+                                        setHoveredComponentId={setHoveredComponentId}
+                                        mode={mode} // Pasar mode prop
+                                    />
+                                </ComponentWithHover>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Indicadores de posición (dots) */}

@@ -9,6 +9,7 @@ import QuantitySelectorComponent from './QuantitySelectorComponent';
 import ButtonComponent from '../ButtonComponent';
 import ComponentWithHover from '../ComponentWithHover';
 import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
+import cartHelper from '@/Helper/cartHelper'; // Ajusta la ruta según tu proyecto
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -29,8 +30,10 @@ const ProductDetailComponent = ({
     hoveredComponentId,
     setHoveredComponentId,
     product,
+    companyId, // Necesario para agregar al carrito
     storeAutomaticDiscounts = [],
     appliedTheme,
+    mode = 'builder', // 'builder' o 'frontend'
 }) => {
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
@@ -57,10 +60,19 @@ const ProductDetailComponent = ({
 
     const children = productDetailConfig.children || [];
 
+    // ===========================================
+    // ESTADOS PARA EL FRONTEND
+    // ===========================================
     const [selectedCombination, setSelectedCombination] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [currentPrice, setCurrentPrice] = useState(null);
+    const [selectedAttributes, setSelectedAttributes] = useState({});
+    const [currentImage, setCurrentImage] = useState('');
+    const [imageGallery, setImageGallery] = useState([]);
 
+    // ===========================================
+    // FUNCIONES PARA OBTENER NOMBRES DE TIPOS
+    // ===========================================
     const getComponentTypeName = (type) => {
         const typeNames = {
             'productDetailImage': 'Imagen del producto',
@@ -75,7 +87,9 @@ const ProductDetailComponent = ({
         return typeNames[type] || type;
     };
 
-    // Obtener configuraciones de layout y estilos (usando valores resueltos)
+    // ===========================================
+    // OBTENER CONFIGURACIONES DE LAYOUT Y ESTILOS
+    // ===========================================
     const layoutType = customStyles.layoutType || 'grid';
     const padding = customStyles.padding || '20px';
     const backgroundColor = customStyles.backgroundColor || themeWithDefaults.background;
@@ -94,7 +108,123 @@ const ProductDetailComponent = ({
         child.type !== 'productDetailImage' && child.type !== 'productDetailDescription'
     );
 
-    // Configurar estilos del contenedor basado en layoutType
+    // ===========================================
+    // FUNCIONES DE UTILIDAD PARA EL FRONTEND
+    // ===========================================
+    const getMaxQuantity = () => {
+        if (!product?.stocks) return 99;
+        if (selectedCombination) {
+            const stock = product.stocks.find(s => s.combination_id === selectedCombination.id);
+            return stock ? Math.min(stock.quantity, 99) : 0;
+        } else {
+            const totalStock = product.stocks.reduce((sum, stock) => sum + stock.quantity, 0);
+            return Math.min(totalStock, 99);
+        }
+    };
+
+    const handleCombinationChange = (combination) => {
+        setSelectedCombination(combination);
+        if (combination) {
+            setCurrentPrice(combination.price);
+            // Actualizar imágenes si la combinación tiene imágenes propias
+            if (combination.images && combination.images.length > 0) {
+                setImageGallery(combination.images);
+                const mainImage = combination.images.find(img => img.is_main) || combination.images[0];
+                setCurrentImage(mainImage.original_url || mainImage.url);
+            } else {
+                // Si no, usar las del producto
+                setImageGallery(product?.media || []);
+                setCurrentImage(product?.media?.[0]?.original_url || '');
+            }
+        } else {
+            setCurrentPrice(product?.product_price);
+            setImageGallery(product?.media || []);
+            setCurrentImage(product?.media?.[0]?.original_url || '');
+        }
+    };
+
+    const handleQuantityChange = (newQuantity) => {
+        setQuantity(newQuantity);
+    };
+
+    const handleAddToCart = () => {
+        if (mode !== 'frontend' || !product || !companyId) return;
+        cartHelper.addToCart(companyId, product, selectedCombination, quantity);
+        // Opcional: mostrar notificación o redirigir
+    };
+
+    // ===========================================
+    // EFECTOS PARA INICIALIZAR EN MODO FRONTEND
+    // ===========================================
+    useEffect(() => {
+        if (mode !== 'frontend' || !product) return;
+
+        // Reiniciar estados cuando cambia el producto
+        setSelectedCombination(null);
+        setQuantity(1);
+        setSelectedAttributes({});
+        setCurrentPrice(product.product_price);
+        setImageGallery(product.media || []);
+        setCurrentImage(product.media?.[0]?.original_url || '');
+
+        // Si el producto tiene combinaciones, seleccionar la primera por defecto
+        if (product.combinations && product.combinations.length > 0) {
+            // Opcional: seleccionar la primera combinación disponible
+            const firstCombination = product.combinations[0];
+            handleCombinationChange(firstCombination);
+        }
+    }, [product, mode]);
+
+    // Actualizar precio cuando cambia la combinación
+    useEffect(() => {
+        if (product) {
+            if (selectedCombination) {
+                setCurrentPrice(selectedCombination.price);
+            } else {
+                setCurrentPrice(product.product_price);
+            }
+        }
+    }, [product, selectedCombination]);
+
+    // ===========================================
+    // FUNCIONES DE EVENTOS PARA EL BUILDER
+    // ===========================================
+    const handleMouseEnter = () => {
+        if (setHoveredComponentId && !isPreview) {
+            setHoveredComponentId(comp.id);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (setHoveredComponentId && !isPreview) {
+            setHoveredComponentId(null);
+        }
+    };
+
+    const handleDeleteChild = (childId) => {
+        setComponents((prev) => {
+            const updateProductDetailChildren = (components) => {
+                return components.map((c) => {
+                    if (c.id === comp.id && c.content && c.content.children) {
+                        return {
+                            ...c,
+                            content: {
+                                ...c.content,
+                                children: c.content.children.filter((sc) => sc.id !== childId)
+                            }
+                        };
+                    }
+                    return c;
+                });
+            };
+            const updated = updateProductDetailChildren(prev);
+            return updated;
+        });
+    };
+
+    // ===========================================
+    // CONFIGURAR ESTILOS DEL CONTENEDOR
+    // ===========================================
     const getContainerStyles = () => {
         const baseStyles = {
             ...getStyles(comp),
@@ -103,7 +233,7 @@ const ProductDetailComponent = ({
             paddingRight: withUnit(paddingRight),
             paddingBottom: withUnit(paddingBottom),
             paddingLeft: withUnit(paddingLeft),
-            backgroundColor: resolveValue(backgroundColor), // Asegurar resolución por si acaso
+            backgroundColor: resolveValue(backgroundColor),
             maxWidth,
             margin: '0 auto',
             border: isPreview ? 'none' : '1px none #ccc',
@@ -134,74 +264,9 @@ const ProductDetailComponent = ({
 
     const containerStyles = getContainerStyles();
 
-    const handleMouseEnter = () => {
-        if (setHoveredComponentId && !isPreview) {
-            setHoveredComponentId(comp.id);
-        }
-    };
-
-    const handleMouseLeave = () => {
-        if (setHoveredComponentId && !isPreview) {
-            setHoveredComponentId(null);
-        }
-    };
-
-    const handleCombinationChange = (combination) => {
-        setSelectedCombination(combination);
-        if (combination) {
-            setCurrentPrice(combination.price);
-        } else if (product) {
-            setCurrentPrice(product.product_price);
-        }
-    };
-
-    const handleQuantityChange = (newQuantity) => {
-        setQuantity(newQuantity);
-    };
-
-    const getMaxQuantity = () => {
-        if (!product?.stocks) return 99;
-
-        if (selectedCombination) {
-            const stock = product.stocks.find(s => s.combination_id === selectedCombination.id);
-            return stock ? Math.min(stock.quantity, 99) : 0;
-        } else {
-            const totalStock = product.stocks.reduce((sum, stock) => sum + stock.quantity, 0);
-            return Math.min(totalStock, 99);
-        }
-    };
-
-    const handleDeleteChild = (childId) => {
-        setComponents((prev) => {
-            const updateProductDetailChildren = (components) => {
-                return components.map((c) => {
-                    if (c.id === comp.id && c.content && c.content.children) {
-                        return {
-                            ...c,
-                            content: {
-                                ...c.content,
-                                children: c.content.children.filter((sc) => sc.id !== childId)
-                            }
-                        };
-                    }
-                    return c;
-                });
-            };
-            const updated = updateProductDetailChildren(prev);
-            return updated;
-        });
-    };
-
-    useEffect(() => {
-        if (product) {
-            if (selectedCombination) {
-                setCurrentPrice(selectedCombination.price);
-            } else {
-                setCurrentPrice(product.product_price);
-            }
-        }
-    }, [product, selectedCombination]);
-
+    // ===========================================
+    // RENDERIZADO DE CADA HIJO
+    // ===========================================
     const renderChild = (child) => {
         const commonProps = {
             comp: child,
@@ -229,6 +294,10 @@ const ProductDetailComponent = ({
                         <ProductDetailImageComponent
                             {...commonProps}
                             product={product}
+                            currentImage={currentImage}
+                            imageGallery={imageGallery}
+                            onImageChange={setCurrentImage}
+                            selectedCombination={selectedCombination}
                         />
                     </ComponentWithHover>
                 );
@@ -296,6 +365,7 @@ const ProductDetailComponent = ({
                             {...commonProps}
                             product={product}
                             onCombinationChange={handleCombinationChange}
+                            selectedCombination={selectedCombination}
                         />
                     </ComponentWithHover>
                 );
@@ -331,6 +401,7 @@ const ProductDetailComponent = ({
                             {...commonProps}
                             maxQuantity={getMaxQuantity()}
                             onQuantityChange={handleQuantityChange}
+                            quantity={quantity}
                             themeSettings={themeSettings}
                         />
                     </ComponentWithHover>
@@ -347,10 +418,12 @@ const ProductDetailComponent = ({
                     >
                         <ButtonComponent
                             {...commonProps}
+                            companyId={companyId}
                             product={product}
                             selectedCombination={selectedCombination}
                             quantity={quantity}
                             storeAutomaticDiscounts={storeAutomaticDiscounts}
+                            onClick={handleAddToCart} // Solo se usará en frontend
                         />
                     </ComponentWithHover>
                 );
@@ -359,6 +432,9 @@ const ProductDetailComponent = ({
         }
     };
 
+    // ===========================================
+    // LAYOUT GRID
+    // ===========================================
     const renderGridLayout = () => {
         if (imageComponents.length === 0) {
             return (
@@ -380,6 +456,9 @@ const ProductDetailComponent = ({
         );
     };
 
+    // ===========================================
+    // LAYOUT STACK
+    // ===========================================
     const renderStackLayout = () => {
         const orderedComponents = [...imageComponents, ...otherComponents, ...descriptionComponents];
         return (
@@ -389,6 +468,9 @@ const ProductDetailComponent = ({
         );
     };
 
+    // ===========================================
+    // RENDERIZADO PRINCIPAL
+    // ===========================================
     const renderContent = () => {
         switch (layoutType) {
             case 'grid':

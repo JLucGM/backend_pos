@@ -4,7 +4,6 @@ import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
     if (value === undefined || value === null || value === '') return undefined;
-    // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
     if (typeof value === 'string' && isNaN(Number(value))) return value;
     return `${value}${unit}`;
 };
@@ -15,13 +14,16 @@ const ProductDetailImageComponent = ({
     isPreview,
     onEdit,
     themeSettings,
-    appliedTheme // Añadimos appliedTheme
+    appliedTheme,
+    product,
+    currentImage,
+    imageGallery = [],
+    onImageChange,
+    selectedCombination
 }) => {
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
-    // ===========================================
-    // FUNCIÓN PARA RESOLVER REFERENCIAS
-    // ===========================================
+    // Resolver valores
     const resolveValue = (value) => {
         return resolveStyleValue(value, themeWithDefaults, appliedTheme);
     };
@@ -36,7 +38,6 @@ const ProductDetailImageComponent = ({
     const getAspectRatio = () => {
         const ratio = styles.aspectRatio || 'square';
         if (ratio === 'theme') {
-            // Resolver el valor del tema (puede ser referencia)
             const themeAspect = resolveValue(themeWithDefaults.image_aspect_ratio || '1/1');
             return themeAspect;
         }
@@ -51,7 +52,7 @@ const ProductDetailImageComponent = ({
 
     const containerStyles = {
         width: '100%',
-        maxWidth: '500px',
+        maxWidth: styles.maxWidth || '500px',
         aspectRatio: getAspectRatio(),
         position: 'relative',
         margin: '0 auto',
@@ -82,17 +83,79 @@ const ProductDetailImageComponent = ({
         }
     };
 
+    // Determinar la imagen a mostrar
+    const displayImage = currentImage || product?.media?.[0]?.original_url || comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+
+    // Galería de miniaturas (solo si hay más de una imagen)
+    const showGallery = styles.showGallery !== false && imageGallery.length > 1;
+
     return (
-        <div
-            style={containerStyles}
-            onClick={handleClick}
-            className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
-        >
-            <img
-                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
-                alt="Producto"
-                style={imageStyles}
-            />
+        <div className="product-image-gallery">
+            {/* Imagen principal */}
+            <div
+                style={containerStyles}
+                onClick={handleClick}
+                className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
+            >
+                <img
+                    src={displayImage}
+                    alt={product?.product_name || 'Producto'}
+                    style={imageStyles}
+                    onError={(e) => {
+                        e.target.src = 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+                    }}
+                />
+            </div>
+
+            {/* Miniaturas */}
+            {showGallery && (
+                <div className="thumbnail-grid" style={{
+                    display: 'flex',
+                    gap: themeWithDefaults?.spacing_small || '10px',
+                    justifyContent: 'center',
+                    flexWrap: 'wrap',
+                    marginTop: themeWithDefaults?.spacing_small || '10px'
+                }}>
+                    {imageGallery.map((img, index) => {
+                        const imgUrl = img.original_url || img.url;
+                        const isSelected = currentImage === imgUrl;
+
+                        return (
+                            <button
+                                key={index}
+                                onClick={() => onImageChange && onImageChange(imgUrl)}
+                                style={{
+                                    width: '60px',
+                                    height: '60px',
+                                    border: isSelected
+                                        ? `2px solid ${styles.thumbnailBorderColor || (themeWithDefaults?.primary ? `hsl(${themeWithDefaults.primary})` : '#007bff')}`
+                                        : `1px solid ${themeWithDefaults?.borders ? `hsl(${themeWithDefaults.borders})` : '#ddd'}`,
+                                    borderRadius: styles.thumbnailBorderRadius || themeWithDefaults?.border_radius || '4px',
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    background: 'transparent',
+                                    transition: 'border-color 0.2s',
+                                }}
+                                title={`Vista ${index + 1}`}
+                            >
+                                <img
+                                    src={imgUrl}
+                                    alt={`Vista ${index + 1}`}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover'
+                                    }}
+                                    onError={(e) => {
+                                        e.target.src = 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+                                    }}
+                                />
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 };

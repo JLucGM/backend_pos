@@ -22,7 +22,6 @@ import HeaderMenuComponent from '@/Components/BuilderPages/Header/HeaderMenuComp
 import QuantitySelectorComponent from '@/Components/BuilderPages/ProductDetail/QuantitySelectorComponent';
 import ProductDetailStockComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailStockComponent';
 import ProductDetailAttributesComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailAttributesComponent';
-import FrontendProductDetailComponent from '@/Components/Frontend/FrontendProductDetailComponent';
 import CarouselComponent from '@/Components/BuilderPages/Carousel/CarouselComponent';
 
 // Importar componentes de autenticación y checkout
@@ -42,6 +41,7 @@ import LinkBioComponent from '@/Components/BuilderPages/LinkBio/LinkBioComponent
 import PageContentComponent from '@/Components/BuilderPages/PageContentComponent';
 import ImageCarouselAccordionComponent from '@/Components/BuilderPages/ImageCarouselAccordionComponent';
 import ImageCarouselComponent from '@/Components/BuilderPages/ImageCarouselComponent';
+import ProductDetailComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -63,7 +63,7 @@ const componentMap = {
     'product': ProductComponent, // ← Usando ProductComponent unificado
     'productList': ProductListComponent, // ← Usando ProductComponent unificado
     'carousel': CarouselComponent, // ← Agregado CarouselComponent
-    'productDetail': FrontendProductDetailComponent,
+    'productDetail': ProductDetailComponent,
     'productDetailAttributes': ProductDetailAttributesComponent,
     'productDetailStock': ProductDetailStockComponent,
     'quantitySelector': QuantitySelectorComponent,
@@ -224,7 +224,7 @@ function renderBlock(
                     key={block.id}
                     {...baseProps}
                     currentUser={currentUser}
-                    userOrders={userOrders}
+                    orders={userOrders}
                     companyId={companyId}
                     currency={{
                         symbol: '$',

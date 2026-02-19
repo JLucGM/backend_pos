@@ -31,14 +31,14 @@ const ProductDetailStockComponent = ({
         styles[key] = resolveValue(rawStyles[key]);
     });
 
-    // Resolver contenido (por si tiene referencias)
+    // Resolver contenido
     const rawContent = comp.content || {};
     const content = {};
     Object.keys(rawContent).forEach(key => {
         content[key] = resolveValue(rawContent[key]);
     });
 
-    // Función para obtener estilos de fuente (definida una sola vez)
+    // Función para obtener estilos de fuente
     const getFontStyles = () => {
         const fontType = styles.fontType || 'default';
 
@@ -48,12 +48,12 @@ const ProductDetailStockComponent = ({
             fontFamily,
             fontSize: withUnit(styles.fontSize || '14px', styles.fontSizeUnit || 'px'),
             fontWeight: styles.fontWeight || '500',
+            color: styles.text,
         };
     };
 
     // Si no hay producto (modo builder), mostrar datos de ejemplo
     if (!product) {
-
         const fontStyles = getFontStyles();
 
         return (

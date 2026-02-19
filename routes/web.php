@@ -35,8 +35,10 @@ use App\Http\Controllers\InventoryTransferController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function () {
+$baseDomain = ltrim(env('SESSION_DOMAIN'), '.');
 
+Route::domain('{subdomain}.' . $baseDomain)->middleware(['company'])->group(function () {
+    // dd($host = request()->getHost());
     // ========== RUTAS PÚBLICAS DEL FRONTEND ==========
     // Página principal y páginas dinámicas
     Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('subdomain.page');
@@ -49,10 +51,7 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
     Route::middleware('frontend.guest')->group(function () {
         // Login de clientes
 
-        Route::post('/iniciar-sesion', [LoginController::class, 'store'], function () {
-            dd(request()->all());
-        })
-            ->name('frontend.login.store');
+        Route::post('iniciar-sesion', [LoginController::class, 'store'])->name('frontend.login.store');
 
         // Registro de clientes
         Route::get('/registrarse', [RegisterController::class, 'create'])
@@ -107,7 +106,7 @@ Route::domain('{subdomain}.pos.test')->middleware(['company'])->group(function (
 Route::group([
     'domain' => '{domain}',
     'middleware' => ['company'],
-    'where' => ['domain' => '^(?!pos\.test$).+'],
+    'where' => ['domain' => '^(?!' . preg_quote($baseDomain) . '$).+'],
 ], function () {
 
     // ========== RUTAS PÚBLICAS DEL FRONTEND ==========

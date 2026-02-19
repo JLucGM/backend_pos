@@ -1,4 +1,4 @@
-// CartComponent.jsx - VERSIÓN COMPLETA CORREGIDA CON SOPORTE PARA REFERENCIAS AL TEMA
+// CartComponent.jsx - VERSIÓN COMPLETA CORREGIDA CON SOPORTE PARA COMBINATIONNAME
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import CartItemsComponent from './CartItemsComponent';
 import CartSummaryComponent from './CartSummaryComponent';
@@ -24,7 +24,9 @@ const CartComponent = ({
 }) => {
     const rawStyles = comp.styles || {};
     const rawContent = comp.content || {};
-    const children = rawContent.children || [];
+    // Asegurar que children sea un array (puede venir como null, objeto, etc.)
+    const children = Array.isArray(rawContent.children) ? rawContent.children : [];
+    
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
     const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart', appliedTheme);
 
@@ -50,7 +52,6 @@ const CartComponent = ({
     // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
-        // Si ya es string y tiene algun caracter no numerico (como px, %, rem), devolver tal cual
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
@@ -90,7 +91,6 @@ const CartComponent = ({
         minHeight: '50px',
         position: 'relative',
         boxSizing: 'border-box',
-        // borderRadius: themeCartStyles.borderRadius,
     };
 
     // Detectar móvil solo en frontend
@@ -138,7 +138,6 @@ const CartComponent = ({
 
     // FUNCIÓN PRINCIPAL PARA CARGAR DATOS
     const loadCartData = useCallback(() => {
-        // Si ya está cargando o no está montado, salir
         if (isLoadingRef.current || !isMounted.current) {
             return;
         }
@@ -161,22 +160,24 @@ const CartComponent = ({
                     const product = productsRef.current?.find(p => p.id === item.productId);
 
                     let combination = null;
-                    if (item.combinationId && product && product.combinations) {
+                    if (item.combinationId && product && Array.isArray(product.combinations)) {
                         const comb = product.combinations.find(c => c.id === item.combinationId);
                         if (comb) {
                             combination = {
                                 id: comb.id,
                                 price: parseFloat(comb.price),
-                                attribute_values: comb.attribute_values.map(attr => ({
-                                    attribute_name: attr.attribute_name,
-                                    value_name: attr.value_name
-                                }))
+                                attribute_values: Array.isArray(comb.attribute_values)
+                                    ? comb.attribute_values.map(attr => ({
+                                        attribute_name: attr.attribute_name,
+                                        value_name: attr.value_name
+                                    }))
+                                    : []
                             };
                         }
                     }
 
                     let stock = 0;
-                    if (product && product.stocks) {
+                    if (product && Array.isArray(product.stocks)) {
                         if (item.combinationId) {
                             const stockItem = product.stocks.find(s => s.combination_id === item.combinationId);
                             stock = stockItem ? stockItem.quantity : 0;
@@ -194,6 +195,7 @@ const CartComponent = ({
                         originalPrice: item.originalPrice ? parseFloat(item.originalPrice) : parseFloat(item.price),
                         quantity: item.quantity || 1,
                         combination: combination,
+                        combinationName: item.combinationName || null, // ← NUEVO: tomar del item del carrito
                         image: item.image || (product && product.media && product.media[0]
                             ? product.media[0].original_url
                             : 'https://picsum.photos/80'),
@@ -207,7 +209,6 @@ const CartComponent = ({
 
                 setCartItems(formattedItems);
 
-                // Calcular total
                 const cartSummary = cartHelper.getCartSummary(
                     companyId,
                     null,
@@ -216,7 +217,7 @@ const CartComponent = ({
                 setCartTotal(cartSummary.totalAmount);
 
             } else if (isPreview || mode === 'builder') {
-                // Datos de ejemplo para builder/preview
+                // Datos de ejemplo para builder/preview (incluyendo combinationName)
                 const simulatedItems = [
                     {
                         id: 1,
@@ -233,6 +234,7 @@ const CartComponent = ({
                                 { attribute_name: 'marca', value_name: 'lacoste' }
                             ]
                         },
+                        combinationName: 'talla: mediano, marca: lacoste', // ← para builder
                         image: 'https://picsum.photos/80',
                         stock: 12,
                         hasDirectDiscount: true,
@@ -247,6 +249,7 @@ const CartComponent = ({
                         originalPrice: 8.00,
                         quantity: 1,
                         combination: null,
+                        combinationName: null,
                         image: 'https://picsum.photos/80',
                         stock: 9,
                         hasDirectDiscount: false,
@@ -278,11 +281,9 @@ const CartComponent = ({
     useEffect(() => {
         isMounted.current = true;
 
-        // Actualizar referencias
         productsRef.current = products;
         automaticDiscountsRef.current = automaticDiscounts;
 
-        // Cargar datos iniciales
         if (isMounted.current) {
             loadCartData();
         }
@@ -342,7 +343,16 @@ const CartComponent = ({
         }
     }, [cartItems, companyId, mode]);
 
-    // Si no hay hijos en modo frontend, usar configuración por defecto
+    const handleClearCart = useCallback(() => {
+        if (mode === 'frontend' && companyId) {
+            if (window.confirm('¿Estás seguro de vaciar el carrito?')) {
+                cartHelper.clearCart(companyId);
+                setCartItems([]);
+                setCartTotal(0);
+            }
+        }
+    }, [mode, companyId]);
+
     const getDisplayChildren = () => {
         if (mode === 'frontend' && children.length === 0) {
             return [
@@ -375,7 +385,6 @@ const CartComponent = ({
 
     const displayChildren = getDisplayChildren();
 
-    // Función para eliminar un hijo (solo en modo builder)
     const handleDeleteChild = useCallback((childId) => {
         if (mode === 'builder' && setComponents) {
             setComponents((prev) => {
@@ -399,7 +408,6 @@ const CartComponent = ({
         }
     }, [comp.id, mode, setComponents]);
 
-    // Render loading
     if (mode === 'frontend' && isLoading) {
         return (
             <div style={containerStyles}>
@@ -408,7 +416,6 @@ const CartComponent = ({
         );
     }
 
-    // Renderizar cada hijo
     const renderChild = (child) => {
         const commonProps = {
             comp: child,
@@ -423,7 +430,8 @@ const CartComponent = ({
             cartItems,
             cartTotal,
             mode,
-            companyId
+            companyId,
+            onClearCart: handleClearCart
         };
 
         switch (child.type) {
@@ -467,10 +475,12 @@ const CartComponent = ({
         }
     };
 
+    const safeDisplayChildren = Array.isArray(displayChildren) ? displayChildren : [];
+
     return (
         <div style={containerStyles}>
             <div style={layoutStyles}>
-                {displayChildren.map(renderChild)}
+                {safeDisplayChildren.map(renderChild)}
             </div>
         </div>
     );

@@ -156,13 +156,13 @@ const ProductDetailDescriptionComponent = ({
         const alignment = customStyles.alignment || 'left';
         const textAlign = layout === 'fill' ? alignment : 'left';
 
-        // Color del texto - usar color del tema como valor por defecto
+        // Color del texto
         const textColor = customStyles.color || themeComponentStyles.color || themeWithDefaults.text;
 
         // Background color
         const backgroundColor = customStyles.backgroundColor || 'transparent';
 
-        // Border radius - usar valores del tema
+        // Border radius
         const borderRadius = withUnit(customStyles.borderRadius || themeWithDefaults?.border_radius || '0px');
 
         // Margen
@@ -195,12 +195,28 @@ const ProductDetailDescriptionComponent = ({
         }
     };
 
-    // Obtener la descripción del producto o mostrar placeholder
-    const displayDescription = product?.product_description || resolvedContent || (
-        <span className="text-gray-400 italic">
-            Descripción del producto (se obtiene dinámicamente)
-        </span>
-    );
+    // Determinar qué mostrar
+    let displayContent;
+
+    if (product?.product_description) {
+        // Descripción real del producto (HTML)
+        displayContent = <div dangerouslySetInnerHTML={{ __html: product.product_description }} />;
+    } else if (resolvedContent) {
+        // Contenido guardado en el componente (modo builder o placeholder HTML)
+        // Podría ser HTML también, así que usamos dangerouslySetInnerHTML si es string
+        if (typeof resolvedContent === 'string') {
+            displayContent = <div dangerouslySetInnerHTML={{ __html: resolvedContent }} />;
+        } else {
+            displayContent = resolvedContent;
+        }
+    } else {
+        // Placeholder por defecto
+        displayContent = (
+            <span className="text-gray-400 italic">
+                Descripción del producto (se obtiene dinámicamente)
+            </span>
+        );
+    }
 
     return (
         <div
@@ -208,7 +224,7 @@ const ProductDetailDescriptionComponent = ({
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
-            {displayDescription}
+            {displayContent}
         </div>
     );
 };

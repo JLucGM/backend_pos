@@ -592,7 +592,7 @@ class FrontendController extends Controller
         }
 
         $user = auth()->user();
-
+// dd($this->getUserOrders($user));
         return [
             'currentUser' => [
                 'id' => $user->id,

@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { getThemeWithDefaults, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
 const QuantitySelectorComponent = ({
     comp,
     maxQuantity = 99,
     onQuantityChange,
+    quantity, // ahora viene del padre
     themeSettings,
     appliedTheme
 }) => {
-    const [quantity, setQuantity] = useState(1);
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     // ===========================================
@@ -25,23 +25,22 @@ const QuantitySelectorComponent = ({
         styles[key] = resolveValue(rawStyles[key]);
     });
 
-    // Resolver contenido (por si contiene referencias)
+    // Resolver contenido
     const rawContent = comp.content || {};
     const content = {};
     Object.keys(rawContent).forEach(key => {
         content[key] = resolveValue(rawContent[key]);
     });
 
-    // Helper para añadir unidad (px) si es solo número
+    // Helper para añadir unidad
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
-    // Función para obtener valores por defecto del tema (con resolución)
+    // Función para obtener valores por defecto del tema
     const getThemeValue = (key, defaultValue) => {
-        // Mapear las claves del componente a las claves del tema
         const themeMap = {
             'labelColor': themeSettings?.quantity_labelColor || themeSettings?.text_color,
             'borderColor': themeSettings?.quantity_borderColor || themeSettings?.border_color,
@@ -52,18 +51,15 @@ const QuantitySelectorComponent = ({
             'inputSize': themeSettings?.quantity_inputSize || themeSettings?.input_font_size,
         };
 
-        // Prioridad 1: estilos personalizados del componente (ya resueltos)
         if (styles[key] !== undefined) {
             return styles[key];
         }
 
-        // Prioridad 2: valor del tema (resolver por si acaso)
         const themeValue = themeMap[key];
         if (themeValue !== undefined) {
             return resolveValue(themeValue);
         }
 
-        // Prioridad 3: valor por defecto (resolver por si acaso)
         return resolveValue(defaultValue);
     };
 
@@ -75,25 +71,20 @@ const QuantitySelectorComponent = ({
 
     const handleIncrement = () => {
         if (quantity < maxQuantity) {
-            const newQuantity = quantity + 1;
-            setQuantity(newQuantity);
-            if (onQuantityChange) onQuantityChange(newQuantity);
+            onQuantityChange(quantity + 1);
         }
     };
 
     const handleDecrement = () => {
         if (quantity > 1) {
-            const newQuantity = quantity - 1;
-            setQuantity(newQuantity);
-            if (onQuantityChange) onQuantityChange(newQuantity);
+            onQuantityChange(quantity - 1);
         }
     };
 
     const handleInputChange = (e) => {
         const value = parseInt(e.target.value) || 1;
         const newQuantity = Math.min(Math.max(1, value), maxQuantity);
-        setQuantity(newQuantity);
-        if (onQuantityChange) onQuantityChange(newQuantity);
+        onQuantityChange(newQuantity);
     };
 
     return (

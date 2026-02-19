@@ -15,13 +15,19 @@ class CheckSubscription
     {
         $user = auth()->user();
         
-        if (!$user || !$user->company) {
+        // Si no hay usuario autenticado, redirigir al login
+        if (!$user) {
             return redirect()->route('login');
         }
 
-        // Los super admins no necesitan suscripción
+        // ✅ Super admins siempre tienen acceso, sin importar la compañía o suscripción
         if ($user->hasRole('super admin')) {
             return $next($request);
+        }
+
+        // Para usuarios que no son super admin, necesitamos la compañía
+        if (!$user->company) {
+            return redirect()->route('login');
         }
 
         $company = $user->company;

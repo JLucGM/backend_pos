@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -15,7 +15,8 @@ import {
     Truck,
     CheckCircle,
     XCircle,
-    ShoppingCart
+    ShoppingCart,
+    Tag
 } from 'lucide-react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
@@ -58,13 +59,18 @@ function OrdersComponent({
         content[key] = resolveValue(rawContent[key]);
     });
 
-    // Datos de ejemplo para el builder
+    // Datos de ejemplo enriquecidos para el builder (incluyendo product_details)
     const exampleOrders = [
         {
             id: 1,
             order_number: 'ORD-2024-001',
             status: 'delivered',
             total: 125.50,
+            subtotal: 140.00,
+            tax_amount: 10.50,
+            totaldiscounts: 25.00,
+            payment_status: 'paid',
+            delivery_type: 'shipping',
             created_at: '2024-01-15T10:30:00Z',
             delivery_address: 'Calle Principal 123, Ciudad',
             payment_method: 'Tarjeta de Crédito',
@@ -74,14 +80,26 @@ function OrdersComponent({
                     product_name: 'Producto A',
                     quantity: 2,
                     price: 50.00,
-                    image: 'https://picsum.photos/80/80?random=1'
+                    original_price: 60.00,
+                    discount_amount: 20.00,
+                    discounted_price: 50.00,
+                    subtotal: 100.00,
+                    tax_amount: 8.00,
+                    image: 'https://picsum.photos/80/80?random=1',
+                    product_details: '{"attributes":" - color: rojo, talla: m"}'
                 },
                 {
                     id: 2,
                     product_name: 'Producto B',
                     quantity: 1,
                     price: 25.50,
-                    image: 'https://picsum.photos/80/80?random=2'
+                    original_price: 25.50,
+                    discount_amount: 0,
+                    discounted_price: 25.50,
+                    subtotal: 25.50,
+                    tax_amount: 2.50,
+                    image: 'https://picsum.photos/80/80?random=2',
+                    product_details: null
                 }
             ]
         },
@@ -90,8 +108,13 @@ function OrdersComponent({
             order_number: 'ORD-2024-002',
             status: 'processing',
             total: 89.99,
+            subtotal: 89.99,
+            tax_amount: 7.20,
+            totaldiscounts: 0,
+            payment_status: 'pending',
+            delivery_type: 'pickup',
             created_at: '2024-01-20T14:15:00Z',
-            delivery_address: 'Avenida Central 456, Ciudad',
+            delivery_address: 'Recoger en tienda',
             payment_method: 'Efectivo',
             items: [
                 {
@@ -99,7 +122,13 @@ function OrdersComponent({
                     product_name: 'Producto C',
                     quantity: 3,
                     price: 29.99,
-                    image: 'https://picsum.photos/80/80?random=3'
+                    original_price: 29.99,
+                    discount_amount: 0,
+                    discounted_price: 29.99,
+                    subtotal: 89.97,
+                    tax_amount: 7.20,
+                    image: 'https://picsum.photos/80/80?random=3',
+                    product_details: '{"attributes":" - color: azul, talla: s"}'
                 }
             ]
         },
@@ -108,6 +137,11 @@ function OrdersComponent({
             order_number: 'ORD-2024-003',
             status: 'pending',
             total: 199.99,
+            subtotal: 199.99,
+            tax_amount: 16.00,
+            totaldiscounts: 0,
+            payment_status: 'pending',
+            delivery_type: 'shipping',
             created_at: '2024-01-22T09:45:00Z',
             delivery_address: 'Plaza Mayor 789, Ciudad',
             payment_method: 'Transferencia',
@@ -117,14 +151,95 @@ function OrdersComponent({
                     product_name: 'Producto Premium',
                     quantity: 1,
                     price: 199.99,
-                    image: 'https://picsum.photos/80/80?random=4'
+                    original_price: 199.99,
+                    discount_amount: 0,
+                    discounted_price: 199.99,
+                    subtotal: 199.99,
+                    tax_amount: 16.00,
+                    image: 'https://picsum.photos/80/80?random=4',
+                    product_details: null
                 }
             ]
         }
     ];
 
-    const currentOrders = mode === 'frontend' ? orders : exampleOrders;
+    // ===========================================
+    // NORMALIZAR ÓRDENES REALES (TODOS LOS CAMPOS)
+    // ===========================================
+    const normalizeOrders = (rawOrders) => {
+        if (!rawOrders || rawOrders.length === 0) return [];
 
+        return rawOrders.map(order => {
+            // Construir dirección
+            let deliveryAddress = 'Recoger en tienda';
+            if (order.delivery_type === 'shipping' && order.deliveryLocation) {
+                const loc = order.deliveryLocation;
+                deliveryAddress = `${loc.address || ''} ${loc.city || ''} ${loc.state || ''}`.trim() || 'Dirección no especificada';
+            }
+
+            // Método de pago
+            const paymentMethod = order.paymentMethod?.name || 'Método no especificado';
+
+            // Items
+            const items = (order.items || []).map(item => {
+                // Procesar product_details si existe
+                let combinationText = '';
+                if (item.product_details) {
+                    try {
+                        const details = JSON.parse(item.product_details);
+                        if (details.attributes) {
+                            combinationText = details.attributes.trim();
+                        }
+                    } catch (e) {
+                        console.warn('Error parsing product_details:', e);
+                    }
+                }
+
+                return {
+                    id: item.id,
+                    product_name: item.name_product || 'Producto',
+                    quantity: item.quantity,
+                    price: parseFloat(item.discounted_price) || parseFloat(item.price_product) || 0,
+                    original_price: parseFloat(item.price_product) || 0,
+                    discount_amount: parseFloat(item.discount_amount) || 0,
+                    discounted_price: parseFloat(item.discounted_price) || parseFloat(item.price_product) || 0,
+                    subtotal: parseFloat(item.subtotal) || 0,
+                    tax_amount: parseFloat(item.tax_amount) || 0,
+                    combinationText: combinationText, // Texto de atributos
+                    image: `https://picsum.photos/80/80?random=${item.id}` // Placeholder
+                };
+            });
+
+            return {
+                id: order.id,
+                order_number: `ORD-${order.id}`,
+                status: order.status,
+                total: parseFloat(order.total) || 0,
+                subtotal: parseFloat(order.subtotal) || 0,
+                tax_amount: parseFloat(order.tax_amount) || 0,
+                totaldiscounts: parseFloat(order.totaldiscounts) || 0,
+                payment_status: order.payment_status,
+                delivery_type: order.delivery_type,
+                created_at: order.created_at,
+                delivery_address: deliveryAddress,
+                payment_method: paymentMethod,
+                items: items
+            };
+        });
+    };
+
+    // Órdenes a mostrar según el modo
+    const displayOrders = useMemo(() => {
+        if (mode === 'frontend') {
+            return normalizeOrders(orders);
+        }
+        // Modo builder: usar datos de ejemplo
+        return exampleOrders;
+    }, [mode, orders]);
+
+    // ===========================================
+    // FUNCIONES AUXILIARES
+    // ===========================================
     const getStatusInfo = (status) => {
         const statusMap = {
             pending: {
@@ -156,11 +271,45 @@ function OrdersComponent({
         return statusMap[status] || statusMap.pending;
     };
 
+    const getPaymentStatusBadgeColor = (paymentStatus) => {
+        const bgColor = themeWithDefaults.primary_button_background;
+        const textColor = themeWithDefaults.text;
+        const borderColor = themeWithDefaults.borders;
+
+        // Personalizar según estado
+        if (paymentStatus === 'paid') {
+            return {
+                background: '#05966920',
+                color: '#059669',
+                border: '1px solid #059669'
+            };
+        } else if (paymentStatus === 'pending') {
+            return {
+                background: '#d9770620',
+                color: '#d97706',
+                border: '1px solid #d97706'
+            };
+        } else if (paymentStatus === 'failed') {
+            return {
+                background: '#dc262620',
+                color: '#dc2626',
+                border: '1px solid #dc2626'
+            };
+        }
+        return {
+            background: `${bgColor}20`,
+            color: textColor,
+            border: `1px solid ${borderColor}`
+        };
+    };
+
     const toggleOrderExpansion = (orderId) => {
         setExpandedOrder(expandedOrder === orderId ? null : orderId);
     };
 
-    // 1. Contenedor principal que usa el fondo del tema
+    // ===========================================
+    // ESTILOS
+    // ===========================================
     const outerContainerStyles = {
         width: '100%',
         minHeight: mode === 'frontend' ? '100vh' : 'auto',
@@ -172,7 +321,6 @@ function OrdersComponent({
         padding: mode === 'frontend' ? '20px' : '0',
     };
 
-    // 2. Contenedor interno con valores resueltos
     const containerStyles = {
         backgroundColor: styles.backgroundColor || themeWithDefaults.background,
         paddingTop: withUnit(styles.paddingTop || '40px'),
@@ -185,20 +333,17 @@ function OrdersComponent({
         minHeight: mode === 'frontend' ? 'auto' : '100%',
     };
 
-    // Estilos para títulos (con valores resueltos)
     const titleStyles = {
         color: resolveValue(styles.titleColor || themeWithDefaults.heading),
         fontSize: withUnit(styles.titleSize, styles.titleSizeUnit || 'px'),
         fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme),
     };
 
-    // Estilos para texto general
     const textStyles = {
         color: resolveValue(themeWithDefaults.text),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
     };
 
-    // Estilos para botones primarios
     const primaryButtonStyles = {
         backgroundColor: resolveValue(themeWithDefaults.primary_button_background),
         color: resolveValue(themeWithDefaults.primary_button_text),
@@ -206,13 +351,21 @@ function OrdersComponent({
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
     };
 
-    // Estilos para botones ghost/outline
     const ghostButtonStyles = {
         color: resolveValue(themeWithDefaults.text),
         fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
     };
 
-    if (!currentOrders || currentOrders.length === 0) {
+    const discountTextStyles = {
+        color: '#059669',
+        fontSize: '0.875rem',
+        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+    };
+
+    // ===========================================
+    // RENDER
+    // ===========================================
+    if (!displayOrders || displayOrders.length === 0) {
         return (
             <div style={outerContainerStyles}>
                 <div style={containerStyles}>
@@ -251,7 +404,7 @@ function OrdersComponent({
                             {content.title || 'Mis Pedidos'}
                         </CardTitle>
                         <p style={textStyles}>
-                            {content.subtitle || `Tienes ${currentOrders.length} pedido${currentOrders.length !== 1 ? 's' : ''}`}
+                            {content.subtitle || `Tienes ${displayOrders.length} pedido${displayOrders.length !== 1 ? 's' : ''}`}
                         </p>
                     </CardHeader>
                     <CardContent
@@ -262,28 +415,23 @@ function OrdersComponent({
                             gap: withUnit(styles.gap || '16px', styles.gapUnit || 'px')
                         }}
                     >
-                        {currentOrders.map((order) => {
+                        {displayOrders.map((order) => {
                             const statusInfo = getStatusInfo(order.status);
                             const StatusIcon = statusInfo.icon;
                             const isExpanded = expandedOrder === order.id;
 
-                            // Determinar color del badge según el estado (usando colores del tema)
+                            // Badge de estado del pedido
                             const getStatusBadgeColor = () => {
-                                // Valores base del tema
                                 const bgColor = themeWithDefaults.primary_button_background;
                                 const textColor = themeWithDefaults.text;
                                 const borderColor = themeWithDefaults.borders;
-
-                                // Para simplificar, usamos un estilo común con variaciones según color
-                                // En un caso real podrías mapear a colores específicos del tema
                                 return {
-                                    background: `${bgColor}20`, // 20% de opacidad
+                                    background: `${bgColor}20`,
                                     color: textColor,
                                     border: `1px solid ${borderColor}`
                                 };
                             };
-
-                            const badgeStyle = getStatusBadgeColor();
+                            const statusBadgeStyle = getStatusBadgeColor();
 
                             return (
                                 <Card key={order.id} style={{
@@ -292,7 +440,7 @@ function OrdersComponent({
                                 }}>
                                     <CardContent className="p-4">
                                         {/* Header del pedido */}
-                                        <div className="flex items-center justify-between mb-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
                                             <div className="flex items-center gap-4">
                                                 <div>
                                                     <h3 className="font-semibold text-lg" style={titleStyles}>
@@ -305,8 +453,8 @@ function OrdersComponent({
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-3">
-                                                <Badge style={badgeStyle}>
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                <Badge style={statusBadgeStyle}>
                                                     <StatusIcon className="h-3 w-3 mr-1" />
                                                     {statusInfo.label}
                                                 </Badge>
@@ -314,6 +462,11 @@ function OrdersComponent({
                                                     <p className="font-semibold text-lg" style={{ color: themeWithDefaults.links }}>
                                                         ${order.total.toFixed(2)}
                                                     </p>
+                                                    {order.totaldiscounts > 0 && (
+                                                        <p className="text-xs" style={discountTextStyles}>
+                                                            Descuento: -${order.totaldiscounts.toFixed(2)}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -337,7 +490,7 @@ function OrdersComponent({
                                         {/* Botón para expandir/contraer */}
                                         <div className="flex items-center justify-between">
                                             <Button
-                                                variant="ghost"
+                                                variant="outline"
                                                 size="sm"
                                                 onClick={() => toggleOrderExpansion(order.id)}
                                                 className="flex items-center gap-2"
@@ -361,7 +514,7 @@ function OrdersComponent({
                                                     <h4 className="font-semibold" style={titleStyles}>Productos</h4>
                                                     <div className="space-y-3">
                                                         {order.items.map((item) => (
-                                                            <div key={item.id} className="flex items-center gap-4 p-3 rounded-lg" style={{
+                                                            <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-4 p-3 rounded-lg" style={{
                                                                 backgroundColor: themeWithDefaults.background,
                                                                 border: `1px solid ${themeWithDefaults.borders}`,
                                                             }}>
@@ -377,33 +530,104 @@ function OrdersComponent({
                                                                     <h5 className="font-medium" style={titleStyles}>
                                                                         {item.product_name}
                                                                     </h5>
+                                                                    {/* Mostrar combinación si existe */}
+                                                                    {item.combinationText && (
+                                                                        <p className="text-sm" style={{
+                                                                            color: resolveValue(themeWithDefaults.text),
+                                                                            opacity: 0.7
+                                                                        }}>
+                                                                            {item.combinationText}
+                                                                        </p>
+                                                                    )}
                                                                     <p className="text-sm" style={textStyles}>
                                                                         Cantidad: {item.quantity}
                                                                     </p>
+                                                                    {item.discount_amount > 0 && (
+                                                                        <div className="flex items-center gap-2 text-sm">
+                                                                            <Tag className="h-3 w-3" style={discountTextStyles} />
+                                                                            <span style={discountTextStyles}>
+                                                                                Ahorro: ${item.discount_amount.toFixed(2)}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    <p className="font-semibold" style={{ color: themeWithDefaults.links }}>
-                                                                        ${(item.price * item.quantity).toFixed(2)}
-                                                                    </p>
-                                                                    <p className="text-sm" style={textStyles}>
-                                                                        ${item.price.toFixed(2)} c/u
-                                                                    </p>
+                                                                    {item.discount_amount > 0 ? (
+                                                                        <>
+                                                                            <div className="line-through text-sm" style={textStyles}>
+                                                                                ${item.original_price.toFixed(2)} c/u
+                                                                            </div>
+                                                                            <div className="font-semibold" style={{ color: themeWithDefaults.links }}>
+                                                                                ${item.price.toFixed(2)} c/u
+                                                                            </div>
+                                                                            <div className="text-sm font-medium" style={{ color: themeWithDefaults.links }}>
+                                                                                Subtotal: ${item.subtotal.toFixed(2)}
+                                                                            </div>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <div className="font-semibold" style={{ color: themeWithDefaults.links }}>
+                                                                                ${item.price.toFixed(2)} c/u
+                                                                            </div>
+                                                                            <div className="text-sm font-medium" style={{ color: themeWithDefaults.links }}>
+                                                                                Subtotal: ${(item.price * item.quantity).toFixed(2)}
+                                                                            </div>
+                                                                        </>
+                                                                    )}
+                                                                    {item.tax_amount > 0 && (
+                                                                        <div className="text-xs" style={textStyles}>
+                                                                            Impuesto: ${item.tax_amount.toFixed(2)}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         ))}
                                                     </div>
 
-                                                    {/* Resumen del pedido */}
-                                                    <div className="p-4 rounded-lg" style={{
+                                                    {/* Resumen financiero */}
+                                                    <div className="p-4 rounded-lg space-y-2" style={{
                                                         backgroundColor: themeWithDefaults.background,
                                                         border: `1px solid ${themeWithDefaults.borders}`,
                                                     }}>
-                                                        <div className="flex justify-between items-center">
-                                                            <span className="font-semibold" style={titleStyles}>
-                                                                Total del pedido:
-                                                            </span>
-                                                            <span className="font-bold text-lg" style={{ color: themeWithDefaults.links }}>
-                                                                ${order.total.toFixed(2)}
+                                                        <div className="flex justify-between">
+                                                            <span style={textStyles}>Subtotal:</span>
+                                                            <span style={textStyles}>${order.subtotal.toFixed(2)}</span>
+                                                        </div>
+                                                        {order.totaldiscounts > 0 && (
+                                                            <div className="flex justify-between" style={discountTextStyles}>
+                                                                <span>Descuentos:</span>
+                                                                <span>-${order.totaldiscounts.toFixed(2)}</span>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex justify-between">
+                                                            <span style={textStyles}>Impuestos:</span>
+                                                            <span style={textStyles}>${order.tax_amount.toFixed(2)}</span>
+                                                        </div>
+                                                        <Separator className="my-2" style={{ backgroundColor: themeWithDefaults.borders }} />
+                                                        <div className="flex justify-between font-bold">
+                                                            <span style={titleStyles}>Total:</span>
+                                                            <span style={{ color: themeWithDefaults.links }}>${order.total.toFixed(2)}</span>
+                                                        </div>
+
+                                                        {/* Información adicional */}
+                                                        <div className="flex justify-between text-sm mt-2">
+                                                            <span style={textStyles}>Método de pago:</span>
+                                                            <span style={textStyles}>{order.payment_method}</span>
+                                                        </div>
+                                                        {order.payment_status && (
+                                                            <div className="flex justify-between text-sm">
+                                                                <span style={textStyles}>Estado del pago:</span>
+                                                                <Badge style={getPaymentStatusBadgeColor(order.payment_status)}>
+                                                                    {order.payment_status === 'paid' ? 'Pagado' : 
+                                                                     order.payment_status === 'pending' ? 'Pendiente' : 
+                                                                     order.payment_status === 'failed' ? 'Fallido' : order.payment_status}
+                                                                </Badge>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex justify-between text-sm">
+                                                            <span style={textStyles}>Tipo de entrega:</span>
+                                                            <span style={textStyles}>
+                                                                {order.delivery_type === 'shipping' ? 'Envío a domicilio' : 'Recoger en tienda'}
                                                             </span>
                                                         </div>
                                                     </div>

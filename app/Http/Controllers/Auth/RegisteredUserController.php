@@ -25,6 +25,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class RegisteredUserController extends Controller
 {
@@ -81,6 +82,7 @@ class RegisteredUserController extends Controller
                 'name' => $request->company_name,
                 'is_trial' => true,
                 'trial_ends_at' => Carbon::now()->addDays(14), // 14 días de prueba
+                'subdomain'     => Str::slug($request->company_name),
             ]);
 
             $store = Store::create([

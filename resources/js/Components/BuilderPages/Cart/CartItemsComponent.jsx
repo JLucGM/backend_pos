@@ -1,4 +1,4 @@
-// CartItemsComponent.jsx - VERSIÓN COMPLETA CON DESCUENTOS Y SOPORTE PARA REFERENCIAS AL TEMA
+// CartItemsComponent.jsx - VERSIÓN COMPLETA CON SOPORTE PARA COMBINATIONNAME
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
@@ -13,6 +13,8 @@ const CartItemsComponent = ({
     cartItems,
     onUpdateQuantity,
     onRemoveItem,
+    onClearCart,
+    mode,
     themeSettings,
     appliedTheme
 }) => {
@@ -21,14 +23,10 @@ const CartItemsComponent = ({
     const rawContent = comp.content || {};
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
-    // ===========================================
-    // FUNCIÓN PARA RESOLVER REFERENCIAS
-    // ===========================================
     const resolveValue = (value) => {
         return resolveStyleValue(value, themeWithDefaults, appliedTheme);
     };
 
-    // Resolver estilos y contenido
     const styles = {};
     Object.keys(rawStyles).forEach(key => {
         styles[key] = resolveValue(rawStyles[key]);
@@ -39,14 +37,12 @@ const CartItemsComponent = ({
         content[key] = resolveValue(rawContent[key]);
     });
 
-    // Helper para añadir unidad (px) si es solo número
     const withUnit = (value, unit = 'px') => {
         if (value === undefined || value === null || value === '') return undefined;
         if (typeof value === 'string' && isNaN(Number(value))) return value;
         return `${value}${unit}`;
     };
 
-    // Obtener estilos del tema para cart
     const themeCartStyles = getComponentStyles(themeWithDefaults, 'cart');
     const themeCartTitleStyles = getComponentStyles(themeWithDefaults, 'cart-title');
 
@@ -69,7 +65,6 @@ const CartItemsComponent = ({
         }
     };
 
-    // Estilos de fuente del tema (con resolución)
     const getFontStyles = (type = 'title') => {
         if (type === 'title') {
             return {
@@ -90,12 +85,10 @@ const CartItemsComponent = ({
     const titleStyles = getFontStyles('title');
     const textStyles = getFontStyles();
 
-    // Función para calcular si hay descuento
     const hasDiscount = (item) => {
         return item.originalPrice && item.originalPrice !== item.price;
     };
 
-    // Función para renderizar información de descuento
     const renderDiscountInfo = (item) => {
         if (!item.automaticDiscount) return null;
 
@@ -153,9 +146,35 @@ const CartItemsComponent = ({
             onClick={handleClick}
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
-            <h2 style={{ ...titleStyles, marginBottom: '24px' }}>
-                {content.title || 'Tu carrito'}
-            </h2>
+            {/* Encabezado con título y botón vaciar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h2 style={titleStyles}>
+                    {content.title || 'Tu carrito'}
+                </h2>
+                {mode === 'frontend' && cartItems.length > 0 && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClearCart();
+                        }}
+                        style={{
+                            padding: '6px 12px',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                    >
+                        <Trash2 size={16} />
+                        Vaciar
+                    </button>
+                )}
+            </div>
 
             {cartItems.length === 0 ? (
                 <div className="text-center py-12" style={textStyles}>
@@ -199,20 +218,19 @@ const CartItemsComponent = ({
                                             {item.name}
                                         </h3>
 
-                                        {/* Combinación seleccionada */}
-                                        {content.showCombination !== false && item.combination && (
+                                        {/* Combinación seleccionada: usa combinationName si existe, si no construye desde combination */}
+                                        {content.showCombination !== false && (item.combinationName || item.combination) && (
                                             <div className="text-sm mt-1" style={{
                                                 color: resolveValue(themeWithDefaults.text),
                                                 opacity: '0.7'
                                             }}>
-                                                {item.combination.attribute_values
-                                                    .map(attr => `${attr.attribute_name}: ${attr.value_name}`)
-                                                    .join(' / ')}
+                                                {item.combinationName
+                                                    ? item.combinationName
+                                                    : item.combination?.attribute_values?.map(attr => `${attr.attribute_name}: ${attr.value_name}`).join(' / ')}
                                             </div>
                                         )}
                                     </div>
                                     <div className="text-right">
-                                        {/* Mostrar precio original tachado si hay descuento */}
                                         {hasDiscount(item) ? (
                                             <div>
                                                 <div className="line-through text-sm" style={{
@@ -235,7 +253,6 @@ const CartItemsComponent = ({
                                                         `$${(item.price * item.quantity).toFixed(2)}`
                                                     )}
                                                 </div>
-                                                {/* Mostrar ahorro */}
                                                 <div className="text-xs mt-1" style={{
                                                     color: '#059669',
                                                     fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
@@ -271,10 +288,8 @@ const CartItemsComponent = ({
                                     </div>
                                 </div>
 
-                                {/* Información de descuento */}
                                 {renderDiscountInfo(item)}
 
-                                {/* Stock disponible */}
                                 {content.showStock && (
                                     <div className="text-sm mt-1" style={{
                                         color: item.stock > 0 ? '#059669' : '#dc2626',
@@ -286,7 +301,6 @@ const CartItemsComponent = ({
                                     </div>
                                 )}
 
-                                {/* Controles de cantidad */}
                                 <div className="flex items-center justify-between mt-4">
                                     <div className="flex items-center border rounded-md">
                                         <button

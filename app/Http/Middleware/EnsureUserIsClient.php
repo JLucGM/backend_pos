@@ -5,10 +5,11 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsClient
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         // Verificar que el usuario esté autenticado
         if (!Auth::check()) {
@@ -16,16 +17,20 @@ class EnsureUserIsClient
 
             // Redirigir al login de clientes
             if (str_ends_with($request->getHost(), '.pos.test')) {
-                // Para subdominio
                 return redirect()->route('frontend.login', ['subdomain' => $company->subdomain]);
             } else {
-                // Para dominio personalizado
                 return redirect()->route('frontend.login.custom', ['domain' => $company->domain]);
             }
         }
 
-        // Verificar que el usuario tenga rol de cliente
         $user = Auth::user();
+
+        // ✅ Permitir a super admins sin restricciones
+        if ($user->hasRole('super admin')) {
+            return $next($request);
+        }
+
+        // Verificar que el usuario tenga rol de cliente
         if (!$user->hasRole('client')) {
             abort(403, 'No tienes permiso para acceder a esta página.');
         }

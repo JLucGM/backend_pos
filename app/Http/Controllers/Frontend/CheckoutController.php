@@ -384,16 +384,16 @@ class CheckoutController extends Controller
             $host = $request->getHost();
 
             // Si es un subdominio de pos.test, usar la ruta de subdominio
-            if (str_ends_with($host, '.pos.test')) {
-                // Extraer el subdomain del request
+            $host = $request->getHost();
+            $baseDomain = ltrim(env('SESSION_DOMAIN', '.pos.test'), '.');
+
+            if (str_ends_with($host, '.' . $baseDomain)) {
                 $subdomain = $request->route('subdomain');
                 return redirect()->route('frontend.checkout.success', [
                     'subdomain' => $subdomain,
                     'order' => $order->id
                 ]);
             } else {
-                // Si es un dominio personalizado, usar la ruta personalizada
-                // Extraer el domain del request
                 $domain = $request->route('domain');
                 return redirect()->route('frontend.checkout.success.custom', [
                     'domain' => $domain,
