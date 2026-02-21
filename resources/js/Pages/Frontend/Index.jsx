@@ -247,6 +247,9 @@ function renderBlock(
                     shippingRates={shippingRates}
                     userDeliveryLocations={userDeliveryLocations}
                     userGiftCards={userGiftCards}
+                    countries={countries}
+                    states={states}
+                    cities={cities}
                 />
             );
 

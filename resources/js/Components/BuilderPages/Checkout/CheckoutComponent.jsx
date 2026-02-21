@@ -6,10 +6,16 @@ import CheckoutDiscountGiftCardComponent from './CheckoutDiscountGiftCardCompone
 import CustomerInfoComponent from './CustomerInfoComponent';
 import AuthModalComponent from './CheckoutAuthModalComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import { usePage } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import cartHelper from '@/Helper/cartHelper';
 import { getThemeWithDefaults, getComponentStyles, resolveStyleValue } from '@/utils/themeUtils';
+import CheckoutAddressForm from './CheckoutAddressForm';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/Components/ui/dialog";
 
 // Helper para añadir unidad (px) si es solo número
 const withUnit = (value, unit = 'px') => {
@@ -37,6 +43,9 @@ const CheckoutComponent = ({
     discounts = [],
     userDeliveryLocations = [],
     userGiftCards = [],
+    countries = [],
+    states = [],
+    cities = [],
 }) => {
     const { props } = usePage();
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
@@ -85,6 +94,10 @@ const CheckoutComponent = ({
     const [giftCardAmountUsed, setGiftCardAmountUsed] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [orderError, setOrderError] = useState(null);
+
+    // Estados para gestión de direcciones
+    const [showAddressModal, setShowAddressModal] = useState(false);
+    const [editingAddress, setEditingAddress] = useState(null);
 
     // Referencias para evitar loops
     const hasLoaded = useRef(false);
@@ -597,12 +610,30 @@ const CheckoutComponent = ({
     };
 
     const innerContainerStyles = {
-                backgroundColor: customStyles.backgroundColor || themeCheckoutStyles.backgroundColor || themeWithDefaults.background,
+        backgroundColor: customStyles.backgroundColor || themeCheckoutStyles.backgroundColor || themeWithDefaults.background,
 
     };
 
     // Determinar layout type (resuelto)
     const layoutType = customStyles.layoutType || 'compact';
+
+    // Manejadores de direcciones
+    const handleAddNewAddress = useCallback(() => {
+        setEditingAddress(null);
+        setShowAddressModal(true);
+    }, []);
+
+    const handleEditAddress = useCallback((address) => {
+        setEditingAddress(address);
+        setShowAddressModal(true);
+    }, []);
+
+    const handleAddressFormSuccess = useCallback(() => {
+        setShowAddressModal(false);
+        setEditingAddress(null);
+        // Recargar datos o simplemente window.location.reload() como el auth modal
+        // Pero Inertia suele actualizar las props automáticamente si redirige back
+    }, []);
 
     const submitOrder = async () => {
         if (!selectedPaymentMethod) {
@@ -876,6 +907,8 @@ const CheckoutComponent = ({
                             shippingRates={displayShippingRates}
                             paymentMethods={displayPaymentMethods}
                             showAuthModal={() => setShowAuthModal(true)}
+                            onAddNewAddress={handleAddNewAddress}
+                            onEditAddress={handleEditAddress}
                             mode={mode}
                         />
                     </ComponentWithHover>
@@ -1055,21 +1088,21 @@ const CheckoutComponent = ({
 
     return (
         <div className="checkout-container" style={innerContainerStyles}>
-        <div style={containerStyles}>
-            {/* Modal de autenticación */}
-            {showAuthModal && mode === 'frontend' && (
-                <AuthModalComponent
-                    onClose={() => setShowAuthModal(false)}
-                    companyId={companyId}
-                    onSuccess={() => {
-                        setShowAuthModal(false);
-                        window.location.reload();
-                    }}
-                />
-            )}
+            <div style={containerStyles}>
+                {/* Modal de autenticación */}
+                {showAuthModal && mode === 'frontend' && (
+                    <AuthModalComponent
+                        onClose={() => setShowAuthModal(false)}
+                        companyId={companyId}
+                        onSuccess={() => {
+                            setShowAuthModal(false);
+                            window.location.reload();
+                        }}
+                    />
+                )}
 
-            {/* Indicador de datos de ejemplo en modo builder (opcional) */}
-            {/* {mode === 'builder' && (
+                {/* Indicador de datos de ejemplo en modo builder (opcional) */}
+                {/* {mode === 'builder' && (
                 <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-blue-500"></div>
@@ -1080,8 +1113,36 @@ const CheckoutComponent = ({
                 </div>
             )} */}
 
-            {renderLayout()}
-        </div>
+                {/* Modal de Direcciones */}
+                {mode === 'frontend' && (
+                    <Dialog open={showAddressModal} onOpenChange={setShowAddressModal}>
+                        <DialogContent style={{
+                            backgroundColor: resolveValue(themeWithDefaults.background),
+                            borderColor: resolveValue(themeWithDefaults.borders),
+                            maxWidth: '600px',
+                        }}>
+                            <DialogHeader>
+                                <DialogTitle style={{ color: resolveValue(themeWithDefaults.heading) }}>
+                                    {editingAddress ? 'Editar Dirección' : 'Nueva Dirección'}
+                                </DialogTitle>
+                            </DialogHeader>
+                            <CheckoutAddressForm
+                                user={displayUser}
+                                location={editingAddress}
+                                countries={countries}
+                                states={states}
+                                cities={cities}
+                                themeWithDefaults={themeWithDefaults}
+                                appliedTheme={appliedTheme}
+                                onCancel={() => setShowAddressModal(false)}
+                                onSuccess={handleAddressFormSuccess}
+                            />
+                        </DialogContent>
+                    </Dialog>
+                )}
+
+                {renderLayout()}
+            </div>
         </div>
     );
 };

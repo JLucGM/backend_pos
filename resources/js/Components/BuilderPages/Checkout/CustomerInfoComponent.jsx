@@ -1,7 +1,7 @@
 // components/BuilderPages/Checkout/CustomerInfoComponent.jsx
 import React, { useState } from 'react';
 import { Button } from '@/Components/ui/button';
-import { UserCircleIcon, TruckIcon, MapPinIcon, CreditCardIcon, HomeIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, TruckIcon, MapPinIcon, CreditCardIcon, HomeIcon, CheckIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { StoreIcon } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
@@ -29,6 +29,8 @@ const CustomerInfoComponent = ({
     onAddressSelect,
     onDeliveryTypeChange,
     onShippingRateChange,
+    onAddNewAddress, // <-- añadido
+    onEditAddress,   // <-- añadido
     shippingRates = [],
     paymentMethods = [],
     showAuthModal,
@@ -221,9 +223,11 @@ const CustomerInfoComponent = ({
                     >
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg"
-                                style={{ backgroundColor: deliveryType === 'delivery'
-                                    ? resolveValue(themeWithDefaults.links + '20')
-                                    : resolveValue(themeWithDefaults.secondary_button_background) }}>
+                                style={{
+                                    backgroundColor: deliveryType === 'delivery'
+                                        ? resolveValue(themeWithDefaults.links + '20')
+                                        : resolveValue(themeWithDefaults.secondary_button_background)
+                                }}>
                                 <TruckIcon className="h-6 w-6" style={{
                                     color: deliveryType === 'delivery'
                                         ? resolveValue(themeWithDefaults.links)
@@ -263,9 +267,11 @@ const CustomerInfoComponent = ({
                     >
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg"
-                                style={{ backgroundColor: deliveryType === 'pickup'
-                                    ? resolveValue(themeWithDefaults.links + '20')
-                                    : resolveValue(themeWithDefaults.secondary_button_background) }}>
+                                style={{
+                                    backgroundColor: deliveryType === 'pickup'
+                                        ? resolveValue(themeWithDefaults.links + '20')
+                                        : resolveValue(themeWithDefaults.secondary_button_background)
+                                }}>
                                 <StoreIcon className="h-6 w-6" style={{
                                     color: deliveryType === 'pickup'
                                         ? resolveValue(themeWithDefaults.links)
@@ -297,7 +303,7 @@ const CustomerInfoComponent = ({
                             Dirección de entrega
                         </h3>
                         <button
-                            onClick={() => console.log('Agregar nueva dirección')}
+                            onClick={onAddNewAddress}
                             className="text-sm flex items-center gap-1"
                             style={{ color: resolveValue(themeWithDefaults.links) }}
                         >
@@ -310,7 +316,11 @@ const CustomerInfoComponent = ({
                             style={{ borderColor: resolveValue(themeWithDefaults.borders) }}>
                             <HomeIcon className="h-12 w-12 mx-auto mb-2" style={{ color: resolveValue(themeWithDefaults.text) }} />
                             <p style={{ color: resolveValue(themeWithDefaults.text) }}>No hay direcciones registradas</p>
-                            <button className="mt-2" style={{ color: resolveValue(themeWithDefaults.links) }}>
+                            <button
+                                onClick={onAddNewAddress}
+                                className="mt-2"
+                                style={{ color: resolveValue(themeWithDefaults.links) }}
+                            >
                                 Agregar primera dirección
                             </button>
                         </div>
@@ -390,6 +400,17 @@ const CustomerInfoComponent = ({
                                                 </div>
                                             </div>
                                         </div>
+                                        {/* Botón de editar dirección */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onEditAddress(address);
+                                            }}
+                                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                                            title="Editar dirección"
+                                        >
+                                            <PencilIcon className="h-4 w-4" style={{ color: resolveValue(themeWithDefaults.text) }} />
+                                        </button>
                                     </div>
                                 </div>
                             ))}
