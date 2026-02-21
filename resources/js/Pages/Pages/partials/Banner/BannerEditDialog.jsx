@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { useDebounce } from '@/hooks/Builder/useDebounce';
-import { ImageIcon, X } from 'lucide-react';
+import { ImageIcon, X, Trash2, Plus } from 'lucide-react';
 import ImageSelector from '@/Components/BuilderPages/ImageSelector';
 import { Button } from '@/Components/ui/button';
 import { resolveStyleValue } from '@/utils/themeUtils';
@@ -61,6 +61,57 @@ const BannerEditDialog = ({
   const defaultInnerColor = (innerContainerBackgroundColor && innerContainerBackgroundColor !== 'transparent') ? innerContainerBackgroundColor : '#ffffff';
   const bgColor = resolveValue(editContent.backgroundColor) || '#ffffff';
 
+  // ✅ Estados para gradiente - con valores por defecto
+  const [gradientColors, setGradientColors] = useState(['#667eea', '#764ba2']);
+  const [gradientAngle, setGradientAngle] = useState(45);
+
+  const angleOptions = [
+    { value: 0, label: '0° (derecha)' },
+    { value: 45, label: '45°' },
+    { value: 90, label: '90° (abajo)' },
+    { value: 135, label: '135°' },
+    { value: 180, label: '180° (izquierda)' },
+    { value: 225, label: '225°' },
+    { value: 270, label: '270° (arriba)' },
+    { value: 315, label: '315°' }
+  ];
+
+  // Sincronizar gradiente desde editContent
+  useEffect(() => {
+    if (editContent.backgroundType === 'gradient' && editContent.gradientColors) {
+      try {
+        const match = editContent.gradientColors.match(/#[0-9a-fA-F]{6}/g);
+        if (match && match.length >= 2) {
+          setGradientColors(match);
+        }
+        const angleMatch = editContent.gradientColors.match(/(\d+)deg/);
+        if (angleMatch && angleMatch[1]) {
+          setGradientAngle(parseInt(angleMatch[1]));
+        }
+      } catch (error) {
+        console.error('Error parsing gradient:', error);
+      }
+    }
+  }, [editContent.backgroundType]);
+
+  // Actualizar editContent cuando cambian colores o ángulo
+  useEffect(() => {
+    if (editContent.backgroundType === 'gradient') {
+      const validColors = gradientColors.filter(color =>
+        color && /^#[0-9a-fA-F]{6}$/.test(color)
+      );
+
+      if (validColors.length >= 2) {
+        const colorsString = validColors.join(', ');
+        const gradientString = `linear-gradient(${gradientAngle}deg, ${colorsString})`;
+
+        if (editContent.gradientColors !== gradientString) {
+          updateBannerConfig('gradientColors', gradientString);
+        }
+      }
+    }
+  }, [gradientColors, gradientAngle]);
+
   const handleBackgroundToggle = useCallback((checked) => {
     updateBannerConfig('innerContainerHasBackground', checked);
     if (!checked) {
@@ -75,73 +126,195 @@ const BannerEditDialog = ({
     }
   }, [updateBannerConfig, resolveValue, editContent.innerContainerBackgroundColor]);
 
+  // Funciones para manejar gradientes
+  const addColor = useCallback(() => {
+    if (gradientColors.length < 5) {
+      setGradientColors([...gradientColors, '#ffffff']);
+    }
+  }, [gradientColors]);
+
+  const removeColor = useCallback((index) => {
+    if (gradientColors.length > 2) {
+      const newColors = [...gradientColors];
+      newColors.splice(index, 1);
+      setGradientColors(newColors);
+    }
+  }, [gradientColors]);
+
+  const updateColor = useCallback((index, value) => {
+    const newColors = [...gradientColors];
+    newColors[index] = value;
+    setGradientColors(newColors);
+  }, [gradientColors]);
+
   return (
     <div className="space-y-4">
 
       <div>
-        <Label htmlFor="backgroundColor">Color de Fondo</Label>
-        <ColorPicker
-          value={bgColor}
-          onChange={(hex) => updateBannerConfig('backgroundColor', hex)}
-          showOpacity={false}
-        />
+        <Label htmlFor="backgroundType">Tipo de Fondo</Label>
+        <Select
+          value={editContent.backgroundType || 'color'}
+          onValueChange={(value) => updateBannerConfig('backgroundType', value)}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="color">Color Sólido</SelectItem>
+            <SelectItem value="image">Imagen</SelectItem>
+            <SelectItem value="gradient">Gradiente</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label>Imagen de Fondo</Label>
-
-        {editContent.backgroundImage ? (
-          <div className="relative border rounded-md overflow-hidden">
-            <img
-              src={editContent.backgroundImage}
-              alt="Fondo del banner"
-              className="w-full h-32 object-cover"
-            />
-            <div className="absolute top-2 right-2 flex gap-2">
-              <Button
-                variant="secondary"
-                size="icon"
-                className="w-8 h-8 bg-white/90 hover:bg-white"
-                onClick={() => setIsImageSelectorOpen(true)}
-              >
-                <ImageIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="destructive"
-                size="icon"
-                className="w-8 h-8"
-                onClick={handleClearBackgroundImage}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsImageSelectorOpen(true)}
-            >
-              <ImageIcon className="h-4 w-4 mr-2" />
-              Seleccionar imagen de fondo
-            </Button>
-          </div>
-        )}
-
-        <div className="mt-2">
-          <Label htmlFor="backgroundImageUrl" className="text-xs text-gray-500">
-            O ingresa una URL manualmente
-          </Label>
-          <Input
-            id="backgroundImageUrl"
-            value={editContent.backgroundImage || ''}
-            onChange={(e) => updateBannerConfig('backgroundImage', e.target.value)}
-            placeholder="https://ejemplo.com/imagen.jpg"
-            className="mt-1"
+      {editContent.backgroundType === 'color' && (
+        <div>
+          <Label htmlFor="backgroundColor">Color de Fondo</Label>
+          <ColorPicker
+            value={bgColor}
+            onChange={(hex) => updateBannerConfig('backgroundColor', hex)}
+            showOpacity={false}
           />
         </div>
-      </div>
+      )}
+
+      {editContent.backgroundType === 'image' && (
+        <div className="space-y-2">
+          <Label>Imagen de Fondo</Label>
+
+          {editContent.backgroundImage ? (
+            <div className="relative border rounded-md overflow-hidden">
+              <img
+                src={editContent.backgroundImage}
+                alt="Fondo del banner"
+                className="w-full h-32 object-cover"
+              />
+              <div className="absolute top-2 right-2 flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="w-8 h-8 bg-white/90 hover:bg-white"
+                  onClick={() => setIsImageSelectorOpen(true)}
+                >
+                  <ImageIcon className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="w-8 h-8"
+                  onClick={handleClearBackgroundImage}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsImageSelectorOpen(true)}
+              >
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Seleccionar imagen de fondo
+              </Button>
+            </div>
+          )}
+
+          <div className="mt-2">
+            <Label htmlFor="backgroundImageUrl" className="text-xs text-gray-500">
+              O ingresa una URL manualmente
+            </Label>
+            <span className="text-xs text-muted-foreground block mb-2">Solo URLs directas de imagen</span>
+            <Input
+              id="backgroundImageUrl"
+              value={editContent.backgroundImage || ''}
+              onChange={(e) => updateBannerConfig('backgroundImage', e.target.value)}
+              placeholder="https://ejemplo.com/imagen.jpg"
+              className="mt-1"
+            />
+          </div>
+        </div>
+      )}
+
+      {editContent.backgroundType === 'gradient' && (
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="gradientAngle">Dirección del Gradiente</Label>
+            <div className="grid grid-cols-4 gap-2 mt-2">
+              {angleOptions.map((angle) => (
+                <Button
+                  key={angle.value}
+                  type="button"
+                  variant={gradientAngle === angle.value ? "default" : "outline"}
+                  className="text-xs h-8 px-1"
+                  onClick={() => setGradientAngle(angle.value)}
+                >
+                  {angle.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <Label>Colores del Gradiente</Label>
+              <span className="text-xs text-gray-500">
+                {gradientColors.length}/5 colores
+              </span>
+            </div>
+
+            {gradientColors.map((color, index) => (
+              <div key={index} className="flex items-center gap-2 mb-2">
+                <div className="flex-1">
+                  <ColorPicker
+                    value={color}
+                    onChange={(hex) => updateColor(index, hex)}
+                    showOpacity={false}
+                  />
+                </div>
+
+                {gradientColors.length > 2 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeColor(index)}
+                    className="h-8 w-8"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                )}
+              </div>
+            ))}
+
+            {gradientColors.length < 5 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addColor}
+                className="w-full mt-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Agregar Color
+              </Button>
+            )}
+          </div>
+
+          <div className="mt-4">
+            <Label>Vista Previa</Label>
+            <div
+              className="h-20 w-full rounded-md border border-gray-300 mt-2"
+              style={{
+                background: gradientColors.length >= 2
+                  ? `linear-gradient(${gradientAngle}deg, ${gradientColors.join(', ')})`
+                  : 'linear-gradient(45deg, #667eea, #764ba2)'
+              }}
+            />
+          </div>
+        </div>
+      )}
       <Separator />
       <div className="grid grid-cols-1 gap-4">
         <div>
@@ -351,7 +524,7 @@ const BannerEditDialog = ({
       </div>
 
       <Separator className="my-4" />
-      
+
       <div className="flex items-center justify-between">
         <Label htmlFor="innerContainerShow">Mostrar Contenedor Interno</Label>
         <Switch
@@ -401,7 +574,7 @@ const BannerEditDialog = ({
         )}
       </div>
 
-      
+
 
       <div>
         <Label htmlFor="innerContainerBorderRadius">Border Radius</Label>

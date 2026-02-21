@@ -111,8 +111,10 @@ const BannerComponent = ({
         paddingRight: withUnit(paddingRight),
         paddingBottom: withUnit(paddingBottom),
         paddingLeft: withUnit(paddingLeft),
-        backgroundColor: backgroundImage || backgroundVideo ? 'transparent' : backgroundColor,
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+        backgroundColor: (bannerConfig.backgroundType === 'image' && backgroundImage) || bannerConfig.backgroundType === 'gradient' ? 'transparent' : backgroundColor,
+        backgroundImage: bannerConfig.backgroundType === 'image' && backgroundImage
+            ? `url(${backgroundImage})`
+            : (bannerConfig.backgroundType === 'gradient' ? (bannerConfig.gradientColors || 'none') : 'none'),
         backgroundSize,
         backgroundPosition,
         backgroundRepeat: 'no-repeat',
@@ -122,7 +124,7 @@ const BannerComponent = ({
         alignItems: getVerticalAlignment(),
         justifyContent: getHorizontalAlignment(),
     };
-// console.log(containerStyles)
+    // console.log(containerStyles)
     // Estilos para la capa de contenido interno
     const contentStyles = {
         display: 'flex',

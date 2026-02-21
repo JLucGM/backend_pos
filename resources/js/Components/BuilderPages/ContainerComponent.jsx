@@ -105,8 +105,10 @@ const ContainerComponent = ({
     marginBottom,
     marginLeft,
     // Fondo: si hay imagen, se muestra; si no, solo color
-    backgroundColor: backgroundImage ? 'transparent' : backgroundColor,
-    backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+    backgroundColor: (customStyles.backgroundType === 'image' && backgroundImage) || customStyles.backgroundType === 'gradient' ? 'transparent' : backgroundColor,
+    backgroundImage: customStyles.backgroundType === 'image' && backgroundImage
+      ? `url(${backgroundImage})`
+      : (customStyles.backgroundType === 'gradient' ? (customStyles.gradientColors || 'none') : 'none'),
     backgroundSize,
     backgroundPosition,
     backgroundRepeat: 'no-repeat',

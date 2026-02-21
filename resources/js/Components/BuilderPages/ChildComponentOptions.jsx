@@ -83,12 +83,12 @@ const ALL_COMPONENT_OPTIONS = [
         icon: <TextIcon className="size-4" />,
         description: 'Agregar un anuncio individual'
     },
-    {
-        type: 'container',
-        label: 'Contenedor',
-        icon: <LayersIcon className="size-4" />, // Puedes usar Layers de lucide-react o el que prefieras
-        description: 'Contenedor flexible para organizar elementos'
-    },
+    // {
+    //     type: 'container',
+    //     label: 'Contenedor',
+    //     icon: <LayersIcon className="size-4" />, // Puedes usar Layers de lucide-react o el que prefieras
+    //     description: 'Contenedor flexible para organizar elementos'
+    // },
 ];
 
 // Definir qué componentes pueden tener qué tipos de hijos
@@ -100,7 +100,7 @@ const ALLOWED_CHILD_TYPES = {
     product: ['text', 'heading', 'button', 'link', 'container'],
 
     // Carrusel: permite componentes básicos más container
-    carousel: ['text', 'heading', 'button', 'link', 'container'],
+    carousel: ['text', 'heading', 'button', 'container'],
 
     // Banner: permite componentes básicos incluyendo video y container
     banner: ['text', 'heading', 'button', 'link', 'image', 'marquee', 'container'],
