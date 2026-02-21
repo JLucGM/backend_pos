@@ -26,7 +26,8 @@ const HeaderComponent = ({
     availableMenus = [],
     companyLogo,
     canvasRect = null,
-    canvasScrollTop = 0
+    canvasScrollTop = 0,
+    products = []
 }) => {
     const { props } = usePage();
     const user = props.auth?.user;
@@ -40,7 +41,24 @@ const HeaderComponent = ({
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isMobile, setIsMobile] = useState(false);
     const headerRef = useRef(null);
+    const searchRef = useRef(null);
+
+    // Efecto para detectar móvil
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const resolveValue = (value) => {
+        return resolveStyleValue(value, themeWithDefaults, appliedTheme);
+    };
 
     // Determinar si estamos en modo de edición
     const isEditable = mode === 'builder' && !isPreview;
@@ -70,6 +88,33 @@ const HeaderComponent = ({
         return () => window.removeEventListener('scroll', handleScroll);
     }, [lastScrollY, mode, stickyType]);
 
+    // Cerrar buscador al hacer clic fuera
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setIsSearchOpen(false);
+                setSearchResults([]);
+            }
+        };
+
+        if (isSearchOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isSearchOpen]);
+
+    // Filtrar productos al escribir
+    useEffect(() => {
+        if (searchQuery.trim().length > 1 && products.length > 0) {
+            const filtered = products.filter(product =>
+                product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
+            ).slice(0, 8); // Limitar a 8 resultados
+            setSearchResults(filtered);
+        } else {
+            setSearchResults([]);
+        }
+    }, [searchQuery, products]);
+
     // ---------- RESOLUCIÓN DE ESTILOS ----------
     const resolveStyles = (styles) => {
         if (!styles) return {};
@@ -91,7 +136,7 @@ const HeaderComponent = ({
             height: withUnit(content?.height || headerStyles.height || '70px', content?.heightUnit || 'px'),
             display: headerStyles.display || 'flex',
             alignItems: headerStyles.alignItems || 'center',
-            borderBottom:  headerStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
+            borderBottom: headerStyles.borderBottom || themeHeaderStyles.borderBottom || '1px solid #e5e5e5',
             transition: 'transform 0.3s ease-in-out, opacity 0.3s ease-in-out',
         };
 
@@ -313,23 +358,109 @@ const HeaderComponent = ({
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: buttonsGap }}>
                 {showSearch && (
-                    <button
-                        style={getButtonStyles(searchConfigResolved)}
-                        title="Buscar"
-                        className="hover:opacity-80"
-                        onClick={() => {
-                            if (mode === 'frontend') {
-                                router.visit('/search');
-                            } else if (isPreview) {
-                                alert('Abrir buscador (simulación)');
-                            }
-                        }}
-                    >
-                        <Search
-                            size={16}
-                            style={{ color: searchConfigResolved.styles?.iconColor || themeWithDefaults.text }}
-                        />
-                    </button>
+                    <div className="relative" ref={searchRef}>
+                        <div className="flex items-center">
+                            {isSearchOpen && (
+                                <input
+                                    type="text"
+                                    placeholder="Buscar productos..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    autoFocus
+                                    className="mr-2 px-3 py-1 text-sm rounded-full border focus:outline-none transition-all duration-300"
+                                    style={{
+                                        width: isMobile ? '120px' : '200px',
+                                        backgroundColor: resolveValue(themeWithDefaults.input_background),
+                                        color: resolveValue(themeWithDefaults.text),
+                                        borderColor: resolveValue(themeWithDefaults.input_border),
+                                        fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+                                    }}
+                                />
+                            )}
+                            <button
+                                style={getButtonStyles(searchConfigResolved)}
+                                title="Buscar"
+                                className="hover:opacity-80"
+                                onClick={() => {
+                                    if (isSearchOpen && searchQuery.trim()) {
+                                        // Opcional: ir a página de búsqueda completa
+                                        // router.visit(`/search?q=${searchQuery}`);
+                                    } else {
+                                        setIsSearchOpen(!isSearchOpen);
+                                        if (!isSearchOpen) setSearchQuery('');
+                                    }
+                                }}
+                            >
+                                <Search
+                                    size={16}
+                                    style={{ color: searchConfigResolved.styles?.iconColor || themeWithDefaults.text }}
+                                />
+                            </button>
+                        </div>
+
+                        {/* Dropdown de resultados */}
+                        {isSearchOpen && searchResults.length > 0 && (
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    right: 0,
+                                    backgroundColor: resolveValue(themeWithDefaults.background),
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                    borderRadius: '8px',
+                                    minWidth: '280px',
+                                    zIndex: 2002,
+                                    marginTop: '10px',
+                                    border: `1px solid ${resolveValue(themeWithDefaults.borders)}`,
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {searchResults.map((product) => (
+                                    <Link
+                                        key={product.id}
+                                        href={`/detalles-del-producto?product=${product.slug}`}
+                                        className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors"
+                                        onClick={() => {
+                                            setIsSearchOpen(false);
+                                            setSearchQuery('');
+                                        }}
+                                        style={{
+                                            textDecoration: 'none',
+                                            borderBottom: `1px solid ${resolveValue(themeWithDefaults.borders)}`
+                                        }}
+                                    >
+                                        {product.media?.[0] ? (
+                                            <img
+                                                src={product.media[0].original_url}
+                                                alt={product.product_name}
+                                                className="w-10 h-10 object-cover rounded"
+                                            />
+                                        ) : (
+                                            <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
+                                                <Search size={14} className="text-gray-400" />
+                                            </div>
+                                        )}
+                                        <div className="flex flex-col">
+                                            <span style={{
+                                                fontSize: '14px',
+                                                fontWeight: '500',
+                                                color: resolveValue(themeWithDefaults.text)
+                                            }}>
+                                                {product.product_name}
+                                            </span>
+                                            <span style={{
+                                                fontSize: '12px',
+                                                color: resolveValue(themeWithDefaults.text),
+                                                opacity: 0.7
+                                            }}>
+                                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(product.product_price)}
+                                            </span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 )}
 
                 <Link
@@ -585,7 +716,7 @@ const HeaderComponent = ({
             </>
         );
     }
-// console.log(containerStyles)
+    // console.log(containerStyles)
     return (
         <header
             ref={headerRef}
