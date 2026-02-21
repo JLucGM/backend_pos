@@ -31,6 +31,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\InventoryTransferController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -41,6 +42,10 @@ Route::domain('{subdomain}.' . $baseDomain)->middleware(['company'])->group(func
     // dd($host = request()->getHost());
     // ========== RUTAS PÚBLICAS DEL FRONTEND ==========
     // Página principal y páginas dinámicas
+    Route::get('/{page_path}/{collection_slug}', [FrontendController::class, 'showWithCollection'])
+        ->where('page_path', '[a-zA-Z0-9\-_]+')
+        ->where('collection_slug', '[a-zA-Z0-9\-_]+')
+        ->name('subdomain.page.collection');
     Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('subdomain.page');
 
     // Detalles de producto
@@ -111,6 +116,10 @@ Route::group([
 
     // ========== RUTAS PÚBLICAS DEL FRONTEND ==========
     // Página principal y páginas dinámicas
+    Route::get('/{page_path}/{collection_slug}', [FrontendController::class, 'showWithCollection'])
+        ->where('page_path', '[a-zA-Z0-9\-_]+')
+        ->where('collection_slug', '[a-zA-Z0-9\-_]+')
+        ->name('custom.page.collection');
     Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('custom.page');
 
     // Detalles de producto
@@ -260,6 +269,15 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::delete('/dashboard/products/{product}/images/{imageId}', [ProductController::class, 'destroyImage'])->name('products.images.destroy');
     Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->middleware('subscription:products.create')->name('products.duplicate');
+
+    // Collections
+    Route::get('collections', [CollectionController::class, 'index'])->name('collections.index');
+    Route::get('collections/create', [CollectionController::class, 'create'])->name('collections.create');
+    Route::post('collections', [CollectionController::class, 'store'])->name('collections.store');
+    Route::post('collections/preview-smart', [CollectionController::class, 'previewSmart'])->name('collections.previewSmart');
+    Route::get('collections/{collection}/edit', [CollectionController::class, 'edit'])->name('collections.edit');
+    Route::post('collections/{collection}', [CollectionController::class, 'update'])->name('collections.update');
+    Route::delete('collections/{collection}', [CollectionController::class, 'destroy'])->name('collections.destroy');
 
     Route::get('stocks', [StockController::class, 'index'])->name('stocks.index');
     Route::get('stocks/create', [StockController::class, 'create'])->name('stocks.create');

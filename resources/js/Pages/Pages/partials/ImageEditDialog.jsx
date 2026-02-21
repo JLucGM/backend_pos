@@ -21,6 +21,7 @@ const ImageEditDialog = ({
   isLiveEdit = true,
   dynamicPages = [],
   allImages = [],
+  collections = [],
   page,
   themeSettings,
   appliedTheme,
@@ -29,6 +30,7 @@ const ImageEditDialog = ({
   const [linkType, setLinkType] = useState('none');
   const [selectedPage, setSelectedPage] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
+  const [selectedCollection, setSelectedCollection] = useState('');
   const [customUrl, setCustomUrl] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -59,6 +61,40 @@ const ImageEditDialog = ({
         if (foundPage) {
           setLinkType('page');
           setSelectedPage(foundPage.slug);
+        } else if (currentUrl.startsWith('/tienda/producto/')) {
+          const productSlug = currentUrl.split('/').pop();
+          const foundProduct = products.find(p => p.slug === productSlug);
+          if (foundProduct) {
+            setLinkType('product');
+            setSelectedProduct(foundProduct.slug);
+          } else {
+            setLinkType('custom');
+            setCustomUrl(currentUrl);
+          }
+        } else if (currentUrl.startsWith('/tienda/')) {
+          const collectionSlug = currentUrl.split('/').pop();
+          const foundCollection = collections.find(c => c.slug === collectionSlug);
+          if (foundCollection) {
+            setLinkType('collection');
+            setSelectedCollection(foundCollection.slug);
+          } else {
+            // Fallback check for product query param
+            const productMatch = currentUrl.match(/\/detalles-del-producto\?product=(.+)/);
+            if (productMatch) {
+              const productSlug = productMatch[1];
+              const foundProduct = products.find(p => p.slug === productSlug);
+              if (foundProduct) {
+                setLinkType('product');
+                setSelectedProduct(foundProduct.slug);
+              } else {
+                setLinkType('custom');
+                setCustomUrl(currentUrl);
+              }
+            } else {
+              setLinkType('custom');
+              setCustomUrl(currentUrl);
+            }
+          }
         } else {
           const productMatch = currentUrl.match(/\/detalles-del-producto\?product=(.+)/);
           if (productMatch) {
@@ -104,6 +140,11 @@ const ImageEditDialog = ({
           newUrl = `/detalles-del-producto?product=${selectedProduct}`;
         }
         break;
+      case 'collection':
+        if (selectedCollection) {
+          newUrl = `/tienda/${selectedCollection}`;
+        }
+        break;
       case 'custom':
         newUrl = customUrl;
         break;
@@ -116,7 +157,7 @@ const ImageEditDialog = ({
     if (newUrl !== currentUrl) {
       setEditStyles(prev => ({ ...prev, imageUrl: newUrl }));
     }
-  }, [linkType, selectedPage, selectedProduct, customUrl, isInitialized, editStyles?.imageUrl, setEditStyles]);
+  }, [linkType, selectedPage, selectedProduct, selectedCollection, customUrl, isInitialized, editStyles?.imageUrl, setEditStyles]);
 
   // Memoizar contenido normalizado
   const normalizedContent = useMemo(() => {
@@ -176,7 +217,7 @@ const ImageEditDialog = ({
 
   return (
     <div className="space-y-4">
-      
+
       {/* SECCIÓN DE IMAGEN */}
       <div className="space-y-2">
         <Label>Imagen</Label>
@@ -264,6 +305,7 @@ const ImageEditDialog = ({
             <SelectItem value="none">Sin enlace (solo imagen)</SelectItem>
             <SelectItem value="page">Página Dinámica</SelectItem>
             <SelectItem value="product">Página de Producto</SelectItem>
+            <SelectItem value="collection">Colección</SelectItem>
             <SelectItem value="custom">URL Personalizada</SelectItem>
           </SelectContent>
         </Select>
@@ -315,7 +357,7 @@ const ImageEditDialog = ({
               {products.length > 0 ? (
                 products.map((product) => (
                   <SelectItem key={product.slug} value={product.slug}>
-                    {product.product_name}
+                    {product.product_name || product.name || product.slug}
                   </SelectItem>
                 ))
               ) : (
@@ -327,6 +369,37 @@ const ImageEditDialog = ({
           </Select>
           <p className="text-xs text-gray-500 mt-1">
             URL: /detalles-del-producto?product={selectedProduct || '[selecciona un producto]'}
+          </p>
+        </div>
+      )}
+
+      {/* Selector de Colección */}
+      {linkType === 'collection' && (
+        <div>
+          <Label htmlFor="collection">Seleccionar Colección</Label>
+          <Select
+            value={selectedCollection}
+            onValueChange={setSelectedCollection}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona una colección" />
+            </SelectTrigger>
+            <SelectContent>
+              {collections.length > 0 ? (
+                collections.map((collection) => (
+                  <SelectItem key={collection.slug} value={collection.slug}>
+                    {collection.title}
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="p-2 text-sm text-gray-500">
+                  No hay colecciones disponibles
+                </div>
+              )}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-gray-500 mt-1">
+            URL: /tienda/{selectedCollection || '[selecciona una colección]'}
           </p>
         </div>
       )}

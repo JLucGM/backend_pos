@@ -7,7 +7,7 @@ import Loader from '@/Components/ui/loader';
 import MenusForm from './MenusForm';
 import { toast } from 'sonner';
 
-export default function Create({ dynamicPages, role }) {
+export default function Create({ dynamicPages, products, collections, role }) {
     const initialValues = {
         name: "",
         items: [], // <--- ¡AQUÍ ESTÁ LA CLAVE!
@@ -55,6 +55,8 @@ export default function Create({ dynamicPages, role }) {
                             errors={errors}
                             // role={role}
                             dynamicPages={dynamicPages}
+                            products={products}
+                            collections={collections}
                         />
 
                         <div className="flex justify-end p-2.5">

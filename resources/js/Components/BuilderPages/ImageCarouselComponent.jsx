@@ -13,6 +13,8 @@ const ImageCarouselComponent = ({
     themeSettings,
     appliedTheme,
     mode = 'builder',
+    products = [],
+    collections = [],
 }) => {
     const rawContent = comp.content || {};
     const rawStyles = comp.styles || {};
@@ -31,7 +33,32 @@ const ImageCarouselComponent = ({
         containerStyles[key] = resolveValue(rawStyles[key]);
     });
 
-    const images = rawContent.images || [];
+    const getCarouselImages = useCallback(() => {
+        const sourceType = rawContent.sourceType || 'manual';
+
+        if (sourceType === 'collection' && rawContent.collectionId) {
+            if (!products || products.length === 0) return [];
+
+            const collectionProducts = products.filter(product =>
+                product.collections?.some(c => c.id.toString() === rawContent.collectionId.toString())
+            );
+
+            return collectionProducts.map(product => {
+                const mediaUrl = product.media?.[0]?.original_url;
+                return {
+                    id: product.id,
+                    src: mediaUrl || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png',
+                    title: product.product_name || product.name,
+                    text: product.product_price ? `$${parseFloat(product.product_price).toFixed(2)}` : '',
+                    link: `/detalles-del-producto?product=${product.slug || product.id}`
+                };
+            });
+        }
+
+        return rawContent.images || [];
+    }, [rawContent, products]);
+
+    const images = getCarouselImages();
     const slidesToShow = rawContent.slidesToShow || 3;
     const autoplay = rawContent.autoplay || false;
     const autoplaySpeed = rawContent.autoplaySpeed || 3000;
@@ -147,6 +174,7 @@ const ImageCarouselComponent = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        cursor: mode === 'frontend' ? 'pointer' : 'default',
     };
 
     // Calcular el ancho de un slide + gap para el desplazamiento
@@ -258,6 +286,11 @@ const ImageCarouselComponent = ({
                                             backgroundColor: 'transparent',
                                         }}
                                         className="card overlay-card"
+                                        onClick={() => {
+                                            if (mode === 'frontend' && image.link) {
+                                                window.location.href = image.link;
+                                            }
+                                        }}
                                     >
                                         <div
                                             className="relative w-full overflow-hidden"
@@ -280,7 +313,15 @@ const ImageCarouselComponent = ({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div style={cardStyles} className="card">
+                                    <div
+                                        style={cardStyles}
+                                        className="card"
+                                        onClick={() => {
+                                            if (mode === 'frontend' && image.link) {
+                                                window.location.href = image.link;
+                                            }
+                                        }}
+                                    >
                                         <div
                                             className="relative w-full overflow-hidden rounded-lg"
                                             style={{ paddingBottom: getAspectRatioPadding() }}

@@ -174,6 +174,7 @@ const EditDialogRenderer = ({
     dynamicPages,
     allImages,
     page,
+    collections,
 }) => {
     if (!editingComponent?.type) return null;
 
@@ -211,14 +212,19 @@ const EditDialogRenderer = ({
         additionalProps.page = page;
     }
 
+    additionalProps.page = page;
+    additionalProps.collections = collections;
+
     if (editingComponent.type === 'banner') {
         additionalProps.allImages = allImages;
         additionalProps.page = page;
+        additionalProps.collections = collections;
     }
 
     if (editingComponent.type === 'linkBio') {
         additionalProps.allImages = allImages;
         additionalProps.page = page;
+        additionalProps.collections = collections;
     }
 
     if (editingComponent.type === 'button') {
@@ -234,7 +240,7 @@ const EditDialogRenderer = ({
     return <DialogComponent {...baseProps} {...additionalProps} />;
 };
 
-export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo, dynamicPages, countries, states, cities, allImages }) {
+export default function Builder({ page, products, availableTemplates, themes, pageThemeSettings, availableMenus, companyLogo, dynamicPages, countries, states, cities, allImages, collections }) {
     const [components, setComponents] = useState([]);
     const toolbarRef = useRef(null);
     const [contentHeight, setContentHeight] = useState('calc(100vh - 64px)');
@@ -2981,6 +2987,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             countries={countries}
                             states={states}
                             cities={cities}
+                            collections={collections}
                         />
                     </div>
                 </ScrollArea>
@@ -3153,6 +3160,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                                 dynamicPages={dynamicPages}
                                                 allImages={allImages}
                                                 page={page}
+                                                collections={collections}
                                             />
                                         </div>
                                     </ScrollArea>
@@ -3225,6 +3233,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                                 countries={countries}
                                 states={states}
                                 cities={cities}
+                                collections={collections}
                             />
                         </div>
                     </div>

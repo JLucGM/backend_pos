@@ -30,13 +30,13 @@ const ALL_COMPONENTS = [
     icon: <PanelBottom className="h-4 w-4" />,
     description: 'Pie de página'
   },
-  {
-    type: 'container',
-    label: 'Contenedor',
-    category: 'structure',
-    icon: <Layers className="h-4 w-4" />,
-    description: 'Contenedor para organizar elementos'
-  },
+  // {
+  //   type: 'container',
+  //   label: 'Contenedor',
+  //   category: 'structure',
+  //   icon: <Layers className="h-4 w-4" />,
+  //   description: 'Contenedor para organizar elementos'
+  // },
   {
     type: 'divider',
     label: 'Divider (Línea)',
@@ -219,14 +219,14 @@ const ALL_COMPONENTS = [
     category: 'content',
     icon: <ImageIcon className="h-4 w-4" />,
     description: 'Carrusel con imágenes, título y texto'
-},
-{
+  },
+  {
     type: 'imageCarouselAccordion',
     label: 'Carrusel Acordeón',
     category: 'content',
     icon: <ImageIcon className="h-4 w-4" />,
     description: 'Carrusel tipo acordeón con imágenes y textos'
-},
+  },
 ];
 
 // Categorías para agrupar

@@ -193,7 +193,21 @@ const CarouselComponent = ({
         }
     };
 
-    const productsToShow = products ? products.slice(0, limit) : [];
+    // Filtrar productos según la configuración
+    const getFilteredProducts = () => {
+        if (!products) return [];
+
+        if (config.sourceType === 'collection' && config.collectionId) {
+            return products.filter(product =>
+                product.collections?.some(c => c.id.toString() === config.collectionId.toString())
+            );
+        }
+
+        return products;
+    };
+
+    const displayProducts = getFilteredProducts();
+    const productsToShow = displayProducts.slice(0, limit);
 
     // Navegación del carrusel
     const nextSlide = () => {

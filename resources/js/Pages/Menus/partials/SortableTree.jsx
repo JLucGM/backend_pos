@@ -25,12 +25,12 @@ const generateTempId = () => `temp-${Date.now()}-${Math.random().toString(36).su
 export function buildTree(items) {
     const tree = [];
     const childrenOf = {};
-    
-    const clonedItems = items.map(item => ({ 
-        ...item, 
+
+    const clonedItems = items.map(item => ({
+        ...item,
         id: (item.id !== null && item.id !== undefined) ? item.id : generateTempId(),
-        children: [], 
-        depth: 0, 
+        children: [],
+        depth: 0,
         parent_id: item.parent_id
     }));
 
@@ -75,7 +75,7 @@ export function flattenTree(tree, parent_id = null, flattened = []) {
     return flattened;
 }
 
-const INDENTATION_WIDTH = 40; 
+const INDENTATION_WIDTH = 40;
 
 // 🌳 FUNCIÓN CLAVE: Proyección para el anidamiento (calcula el nuevo parent_id y profundidad)
 function getProjection(items, activeId, overId, dragOffset, indentationWidth) {
@@ -107,22 +107,22 @@ function getProjection(items, activeId, overId, dragOffset, indentationWidth) {
             .find((item) => item.depth === depth - 1);
         parentId = previousItemAtDepth ? previousItemAtDepth.id : null;
     }
-    
-    return { depth, maxDepth, minDepth, parentId }; 
+
+    return { depth, maxDepth, minDepth, parentId };
 }
 
 // --- COMPONENTE PRINCIPAL ---
 
-export default function SortableTree({ treeItems, onTreeChange, errors, dynamicPages }) {
+export default function SortableTree({ treeItems, onTreeChange, errors, dynamicPages, products, collections }) {
     const [activeId, setActiveId] = useState(null);
     const [offsetLeft, setOffsetLeft] = useState(0);
-    
+
     // Aplanamos el árbol para que el SortableContext funcione linealmente
     const flattenedItems = useMemo(() => flattenTree(treeItems), [treeItems]);
     const sortedIds = useMemo(() => flattenedItems.map(({ id }) => id), [flattenedItems]);
 
     const sensors = useSensors(
-        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), 
+        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
         useSensor(KeyboardSensor)
     );
 
@@ -144,7 +144,7 @@ export default function SortableTree({ treeItems, onTreeChange, errors, dynamicP
         setActiveId(null);
 
         if (!over) return;
-        
+
         const overId = over.id;
         const activeId = active.id;
 
@@ -159,12 +159,12 @@ export default function SortableTree({ treeItems, onTreeChange, errors, dynamicP
         if (projection) {
             // Actualiza el parent_id y depth del ítem arrastrado
             const newFlattened = flattenTree(treeItems).map(item => {
-                 if (item.id === activeId) {
-                     return { ...item, parent_id: projection.parentId, depth: projection.depth };
-                 }
-                 return item;
+                if (item.id === activeId) {
+                    return { ...item, parent_id: projection.parentId, depth: projection.depth };
+                }
+                return item;
             });
-            
+
             // Reordenamos el array plano (cambio vertical)
             const oldIndex = newFlattened.findIndex(i => i.id === activeId);
             const newIndex = newFlattened.findIndex(i => i.id === overId);
@@ -176,28 +176,32 @@ export default function SortableTree({ treeItems, onTreeChange, errors, dynamicP
     };
 
     // Actualizar campos
-    const updateItem = (id, field, value) => {
-        const newFlattened = flattenTree(treeItems).map(item => 
-            item.id === id ? { ...item, [field]: value } : item
+    const updateItem = (id, fieldOrChanges, value) => {
+        const changes = typeof fieldOrChanges === 'string'
+            ? { [fieldOrChanges]: value }
+            : fieldOrChanges;
+
+        const newFlattened = flattenTree(treeItems).map(item =>
+            item.id === id ? { ...item, ...changes } : item
         );
         onTreeChange(buildTree(newFlattened));
     };
 
     // Eliminar ítem y todos sus hijos recursivamente
     const removeItem = (id) => {
-         const deleteIds = [id];
-         const collectChildren = (parentId) => {
-             flattenedItems.forEach(item => {
-                 if (item.parent_id === parentId) {
-                     deleteIds.push(item.id);
-                     collectChildren(item.id);
-                 }
-             });
-         };
-         collectChildren(id);
+        const deleteIds = [id];
+        const collectChildren = (parentId) => {
+            flattenedItems.forEach(item => {
+                if (item.parent_id === parentId) {
+                    deleteIds.push(item.id);
+                    collectChildren(item.id);
+                }
+            });
+        };
+        collectChildren(id);
 
-         const newFlattened = flattenedItems.filter(item => !deleteIds.includes(item.id));
-         onTreeChange(buildTree(newFlattened));
+        const newFlattened = flattenedItems.filter(item => !deleteIds.includes(item.id));
+        onTreeChange(buildTree(newFlattened));
     };
 
     return (
@@ -222,6 +226,8 @@ export default function SortableTree({ treeItems, onTreeChange, errors, dynamicP
                             onRemove={removeItem}
                             itemErrors={errors[`items.${item.id}.title`] || errors[`items.${item.id}.url`]}
                             dynamicPages={dynamicPages}
+                            products={products}
+                            collections={collections}
                         />
                     ))}
                 </div>
@@ -235,8 +241,11 @@ export default function SortableTree({ treeItems, onTreeChange, errors, dynamicP
                         depth={activeItem.depth + Math.round(offsetLeft / INDENTATION_WIDTH)}
                         indentationWidth={INDENTATION_WIDTH}
                         isOverlay
-                        onUpdate={() => {}}
-                        onRemove={() => {}}
+                        onUpdate={() => { }}
+                        onRemove={() => { }}
+                        dynamicPages={dynamicPages}
+                        products={products}
+                        collections={collections}
                     />
                 ) : null}
             </DragOverlay>

@@ -13,6 +13,186 @@ use Inertia\Inertia;
 
 class FrontendController extends Controller
 {
+    public function showWithCollection(Request $request)
+    {
+        $page_path = $request->route('page_path');
+        $collection_slug = $request->route('collection_slug');
+        
+        // dd($request->all(), $page_path, $collection_slug); // Debug line removed
+
+        $company = $request->attributes->get('company');
+        \Illuminate\Support\Facades\Log::info("showWithCollection: path={$page_path}, collection={$collection_slug}, company_id={$company->id}");
+
+        // 1. Obtener la página (por ejemplo, "tienda")
+        $query = $company->pages()->withoutGlobalScope(CompanyScope::class);
+        $page = $query->where('slug', $page_path)->first();
+        
+        if (!$page) {
+            \Illuminate\Support\Facades\Log::error("Page not found: {$page_path}");
+            abort(404, 'Page not found');
+        }
+
+        // 2. Obtener la colección
+        $collection = \App\Models\Collection::where('company_id', $company->id)
+            ->where('slug', $collection_slug)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$collection) {
+            \Illuminate\Support\Facades\Log::error("Collection not found or inactive: {$collection_slug} for company {$company->id}");
+            // Intentar buscar sin is_active para ver si es eso
+            $inactive = \App\Models\Collection::where('company_id', $company->id)
+                ->where('slug', $collection_slug)->first();
+            if ($inactive) {
+                \Illuminate\Support\Facades\Log::error("Collection exists but inactive or different company");
+            }
+            abort(404, 'Collection not found');
+        }
+
+        // 3. Preparar datos comunes (igual que en show)
+        $setting = Setting::with('currency')->where('company_id', $company->id)->first();
+        $themeSettings = $page->theme_settings ?? $company->theme_settings ?? [];
+        
+        // Logos/Favicons
+        $logoUrl = $company->setting && $company->setting->getFirstMedia('logo') 
+            ? $company->setting->getFirstMedia('logo')->getUrl() 
+            : null;
+        $faviconUrl = $company->setting && $company->setting->getFirstMedia('favicon') 
+            ? $company->setting->getFirstMedia('favicon')->getUrl() 
+            : null;
+
+        // Menús
+        $availableMenus = $company->menus()->with(['items' => function ($query) {
+            $query->whereNull('parent_id')->orderBy('order')->with(['children' => function ($q) {
+                $q->orderBy('order')->with(['children' => function ($subQ) {
+                    $subQ->orderBy('order');
+                }]);
+            }]);
+        }])->get()->toArray();
+
+        // Tienda principal
+        $mainStore = Store::where('company_id', $company->id)
+            ->where('is_ecommerce_active', true)
+            ->first();
+        if (!$mainStore) {
+            $mainStore = Store::where('company_id', $company->id)->first();
+        }
+
+        // 4. Obtener productos de la colección con todas las relaciones y filtros
+        // Recuperamos la query base según el tipo de colección
+        if ($collection->type === 'manual') {
+            // Relación manual (respetando orden si es necesario, aunque aquí usaremos el estándar)
+            $productsQuery = $collection->products(); // BelongsToMany
+        } else {
+            // Colección inteligente: construir query
+            $productsQuery = \App\Models\Collection::buildSmartQuery($collection->conditions ?? [], $collection->conditions_match);
+            // Asegurar que sean de la misma compañía (buildSmartQuery inicia desde Product::...)
+            $productsQuery->where('company_id', $company->id);
+        }
+
+        // Aplicar los mismos eager loads y filtros de stock que en 'show'
+        $products = $productsQuery
+            ->where('is_active', true)
+            ->with([
+                'categories',
+                'media',
+                'taxes',
+                'discounts',
+                'collections',
+                'stocks' => function ($query) use ($mainStore) {
+                    if ($mainStore) {
+                        $query->where('store_id', $mainStore->id);
+                    }
+                },
+                'combinations.combinationAttributeValue.attributeValue.attribute',
+                'combinations.stocks' => function ($query) use ($mainStore) {
+                    if ($mainStore) {
+                        $query->where('store_id', $mainStore->id);
+                    }
+                }
+            ])
+            ->get();
+
+        // Datos del usuario y layout (copiado de show)
+        $countries = \App\Models\Country::all();
+        $states = \App\Models\State::all();
+        $cities = \App\Models\City::all();
+        $userData = $this->getUserData();
+        $checkoutData = $this->getCheckoutData($company, $mainStore);
+        
+        // No hay "producto actual" en una vista de colección, salvo que queramos detalle (pero la ruta es distinta)
+        $productData = [
+            'currentProduct' => null,
+            'isProductDetailPage' => false,
+        ];
+
+        // Inyectar Header/Footer globales
+        $globalHeader = \App\Models\GlobalComponent::where('company_id', $company->id)->where('type', 'header')->where('is_active', true)->first();
+        $globalFooter = \App\Models\GlobalComponent::where('company_id', $company->id)->where('type', 'footer')->where('is_active', true)->first();
+
+        $layout = $page->layout ? (is_string($page->layout) ? json_decode($page->layout, true) : $page->layout) : [];
+        $layout = is_array($layout) ? $layout : [];
+        
+        if ($globalHeader) {
+            $headerIndex = -1;
+            foreach ($layout as $index => $component) {
+                if (isset($component['type']) && $component['type'] === 'header') {
+                    $headerIndex = $index;
+                    break;
+                }
+            }
+            if ($headerIndex !== -1) {
+                $layout[$headerIndex] = $globalHeader->content;
+            } else {
+                array_unshift($layout, $globalHeader->content);
+            }
+        }
+        if ($globalFooter) {
+            $footerIndex = -1;
+            foreach ($layout as $index => $component) {
+                if (isset($component['type']) && $component['type'] === 'footer') {
+                    $footerIndex = $index;
+                    break;
+                }
+            }
+            if ($footerIndex !== -1) {
+                $layout[$footerIndex] = $globalFooter->content;
+            } else {
+                $layout[] = $globalFooter->content;
+            }
+        }
+        $page->layout = $layout;
+
+        return Inertia::render('Frontend/Index', array_merge(
+            [
+                'page' => $page,
+                'themeSettings' => $themeSettings,
+                'availableMenus' => $availableMenus,
+                'products' => $products, // Productos FILTRADOS por colección
+                'companyId' => $company->id,
+                'companyLogo' => $logoUrl,
+                'companyFavicon' => $faviconUrl,
+                'settings' => $setting,
+                'countries' => $countries,
+                'states' => $states,
+                'cities' => $cities,
+                'currentCollection' => $collection, // Pasamos la colección por si el frontend quiere usarla (título, desc)
+                'mainStore' => $mainStore ? [
+                    'id' => $mainStore->id,
+                    'store_name' => $mainStore->store_name,
+                    'is_ecommerce_active' => $mainStore->is_ecommerce_active,
+                    'address' => $mainStore->address,
+                    'phone' => $mainStore->phone,
+                    'email' => $mainStore->email,
+                ] : null,
+                'collections' => $company->collections()->where('is_active', true)->get(),
+            ],
+            $userData,
+            $checkoutData,
+            $productData
+        ));
+    }
+
     public function show(Request $request)
     {
         $company = $request->attributes->get('company');
@@ -75,6 +255,7 @@ class FrontendController extends Controller
             'media',
             'taxes',
             'discounts',
+            'collections',
             'stocks' => function ($query) use ($mainStore) {
                 if ($mainStore) {
                     $query->where('store_id', $mainStore->id);
@@ -290,6 +471,7 @@ class FrontendController extends Controller
                     'phone' => $mainStore->phone,
                     'email' => $mainStore->email,
                 ] : null,
+                'collections' => $company->collections()->where('is_active', true)->get(),
             ],
             $userData,
             $checkoutData,

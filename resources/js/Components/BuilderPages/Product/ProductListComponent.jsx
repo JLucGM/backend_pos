@@ -96,9 +96,22 @@ const ProductListComponent = ({
     const [maxPrice, setMaxPrice] = useState('');
     const [sortOption, setSortOption] = useState('');
 
-    // Filtrado y ordenamiento
+    // Filtrado inicial por fuente (Colección vs Todos)
+    const sourceProducts = useMemo(() => {
+        if (!products) return [];
+
+        if (listConfig.sourceType === 'collection' && listConfig.collectionId) {
+            return products.filter(product =>
+                product.collections?.some(c => c.id.toString() === listConfig.collectionId.toString())
+            );
+        }
+
+        return products;
+    }, [products, listConfig.sourceType, listConfig.collectionId]);
+
+    // Filtrado y ordenamiento (Frontend)
     const filteredAndSorted = useMemo(() => {
-        let list = [...products];
+        let list = [...sourceProducts];
         const getName = (p) => (p?.product_name || p?.name || p?.title || '').toString();
         const getPriceVal = (p) => {
             const v = p?.product_price ?? p?.price ?? p?.product_price_discount ?? 0;
@@ -135,7 +148,7 @@ const ProductListComponent = ({
                 break;
         }
         return list;
-    }, [products, minPrice, maxPrice, sortOption]);
+    }, [sourceProducts, minPrice, maxPrice, sortOption]);
 
     const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / limit));
     const currentItems = filteredAndSorted.slice((currentPage - 1) * limit, currentPage * limit);
@@ -292,7 +305,7 @@ const ProductListComponent = ({
 
             {cardComponent && (
                 <div style={gridStyles}>
-                    {products.slice(0, limit).map((product, index) => (
+                    {sourceProducts.slice(0, limit).map((product, index) => (
                         <ComponentWithHover
                             key={product?.id || index}
                             component={cardComponent}
@@ -332,7 +345,7 @@ const ProductListComponent = ({
                     <PaginationComponent
                         comp={paginationComponent}
                         currentPage={1}
-                        totalPages={Math.max(1, Math.ceil(products.length / limit))}
+                        totalPages={Math.max(1, Math.ceil(sourceProducts.length / limit))}
                         onChange={() => { }}
                         themeSettings={themeSettings}
                         appliedTheme={appliedTheme}

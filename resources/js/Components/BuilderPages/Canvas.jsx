@@ -17,9 +17,11 @@ const Canvas = memo(({
     pageContent,
     availableMenus,
     companyLogo,
+
     countries = [],
     states = [],
-    cities = []
+    cities = [],
+    collections = []
 }) => {
     const canvasRef = useRef(null);
     const [canvasRect, setCanvasRect] = useState(null);
@@ -73,9 +75,10 @@ const Canvas = memo(({
                 cities={cities}
                 canvasRect={canvasRect}
                 canvasScrollTop={scrollTop}
+                collections={collections}
             />
         ));
-    }, [components, themeSettings, appliedTheme, isPreview, products, hoveredComponentId, pageContent, availableMenus, companyLogo, countries, states, cities, canvasRect, scrollTop]);
+    }, [components, themeSettings, appliedTheme, isPreview, products, hoveredComponentId, pageContent, availableMenus, companyLogo, countries, states, cities, collections, canvasRect, scrollTop]);
 
 
     return (

@@ -98,4 +98,9 @@ class Product extends Model implements HasMedia
             ->withPivot('combination_id')
             ->withTimestamps();
     }
+
+    public function collections()
+    {
+        return $this->belongsToMany(Collection::class, 'collection_products');
+    }
 }

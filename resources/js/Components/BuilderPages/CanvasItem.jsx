@@ -77,23 +77,24 @@ const CanvasItem = ({
     countries = [],
     states = [],
     cities = [],
+    collections = [],
     canvasRect = null,
     canvasScrollTop = 0,
 }) => {
     const getStyles = (comp) => {
-    // Obtén el tema combinado (personalizaciones + tema base)
-    const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-    
-    // Combina estilos del componente con estilos base (si los hay)
-    const baseStyles = comp.styles || {};
-    const resolvedStyles = {};
-    
-    Object.keys(baseStyles).forEach(key => {
-        resolvedStyles[key] = resolveStyleValue(baseStyles[key], themeWithDefaults, appliedTheme);
-    });
-    
-    return resolvedStyles;
-};
+        // Obtén el tema combinado (personalizaciones + tema base)
+        const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+        // Combina estilos del componente con estilos base (si los hay)
+        const baseStyles = comp.styles || {};
+        const resolvedStyles = {};
+
+        Object.keys(baseStyles).forEach(key => {
+            resolvedStyles[key] = resolveStyleValue(baseStyles[key], themeWithDefaults, appliedTheme);
+        });
+
+        return resolvedStyles;
+    };
 
     const isHovered = hoveredComponentId === comp.id;
 
@@ -130,6 +131,7 @@ const CanvasItem = ({
             themeSettings: themeSettings,
             appliedTheme,
             companyLogo,
+            collections,
         };
 
         switch (comp.type) {
@@ -924,7 +926,7 @@ const CanvasItem = ({
                         hoveredComponentId={hoveredComponentId}
                         setHoveredComponentId={setHoveredComponentId}
                         mode={isPreview ? 'frontend' : 'builder'}
-                        
+
                     />
                 );
             case 'announcement':
@@ -952,29 +954,31 @@ const CanvasItem = ({
                         setHoveredComponentId={setHoveredComponentId}
                     />
                 );
-                case 'imageCarousel':
-    return (
-        <ImageCarouselComponent
-            {...commonProps}
-            onEdit={() => onEditComponent(comp)}
-            onDelete={() => onDeleteComponent(comp.id)}
-            setComponents={setComponents}
-            hoveredComponentId={hoveredComponentId}
-            setHoveredComponentId={setHoveredComponentId}
-        />
-    );
+            case 'imageCarousel':
+                return (
+                    <ImageCarouselComponent
+                        {...commonProps}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                        products={products}
+                    />
+                );
 
-    case 'imageCarouselAccordion':
-    return (
-        <ImageCarouselAccordionComponent
-            {...commonProps}
-            onEdit={() => onEditComponent(comp)}
-            onDelete={() => onDeleteComponent(comp.id)}
-            setComponents={setComponents}
-            hoveredComponentId={hoveredComponentId}
-            setHoveredComponentId={setHoveredComponentId}
-        />
-    );
+            case 'imageCarouselAccordion':
+                return (
+                    <ImageCarouselAccordionComponent
+                        {...commonProps}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                        products={products}
+                    />
+                );
             default:
                 return (
                     <div

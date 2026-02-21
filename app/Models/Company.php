@@ -87,6 +87,11 @@ class Company extends Model
         return $this->hasMany(Discount::class);
     }
 
+    public function collections()
+    {
+        return $this->hasMany(Collection::class);
+    }
+
     // Relaciones de suscripción
     public function subscriptions()
     {

@@ -10,7 +10,7 @@ import SortableTree, { buildTree } from './partials/SortableTree';
 import DivSection from '@/Components/ui/div-section';
 import { PlusCircle } from 'lucide-react';
 
-export default function MenusForm({ data, setData, errors, dynamicPages }) {
+export default function MenusForm({ data, setData, errors, dynamicPages, products, collections }) {
 
     // 1. Inicialización del árbol: Convierte la lista plana (data.items) en estructura anidada.
     const [treeItems, setTreeItems] = useState(() => buildTree(data.items || []));
@@ -71,6 +71,8 @@ export default function MenusForm({ data, setData, errors, dynamicPages }) {
                         onTreeChange={handleTreeChange}
                         errors={errors}
                         dynamicPages={dynamicPages}
+                        products={products}
+                        collections={collections}
                     />
                 </div>
                 <Button variant="outline" size="sm" type="button" onClick={addItem} className="mb-4 flex gap-2 w-full">

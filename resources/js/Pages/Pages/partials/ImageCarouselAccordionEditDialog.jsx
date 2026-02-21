@@ -18,7 +18,9 @@ const ImageCarouselAccordionEditDialog = ({
     themeSettings,
     appliedTheme,
     allImages,
+    collections = [],
     page,
+    isLiveEdit = true
 }) => {
     const [isImageSelectorOpen, setIsImageSelectorOpen] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(null);
@@ -600,94 +602,139 @@ const ImageCarouselAccordionEditDialog = ({
 
     return (
         <div className="space-y-6">
-            {/* Gestión de imágenes */}
-            <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                    <h3 className="font-medium">Imágenes ({images.length}/9)</h3>
-                    <Button size="sm" onClick={handleAddImage} disabled={images.length >= 9}>
-                        <Plus size={16} className="mr-2" /> Agregar imagen
-                    </Button>
+            <div className="">
+                <Label htmlFor="sourceType">Fuente de Imágenes</Label>
+                <Select
+                    value={editContent.sourceType || 'manual'}
+                    onValueChange={(value) => updateCarouselConfig('sourceType', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="manual">Manual (Selección individual)</SelectItem>
+                        <SelectItem value="collection">Colección (Imágenes de productos)</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {editContent.sourceType === 'collection' && (
+                <div className="">
+                    <Label htmlFor="collectionId">Seleccionar Colección</Label>
+                    <Select
+                        value={editContent.collectionId?.toString() || ''}
+                        onValueChange={(value) => updateCarouselConfig('collectionId', value)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una colección" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {collections.length > 0 ? (
+                                collections.map((collection) => (
+                                    <SelectItem key={collection.id} value={collection.id.toString()}>
+                                        {collection.title}
+                                    </SelectItem>
+                                ))
+                            ) : (
+                                <div className="p-2 text-sm text-gray-500">
+                                    No hay colecciones disponibles
+                                </div>
+                            )}
+                        </SelectContent>
+                    </Select>
                 </div>
+            )}
 
-                <ScrollArea className="h-80">
-                    {images.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500 border rounded-lg">
-                            No hay imágenes. Haz clic en "Agregar imagen" para empezar.
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {images.map((img, idx) => (
-                                <div key={idx} className="border rounded-lg p-4 bg-gray-50">
-                                    <div className="flex items-start gap-4">
-                                        <div className="flex flex-col">
+            {/* Gestión de imágenes (Solo si es manual) */}
+            {(editContent.sourceType === 'manual' || !editContent.sourceType) && (
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <h3 className="font-medium">Imágenes ({images.length}/9)</h3>
+                        <Button size="sm" onClick={handleAddImage} disabled={images.length >= 9}>
+                            <Plus size={16} className="mr-2" /> Agregar imagen
+                        </Button>
+                    </div>
 
-                                            {/* Miniatura */}
-                                            <div className="w-20 h-20 mx-auto mb-4 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
-                                                {img.src ? (
-                                                    <img src={img.src} alt="" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center">
-                                                        <ImageIcon size={24} className="text-gray-400" />
-                                                    </div>
-                                                )}
+                    <ScrollArea className="h-80">
+                        {images.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500 border rounded-lg">
+                                No hay imágenes. Haz clic en "Agregar imagen" para empezar.
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {images.map((img, idx) => (
+                                    <div key={idx} className="border rounded-lg p-4 bg-gray-50">
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex flex-col">
+
+                                                {/* Miniatura */}
+                                                <div className="w-20 h-20 mx-auto mb-4 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
+                                                    {img.src ? (
+                                                        <img src={img.src} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <ImageIcon size={24} className="text-gray-400" />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Campos de título y subtítulo */}
+                                                <div className="flex-1 space-y-2">
+                                                    <Input
+                                                        placeholder="Título principal"
+                                                        value={img.title || ''}
+                                                        onChange={(e) => handleImageFieldChange(idx, 'title', e.target.value)}
+                                                    />
+                                                    <Input
+                                                        placeholder="Subtítulo (opcional)"
+                                                        value={img.subtitle || ''}
+                                                        onChange={(e) => handleImageFieldChange(idx, 'subtitle', e.target.value)}
+                                                    />
+                                                </div>
                                             </div>
 
-                                            {/* Campos de título y subtítulo */}
-                                            <div className="flex-1 space-y-2">
-                                                <Input
-                                                    placeholder="Título principal"
-                                                    value={img.title || ''}
-                                                    onChange={(e) => handleImageFieldChange(idx, 'title', e.target.value)}
-                                                />
-                                                <Input
-                                                    placeholder="Subtítulo (opcional)"
-                                                    value={img.subtitle || ''}
-                                                    onChange={(e) => handleImageFieldChange(idx, 'subtitle', e.target.value)}
-                                                />
+                                            {/* Botones de acción */}
+                                            <div className="flex flex-col gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => moveImage(idx, 'up')}
+                                                    disabled={idx === 0}
+                                                >
+                                                    <ChevronUp size={16} />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => moveImage(idx, 'down')}
+                                                    disabled={idx === images.length - 1}
+                                                >
+                                                    <ChevronDown size={16} />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleEditImage(idx)}
+                                                >
+                                                    <ImageIcon size={16} />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleRemoveImage(idx)}
+                                                    className="text-red-500 hover:text-red-700"
+                                                >
+                                                    <X size={16} />
+                                                </Button>
                                             </div>
-                                        </div>
-
-                                        {/* Botones de acción */}
-                                        <div className="flex flex-col gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => moveImage(idx, 'up')}
-                                                disabled={idx === 0}
-                                            >
-                                                <ChevronUp size={16} />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => moveImage(idx, 'down')}
-                                                disabled={idx === images.length - 1}
-                                            >
-                                                <ChevronDown size={16} />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleEditImage(idx)}
-                                            >
-                                                <ImageIcon size={16} />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleRemoveImage(idx)}
-                                                className="text-red-500 hover:text-red-700"
-                                            >
-                                                <X size={16} />
-                                            </Button>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </ScrollArea>
-            </div>
+                                ))}
+                            </div>
+                        )}
+                    </ScrollArea>
+                </div>
+            )}
 
             <Separator />
 

@@ -6,7 +6,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { DivideCircleIcon, ImageIcon, LinkIcon, TextIcon, VideoIcon, PlusCircleIcon, Grid3x3 } from 'lucide-react';
+import { DivideCircleIcon, ImageIcon, LinkIcon, TextIcon, VideoIcon, PlusCircleIcon, Grid3x3, LayersIcon } from 'lucide-react';
 import { ChatBubbleBottomCenterIcon, CubeIcon } from '@heroicons/react/24/outline';
 
 // Definir todas las opciones posibles con sus propiedades
@@ -82,46 +82,52 @@ const ALL_COMPONENT_OPTIONS = [
         label: 'Anuncio',
         icon: <TextIcon className="size-4" />,
         description: 'Agregar un anuncio individual'
-    }
+    },
+    {
+        type: 'container',
+        label: 'Contenedor',
+        icon: <LayersIcon className="size-4" />, // Puedes usar Layers de lucide-react o el que prefieras
+        description: 'Contenedor flexible para organizar elementos'
+    },
 ];
 
 // Definir qué componentes pueden tener qué tipos de hijos
 const ALLOWED_CHILD_TYPES = {
-    // Contenedor: permite casi todos los componentes
-    container: ['text', 'heading', 'button', 'link', 'marquee', 'divider', 'image'],
+    // Contenedor: permite casi todos los componentes, incluido él mismo para anidamiento
+    container: ['text', 'heading', 'button', 'link', 'marquee', 'divider', 'image', 'container'],
 
-    // Producto: permite componentes básicos pero no video
-    product: ['text', 'heading', 'button', 'link'],
+    // Producto: permite componentes básicos más container
+    product: ['text', 'heading', 'button', 'link', 'container'],
 
-    // Carrusel: permite componentes básicos pero no video
-    carousel: ['text', 'heading', 'button', 'link'],
+    // Carrusel: permite componentes básicos más container
+    carousel: ['text', 'heading', 'button', 'link', 'container'],
 
-    // Banner: permite componentes básicos incluyendo video
-    banner: ['text', 'heading', 'button', 'link', 'image', 'marquee'],
+    // Banner: permite componentes básicos incluyendo video y container
+    banner: ['text', 'heading', 'button', 'link', 'image', 'marquee', 'container'],
 
-    // Bento: solo permite bentoFeature
-    bento: ['bentoFeature', 'text'],
+    // Bento: solo permite bentoFeature, text y container
+    bento: ['bentoFeature', 'text', 'container'],
 
     // AnnouncementBar: solo permite announcement
     announcementBar: ['announcement'],
 
-    cart: ['cartItems', 'cartSummary',],
+    cart: ['cartItems', 'cartSummary'],
 
-    // Header y Footer: no permiten agregar hijos desde este menú
-    header: [],
-    footer: ['text', 'footerMenu'],
+    // Header y Footer: pueden tener container si se desea (opcional)
+    header: ['container', 'text', 'heading', 'button', 'link', 'image'], // ejemplo
+    footer: ['text', 'footerMenu', 'container'],
 
-    image: ['link', 'button', 'text'],
+    image: ['link', 'button', 'text', 'container'],
 
-    linkBio: ['heading', 'button', 'text', 'image', 'divider'],
+    linkBio: ['heading', 'button', 'text', 'image', 'divider', 'container'],
 
-    // ProductCard, CarouselCard, BentoFeature: no permiten agregar hijos
+    // ProductCard, CarouselCard, BentoFeature: no permiten agregar hijos (o sí, según necesidad)
     productCard: [],
     carouselCard: [],
     bentoFeature: [],
 
-    // Por defecto (si no está en la lista): permite todos los básicos
-    default: ['text', 'heading', 'button', 'image', 'link', 'video', 'marquee', 'divider']
+    // Por defecto (si no está en la lista): permite todos los básicos más container
+    default: ['text', 'heading', 'button', 'image', 'link', 'video', 'marquee', 'divider', 'container']
 };
 
 export default function ChildComponentOptions({

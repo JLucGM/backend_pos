@@ -54,9 +54,9 @@ const ContainerComponent = ({
   const paddingLeft = withUnit(resolveValue(customStyles.paddingLeft) || '0px');
 
   const marginTop = withUnit(resolveValue(customStyles.marginTop) || '0px');
-const marginRight = withUnit(resolveValue(customStyles.marginRight) || '0px');
-const marginBottom = withUnit(resolveValue(customStyles.marginBottom) || '0px');
-const marginLeft = withUnit(resolveValue(customStyles.marginLeft) || '0px');
+  const marginRight = withUnit(resolveValue(customStyles.marginRight) || '0px');
+  const marginBottom = withUnit(resolveValue(customStyles.marginBottom) || '0px');
+  const marginLeft = withUnit(resolveValue(customStyles.marginLeft) || '0px');
 
   // Alignment y dirección
   const alignment = customStyles.alignment || 'left';
@@ -95,7 +95,7 @@ const marginLeft = withUnit(resolveValue(customStyles.marginLeft) || '0px');
   // Estilos del contenedor
   const containerStyles = {
     ...getStyles(comp),
-    width: 'auto',
+    // width: 'auto',
     paddingTop,
     paddingRight,
     paddingBottom,
@@ -168,19 +168,23 @@ const marginLeft = withUnit(resolveValue(customStyles.marginLeft) || '0px');
     >
       {comp.content && comp.content.length > 0 ? (
         comp.content.map((subComp) => (
-          <CanvasItem
+          <div
             key={subComp.id}
-            comp={subComp}
-            onEditComponent={onEdit}
-            onDeleteComponent={handleDeleteChild}
-            themeSettings={themeSettings}
-            appliedTheme={appliedTheme}
-            isPreview={isPreview}
-            products={products}
-            setComponents={setComponents}
-            hoveredComponentId={hoveredComponentId}
-            setHoveredComponentId={setHoveredComponentId}
-          />
+            className={direction === 'row' ? 'flex-auto min-w-0' : 'w-full'}
+          >
+            <CanvasItem
+              comp={subComp}
+              onEditComponent={onEdit}
+              onDeleteComponent={handleDeleteChild}
+              themeSettings={themeSettings}
+              appliedTheme={appliedTheme}
+              isPreview={isPreview}
+              products={products}
+              setComponents={setComponents}
+              hoveredComponentId={hoveredComponentId}
+              setHoveredComponentId={setHoveredComponentId}
+            />
+          </div>
         ))
       ) : (
         !isPreview && (

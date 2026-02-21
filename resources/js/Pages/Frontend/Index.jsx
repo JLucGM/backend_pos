@@ -107,7 +107,8 @@ function renderBlock(
     countries = [],
     states = [],
     cities = [],
-    page
+    page,
+    collections = []
 ) {
     const Component = componentMap[block.type];
 
@@ -135,6 +136,8 @@ function renderBlock(
         mode: mode,
         companyLogo: companyLogo,
         companyFavicon: companyFavicon,
+        collections: collections,
+        products: products,
     };
 
     if (block.type === 'pageContent') {
@@ -301,6 +304,7 @@ export default function Index({
     countries = [],
     states = [],
     cities = [],
+    collections = [],
 }) {
     // console.log(shippingRates);
     // --- Lógica de Decodificación del Layout ---
@@ -390,7 +394,8 @@ export default function Index({
                     countries,
                     states,
                     cities,
-                    page
+                    page,
+                    collections
                 )
             )}
 

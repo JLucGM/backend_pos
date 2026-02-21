@@ -80,10 +80,10 @@ export function AppSidebar({
             title: "Productos",
             url: "products.index",
           },
-          // {
-          //   title: "Categoria",
-          //   url: "category.index",
-          // },
+          {
+            title: "Colecciones",
+            url: "collections.index",
+          },
           {
             title: "Inventarios",
             url: "stocks.index",

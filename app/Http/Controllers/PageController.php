@@ -10,6 +10,7 @@ use App\Models\Store;
 use App\Models\Template;
 use App\Models\Theme;
 use App\Models\GlobalComponent;
+use App\Models\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\Auth;
@@ -285,7 +286,8 @@ class PageController extends RoutingController
             },
             'combinations.combinationAttributeValue.attributeValue.attribute',
             'categories',
-            'media'
+            'media',
+            'collections'
         ])
             ->where('company_id', $companyId)
             ->where('is_active', true)
@@ -322,6 +324,11 @@ class PageController extends RoutingController
             ->get();
 
         $themes = Theme::all();
+
+        // Obtener colecciones activas para la compañía
+        $collections = Collection::where('company_id', $companyId)
+            ->where('is_active', true)
+            ->get();
 
         $page->load('template.theme', 'theme', 'company.setting.media', 'company.setting.currency');
 
@@ -452,6 +459,7 @@ class PageController extends RoutingController
             'cities' => $cities,
             'mainStore' => $mainStore, // Pasar también la tienda principal a la vista por si se necesita
             'allImages' => $allImages,
+            'collections' => $collections,
         ]);
     }
 

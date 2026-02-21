@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\MenuItem; // Necesitas este modelo para las acciones en los items
 use App\Models\Page;
+use App\Models\Product;
+use App\Models\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as RoutingController;
 use Illuminate\Support\Facades\Auth;
@@ -54,10 +56,31 @@ class MenuController extends RoutingController
      */
     protected function getDynamicPages()
     {
-        // Asumiendo que el modelo es App\Models\Page
         // Solo necesitamos el slug (para la URL) y el título/nombre (para el select).
         return Page::select('title', 'slug')
             ->where('is_published', true) // Solo páginas publicadas
+            ->orderBy('title')
+            ->get();
+    }
+
+    /**
+     * Carga productos para el formulario.
+     */
+    protected function getProducts()
+    {
+        return Product::select('product_name', 'slug')
+            ->where('is_active', true)
+            ->orderBy('product_name')
+            ->get();
+    }
+
+    /**
+     * Carga colecciones para el formulario.
+     */
+    protected function getCollections()
+    {
+        return Collection::select('title', 'slug')
+            ->where('is_active', true)
             ->orderBy('title')
             ->get();
     }
@@ -67,12 +90,10 @@ class MenuController extends RoutingController
      */
     public function create()
     {
-        // $pages = Page::all();
-        // dd($pages);
-
         return Inertia::render('Menus/Create', [
-            // Añadimos la lista de páginas dinámicas
             'dynamicPages' => $this->getDynamicPages(),
+            'products' => $this->getProducts(),
+            'collections' => $this->getCollections(),
         ]);
     }
 
@@ -165,6 +186,8 @@ class MenuController extends RoutingController
             'menu' => $menu->only('id', 'name'),
             'menuItems' => $menuItems, // Array plano enviado a React
             'dynamicPages' => $this->getDynamicPages(),
+            'products' => $this->getProducts(),
+            'collections' => $this->getCollections(),
         ]);
     }
 

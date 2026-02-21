@@ -15,6 +15,7 @@ const CarouselEditDialog = ({
     setEditStyles,
     themeSettings,
     appliedTheme,
+    collections = [],
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
@@ -43,7 +44,51 @@ const CarouselEditDialog = ({
     return (
         <div className="space-y-4">
             <div className="">
-                <Label htmlFor="limit">Conteo de Productos</Label>
+                <Label htmlFor="sourceType">Fuente de Productos</Label>
+                <Select
+                    value={editContent.sourceType || 'latest'}
+                    onValueChange={(value) => updateCarouselConfig('sourceType', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="latest">Últimos Productos</SelectItem>
+                        <SelectItem value="collection">Colección Específica</SelectItem>
+                        <SelectItem value="manual">Manual (Selección individual)</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {editContent.sourceType === 'collection' && (
+                <div className="">
+                    <Label htmlFor="collectionId">Seleccionar Colección</Label>
+                    <Select
+                        value={editContent.collectionId?.toString() || ''}
+                        onValueChange={(value) => updateCarouselConfig('collectionId', value)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una colección" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {collections.length > 0 ? (
+                                collections.map((collection) => (
+                                    <SelectItem key={collection.id} value={collection.id.toString()}>
+                                        {collection.title}
+                                    </SelectItem>
+                                ))
+                            ) : (
+                                <div className="p-2 text-sm text-gray-500">
+                                    No hay colecciones disponibles
+                                </div>
+                            )}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
+
+            <div className="">
+                <Label htmlFor="limit">Cantidad de Productos</Label>
                 <Input
                     id="limit"
                     type="number"

@@ -16,11 +16,13 @@ const AnnouncementEditDialog = ({
     appliedTheme,
     isLiveEdit = true,
     dynamicPages = [],
-    products = []
+    products = [],
+    collections = []
 }) => {
     const [linkType, setLinkType] = useState('none');
     const [selectedPage, setSelectedPage] = useState('');
     const [selectedProduct, setSelectedProduct] = useState('');
+    const [selectedCollection, setSelectedCollection] = useState('');
     const [customUrl, setCustomUrl] = useState('');
     const [isInitialized, setIsInitialized] = useState(false);
 
@@ -58,6 +60,40 @@ const AnnouncementEditDialog = ({
                 if (page) {
                     setLinkType('page');
                     setSelectedPage(page.slug);
+                } else if (currentUrlString.startsWith('/tienda/producto/')) { // Check for product URL logic
+                    const productSlug = currentUrlString.split('/').pop();
+                    const product = products.find(p => p.slug === productSlug);
+                    if (product) {
+                        setLinkType('product');
+                        setSelectedProduct(product.slug);
+                    } else {
+                        setLinkType('custom');
+                        setCustomUrl(currentUrlString);
+                    }
+                } else if (currentUrlString.startsWith('/tienda/')) { // Check for collection URL logic
+                    const collectionSlug = currentUrlString.split('/').pop();
+                    const collection = collections.find(c => c.slug === collectionSlug);
+                    if (collection) {
+                        setLinkType('collection');
+                        setSelectedCollection(collection.slug);
+                    } else {
+                        // Fallback check for product query param style if still used
+                        const productMatch = currentUrlString.match(/\/detalles-del-producto\?product=(.+)/);
+                        if (productMatch) {
+                            const productSlug = productMatch[1];
+                            const product = products.find(p => p.slug === productSlug);
+                            if (product) {
+                                setLinkType('product');
+                                setSelectedProduct(product.slug);
+                            } else {
+                                setLinkType('custom');
+                                setCustomUrl(currentUrlString);
+                            }
+                        } else {
+                            setLinkType('custom');
+                            setCustomUrl(currentUrlString);
+                        }
+                    }
                 } else {
                     const productMatch = currentUrlString.match(/\/detalles-del-producto\?product=(.+)/);
                     if (productMatch) {
@@ -103,7 +139,28 @@ const AnnouncementEditDialog = ({
                 break;
             case 'product':
                 if (selectedProduct) {
+                    // newUrl = `/detalles-del-producto?product=${selectedProduct}`;
+                    newUrl = `/tienda/producto/${selectedProduct}`; // Updated to cleaner URL structure if applicable, or keep query param
+                    // Checking existing logic, it seems we might want to stick to what works or standardise.
+                    // The previous read showed /detalles-del-producto?product=... but my plan mentioned /tienda/producto/...
+                    // I will support both reading, but writing? Let's stick to what the system seems to use.
+                    // Actually checking the read file, it parses `?product=`.
+                    // But `Builder.jsx` passed `products` with `slug`.
+                    // Let's use the cleaner URL if that's the new standard, or stick to the old one.
+                    // The user's routes file showed `/{page_path}/{collection_slug}`.
+                    // Product routes are usually handled differently.
+                    // Let's assume `/detalles-del-producto?product=` is legacy and `/tienda/producto/` might be better, 
+                    // BUT for safety I will stick to the one I saw in the file: `/detalles-del-producto?product=${selectedProduct}` 
+                    // UNLESS I see a route for it.
+                    // Wait, I saw `routes/web.php` earlier.
+                    // There is `Route::get('/tienda/producto/{slug}', ...)`? I didn't see it explicitly.
+                    // actually let's stick to the existing format found in the file `currentUrlString.match(/\/detalles-del-producto\?product=(.+)/)`
                     newUrl = `/detalles-del-producto?product=${selectedProduct}`;
+                }
+                break;
+            case 'collection':
+                if (selectedCollection) {
+                    newUrl = `/tienda/${selectedCollection}`;
                 }
                 break;
             case 'custom':
@@ -120,7 +177,7 @@ const AnnouncementEditDialog = ({
         if (newUrl !== currentUrlString) {
             updateContent('navigationUrl', newUrl);
         }
-    }, [linkType, selectedPage, selectedProduct, customUrl, isInitialized, content.navigationUrl]); // content.navigationUrl puede causar ciclo, pero está bien porque comparamos antes de actualizar
+    }, [linkType, selectedPage, selectedProduct, selectedCollection, customUrl, isInitialized, content.navigationUrl]); // content.navigationUrl puede causar ciclo, pero está bien porque comparamos antes de actualizar
 
     // Memoizar funciones de actualización
     const updateContent = useCallback((key, value) => {
@@ -198,6 +255,7 @@ const AnnouncementEditDialog = ({
                             <SelectItem value="none">Sin enlace</SelectItem>
                             <SelectItem value="page">Página Dinámica</SelectItem>
                             <SelectItem value="product">Página de Producto</SelectItem>
+                            <SelectItem value="collection">Colección</SelectItem>
                             <SelectItem value="custom">URL Personalizada</SelectItem>
                         </SelectContent>
                     </Select>
@@ -249,7 +307,7 @@ const AnnouncementEditDialog = ({
                                 {products.length > 0 ? (
                                     products.map((product) => (
                                         <SelectItem key={product.slug} value={product.slug}>
-                                            {product.product_name}
+                                            {product.product_name || product.name || product.slug}
                                         </SelectItem>
                                     ))
                                 ) : (
@@ -261,6 +319,37 @@ const AnnouncementEditDialog = ({
                         </Select>
                         <p className="text-xs text-gray-500 mt-1">
                             URL: /detalles-del-producto?product={selectedProduct || '[selecciona un producto]'}
+                        </p>
+                    </div>
+                )}
+
+                {/* Selector de Colección */}
+                {linkType === 'collection' && (
+                    <div>
+                        <Label htmlFor="collection">Seleccionar Colección</Label>
+                        <Select
+                            value={selectedCollection}
+                            onValueChange={setSelectedCollection}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una colección" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {collections.length > 0 ? (
+                                    collections.map((collection) => (
+                                        <SelectItem key={collection.slug} value={collection.slug}>
+                                            {collection.title}
+                                        </SelectItem>
+                                    ))
+                                ) : (
+                                    <div className="p-2 text-sm text-gray-500">
+                                        No hay colecciones disponibles
+                                    </div>
+                                )}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-gray-500 mt-1">
+                            URL: /tienda/{selectedCollection || '[selecciona una colección]'}
                         </p>
                     </div>
                 )}

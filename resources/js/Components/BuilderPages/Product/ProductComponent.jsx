@@ -89,7 +89,22 @@ const ProductComponent = ({
     };
 
     // Obtener productos para mostrar
-    const productsToShow = products.slice(0, limit);
+    const getFilteredProducts = () => {
+        const sourceType = productConfig.sourceType || 'latest';
+        const collectionId = productConfig.collectionId;
+
+        let filtered = [...products];
+
+        if (sourceType === 'collection' && collectionId) {
+            filtered = filtered.filter(p =>
+                p.collections?.some(c => c.id.toString() === collectionId.toString())
+            );
+        }
+
+        return filtered.slice(0, limit);
+    };
+
+    const productsToShow = getFilteredProducts();
 
     // ==================== RENDERIZADO FRONTEND ====================
     if (isFrontend) {

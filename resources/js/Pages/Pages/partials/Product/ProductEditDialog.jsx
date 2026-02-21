@@ -14,6 +14,7 @@ const ProductEditDialog = ({
     setEditStyles,
     themeSettings,
     appliedTheme,
+    collections = [],
     isLiveEdit = true
 }) => {
     const debouncedContent = useDebounce(editContent, 300);
@@ -78,13 +79,57 @@ const ProductEditDialog = ({
                 />
             </div>
 
+            <div>
+                <Label htmlFor="sourceType">Fuente de Productos</Label>
+                <Select
+                    value={editContent.sourceType || 'latest'}
+                    onValueChange={(value) => updateProductConfig('sourceType', value)}
+                >
+                    <SelectTrigger>
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="latest">Últimos Productos</SelectItem>
+                        <SelectItem value="collection">Colección Específica</SelectItem>
+                        <SelectItem value="manual">Manual (Selección individual)</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {editContent.sourceType === 'collection' && (
+                <div>
+                    <Label htmlFor="collectionId">Seleccionar Colección</Label>
+                    <Select
+                        value={editContent.collectionId?.toString() || ''}
+                        onValueChange={(value) => updateProductConfig('collectionId', value)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una colección" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {collections.length > 0 ? (
+                                collections.map((collection) => (
+                                    <SelectItem key={collection.id} value={collection.id.toString()}>
+                                        {collection.title}
+                                    </SelectItem>
+                                ))
+                            ) : (
+                                <div className="p-2 text-sm text-gray-500">
+                                    No hay colecciones disponibles
+                                </div>
+                            )}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <Label htmlFor="gapX">Gap Horizontal (px)</Label>
                     <Input
                         id="gapX"
                         type="number"
-                        value={parseInt(editContent.carousel_gapX) || 10}
+                        value={parseInt(editContent.gapX) || 10}
                         onChange={(e) => updateProductConfig('gapX', `${e.target.value}px`)}
                     />
                 </div>

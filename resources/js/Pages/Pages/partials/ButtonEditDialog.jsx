@@ -16,11 +16,13 @@ const ButtonEditDialog = ({
     appliedTheme,
     isLiveEdit = true,
     dynamicPages = [],
-    products = []
+    products = [],
+    collections = []
 }) => {
     const [linkType, setLinkType] = useState('none');
     const [selectedPage, setSelectedPage] = useState('');
     const [selectedProduct, setSelectedProduct] = useState('');
+    const [selectedCollection, setSelectedCollection] = useState('');
     const [customUrl, setCustomUrl] = useState('');
     const [isInitialized, setIsInitialized] = useState(false);
 
@@ -55,6 +57,40 @@ const ButtonEditDialog = ({
                 if (page) {
                     setLinkType('page');
                     setSelectedPage(page.slug);
+                } else if (currentUrlString.startsWith('/tienda/producto/')) { // Check for product URL logic
+                    const productSlug = currentUrlString.split('/').pop();
+                    const product = products.find(p => p.slug === productSlug);
+                    if (product) {
+                        setLinkType('product');
+                        setSelectedProduct(product.slug);
+                    } else {
+                        setLinkType('custom');
+                        setCustomUrl(currentUrlString);
+                    }
+                } else if (currentUrlString.startsWith('/tienda/')) { // Check for collection URL logic
+                    const collectionSlug = currentUrlString.split('/').pop();
+                    const collection = collections.find(c => c.slug === collectionSlug);
+                    if (collection) {
+                        setLinkType('collection');
+                        setSelectedCollection(collection.slug);
+                    } else {
+                        // Fallback check for product query param style
+                        const productMatch = currentUrlString.match(/\/detalles-del-producto\?product=(.+)/);
+                        if (productMatch) {
+                            const productSlug = productMatch[1];
+                            const product = products.find(p => p.slug === productSlug);
+                            if (product) {
+                                setLinkType('product');
+                                setSelectedProduct(product.slug);
+                            } else {
+                                setLinkType('custom');
+                                setCustomUrl(currentUrlString);
+                            }
+                        } else {
+                            setLinkType('custom');
+                            setCustomUrl(currentUrlString);
+                        }
+                    }
                 } else {
                     const productMatch = currentUrlString.match(/\/detalles-del-producto\?product=(.+)/);
                     if (productMatch) {
@@ -100,6 +136,7 @@ const ButtonEditDialog = ({
             setLinkType('none');
             setSelectedPage('');
             setSelectedProduct('');
+            setSelectedCollection('');
             setCustomUrl('');
         }
 
@@ -124,6 +161,11 @@ const ButtonEditDialog = ({
                     newUrl = `/detalles-del-producto?product=${selectedProduct}`;
                 }
                 break;
+            case 'collection':
+                if (selectedCollection) {
+                    newUrl = `/tienda/${selectedCollection}`;
+                }
+                break;
             case 'custom':
                 newUrl = customUrl || '';
                 break;
@@ -141,7 +183,7 @@ const ButtonEditDialog = ({
                 setEditContent(editStyles?.buttonText || '');
             }
         }
-    }, [linkType, selectedPage, selectedProduct, customUrl, isInitialized, editStyles?.buttonUrl, editContent, setEditStyles, setEditContent]);
+    }, [linkType, selectedPage, selectedProduct, selectedCollection, customUrl, isInitialized, editStyles?.buttonUrl, editContent, setEditStyles, setEditContent]);
 
     // Memoizar funciones de actualización
     const updateStyle = useCallback((key, value) => {
@@ -216,6 +258,7 @@ const ButtonEditDialog = ({
                             <SelectItem value="none">Sin enlace (acción)</SelectItem>
                             <SelectItem value="page">Página Dinámica</SelectItem>
                             <SelectItem value="product">Página de Producto</SelectItem>
+                            <SelectItem value="collection">Colección</SelectItem>
                             <SelectItem value="custom">URL Personalizada</SelectItem>
                         </SelectContent>
                     </Select>
@@ -267,7 +310,7 @@ const ButtonEditDialog = ({
                                 {products.length > 0 ? (
                                     products.map((product) => (
                                         <SelectItem key={product.slug} value={product.slug}>
-                                            {product.product_name}
+                                            {product.product_name || product.name || product.slug}
                                         </SelectItem>
                                     ))
                                 ) : (
@@ -279,6 +322,37 @@ const ButtonEditDialog = ({
                         </Select>
                         <p className="text-xs text-gray-500 mt-1">
                             URL: /detalles-del-producto?product={selectedProduct || '[selecciona un producto]'}
+                        </p>
+                    </div>
+                )}
+
+                {/* Selector de Colección */}
+                {linkType === 'collection' && (
+                    <div>
+                        <Label htmlFor="collection">Seleccionar Colección</Label>
+                        <Select
+                            value={selectedCollection}
+                            onValueChange={setSelectedCollection}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una colección" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {collections.length > 0 ? (
+                                    collections.map((collection) => (
+                                        <SelectItem key={collection.slug} value={collection.slug}>
+                                            {collection.title}
+                                        </SelectItem>
+                                    ))
+                                ) : (
+                                    <div className="p-2 text-sm text-gray-500">
+                                        No hay colecciones disponibles
+                                    </div>
+                                )}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-gray-500 mt-1">
+                            URL: /tienda/{selectedCollection || '[selecciona una colección]'}
                         </p>
                     </div>
                 )}

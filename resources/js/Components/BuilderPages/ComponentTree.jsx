@@ -22,10 +22,10 @@ const INDENTATION_WIDTH = 40;
 // Lista de componentes que pueden tener hijos y ser colapsados
 const COLLAPSIBLE_TYPES = [
     'container', 'product', 'carousel', 'banner', 'footer', 'header', 'linkBio',
-    'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail','cart', 'checkout','checkoutDiscountGiftCard', 'announcementBar', 'productList'
+    'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail', 'cart', 'checkout', 'checkoutDiscountGiftCard', 'announcementBar', 'productList'
 ];
 
-const NO_ADD_BUTTON_TYPES = ['header',  'bentoFeature', 'productCard', 'carouselCard','productDetail', 'announcement'];
+const NO_ADD_BUTTON_TYPES = ['header', 'bentoFeature', 'productCard', 'carouselCard', 'productDetail', 'announcement'];
 
 // Función para determinar si un componente puede tener hijos
 const canHaveChildren = (type) => {
@@ -210,7 +210,7 @@ export default function ComponentTree({
             type: childType,
             content: getDefaultContent(childType)
         };
-        
+
         // Función recursiva para agregar el hijo al árbol
         const addChildToTree = (tree) => {
             return tree.map(component => {

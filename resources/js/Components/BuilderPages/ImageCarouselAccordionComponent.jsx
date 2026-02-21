@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { getThemeWithDefaults, resolveStyleValue, getTextStyles, getResolvedFont } from '@/utils/themeUtils';
 import { Pencil } from 'lucide-react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 
 const classNames = (...classes) => classes.filter(Boolean).join(' ');
 
@@ -12,6 +12,8 @@ const ImageCarouselAccordion = ({
     themeSettings,
     appliedTheme,
     mode = 'builder',
+    products = [],
+    collections = [],
 }) => {
     const rawContent = comp.content || {};
     const rawStyles = comp.styles || {};
@@ -27,7 +29,33 @@ const ImageCarouselAccordion = ({
         containerStyles[key] = resolveValue(rawStyles[key]);
     });
 
-    const images = rawContent.images || [];
+    const getAccordionImages = useCallback(() => {
+        const sourceType = rawContent.sourceType || 'manual';
+
+        if (sourceType === 'collection' && rawContent.collectionId) {
+            if (!products || products.length === 0) return [];
+
+            const collectionProducts = products.filter(product =>
+                product.collections?.some(c => c.id.toString() === rawContent.collectionId.toString())
+            );
+
+            return collectionProducts.map(product => {
+                const mediaUrl = product.media?.[0]?.original_url;
+                return {
+                    id: product.id,
+                    src: mediaUrl || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png',
+                    title: product.product_name || product.name,
+                    subtitle: product.product_price ? `$${parseFloat(product.product_price).toFixed(2)}` : '',
+                    text: '', // Accordion usually doesn't show long text, maybe description?
+                    link: `/detalles-del-producto?product=${product.slug || product.id}`
+                };
+            });
+        }
+
+        return rawContent.images || [];
+    }, [rawContent, products]);
+
+    const images = getAccordionImages();
 
     useEffect(() => {
         if (!wrapperRef.current) return;
@@ -137,6 +165,7 @@ const ImageCarouselAccordion = ({
         border: borderWidth !== '0' ? `${parseInt(borderWidth)}px ${borderStyle} ${resolveValue(borderColor)}` : 'none',
         borderRadius: `${parseInt(borderRadius)}px`,
         overflow: 'hidden',
+        cursor: mode === 'frontend' ? 'pointer' : 'default',
     };
 
     return (
@@ -165,6 +194,10 @@ const ImageCarouselAccordion = ({
                             key={index}
                             onClick={(e) => {
                                 e.stopPropagation();
+                                if (activeIndex === index && mode === 'frontend' && image.link) {
+                                    window.location.href = image.link;
+                                    return;
+                                }
                                 setActiveIndex(index);
                             }}
                             className="relative group cursor-pointer overflow-hidden rounded-2xl bg-black shadow-2xl transition-transform duration-500 ease-in-out group-hover:scale-105 group-hover:z-10 transform-gpu"

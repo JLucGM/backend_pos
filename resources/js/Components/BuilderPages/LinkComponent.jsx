@@ -137,7 +137,7 @@ const LinkComponent = ({
     const linkContent = getLinkContent();
     const linkStyles = getLinkStyles();
     const hoverColor = linkStyles['--hover-color'] || themeWithDefaults.hover_links;
-    console.log(linkContent)
+
     // Clases para hover usando colores del temas
     const hoverClasses = isPreview ? '' : 'hover:opacity-80';
 

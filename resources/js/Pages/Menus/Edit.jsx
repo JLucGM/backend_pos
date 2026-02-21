@@ -12,7 +12,7 @@ import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
  * @param {object} props.menu - Objeto del menú (contiene id, name).
  * @param {Array<object>} props.menuItems - Array plano de los ítems existentes en DB (con parent_id y order).
  */
-export default function Edit({ menu, menuItems, dynamicPages }) {
+export default function Edit({ menu, menuItems, dynamicPages, products, collections }) {
     const initialValues = {
         name: menu.name,
         // Enviamos el array plano (con id, parent_id, order) a MenusForm para que buildTree lo procese
@@ -64,6 +64,8 @@ export default function Edit({ menu, menuItems, dynamicPages }) {
                         setData={setData}
                         errors={errors}
                         dynamicPages={dynamicPages}
+                        products={products}
+                        collections={collections}
                     />
 
                     <div className="flex justify-end p-2.5">

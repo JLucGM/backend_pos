@@ -17,7 +17,9 @@ export default function SortableTreeItem({
     indentationWidth,
     onUpdate,
     onRemove,
-    dynamicPages = [], // Asegúrate de que esto se reciba lleno desde el controlador
+    dynamicPages = [],
+    products = [],
+    collections = [],
     itemErrors,
     isOverlay,
 }) {
@@ -29,55 +31,116 @@ export default function SortableTreeItem({
         transition,
         isDragging,
     } = useSortable({ id });
-    console.log(dynamicPages)
+
     const style = {
         transform: CSS.Translate.toString(transform),
         transition,
         marginLeft: !isOverlay ? `${depth * indentationWidth}px` : undefined,
     };
 
-    // Variables de estilo para las líneas conectoras (solución al ReferenceError)
     const lineThickness = '2px';
     const lineColor = '#D1D5DB'; // gray-300
 
-    // 1. Lógica de renderizado: determinamos el slug actual
-    const isInternalPage = item.url.startsWith(PAGE_PREFIX);
-    const currentSlug = isInternalPage
-        ? item.url.replace(PAGE_PREFIX, '')
-        : '';
+    // 1. Lógica de renderizado: determinamos el valor interno para el Select
+    const getInternalValue = (url) => {
+        if (!url) return '';
+        if (url.includes('detalles-del-producto?product=')) {
+            const slug = url.split('product=')[1];
+            return `product:${slug}`;
+        }
+        // Para colecciones, usamos el patrón /tienda/slug
+        // Pero primero verificamos si NO es simplemente la página de la tienda
+        if (url.startsWith('/tienda/') && url !== '/tienda/') {
+            const slug = url.replace('/tienda/', '');
+            return `collection:${slug}`;
+        }
 
-    // 2. Maneja la selección en el SELECT
-    const handleSelectChange = (newSlug) => {
-        // Al seleccionar, se guarda la URL con el prefijo
-        onUpdate(id, 'url', PAGE_PREFIX + newSlug);
+        // Por defecto lo tratamos como página
+        const slug = url.startsWith(PAGE_PREFIX) ? url.replace(PAGE_PREFIX, '') : url;
+        // Verificamos si este slug existe en dynamicPages para estar seguros, si no, devolvemos tal cual
+        return `page:${slug}`;
     };
 
-    // 3. El componente de URL (SOLO SELECT)s
+    const currentValue = getInternalValue(item.url);
+
+    // 2. Maneja la selección en el SELECT
+    const handleValueChange = (combinedValue) => {
+        const [type, slug] = combinedValue.split(':');
+
+        let newUrl = '';
+        if (type === 'product') {
+            newUrl = `/detalles-del-producto?product=${slug}`;
+        } else if (type === 'collection') {
+            newUrl = `/tienda/${slug}`;
+        } else {
+            // type === 'page'
+            newUrl = PAGE_PREFIX + slug;
+        }
+
+        // Preparamos objeto de cambios
+        const changes = { url: newUrl };
+
+        // Si el título está vacío, podemos sugerir el título del recurso seleccionado
+        if (!item.title) {
+            let suggestedTitle = '';
+            if (type === 'product') {
+                suggestedTitle = products.find(p => p.slug === slug)?.product_name || '';
+            } else if (type === 'collection') {
+                suggestedTitle = collections.find(c => c.slug === slug)?.title || '';
+            } else {
+                suggestedTitle = dynamicPages.find(p => p.slug === slug)?.title || '';
+            }
+            if (suggestedTitle) {
+                changes.title = suggestedTitle;
+            }
+        }
+
+        // Llamada única para actualizar múltiples campos y evitar race conditions
+        onUpdate(id, changes);
+    };
+
+    // 3. El componente de URL (SELECT AGRUPADO)
     const UrlSelect = (
         <Select
-            // Si la URL actual no es válida (no tiene /page/ o está vacía), 
-            // el valor del Select será nulo o el currentSlug (si existe una página con ese slug)
-            value={currentSlug || ''}
-            onValueChange={handleSelectChange}
-            disabled={isOverlay || dynamicPages.length === 0} // Deshabilitar si no hay páginas
-            required // Añadir requerido si no se puede dejar vacío
+            value={currentValue}
+            onValueChange={handleValueChange}
+            disabled={isOverlay}
+            required
         >
             <SelectTrigger className="h-9">
-                {/* <DocumentTextIcon className='size-4 mr-2 text-blue-500'/>  */}
-                <SelectValue placeholder="Seleccionar página dinámica (Obligatorio)" />
+                <SelectValue placeholder="Seleccionar destino (Obligatorio)" />
             </SelectTrigger>
             <SelectContent>
-                {/* Mostramos las opciones de las páginas dinámicas */}
-                {dynamicPages.length > 0 ? (
-                    dynamicPages.map((page) => (
-                        <SelectItem key={page.slug} value={page.slug}>
-                            {page.title} (/{page.slug})
-                        </SelectItem>
-                    ))
-                ) : (
-                    // Mensaje si no hay páginas dinámicas
+                {dynamicPages.length > 0 && (
+                    <div className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase">Páginas</div>
+                )}
+                {dynamicPages.map((page) => (
+                    <SelectItem key={`page-${page.slug}`} value={`page:${page.slug}`}>
+                        {page.title} (/{page.slug})
+                    </SelectItem>
+                ))}
+
+                {products.length > 0 && (
+                    <div className="mt-2 px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase border-t pt-2">Productos</div>
+                )}
+                {products.map((product) => (
+                    <SelectItem key={`prod-${product.slug}`} value={`product:${product.slug}`}>
+                        {product.product_name}
+                    </SelectItem>
+                ))}
+
+                {collections.length > 0 && (
+                    <div className="mt-2 px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase border-t pt-2">Colecciones</div>
+                )}
+                {collections.map((collection) => (
+                    <SelectItem key={`coll-${collection.slug}`} value={`collection:${collection.slug}`}>
+                        {collection.title}
+                    </SelectItem>
+                ))}
+
+                {dynamicPages.length === 0 && products.length === 0 && collections.length === 0 && (
                     <div className="p-2 text-sm text-red-500">
-                        No hay páginas dinámicas disponibles.
+                        No hay destinos disponibles.
                     </div>
                 )}
             </SelectContent>
