@@ -628,6 +628,26 @@ const CheckoutComponent = ({
         setShowAddressModal(true);
     }, []);
 
+    const handleDeleteAddress = useCallback((address) => {
+        if (!confirm('¿Estás seguro de que deseas eliminar esta dirección?')) {
+            return;
+        }
+
+        router.delete(`/checkout/addresses/${address.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Inertia actualizará las props automáticamente
+                if (selectedAddressId === address.id) {
+                    setSelectedAddressId(null);
+                }
+            },
+            onError: (errors) => {
+                console.error('Error al eliminar dirección:', errors);
+                alert('No se pudo eliminar la dirección. ' + (errors.error || ''));
+            }
+        });
+    }, [selectedAddressId]);
+
     const handleAddressFormSuccess = useCallback(() => {
         setShowAddressModal(false);
         setEditingAddress(null);
@@ -909,6 +929,7 @@ const CheckoutComponent = ({
                             showAuthModal={() => setShowAuthModal(true)}
                             onAddNewAddress={handleAddNewAddress}
                             onEditAddress={handleEditAddress}
+                            onDeleteAddress={handleDeleteAddress}
                             mode={mode}
                         />
                     </ComponentWithHover>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Head } from '@inertiajs/react';
 import ProfileComponent from '@/Components/BuilderPages/Profile/ProfileComponent';
 
-export default function Edit({ user, deliveryLocations, companyName }) {
+export default function Edit({ user, deliveryLocations, companyName, countries = [], states = [], cities = [] }) {
     // Simular el componente como si fuera parte del builder
     const mockComponent = {
         id: 'profile-page',
@@ -47,6 +47,9 @@ export default function Edit({ user, deliveryLocations, companyName }) {
         country: location.country?.country_name || null,
         state: location.state?.state_name || null,
         city: location.city?.city_name || null,
+        country_id: location.country_id,
+        state_id: location.state_id,
+        city_id: location.city_id,
         full_address: [
             location.address_line_1,
             location.address_line_2,
@@ -60,7 +63,7 @@ export default function Edit({ user, deliveryLocations, companyName }) {
     return (
         <>
             <Head title={`Perfil - ${companyName}`} />
-            
+
             <div className="min-h-screen bg-gray-50">
                 <ProfileComponent
                     comp={mockComponent}
@@ -70,6 +73,9 @@ export default function Edit({ user, deliveryLocations, companyName }) {
                     userDeliveryLocations={formattedDeliveryLocations}
                     userGiftCards={[]} // Por ahora vacío, se puede agregar después
                     mode="frontend"
+                    countries={countries}
+                    states={states}
+                    cities={cities}
                 />
             </div>
         </>

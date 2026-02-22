@@ -809,6 +809,9 @@ class FrontendController extends Controller
                     'country' => $location->country ? $location->country->country_name : null,
                     'state' => $location->state ? $location->state->state_name : null,
                     'city' => $location->city ? $location->city->city_name : null,
+                    'country_id' => $location->country_id,
+                    'state_id' => $location->state_id,
+                    'city_id' => $location->city_id,
                     'full_address' => implode(', ', array_filter([
                         $location->address_line_1,
                         $location->address_line_2,

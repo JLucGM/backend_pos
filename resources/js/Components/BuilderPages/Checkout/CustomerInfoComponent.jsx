@@ -1,8 +1,9 @@
 // components/BuilderPages/Checkout/CustomerInfoComponent.jsx
 import React, { useState } from 'react';
 import { Button } from '@/Components/ui/button';
-import { UserCircleIcon, TruckIcon, MapPinIcon, CreditCardIcon, HomeIcon, CheckIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, TruckIcon, MapPinIcon, CreditCardIcon, HomeIcon, CheckIcon, PencilIcon, EllipsisVerticalIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { StoreIcon } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont, getButtonStyles, resolveStyleValue } from '@/utils/themeUtils';
@@ -31,6 +32,7 @@ const CustomerInfoComponent = ({
     onShippingRateChange,
     onAddNewAddress, // <-- añadido
     onEditAddress,   // <-- añadido
+    onDeleteAddress, // <-- añadido
     shippingRates = [],
     paymentMethods = [],
     showAuthModal,
@@ -400,17 +402,41 @@ const CustomerInfoComponent = ({
                                                 </div>
                                             </div>
                                         </div>
-                                        {/* Botón de editar dirección */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onEditAddress(address);
-                                            }}
-                                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                                            title="Editar dirección"
-                                        >
-                                            <PencilIcon className="h-4 w-4" style={{ color: resolveValue(themeWithDefaults.text) }} />
-                                        </button>
+                                        {/* Menú de acciones para la dirección */}
+                                        <div className="flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button
+                                                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                                                        title="Opciones de dirección"
+                                                        style={{ color: resolveValue(themeWithDefaults.text) }}
+                                                    >
+                                                        <EllipsisVerticalIcon className="h-5 w-5" />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" style={{
+                                                    backgroundColor: resolveValue(themeWithDefaults.background),
+                                                    borderColor: resolveValue(themeWithDefaults.borders)
+                                                }}>
+                                                    <DropdownMenuItem
+                                                        onClick={() => onEditAddress(address)}
+                                                        className="cursor-pointer flex items-center gap-2"
+                                                        style={{ color: resolveValue(themeWithDefaults.heading) }}
+                                                    >
+                                                        <PencilIcon className="h-4 w-4" />
+                                                        <span>Editar</span>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => onDeleteAddress(address)}
+                                                        className="cursor-pointer flex items-center gap-2 text-red-600 focus:text-red-700"
+                                                        style={{ color: resolveValue(themeWithDefaults.danger_color || '#dc2626') }}
+                                                    >
+                                                        <TrashIcon className="h-4 w-4" />
+                                                        <span>Eliminar</span>
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

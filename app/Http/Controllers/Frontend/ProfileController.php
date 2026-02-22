@@ -28,6 +28,9 @@ class ProfileController extends Controller
                 'phone' => $user->phone,
             ],
             'deliveryLocations' => $user->deliveryLocations()->with(['country', 'state', 'city'])->get(),
+            'countries' => \App\Models\Country::all(),
+            'states' => \App\Models\State::all(),
+            'cities' => \App\Models\City::all(),
             'companyName' => $company->company_name,
         ]);
     }

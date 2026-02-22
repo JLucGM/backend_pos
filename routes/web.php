@@ -98,6 +98,14 @@ Route::domain('{subdomain}.' . $baseDomain)->middleware(['company'])->group(func
         // Confirmación de orden
         Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
             ->name('frontend.order.confirmation');
+
+        // Direcciones desde checkout
+        Route::post('/checkout/addresses', [CheckoutController::class, 'storeAddress'])
+            ->name('frontend.checkout.addresses.store');
+        Route::put('/checkout/addresses/{deliveryLocation}', [CheckoutController::class, 'updateAddress'])
+            ->name('frontend.checkout.addresses.update');
+        Route::delete('/checkout/addresses/{deliveryLocation}', [CheckoutController::class, 'destroyAddress'])
+            ->name('frontend.checkout.addresses.destroy');
     });
 
     // Página de éxito del checkout (fuera de autenticación para evitar problemas de sesión)
@@ -179,6 +187,16 @@ Route::group([
     // Página de éxito del checkout (fuera de autenticación para evitar problemas de sesión)
     Route::get('/checkout/success/{order}', [CheckoutController::class, 'checkoutSuccess'])
         ->name('frontend.checkout.success.custom');
+
+    // Direcciones desde checkout (Custom Domain)
+    Route::middleware(['auth', 'client'])->group(function () {
+        Route::post('/checkout/addresses', [CheckoutController::class, 'storeAddress'])
+            ->name('frontend.checkout.addresses.store.custom');
+        Route::put('/checkout/addresses/{deliveryLocation}', [CheckoutController::class, 'updateAddress'])
+            ->name('frontend.checkout.addresses.update.custom');
+        Route::delete('/checkout/addresses/{deliveryLocation}', [CheckoutController::class, 'destroyAddress'])
+            ->name('frontend.checkout.addresses.destroy.custom');
+    });
 });
 
 

@@ -169,27 +169,19 @@ export default function ProfileComponent({
     // Efectos para filtrar estados y ciudades (sin cambios)
     useEffect(() => {
         if (addressData.country_id) {
-            const statesForCountry = states.filter(state => state.country_id === addressData.country_id);
+            const statesForCountry = states.filter(state => state.country_id == addressData.country_id);
             setFilteredStates(statesForCountry);
-            if (!statesForCountry.some(state => state.id === addressData.state_id)) {
-                setAddressData(prev => ({ ...prev, state_id: null, city_id: null }));
-            }
         } else {
             setFilteredStates([]);
-            setAddressData(prev => ({ ...prev, state_id: null, city_id: null }));
         }
     }, [addressData.country_id, states]);
 
     useEffect(() => {
         if (addressData.state_id) {
-            const citiesForState = cities.filter(city => city.state_id === addressData.state_id);
+            const citiesForState = cities.filter(city => city.state_id == addressData.state_id);
             setFilteredCities(citiesForState);
-            if (!citiesForState.some(city => city.id === addressData.city_id)) {
-                setAddressData(prev => ({ ...prev, city_id: null }));
-            }
         } else {
             setFilteredCities([]);
-            setAddressData(prev => ({ ...prev, city_id: null }));
         }
     }, [addressData.state_id, cities]);
 
@@ -721,8 +713,13 @@ export default function ProfileComponent({
                                                 name="country_id"
                                                 id="country_id"
                                                 options={countryOptions}
-                                                value={countryOptions.find(option => option.value === addressData.country_id)}
-                                                onChange={(selectedOption) => setAddressData(prev => ({ ...prev, country_id: selectedOption?.value || null }))}
+                                                value={countryOptions.find(option => option.value == addressData.country_id)}
+                                                onChange={(selectedOption) => setAddressData(prev => ({
+                                                    ...prev,
+                                                    country_id: selectedOption?.value || null,
+                                                    state_id: null,
+                                                    city_id: null
+                                                }))}
                                                 styles={{
                                                     ...customStyles,
                                                     control: (base) => ({
@@ -758,8 +755,12 @@ export default function ProfileComponent({
                                                 name="state_id"
                                                 id="state_id"
                                                 options={stateOptions}
-                                                value={stateOptions.find(option => option.value === addressData.state_id)}
-                                                onChange={(selectedOption) => setAddressData(prev => ({ ...prev, state_id: selectedOption?.value || null }))}
+                                                value={stateOptions.find(option => option.value == addressData.state_id)}
+                                                onChange={(selectedOption) => setAddressData(prev => ({
+                                                    ...prev,
+                                                    state_id: selectedOption?.value || null,
+                                                    city_id: null
+                                                }))}
                                                 styles={{
                                                     ...customStyles,
                                                     control: (base) => ({
@@ -796,7 +797,7 @@ export default function ProfileComponent({
                                                 name="city_id"
                                                 id="city_id"
                                                 options={cityOptions}
-                                                value={cityOptions.find(option => option.value === addressData.city_id)}
+                                                value={cityOptions.find(option => option.value == addressData.city_id)}
                                                 onChange={(selectedOption) => setAddressData(prev => ({ ...prev, city_id: selectedOption?.value || null }))}
                                                 styles={{
                                                     ...customStyles,

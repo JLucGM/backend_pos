@@ -48,27 +48,19 @@ const CheckoutAddressForm = ({
 
     useEffect(() => {
         if (data.country_id) {
-            const filtered = states.filter(s => s.country_id === data.country_id);
+            const filtered = states.filter(s => s.country_id == data.country_id);
             setFilteredStates(filtered);
-            if (!filtered.some(s => s.id === data.state_id)) {
-                setData(prev => ({ ...prev, state_id: null, city_id: null }));
-            }
         } else {
             setFilteredStates([]);
-            setData(prev => ({ ...prev, state_id: null, city_id: null }));
         }
     }, [data.country_id, states]);
 
     useEffect(() => {
         if (data.state_id) {
-            const filtered = cities.filter(c => c.state_id === data.state_id);
+            const filtered = cities.filter(c => c.state_id == data.state_id);
             setFilteredCities(filtered);
-            if (!filtered.some(c => c.id === data.city_id)) {
-                setData(prev => ({ ...prev, city_id: null }));
-            }
         } else {
             setFilteredCities([]);
-            setData(prev => ({ ...prev, city_id: null }));
         }
     }, [data.state_id, cities]);
 
@@ -85,7 +77,7 @@ const CheckoutAddressForm = ({
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const url = isEditing ? `/profile/addresses/${location.id}` : '/profile/addresses';
+        const url = isEditing ? `/checkout/addresses/${location.id}` : '/checkout/addresses';
         const method = isEditing ? 'put' : 'post';
 
         if (method === 'put') {
@@ -212,8 +204,15 @@ const CheckoutAddressForm = ({
                     <Label htmlFor="country_id" style={labelStyles}>País</Label>
                     <Select
                         options={countryOptions}
-                        value={countryOptions.find(o => o.value === data.country_id)}
-                        onChange={(val) => setData('country_id', val?.value || null)}
+                        value={countryOptions.find(o => o.value == data.country_id)}
+                        onChange={(val) => {
+                            setData(prev => ({
+                                ...prev,
+                                country_id: val?.value || null,
+                                state_id: null,
+                                city_id: null
+                            }));
+                        }}
                         styles={selectStyles}
                         placeholder="País"
                     />
@@ -222,8 +221,14 @@ const CheckoutAddressForm = ({
                     <Label htmlFor="state_id" style={labelStyles}>Estado</Label>
                     <Select
                         options={stateOptions}
-                        value={stateOptions.find(o => o.value === data.state_id)}
-                        onChange={(val) => setData('state_id', val?.value || null)}
+                        value={stateOptions.find(o => o.value == data.state_id)}
+                        onChange={(val) => {
+                            setData(prev => ({
+                                ...prev,
+                                state_id: val?.value || null,
+                                city_id: null
+                            }));
+                        }}
                         styles={selectStyles}
                         placeholder="Estado"
                         isDisabled={!data.country_id}
@@ -233,7 +238,7 @@ const CheckoutAddressForm = ({
                     <Label htmlFor="city_id" style={labelStyles}>Ciudad</Label>
                     <Select
                         options={cityOptions}
-                        value={cityOptions.find(o => o.value === data.city_id)}
+                        value={cityOptions.find(o => o.value == data.city_id)}
                         onChange={(val) => setData('city_id', val?.value || null)}
                         styles={selectStyles}
                         placeholder="Ciudad"
