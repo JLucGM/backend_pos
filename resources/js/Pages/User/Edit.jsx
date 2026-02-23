@@ -5,14 +5,13 @@ import { toast } from 'sonner';
 import { lazy, Suspense, useState } from 'react';
 import { ArrowLongLeftIcon, PlusIcon } from '@heroicons/react/24/outline';
 import Loader from '@/Components/ui/loader';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import AddressDialog from './AddressDialog';
-import { Badge } from '@/Components/ui/badge';
-import { Pen, PenSquareIcon } from 'lucide-react';
+// import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+// import { Badge } from '@/Components/ui/badge';
+// import { Pen, PenSquareIcon } from 'lucide-react';
 
 // Importa los nuevos componentes
 const UserForm = lazy(() => import('./UserForm'));
-const DeliveryLocationForm = lazy(() => import('./DeliveryLocationForm'));
+// const DeliveryLocationForm = lazy(() => import('./DeliveryLocationForm'));
 
 // Asegúrate de recibir todas las props desde el controlador
 export default function Edit({ user, roles, role, permission, countries, states, cities, deliveryLocations }) {

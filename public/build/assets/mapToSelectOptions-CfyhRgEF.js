@@ -1,0 +1,1 @@
+function l(t,f,o,a=!1){if(!Array.isArray(t))return[];const r=t.map(n=>({value:n[f],label:typeof o=="function"?o(n):n[o]}));let e=r;return a&&(e=[typeof a=="object"?a:{value:null,label:"Ninguno"},...r]),e}export{l as m};
