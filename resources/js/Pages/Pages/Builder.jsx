@@ -92,6 +92,9 @@ import AddComponentDropdown from '@/Components/BuilderPages/AddComponentDropdown
 import LinkBioEditDialog from './partials/LinkBio/LinkBioEditDialog';
 import ImageCarouselEditDialog from './partials/ImageCarouselEditDialog';
 import ImageCarouselAccordionEditDialog from './partials/ImageCarouselAccordionEditDialog';
+import FaqEditDialog from './partials/Faq/FaqEditDialog';
+import AccordionEditDialog from './partials/Faq/AccordionEditDialog';
+import AccordionRowEditDialog from './partials/Faq/AccordionRowEditDialog';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -159,6 +162,9 @@ const componentDialogMap = {
     linkBio: LinkBioEditDialog,
     imageCarousel: ImageCarouselEditDialog,
     imageCarouselAccordion: ImageCarouselAccordionEditDialog,
+    faq: FaqEditDialog,
+    accordion: AccordionEditDialog,
+    accordionRow: AccordionRowEditDialog,
 };
 
 // Componente para renderizar el diálogo apropiado
@@ -448,7 +454,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 const typesWithChildren = [
                     'container', 'banner', 'product', 'productList', 'productCard', 'carousel',
                     'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                    'productDetail', 'checkout', 'cart', 'announcementBar', 'linkBio'
+                    'productDetail', 'checkout', 'cart', 'announcementBar', 'linkBio',
+                    'faq', 'accordion', 'accordionRow'
                 ];
 
                 if (typesWithChildren.includes(item.type) &&
@@ -532,7 +539,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         const typesWithChildren = [
                             'container', 'banner', 'product', 'productList', 'productCard', 'carousel',
                             'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
-                            'productDetail', 'cart', 'checkout', 'login', 'register', 'announcementBar', 'linkBio'
+                            'productDetail', 'checkout', 'cart', 'announcementBar', 'linkBio',
+                            'faq', 'accordion', 'accordionRow'  // ← Agrega estos
                         ];
 
                         if (typesWithChildren.includes(component.type) &&
@@ -2473,6 +2481,95 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 return;
             }
 
+            if (selectedType === 'faq') {
+                const faqId = Date.now();
+                const headingId = faqId + 1;
+                const accordionId = faqId + 2;
+                const rowId = faqId + 3;
+                const questionId = faqId + 4;
+                const answerId = faqId + 5;
+
+                const content = {
+                    backgroundColor: themeWithDefaults.background || '#ffffff',
+                    children: [
+                        {
+                            id: headingId,
+                            type: 'heading',
+                            content: 'Preguntas Frecuentes',
+                            styles: {
+                                textStyle: 'heading2',
+                                layout: 'fill',
+                                alignment: 'center',
+                                color: themeWithDefaults.heading,
+                                fontSize: themeWithDefaults.heading2_fontSize || '36px',
+                                fontWeight: themeWithDefaults.heading2_fontWeight || 'bold',
+                                paddingBottom: '20px'
+                            }
+                        },
+                        {
+                            id: accordionId,
+                            type: 'accordion',
+                            content: {
+                                paddingTop: '0',
+                                paddingRight: '0',
+                                paddingBottom: '0',
+                                paddingLeft: '0',
+                                border: 'none',
+                                borderRadius: '0',
+                                backgroundColor: 'transparent',
+                                children: [
+                                    {
+                                        id: rowId,
+                                        type: 'accordionRow',
+                                        content: {
+                                            children: [
+                                                {
+                                                    id: questionId,
+                                                    type: 'text',
+                                                    content: '¿Pregunta frecuente 1?',
+                                                    styles: {
+                                                        fontWeight: '600',
+                                                        fontSize: themeWithDefaults.paragraph_fontSize || '18px',
+                                                        color: themeWithDefaults.text
+                                                    }
+                                                },
+                                                {
+                                                    id: answerId,
+                                                    type: 'text',
+                                                    content: 'Respuesta a la pregunta frecuente 1.',
+                                                    styles: {
+                                                        fontSize: themeWithDefaults.paragraph_fontSize || '16px',
+                                                        color: themeWithDefaults.text
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        styles: {}
+                                    }
+                                ]
+                            },
+                            styles: {}
+                        }
+                    ]
+                };
+
+                const newItem = {
+                    id: faqId,
+                    type: 'faq',
+                    content,
+                    styles: {
+                        backgroundColor: themeWithDefaults.background || '#ffffff',
+                        paddingTop: '40px',
+                        paddingRight: '20px',
+                        paddingBottom: '40px',
+                        paddingLeft: '20px'
+                    }
+                };
+
+                addComponentToState(newItem);
+                return;
+            }
+
             const newItem = {
                 id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
                 type: selectedType,
@@ -2624,7 +2721,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         }
                         // Componentes con estructura children
                         else if (
-                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'container'].includes(items[i].type) &&
+                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'faq', 'accordion', 'accordionRow', 'container',].includes(items[i].type) &&
                             items[i].content?.children
                         ) {
                             childArray = items[i].content.children;
@@ -2676,7 +2773,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Buscar en componentes con estructura children
                 if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'faq', 'accordion', 'accordionRow'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
@@ -2721,7 +2818,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 }
                 // Componentes con estructura children
                 else if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'faq', 'accordion', 'accordionRow'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
@@ -2771,7 +2868,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         const overComponent = newOverInfo.component;
         const isContainerType = [
             'container', 'banner', 'product', 'productCard',
-            'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout'
+            'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'faq', 'accordion', 'accordionRow'
         ].includes(overComponent?.type);
 
         // Lógica de inserción
@@ -2856,7 +2953,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Buscar en componentes con estructura children
                 if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'faq', 'accordion', 'accordionRow'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {

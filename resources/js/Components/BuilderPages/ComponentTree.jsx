@@ -21,11 +21,11 @@ const INDENTATION_WIDTH = 40;
 
 // Lista de componentes que pueden tener hijos y ser colapsados
 const COLLAPSIBLE_TYPES = [
-    'container', 'product', 'carousel', 'banner', 'footer', 'header', 'linkBio',
+    'container', 'product', 'carousel', 'banner', 'footer', 'header', 'linkBio', 'faq', 'accordion', 'accordionRow',
     'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail', 'cart', 'checkout', 'checkoutDiscountGiftCard', 'announcementBar', 'productList'
 ];
 
-const NO_ADD_BUTTON_TYPES = ['header', 'bentoFeature', 'productCard', 'carouselCard', 'productDetail', 'announcement'];
+const NO_ADD_BUTTON_TYPES = ['header', 'bentoFeature', 'productCard', 'carouselCard', 'productDetail', 'announcement', 'faq'];
 
 // Función para determinar si un componente puede tener hijos
 const canHaveChildren = (type) => {
@@ -75,6 +75,9 @@ const getComponentTypeName = (type) => {
         'checkoutDiscountGiftCard': 'Descuentos y Gift Cards',
         'announcementBar': 'Barra de Anuncios',
         'announcement': 'Anuncio',
+        'faq': 'FAQ',
+        'accordion': 'Acordeón',
+        'accordionRow': 'Fila de Acordeón',
     };
     return typeNames[type] || type;
 };
@@ -302,6 +305,30 @@ export default function ComponentTree({
                         content: { text: 'Nuevo texto' }
                     }
                 ];
+            case 'accordionRow':
+    const questionId = generateId();
+    const answerId = generateId();
+    return {
+        children: [
+            {
+                id: questionId,
+                type: 'text',
+                content: 'Nueva pregunta',
+                styles: {
+                    fontWeight: '600',
+                    fontSize: '16px',
+                }
+            },
+            {
+                id: answerId,
+                type: 'text',
+                content: 'Nueva respuesta',
+                styles: {
+                    fontSize: '14px',
+                }
+            }
+        ]
+    };
             case 'bentoFeature':
                 const featureId = generateId();
                 const featureTitleId = generateId();

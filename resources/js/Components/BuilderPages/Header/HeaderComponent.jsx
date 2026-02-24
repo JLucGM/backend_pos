@@ -104,16 +104,22 @@ const HeaderComponent = ({
     }, [isSearchOpen]);
 
     // Filtrar productos al escribir
-    useEffect(() => {
-        if (searchQuery.trim().length > 1 && products.length > 0) {
-            const filtered = products.filter(product =>
-                product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
-            ).slice(0, 8); // Limitar a 8 resultados
-            setSearchResults(filtered);
-        } else {
-            setSearchResults([]);
-        }
-    }, [searchQuery, products]);
+    const productsRef = useRef(products);
+
+useEffect(() => {
+    productsRef.current = products;
+}, [products]);
+
+useEffect(() => {
+    if (searchQuery.trim().length > 1 && productsRef.current.length > 0) {
+        const filtered = productsRef.current.filter(product =>
+            product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
+        ).slice(0, 8);
+        setSearchResults(filtered);
+    } else {
+        setSearchResults([]);
+    }
+}, [searchQuery]); // ✅ Solo depende de searchQuery
 
     // ---------- RESOLUCIÓN DE ESTILOS ----------
     const resolveStyles = (styles) => {

@@ -42,6 +42,7 @@ import PageContentComponent from '@/Components/BuilderPages/PageContentComponent
 import ImageCarouselAccordionComponent from '@/Components/BuilderPages/ImageCarouselAccordionComponent';
 import ImageCarouselComponent from '@/Components/BuilderPages/ImageCarouselComponent';
 import ProductDetailComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailComponent';
+import FaqComponent from '@/Components/BuilderPages/FaqComponent/FaqComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -83,6 +84,7 @@ const componentMap = {
     'pageContent': PageContentComponent,
     'imageCarousel': ImageCarouselComponent,
     'imageCarouselAccordion': ImageCarouselAccordionComponent,
+    'faq': FaqComponent,
 };
 
 // ==============================================================

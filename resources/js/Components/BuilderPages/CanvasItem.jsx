@@ -59,6 +59,9 @@ import LinkBioComponent from './LinkBio/LinkBioComponent';
 import { getThemeWithDefaults, resolveStyleValue } from '@/utils/themeUtils';
 import ImageCarouselComponent from './ImageCarouselComponent';
 import ImageCarouselAccordionComponent from './ImageCarouselAccordionComponent';
+import FaqComponent from './FaqComponent/FaqComponent';
+import AccordionComponent from './FaqComponent/AccordionComponent';
+import AccordionRowComponent from './FaqComponent/AccordionRowComponent';
 
 const CanvasItem = ({
     comp,
@@ -437,6 +440,39 @@ const CanvasItem = ({
                         {...commonProps}
                         onEdit={onEditComponent}
                         onDelete={onDeleteComponent}
+                    />
+                );
+            case 'faq':
+                return (
+                    <FaqComponent
+                        {...commonProps}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'accordion':
+                return (
+                    <AccordionComponent
+                        {...commonProps}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
+                    />
+                );
+            case 'accordionRow':
+                return (
+                    <AccordionRowComponent
+                        {...commonProps}
+                        onEdit={() => onEditComponent(comp)}
+                        onDelete={() => onDeleteComponent(comp.id)}
+                        setComponents={setComponents}
+                        hoveredComponentId={hoveredComponentId}
+                        setHoveredComponentId={setHoveredComponentId}
                     />
                 );
             case 'productDetail':
@@ -1039,6 +1075,9 @@ const CanvasItem = ({
             'success': 'Página de Éxito',
             'announcementBar': 'Barra de Anuncios',
             'announcement': 'Anuncio',
+            'faq': 'FAQ',
+            'accordion': 'Acordeón',
+            'accordionRow': 'Fila de Acordeón',
         };
         return typeNames[type] || type;
     };

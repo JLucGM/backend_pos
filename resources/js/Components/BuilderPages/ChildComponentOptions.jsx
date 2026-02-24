@@ -6,7 +6,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import { DivideCircleIcon, ImageIcon, LinkIcon, TextIcon, VideoIcon, PlusCircleIcon, Grid3x3, LayersIcon } from 'lucide-react';
+import { DivideCircleIcon, ImageIcon, LinkIcon, TextIcon, VideoIcon, PlusCircleIcon, Grid3x3, LayersIcon, Layers } from 'lucide-react';
 import { ChatBubbleBottomCenterIcon, CubeIcon } from '@heroicons/react/24/outline';
 
 // Definir todas las opciones posibles con sus propiedades
@@ -22,6 +22,12 @@ const ALL_COMPONENT_OPTIONS = [
         label: 'Encabezado',
         icon: <TextIcon className="size-4" />,
         description: 'Agregar un título'
+    },
+    {
+        type: 'accordionRow',
+        label: 'Fila de Acordeón',
+        icon: <Layers className="size-4" />,
+        description: 'Agregar una nueva fila de preguntas'
     },
     {
         type: 'productList',
@@ -120,6 +126,10 @@ const ALLOWED_CHILD_TYPES = {
     image: ['link', 'button', 'text', 'container'],
 
     linkBio: ['heading', 'button', 'text', 'image', 'divider', 'container'],
+
+    faq: ['heading', 'accordion'],
+    accordion: ['accordionRow'],
+    accordionRow: ['text'],
 
     // ProductCard, CarouselCard, BentoFeature: no permiten agregar hijos (o sí, según necesidad)
     productCard: [],

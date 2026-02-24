@@ -10,7 +10,7 @@ import {
 } from "@/Components/ui/dropdown-menu";
 import { Input } from "@/Components/ui/input";
 import { Button } from "@/Components/ui/button";
-import { Search, Type, Image, Layout, PanelTop, PanelBottom, DivideIcon, Megaphone, Package, Grid, ShoppingCart, CreditCard, User, Users, CheckCircle, FileText, Link as LinkIcon, Video, TrendingUp, Grid3x3, Layers, Bell, PlusCircle, ImageIcon } from 'lucide-react';
+import { Search, Type, Image, Layout, PanelTop, PanelBottom, DivideIcon, Megaphone, Package, Grid, ShoppingCart, CreditCard, User, Users, CheckCircle, FileText, Link as LinkIcon, Video, TrendingUp, Grid3x3, Layers, Bell, PlusCircle, ImageIcon, HelpCircle } from 'lucide-react';
 import { ScrollArea } from "@/Components/ui/scroll-area";
 
 // Definir todos los componentes organizados por categorías
@@ -74,6 +74,20 @@ const ALL_COMPONENTS = [
   //   icon: <Type className="h-4 w-4" />,
   //   description: 'Título o subtítulo'
   // },
+  {
+    type: 'faq',
+    label: 'FAQ (Preguntas Frecuentes)',
+    category: 'layouts',
+    icon: <HelpCircle className="h-4 w-4" />,
+    description: 'Sección de preguntas frecuentes con acordeón'
+},
+  {
+    type: 'accordionRow',
+    label: 'accordionRow',
+    category: 'layouts',
+    icon: <HelpCircle className="h-4 w-4" />,
+    description: 'Sección de preguntas frecuentes con acordeón'
+},
   {
     type: 'image',
     label: 'Imagen',
