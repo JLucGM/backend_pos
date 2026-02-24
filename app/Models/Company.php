@@ -21,6 +21,8 @@ class Company extends Model
         'is_trial',
         'trial_ends_at',
         'subscription_limits',
+        'subdomain',
+        'domain',
     ];
 
     protected $casts = [
