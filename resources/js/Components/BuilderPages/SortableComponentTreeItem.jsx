@@ -27,6 +27,48 @@ export default function SortableComponentTreeItem({
     collapsibleTypes,
     canHaveChildren,
 }) {
+    // Tipos de componentes que no se pueden eliminar
+    const protectedTypes = [
+        'pageContent',
+        'productDetail',
+        'productDetailImage',
+        'productDetailName',
+        'productDetailPrice',
+        'productDetailDescription',
+        'productDetailAttributes',
+        'productDetailStock',
+        'quantitySelector',
+        'headerLogo',
+        'headerMenu',
+        'productList',
+        'productTitle',
+        'productCard',
+        'productImage',
+        'productName',
+        'productPrice',
+        'productListPriceFilter',
+        'productListSortSelect',
+        'productListPagination',
+        'cart',
+        'cartItems',
+        'cartSummary',
+        'checkout',
+        'checkoutPayment',
+        'checkoutSummary',
+        'customerInfo',
+        'checkoutAddress',
+        'checkoutDiscountGiftCard',
+        'login',
+        'register',
+        'orders',
+        'profile',
+        'success',
+        'linkBio',
+        'header',
+        'footer',
+        
+    ];
+
     const {
         attributes,
         listeners,
@@ -164,8 +206,8 @@ export default function SortableComponentTreeItem({
                         <PencilIcon className="size-3" />
                     </Button>
 
-                    {/* Solo mostrar botón de eliminar si NO es pageContent */}
-                    {item.type !== 'pageContent' && (
+                    {/* Botón de eliminar: solo visible si el tipo NO está en protectedTypes */}
+                    {!protectedTypes.includes(item.type) && (
                         <Button
                             onClick={(e) => {
                                 e.stopPropagation();

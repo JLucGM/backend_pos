@@ -21,7 +21,7 @@ const INDENTATION_WIDTH = 40;
 
 // Lista de componentes que pueden tener hijos y ser colapsados
 const COLLAPSIBLE_TYPES = [
-    'container', 'product', 'carousel', 'banner', 'footer', 'header', 'linkBio', 'faq', 'accordion', 'accordionRow',
+    'container', 'product', 'carousel', 'banner', 'footer', 'header', 'linkBio', 'faq', 'accordion', 'accordionRow', 'heroBanner',
     'bento', 'productCard', 'carouselCard', 'bentoFeature', 'productDetail', 'cart', 'checkout', 'checkoutDiscountGiftCard', 'announcementBar', 'productList'
 ];
 
@@ -53,6 +53,9 @@ const getComponentTypeName = (type) => {
         'productImage': 'Imagen de Producto',
         'productName': 'Nombre de Producto',
         'productPrice': 'Precio de Producto',
+        'productListPriceFilter': 'Filtro',
+        'productListSortSelect': 'Ordenar',
+        'productListPagination': 'Paginación',
         'carouselTitle': 'Título del Carrusel',
         'carouselCard': 'Carta del Carrusel',
         'carouselImage': 'Imagen del Carrusel',
@@ -71,13 +74,35 @@ const getComponentTypeName = (type) => {
         'headerLogo': 'Logo',
         'headerMenu': 'Menú',
         'footerText': 'Texto Footer',
-        'footerMenu': 'Menú Footer',
+        'footerMenu': 'Menú',
+        'productDetail': 'Detalle de Producto',
+        'productDetailImage': 'Imagen del Producto',
+        'productDetailName': 'Nombre del Producto',
+        'productDetailPrice': 'Precio del Producto',
+        'productDetailDescription': 'Descripción del Producto',
+        'productDetailAttributes': 'Atributos del Producto',
+        'productDetailStock': 'Stock del Producto',
+        'quantitySelector': 'Selector de Cantidad',
+        'checkout': 'Checkout',
         'checkoutDiscountGiftCard': 'Descuentos y Gift Cards',
+        'checkoutPayment': 'Pago',
+        'checkoutSummary': 'Resumen de Compra',
+        'customerInfo': 'Información del Cliente',
         'announcementBar': 'Barra de Anuncios',
         'announcement': 'Anuncio',
         'faq': 'FAQ',
         'accordion': 'Acordeón',
         'accordionRow': 'Fila de Acordeón',
+        'heroBanner': 'Banner Hero',
+        'cart': 'Carrito',
+        'cartItems': 'Items del Carrito',
+        'cartSummary': 'Resumen del Carrito',
+        'login': 'Login',
+        'register': 'Registro',
+        'orders': 'Órdenes',
+        'profile': 'Perfil',
+        'success': 'Página de Éxito',
+        'linkBio': 'Link Bio',
     };
     return typeNames[type] || type;
 };

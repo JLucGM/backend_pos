@@ -62,6 +62,7 @@ import ImageCarouselAccordionComponent from './ImageCarouselAccordionComponent';
 import FaqComponent from './FaqComponent/FaqComponent';
 import AccordionComponent from './FaqComponent/AccordionComponent';
 import AccordionRowComponent from './FaqComponent/AccordionRowComponent';
+import HeroBannerComponent from './HeroBanner/HeroBannerComponent';
 
 const CanvasItem = ({
     comp,
@@ -475,6 +476,17 @@ const CanvasItem = ({
                         setHoveredComponentId={setHoveredComponentId}
                     />
                 );
+                case 'heroBanner':
+    return (
+        <HeroBannerComponent
+            {...commonProps}
+            onEdit={() => onEditComponent(comp)}
+            onDelete={() => onDeleteComponent(comp.id)}
+            setComponents={setComponents}
+            hoveredComponentId={hoveredComponentId}
+            setHoveredComponentId={setHoveredComponentId}
+        />
+    );
             case 'productDetail':
                 return (
                     <ProductDetailComponent
@@ -1078,6 +1090,7 @@ const CanvasItem = ({
             'faq': 'FAQ',
             'accordion': 'Acordeón',
             'accordionRow': 'Fila de Acordeón',
+            'heroBanner': 'Banner Hero',
         };
         return typeNames[type] || type;
     };

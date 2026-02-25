@@ -318,28 +318,20 @@ const BannerEditDialog = ({
       <Separator />
       <div className="grid grid-cols-1 gap-4">
         <div>
-          <Label htmlFor="containerHeight">Altura del Contenedor</Label>
-          <div className="flex items-center space-x-2">
-            <Input
-              id="containerHeight"
-              type="number"
-              value={parseInt(editContent.containerHeight) || 400}
-              onChange={(e) => updateBannerConfig('containerHeight', e.target.value)}
-            />
-            <Select
-              value={editContent.containerHeightUnit || 'px'}
-              onValueChange={(value) => updateBannerConfig('containerHeightUnit', value)}
-            >
-              <SelectTrigger className="w-[70px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="px">px</SelectItem>
-                <SelectItem value="vh">vh</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+  <Label htmlFor="containerHeight">Altura (vh)</Label>
+  <Input
+    id="containerHeight"
+    type="number"
+    min="0"
+    max="100"
+    value={parseInt(editContent.containerHeight) || 100}
+    onChange={(e) => {
+      updateBannerConfig('containerHeight', e.target.value);
+      updateBannerConfig('containerHeightUnit', 'vh'); // Forzar unidad vh
+    }}
+  />
+  <p className="text-xs text-muted-foreground">100 = pantalla completa</p>
+</div>
 
         <div>
           <Label htmlFor="containerWidth">Ancho del Contenedor</Label>

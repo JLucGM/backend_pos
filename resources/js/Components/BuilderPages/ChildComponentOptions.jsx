@@ -126,6 +126,7 @@ const ALLOWED_CHILD_TYPES = {
     image: ['link', 'button', 'text', 'container'],
 
     linkBio: ['heading', 'button', 'text', 'image', 'divider', 'container'],
+    heroBanner: ['text', 'heading', 'button', 'image', 'link', 'video', 'marquee', 'divider', 'container'],
 
     faq: ['heading', 'accordion'],
     accordion: ['accordionRow'],

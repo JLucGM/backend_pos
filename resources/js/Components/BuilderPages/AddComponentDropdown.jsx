@@ -16,20 +16,20 @@ import { ScrollArea } from "@/Components/ui/scroll-area";
 // Definir todos los componentes organizados por categorías
 const ALL_COMPONENTS = [
   // Estructura
-  {
-    type: 'header',
-    label: 'Header',
-    category: 'structure',
-    icon: <PanelTop className="h-4 w-4" />,
-    description: 'Encabezado de la página'
-  },
-  {
-    type: 'footer',
-    label: 'Footer',
-    category: 'structure',
-    icon: <PanelBottom className="h-4 w-4" />,
-    description: 'Pie de página'
-  },
+  // {
+  //   type: 'header',
+  //   label: 'Header',
+  //   category: 'structure',
+  //   icon: <PanelTop className="h-4 w-4" />,
+  //   description: 'Encabezado de la página'
+  // },
+  // {
+  //   type: 'footer',
+  //   label: 'Footer',
+  //   category: 'structure',
+  //   icon: <PanelBottom className="h-4 w-4" />,
+  //   description: 'Pie de página'
+  // },
   // {
   //   type: 'container',
   //   label: 'Contenedor',
@@ -81,13 +81,13 @@ const ALL_COMPONENTS = [
     icon: <HelpCircle className="h-4 w-4" />,
     description: 'Sección de preguntas frecuentes con acordeón'
 },
-  {
-    type: 'accordionRow',
-    label: 'accordionRow',
-    category: 'layouts',
-    icon: <HelpCircle className="h-4 w-4" />,
-    description: 'Sección de preguntas frecuentes con acordeón'
-},
+//   {
+//     type: 'accordionRow',
+//     label: 'accordionRow',
+//     category: 'layouts',
+//     icon: <HelpCircle className="h-4 w-4" />,
+//     description: 'Sección de preguntas frecuentes con acordeón'
+// },
   {
     type: 'image',
     label: 'Imagen',
@@ -132,20 +132,20 @@ const ALL_COMPONENTS = [
     icon: <Grid className="h-4 w-4" />,
     description: 'Grid de productos'
   },
-  {
-    type: 'productList',
-    label: 'Lista de Productos',
-    category: 'products',
-    icon: <Grid3x3 className="h-4 w-4" />,
-    description: 'Lista de productos con paginación y filtros'
-  },
-  {
-    type: 'productDetail',
-    label: 'Detalle de Producto',
-    category: 'products',
-    icon: <Package className="h-4 w-4" />,
-    description: 'Página individual de producto'
-  },
+  // {
+  //   type: 'productList',
+  //   label: 'Lista de Productos',
+  //   category: 'products',
+  //   icon: <Grid3x3 className="h-4 w-4" />,
+  //   description: 'Lista de productos con paginación y filtros'
+  // },
+  // {
+  //   type: 'productDetail',
+  //   label: 'Detalle de Producto',
+  //   category: 'products',
+  //   icon: <Package className="h-4 w-4" />,
+  //   description: 'Página individual de producto'
+  // },
   {
     type: 'carousel',
     label: 'Carrusel',
@@ -153,20 +153,20 @@ const ALL_COMPONENTS = [
     icon: <TrendingUp className="h-4 w-4" />,
     description: 'Carrusel de productos'
   },
-  {
-    type: 'cart',
-    label: 'Carrito',
-    category: 'products',
-    icon: <ShoppingCart className="h-4 w-4" />,
-    description: 'Carrito de compras'
-  },
-  {
-    type: 'checkout',
-    label: 'Checkout',
-    category: 'products',
-    icon: <CreditCard className="h-4 w-4" />,
-    description: 'Finalización de compra'
-  },
+  // {
+  //   type: 'cart',
+  //   label: 'Carrito',
+  //   category: 'products',
+  //   icon: <ShoppingCart className="h-4 w-4" />,
+  //   description: 'Carrito de compras'
+  // },
+  // {
+  //   type: 'checkout',
+  //   label: 'Checkout',
+  //   category: 'products',
+  //   icon: <CreditCard className="h-4 w-4" />,
+  //   description: 'Finalización de compra'
+  // },
 
   // Layouts
   {
@@ -185,48 +185,48 @@ const ALL_COMPONENTS = [
   },
 
   // Autenticación
-  {
-    type: 'login',
-    label: 'Login',
-    category: 'auth',
-    icon: <User className="h-4 w-4" />,
-    description: 'Formulario de inicio de sesión'
-  },
-  {
-    type: 'register',
-    label: 'Registro',
-    category: 'auth',
-    icon: <Users className="h-4 w-4" />,
-    description: 'Formulario de registro'
-  },
-  {
-    type: 'profile',
-    label: 'Perfil',
-    category: 'auth',
-    icon: <User className="h-4 w-4" />,
-    description: 'Perfil de usuario'
-  },
-  {
-    type: 'orders',
-    label: 'Pedidos',
-    category: 'auth',
-    icon: <ShoppingCart className="h-4 w-4" />,
-    description: 'Historial de pedidos'
-  },
-  {
-    type: 'success',
-    label: 'Página de Éxito',
-    category: 'auth',
-    icon: <CheckCircle className="h-4 w-4" />,
-    description: 'Confirmación de éxito'
-  },
-  {
-    type: 'linkBio',
-    label: 'Link Bio',
-    category: 'layouts',
-    icon: <LinkIcon className="h-4 w-4" />,
-    description: 'Página de enlaces tipo "link in bio"'
-  },
+  // {
+  //   type: 'login',
+  //   label: 'Login',
+  //   category: 'auth',
+  //   icon: <User className="h-4 w-4" />,
+  //   description: 'Formulario de inicio de sesión'
+  // },
+  // {
+  //   type: 'register',
+  //   label: 'Registro',
+  //   category: 'auth',
+  //   icon: <Users className="h-4 w-4" />,
+  //   description: 'Formulario de registro'
+  // },
+  // {
+  //   type: 'profile',
+  //   label: 'Perfil',
+  //   category: 'auth',
+  //   icon: <User className="h-4 w-4" />,
+  //   description: 'Perfil de usuario'
+  // },
+  // {
+  //   type: 'orders',
+  //   label: 'Pedidos',
+  //   category: 'auth',
+  //   icon: <ShoppingCart className="h-4 w-4" />,
+  //   description: 'Historial de pedidos'
+  // },
+  // {
+  //   type: 'success',
+  //   label: 'Página de Éxito',
+  //   category: 'auth',
+  //   icon: <CheckCircle className="h-4 w-4" />,
+  //   description: 'Confirmación de éxito'
+  // },
+  // {
+  //   type: 'linkBio',
+  //   label: 'Link Bio',
+  //   category: 'layouts',
+  //   icon: <LinkIcon className="h-4 w-4" />,
+  //   description: 'Página de enlaces tipo "link in bio"'
+  // },
   {
     type: 'imageCarousel',
     label: 'Carrusel de Imágenes',
@@ -241,6 +241,13 @@ const ALL_COMPONENTS = [
     icon: <ImageIcon className="h-4 w-4" />,
     description: 'Carrusel tipo acordeón con imágenes y textos'
   },
+{
+    type: 'heroBanner',
+    label: 'Banner Hero',
+    category: 'layouts',
+    icon: <Layout className="h-4 w-4" />, // Puedes usar Layout de lucide-react
+    description: 'Banner con imagen a la derecha'
+},
 ];
 
 // Categorías para agrupar

@@ -43,6 +43,7 @@ import ImageCarouselAccordionComponent from '@/Components/BuilderPages/ImageCaro
 import ImageCarouselComponent from '@/Components/BuilderPages/ImageCarouselComponent';
 import ProductDetailComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailComponent';
 import FaqComponent from '@/Components/BuilderPages/FaqComponent/FaqComponent';
+import HeroBannerComponent from '@/Components/BuilderPages/HeroBanner/HeroBannerComponent';
 
 // ==============================================================
 // MAPEO DE TIPOS A COMPONENTES
@@ -85,6 +86,7 @@ const componentMap = {
     'imageCarousel': ImageCarouselComponent,
     'imageCarouselAccordion': ImageCarouselAccordionComponent,
     'faq': FaqComponent,
+    'heroBanner':HeroBannerComponent ,
 };
 
 // ==============================================================

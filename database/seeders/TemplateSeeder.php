@@ -180,7 +180,7 @@ class TemplateSeeder extends Seeder
                     "input_font_family" => "'Arial', sans-serif",
                     "carousel_gapX" => "10px",
                     "carousel_gapY" => "10px",
-                    "banner_containerHeight" => "400px",
+                    "banner_containerHeight" => "100vh",
                     "banner_paddingTop" => "20px",
                     "banner_paddingRight" => "20px",
                     "banner_paddingBottom" => "20px",

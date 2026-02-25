@@ -95,6 +95,7 @@ import ImageCarouselAccordionEditDialog from './partials/ImageCarouselAccordionE
 import FaqEditDialog from './partials/Faq/FaqEditDialog';
 import AccordionEditDialog from './partials/Faq/AccordionEditDialog';
 import AccordionRowEditDialog from './partials/Faq/AccordionRowEditDialog';
+import HeroBannerEditDialog from './partials/HeroBanner/HeroBannerEditDialog';
 
 // Mapeo de tipos de componente a sus diálogos correspondientes
 const componentDialogMap = {
@@ -165,6 +166,7 @@ const componentDialogMap = {
     faq: FaqEditDialog,
     accordion: AccordionEditDialog,
     accordionRow: AccordionRowEditDialog,
+    heroBanner: HeroBannerEditDialog,
 };
 
 // Componente para renderizar el diálogo apropiado
@@ -455,7 +457,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                     'container', 'banner', 'product', 'productList', 'productCard', 'carousel',
                     'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
                     'productDetail', 'checkout', 'cart', 'announcementBar', 'linkBio',
-                    'faq', 'accordion', 'accordionRow'
+                    'faq', 'accordion', 'accordionRow', 'heroBanner',
                 ];
 
                 if (typesWithChildren.includes(item.type) &&
@@ -540,7 +542,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             'container', 'banner', 'product', 'productList', 'productCard', 'carousel',
                             'carouselCard', 'bento', 'bentoFeature', 'header', 'footer',
                             'productDetail', 'checkout', 'cart', 'announcementBar', 'linkBio',
-                            'faq', 'accordion', 'accordionRow'  // ← Agrega estos
+                            'faq', 'accordion', 'accordionRow', 'heroBanner',
                         ];
 
                         if (typesWithChildren.includes(component.type) &&
@@ -1338,7 +1340,8 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 content = {
                     containerHeight: themeWithDefaults.banner_containerHeight,
-                    containerWidth: '100%',
+                    containerHeight: '100',
+                    containerHeightUnit: 'vh',
                     marginTop: '0px',
                     marginRight: '0px',
                     marginBottom: '0px',
@@ -2570,6 +2573,71 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 return;
             }
 
+            if (selectedType === 'heroBanner') {
+                const heroId = Date.now();
+                const headingId = heroId + 1;
+                const textId = heroId + 2;
+                const imageId = heroId + 3;
+
+                const content = {
+                    paddingTop: '40px',
+                    paddingRight: '20px',
+                    paddingBottom: '40px',
+                    paddingLeft: '20px',
+                    gap: '40px',
+                    textGap: '20px',
+                    textAlign: 'left',
+                    maxWidth: 'auto',
+                    heightVh: 100,
+                    backgroundColor: themeWithDefaults.background || '#ffffff',
+                    children: [
+                        {
+                            id: headingId,
+                            type: 'heading',
+                            content: 'Título del banner',
+                            styles: {
+                                textStyle: 'heading1',
+                                layout: 'fit',
+                                color: themeWithDefaults.heading,
+                                fontSize: themeWithDefaults.heading1_fontSize || '48px',
+                                fontWeight: themeWithDefaults.heading1_fontWeight || 'bold',
+                            }
+                        },
+                        {
+                            id: textId,
+                            type: 'text',
+                            content: 'Descripción del banner. Puedes editar este texto.',
+                            styles: {
+                                fontSize: themeWithDefaults.paragraph_fontSize || '18px',
+                                color: themeWithDefaults.text,
+                            }
+                        },
+                        {
+                            id: imageId,
+                            type: 'image',
+                            content: {
+                                src: 'https://picsum.photos/600/400',
+                                alt: 'Imagen de ejemplo'
+                            },
+                            styles: {
+                                aspectRatio: 'landscape',
+                                borderRadius: '8px',
+                            }
+                        }
+                    ]
+                };
+
+                const newItem = {
+                    id: heroId,
+                    type: 'heroBanner',
+                    content,
+                    styles: {}
+                };
+
+                addComponentToState(newItem);
+                return;
+            }
+
             const newItem = {
                 id: selectedType === 'banner' || selectedType === 'product' ? Date.now() : Date.now(),
                 type: selectedType,
@@ -2721,7 +2789,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                         }
                         // Componentes con estructura children
                         else if (
-                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'faq', 'accordion', 'accordionRow', 'container',].includes(items[i].type) &&
+                            ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'heroBanner', 'faq', 'accordion', 'accordionRow', 'container'].includes(items[i].type) &&
                             items[i].content?.children
                         ) {
                             childArray = items[i].content.children;
@@ -2773,7 +2841,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Buscar en componentes con estructura children
                 if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'faq', 'accordion', 'accordionRow'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'heroBanner', 'faq', 'accordion', 'accordionRow'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
@@ -2818,7 +2886,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                 }
                 // Componentes con estructura children
                 else if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'faq', 'accordion', 'accordionRow'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'heroBanner', 'faq', 'accordion', 'accordionRow'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
@@ -2868,7 +2936,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
         const overComponent = newOverInfo.component;
         const isContainerType = [
             'container', 'banner', 'product', 'productCard',
-            'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'faq', 'accordion', 'accordionRow'
+            'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'heroBanner', 'faq', 'accordion', 'accordionRow'
         ].includes(overComponent?.type);
 
         // Lógica de inserción
@@ -2953,7 +3021,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 // Buscar en componentes con estructura children
                 if (
-                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'faq', 'accordion', 'accordionRow'].includes(item.type) &&
+                    ['banner', 'product', 'productCard', 'carousel', 'carouselCard', 'bento', 'bentoFeature', 'checkout', 'linkBio', 'heroBanner', 'faq', 'accordion', 'accordionRow'].includes(item.type) &&
                     item.content &&
                     Array.isArray(item.content.children)
                 ) {
