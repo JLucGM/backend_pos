@@ -1,1 +1,0 @@
-import{j as r}from"./app-9DqwRFcH.js";function x({className:t="",children:a,title:s,subtitle:e,...d}){return r.jsxs("div",{...d,className:"bg-white dark:bg-gray-800 border shadow rounded-3xl p-4 mb-4 "+t,children:[r.jsx("h1",{className:"text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4",children:s}),e&&r.jsx("p",{children:e}),a]})}export{x as default};

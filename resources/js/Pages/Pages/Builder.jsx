@@ -1340,7 +1340,6 @@ export default function Builder({ page, products, availableTemplates, themes, pa
 
                 content = {
                     containerHeight: themeWithDefaults.banner_containerHeight,
-                    containerHeight: '100',
                     containerHeightUnit: 'vh',
                     marginTop: '0px',
                     marginRight: '0px',
