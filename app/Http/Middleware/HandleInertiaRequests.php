@@ -30,11 +30,14 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+        
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user() ? $request->user()->load('roles') : null,
+                'user' => $user ? $user->load('roles', 'company') : null,
             ],
+            'company' => $user?->company, // Compañía directamente
             'settings' => function () use ($request) {
                 if ($request->user() && $request->user()->company_id) {
                     return Setting::with('currency')->where('company_id', $request->user()->company_id)->first();
