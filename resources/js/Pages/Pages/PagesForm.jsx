@@ -3,6 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import DivSection from '@/Components/ui/div-section';
 import TextAreaRich from '@/Components/ui/TextAreaRich';
+import SeoFields from '@/Components/SeoFields';
 import { customStyles } from '@/hooks/custom-select';
 import { useRef } from 'react';
 import Select from 'react-select';
@@ -50,8 +51,6 @@ export default function CategoriesForm({ data, setData, errors }) {
 
                 <div className="col-span-full md:col-span-1 order-1 md:order-2">
                     <DivSection>
-
-
                         <div className='md:col-span-2 lg:col-span-1'>
                             <InputLabel htmlFor="is_published" value="Publicar" />
                             <Select
@@ -65,6 +64,18 @@ export default function CategoriesForm({ data, setData, errors }) {
                             <InputError message={errors.is_published} className="mt-2" />
                         </div>
                     </DivSection>
+
+                </div>
+                <div className="col-span-full md:col-span-2 order-3">
+                    <SeoFields
+                        data={data}
+                        setData={setData}
+                        errors={errors}
+                        autoGenerateFromFields={{
+                            title: data.title,
+                            content: data.content,
+                        }}
+                    />
                 </div>
             </div>
         </>

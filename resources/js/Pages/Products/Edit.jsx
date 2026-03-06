@@ -94,6 +94,16 @@ export default function Edit({ product, categories, taxes, stores, combinationsD
         prices: combinationsData,
         current_store_id: defaultStore?.id || null,
         tax_id: product.tax_id || null,
+        // SEO fields
+        meta_title: product.meta_title || "",
+        meta_description: product.meta_description || "",
+        meta_keywords: product.meta_keywords || [],
+        og_title: product.og_title || "",
+        og_description: product.og_description || "",
+        og_image: product.og_image || "",
+        twitter_title: product.twitter_title || "",
+        twitter_description: product.twitter_description || "",
+        twitter_image: product.twitter_image || "",
     };
 
     const { data, setData, errors, post, processing } = useForm(initialValues);

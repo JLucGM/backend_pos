@@ -44,6 +44,18 @@ class UpdateRequest extends FormRequest
             'tax_id' => 'nullable|exists:taxes,id', // Validar tax_id
             'is_active' => 'required|boolean', // Assuming is_active is a boolean
             'product_status_pos' => 'required|boolean', // Assuming product_status_pos is a boolean
+            
+            // SEO fields
+            'meta_title' => 'nullable|string|max:60',
+            'meta_description' => 'nullable|string|max:160',
+            'meta_keywords' => 'nullable|array|max:10',
+            'meta_keywords.*' => 'string|max:50',
+            'og_title' => 'nullable|string|max:60',
+            'og_description' => 'nullable|string|max:160',
+            'og_image' => 'nullable|url',
+            'twitter_title' => 'nullable|string|max:60',
+            'twitter_description' => 'nullable|string|max:160',
+            'twitter_image' => 'nullable|url',
         ];
     }
 

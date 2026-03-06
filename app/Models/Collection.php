@@ -3,18 +3,30 @@
 namespace App\Models;
 
 use App\Models\Scopes\CompanyScope;
+use App\Traits\HasSeo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Collection extends Model
+class Collection extends Model implements HasMedia
 {
-    use HasFactory, HasSlug;
+    use HasFactory, HasSlug, HasSeo, InteractsWithMedia;
 
     protected $fillable = [
         'title',
         'slug',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'og_title',
+        'og_description',
+        'og_image',
+        'twitter_title',
+        'twitter_description',
+        'twitter_image',
         'description',
         'type',
         'conditions',
@@ -25,13 +37,14 @@ class Collection extends Model
         'company_id',
     ];
 
+
     protected $casts = [
         'conditions' => 'array',
         'is_active'  => 'boolean',
         'starts_at'  => 'date',
         'ends_at'    => 'date',
+        'meta_keywords' => 'array',
     ];
-
     public function getRouteKeyName(): string
     {
         return 'slug';
@@ -47,6 +60,31 @@ class Collection extends Model
     protected static function booted(): void
     {
         static::addGlobalScope(new CompanyScope);
+    }
+
+    // ─── Media Collections ─────────────────────────────────────────────────
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('collections')
+            ->useDisk('public')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+    }
+
+    public function registerMediaConversions($media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(150)
+            ->height(150)
+            ->sharpen(10);
+
+        $this->addMediaConversion('medium')
+            ->width(400)
+            ->height(400);
+
+        $this->addMediaConversion('large')
+            ->width(800)
+            ->height(800);
     }
 
     // ─── Relaciones ────────────────────────────────────────────────────────

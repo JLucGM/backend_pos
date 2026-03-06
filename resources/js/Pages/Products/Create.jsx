@@ -40,6 +40,16 @@ export default function Create({ categories, taxes, stores }) {
         current_store_id: defaultStore?.id || null,
         images: [],
         tax_id: taxes.length > 0 ? taxes[0].id : null,
+        // SEO fields
+        meta_title: "",
+        meta_description: "",
+        meta_keywords: [],
+        og_title: "",
+        og_description: "",
+        og_image: "",
+        twitter_title: "",
+        twitter_description: "",
+        twitter_image: "",
     });
 
     const submit = (e) => {

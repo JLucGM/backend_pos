@@ -42,8 +42,11 @@ export function AppSidebar({ ...props }) {
   const company = usePage().props.company // Asumiendo que la compañía actual está disponible
   const userRoles = user.roles || []
   const isSuperAdmin = userRoles.some(role => role.name === 'super admin')
+  const env = props.env || {};
 
-  const baseDomain = window.location.hostname.replace(/^[^.]+\./, '')
+  const baseDomain = env?.SESSION_DOMAIN
+    ? env.SESSION_DOMAIN.replace(/^\./, '')   // Elimina el punto inicial si existe
+    : window.location.hostname.replace(/^[^.]+\./, '');
 
   // Construir la URL del frontend
   let frontendUrl = '#'

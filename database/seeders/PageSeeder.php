@@ -53,6 +53,9 @@ class PageSeeder extends Seeder
                 'template_id' => $templatesBySlug['home-template']?->id ?? $basicTemplate?->id,
                 'layout' => $templatesBySlug['home-template']?->layout_structure,
                 'company_id' => 1,
+                'meta_title' => 'Inicio - Mi Tienda Online',
+                'meta_description' => 'Bienvenido a nuestra tienda online. Descubre nuestros productos y ofertas especiales.',
+                'meta_keywords' => ['inicio', 'tienda', 'online', 'productos'],
             ],
             [
                 'title' => 'Tienda',
@@ -64,6 +67,9 @@ class PageSeeder extends Seeder
                 'template_id' => $templatesBySlug['shop-template']?->id ?? $basicTemplate?->id,
                 'layout' => $templatesBySlug['shop-template']?->layout_structure,
                 'company_id' => 1,
+                'meta_title' => 'Tienda - Catálogo de Productos',
+                'meta_description' => 'Explora nuestro catálogo completo de productos. Encuentra lo que buscas con facilidad.',
+                'meta_keywords' => ['tienda', 'productos', 'catálogo', 'comprar'],
             ],
             [
                 'title' => 'Detalles del producto',
@@ -164,6 +170,9 @@ class PageSeeder extends Seeder
                 'template_id' => $templatesBySlug['policy-template']?->id ?? $basicTemplate?->id,
                 'layout' => $templatesBySlug['policy-template']?->layout_structure,
                 'company_id' => 1,
+                'meta_title' => 'Políticas de Privacidad',
+                'meta_description' => 'Información sobre cómo protegemos y utilizamos tus datos personales.',
+                'meta_keywords' => ['privacidad', 'políticas', 'datos', 'protección'],
             ],
             [
                 'title' => 'Términos de servicio',

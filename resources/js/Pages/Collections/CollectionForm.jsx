@@ -4,6 +4,7 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { Switch } from '@/Components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import SeoFields from '@/Components/SeoFields';
 import ManualProducts from './partials/ManualProducts';
 import SmartConditions from './partials/SmartConditions';
 
@@ -144,6 +145,19 @@ export default function CollectionForm({ data, setData, errors, products, catego
                         </div>
                     </CardContent>
                 </Card>
+
+            </div>
+            <div className="col-span-full md:col-span-2">
+                <SeoFields
+                    data={data}
+                    setData={setData}
+                    errors={errors}
+                    autoGenerateFromFields={{
+                        title: data.title,
+                        description: data.description,
+                        image: collection?.media?.[0]?.original_url,
+                    }}
+                />
             </div>
         </div>
     );

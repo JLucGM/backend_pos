@@ -101,6 +101,17 @@ class PageController extends RoutingController
             'title' => 'required|string|max:255',
             'content' => 'nullable|string',
             'is_published' => 'boolean',
+            // SEO fields
+            'meta_title' => 'nullable|string|max:60',
+            'meta_description' => 'nullable|string|max:160',
+            'meta_keywords' => 'nullable|array|max:10',
+            'meta_keywords.*' => 'string|max:50',
+            'og_title' => 'nullable|string|max:60',
+            'og_description' => 'nullable|string|max:160',
+            'og_image' => 'nullable|url',
+            'twitter_title' => 'nullable|string|max:60',
+            'twitter_description' => 'nullable|string|max:160',
+            'twitter_image' => 'nullable|url',
         ]);
 
         // Obtener la plantilla básica (slug 'basic-template')
@@ -130,6 +141,16 @@ class PageController extends RoutingController
             'uses_template' => (bool)$basicTemplate,
             'template_id' => $basicTemplate?->id,
             'layout' => $basicTemplate?->layout_structure, // Copia el layout de la plantilla
+            // SEO fields
+            'meta_title' => $request->meta_title,
+            'meta_description' => $request->meta_description,
+            'meta_keywords' => $request->meta_keywords,
+            'og_title' => $request->og_title,
+            'og_description' => $request->og_description,
+            'og_image' => $request->og_image,
+            'twitter_title' => $request->twitter_title,
+            'twitter_description' => $request->twitter_description,
+            'twitter_image' => $request->twitter_image,
         ]);
 
         return to_route('pages.edit', $page)->with('success', 'Página creada correctamente.');
@@ -238,17 +259,40 @@ class PageController extends RoutingController
      */
     public function update(Request $request, Page $page)
     {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'is_published' => 'boolean',
+            // SEO fields
+            'meta_title' => 'nullable|string|max:60',
+            'meta_description' => 'nullable|string|max:160',
+            'meta_keywords' => 'nullable|array|max:10',
+            'meta_keywords.*' => 'string|max:50',
+            'og_title' => 'nullable|string|max:60',
+            'og_description' => 'nullable|string|max:160',
+            'og_image' => 'nullable|url',
+            'twitter_title' => 'nullable|string|max:60',
+            'twitter_description' => 'nullable|string|max:160',
+            'twitter_image' => 'nullable|url',
+        ]);
+
         $data = $request->only(
             'title',
             'content',
-            // 'is_default',
             'is_published',
-            // 'is_homepage',
-            // 'sort_order',
+            // SEO fields
+            'meta_title',
+            'meta_description',
+            'meta_keywords',
+            'og_title',
+            'og_description',
+            'og_image',
+            'twitter_title',
+            'twitter_description',
+            'twitter_image',
         );
 
         $page->update($data);
-        // dd($page);
         return to_route('pages.edit', $page);
     }
 

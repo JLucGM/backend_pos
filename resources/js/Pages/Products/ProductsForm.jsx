@@ -3,6 +3,7 @@ import ProductBasicInfo from '@/Components/Products/ProductBasicInfo';
 import ProductPricing from '@/Components/Products/ProductPricing';
 import AttributeSection from '@/Components/Products/AttributeSection';
 import ProductSettings from '@/Components/Products/ProductSettings';
+import SeoFields from '@/Components/SeoFields';
 import { useSelectOptions } from '@/hooks/useSelectOptions';
 import { useProductAttributes } from '@/hooks/useProductAttributes';
 import { useLocalErrors } from '@/hooks/useLocalErrors';
@@ -45,7 +46,7 @@ export default function ProductsForm({ data, categories, taxes, stores, product 
     // Poblar datos del producto existente para edición
     useEffect(() => {
         if (product && product.combinations && product.combinations.length > 0) {
-                    // console.log('Producto con combinaciones cargado desde el controlador');
+            // console.log('Producto con combinaciones cargado desde el controlador');
             // Transformar combinaciones en prices con datos por tienda
             const pricesFromCombinations = product.combinations.map((combination) => {
                 // Obtener stocks relacionados por tienda
@@ -154,6 +155,19 @@ export default function ProductsForm({ data, categories, taxes, stores, product 
                     errors={errors}
                     statusOptions={statusOptions}
                     taxOptions={taxOptions}
+                />
+
+            </div>
+            <div className="col-span-full md:col-span-2">
+                <SeoFields
+                    data={data}
+                    setData={setData}
+                    errors={errors}
+                    autoGenerateFromFields={{
+                        title: data.product_name,
+                        description: data.product_description,
+                        image: product?.media?.[0]?.original_url,
+                    }}
                 />
             </div>
         </>

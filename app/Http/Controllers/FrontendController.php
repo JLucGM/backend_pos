@@ -170,6 +170,7 @@ class FrontendController extends Controller
                 'availableMenus' => $availableMenus,
                 'products' => $products, // Productos FILTRADOS por colección
                 'companyId' => $company->id,
+                'company' => $company, // Agregar información completa de la company
                 'companyLogo' => $logoUrl,
                 'companyFavicon' => $faviconUrl,
                 'settings' => $setting,
@@ -457,6 +458,7 @@ class FrontendController extends Controller
                 'availableMenus' => $availableMenus,
                 'products' => $products,
                 'companyId' => $company->id,
+                'company' => $company, // Agregar información completa de la company
                 'companyLogo' => $logoUrl,
                 'companyFavicon' => $faviconUrl,
                 'settings' => $setting,
@@ -691,6 +693,15 @@ class FrontendController extends Controller
                 'product_price_discount' => $currentProduct->product_price_discount,
                 'product_description' => $currentProduct->product_description,
                 'tax_id' => $currentProduct->tax_id,
+                'meta_title' => $currentProduct->meta_title,
+                'meta_description' => $currentProduct->meta_description,
+                'meta_keywords' => $currentProduct->meta_keywords,
+                'og_title' => $currentProduct->og_title,
+                'og_description' => $currentProduct->og_description,
+                'og_image' => $currentProduct->og_image,
+                'twitter_title' => $currentProduct->twitter_title,
+                'twitter_description' => $currentProduct->twitter_description,
+                'twitter_image' => $currentProduct->twitter_image,
                 'tax' => $currentProduct->taxes ? [
                     'id' => $currentProduct->taxes->id,
                     'tax_name' => $currentProduct->taxes->tax_name,

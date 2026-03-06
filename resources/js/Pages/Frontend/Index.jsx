@@ -1,5 +1,7 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
+import SeoHead from '@/Components/SeoHead';
+import { useSeo } from '@/hooks/useSeo';
 
 // IMPORTANTE: Importar ProductComponent unificado
 import ProductComponent from '@/Components/BuilderPages/Product/ProductComponent';
@@ -42,6 +44,9 @@ import PageContentComponent from '@/Components/BuilderPages/PageContentComponent
 import ImageCarouselAccordionComponent from '@/Components/BuilderPages/ImageCarouselAccordionComponent';
 import ImageCarouselComponent from '@/Components/BuilderPages/ImageCarouselComponent';
 import ProductDetailComponent from '@/Components/BuilderPages/ProductDetail/ProductDetailComponent';
+// Importar componentes de SEO
+import SeoProductHead from '@/Components/BuilderPages/SeoProductHead';
+import SeoCollectionHead from '@/Components/BuilderPages/SeoCollectionHead';
 import FaqComponent from '@/Components/BuilderPages/FaqComponent/FaqComponent';
 import HeroBannerComponent from '@/Components/BuilderPages/HeroBanner/HeroBannerComponent';
 
@@ -112,7 +117,8 @@ function renderBlock(
     states = [],
     cities = [],
     page,
-    collections = []
+    collections = [],
+    company = null
 ) {
     const Component = componentMap[block.type];
 
@@ -187,12 +193,20 @@ function renderBlock(
 
         case 'productDetail':
             return (
-                <Component
-                    key={block.id}
-                    {...baseProps}
-                    product={currentProduct}
-                    companyId={companyId}
-                />
+                <React.Fragment key={block.id}>
+                    {currentProduct && (
+                        <SeoProductHead 
+                            product={currentProduct} 
+                            company={company} 
+                        />
+                    )}
+                    <Component
+                        key={block.id}
+                        {...baseProps}
+                        product={currentProduct}
+                        companyId={companyId}
+                    />
+                </React.Fragment>
             );
 
         case 'header':
@@ -312,7 +326,25 @@ export default function Index({
     states = [],
     cities = [],
     collections = [],
+    currentCollection = null,
+    company = null,
 }) {
+    // --- Configuración SEO ---
+    const seoSource = (isProductDetailPage && currentProduct) ? currentProduct : (currentCollection || page);
+
+    const { meta, structuredData } = useSeo({
+        title: seoSource.meta_title || seoSource.product_name || seoSource.title || (company?.name ? `${seoSource.product_name || seoSource.title} - ${company.name}` : seoSource.title),
+        description: seoSource.meta_description || 
+                     (seoSource.product_description ? seoSource.product_description.replace(/<[^>]*>/g, '').substring(0, 155) : 
+                     (seoSource.description ? seoSource.description.replace(/<[^>]*>/g, '').substring(0, 155) : `Página ${seoSource.title}`)),
+        keywords: Array.isArray(seoSource.meta_keywords) ? seoSource.meta_keywords.join(', ') : '',
+        ogTitle: seoSource.og_title || seoSource.meta_title || seoSource.product_name || seoSource.title,
+        ogDescription: seoSource.og_description || seoSource.meta_description,
+        ogImage: seoSource.og_image || (currentProduct && currentProduct.media?.[0]?.original_url) || companyLogo,
+        twitterTitle: seoSource.twitter_title || seoSource.meta_title || seoSource.product_name || seoSource.title,
+        twitterDescription: seoSource.twitter_description || seoSource.meta_description,
+        twitterImage: seoSource.twitter_image || seoSource.og_image || (currentProduct && currentProduct.media?.[0]?.original_url) || companyLogo,
+    });
     // console.log(shippingRates);
     // --- Lógica de Decodificación del Layout ---
     let layoutBlocks = [];
@@ -370,8 +402,23 @@ export default function Index({
 
     return (
         <>
+            {/* SEO Head con datos dinámicos */}
+            <SeoHead
+                title={meta.title}
+                description={meta.description}
+                keywords={meta.keywords}
+                ogTitle={meta.ogTitle}
+                ogDescription={meta.ogDescription}
+                ogImage={meta.ogImage}
+                ogUrl={meta.ogUrl}
+                twitterTitle={meta.twitterTitle}
+                twitterDescription={meta.twitterDescription}
+                twitterImage={meta.twitterImage}
+                canonical={meta.canonical}
+                structuredData={structuredData}
+            />
+
             <Head>
-                <title>{page.title}</title>
                 {companyFavicon && (
                     <link rel="icon" href={companyFavicon} type="image/x-icon" />
                 )}
@@ -381,7 +428,7 @@ export default function Index({
             </Head>
 
             {/* Renderizar cada bloque del layout */}
-            {layoutBlocks.map(block =>
+            {layoutBlocks.map((block, index) =>
                 renderBlock(
                     block,
                     themeSettings,
@@ -402,7 +449,8 @@ export default function Index({
                     states,
                     cities,
                     page,
-                    collections
+                    collections,
+                    company
                 )
             )}
 

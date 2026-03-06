@@ -63,6 +63,18 @@ class CollectionController extends Controller
             'ends_at'          => 'nullable|date|after_or_equal:starts_at',
             'product_ids'      => 'nullable|array',
             'product_ids.*'    => 'integer|exists:products,id',
+            // SEO fields
+            'meta_title' => 'nullable|string|max:60',
+            'meta_description' => 'nullable|string|max:160',
+            'meta_keywords' => 'nullable|array|max:10',
+            'meta_keywords.*' => 'string|max:50',
+            'og_title' => 'nullable|string|max:60',
+            'og_description' => 'nullable|string|max:160',
+            'og_image' => 'nullable|url',
+            'twitter_title' => 'nullable|string|max:60',
+            'twitter_description' => 'nullable|string|max:160',
+            'twitter_image' => 'nullable|url',
+
         ]);
 
         DB::transaction(function () use ($validated, $user) {
@@ -150,6 +162,18 @@ class CollectionController extends Controller
             'ends_at'          => 'nullable|date|after_or_equal:starts_at',
             'product_ids'      => 'nullable|array',
             'product_ids.*'    => 'integer|exists:products,id',
+            // SEO fields
+            'meta_title' => 'nullable|string|max:60',
+            'meta_description' => 'nullable|string|max:160',
+            'meta_keywords' => 'nullable|array|max:10',
+            'meta_keywords.*' => 'string|max:50',
+            'og_title' => 'nullable|string|max:60',
+            'og_description' => 'nullable|string|max:160',
+            'og_image' => 'nullable|url',
+            'twitter_title' => 'nullable|string|max:60',
+            'twitter_description' => 'nullable|string|max:160',
+            'twitter_image' => 'nullable|url',
+
         ]);
 
         DB::transaction(function () use ($validated, $collection) {

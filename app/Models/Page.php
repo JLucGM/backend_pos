@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\CompanyScope;
+use App\Traits\HasSeo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
@@ -14,11 +15,20 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Page extends Model implements HasMedia
 {
-    use HasFactory, HasSlug, InteractsWithMedia;
+    use HasFactory, HasSlug, HasSeo, InteractsWithMedia;
 
     protected $fillable = [
         'title',
         'slug',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'og_title',
+        'og_description',
+        'og_image',
+        'twitter_title',
+        'twitter_description',
+        'twitter_image',
         'content',
         'layout',
         'is_deletable',
@@ -44,6 +54,7 @@ class Page extends Model implements HasMedia
         // 'template_overrides' => 'array',
         'theme_settings' => 'array',
         'uses_template' => 'boolean',
+        'meta_keywords' => 'array',
         // 'layout' => 'array',
         // 'page_type' => 'enum:essential,policy,custom,link_bio',
     ];

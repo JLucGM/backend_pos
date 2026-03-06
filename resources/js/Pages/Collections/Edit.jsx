@@ -22,6 +22,16 @@ export default function Edit({ collection, products, categories, smartProducts }
         product_ids: collection.type === 'manual'
             ? (collection.products ?? []).map((p) => p.id)
             : [],
+        // SEO fields
+        meta_title: collection.meta_title || "",
+        meta_description: collection.meta_description || "",
+        meta_keywords: collection.meta_keywords || [],
+        og_title: collection.og_title || "",
+        og_description: collection.og_description || "",
+        og_image: collection.og_image || "",
+        twitter_title: collection.twitter_title || "",
+        twitter_description: collection.twitter_description || "",
+        twitter_image: collection.twitter_image || "",
     });
 
     const submit = (e) => {

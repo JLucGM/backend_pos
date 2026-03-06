@@ -19,6 +19,16 @@ export default function Create({ products, categories }) {
         starts_at: '',
         ends_at: '',
         product_ids: [],
+        // SEO fields
+        meta_title: "",
+        meta_description: "",
+        meta_keywords: [],
+        og_title: "",
+        og_description: "",
+        og_image: "",
+        twitter_title: "",
+        twitter_description: "",
+        twitter_image: "",
     });
 
     const submit = (e) => {

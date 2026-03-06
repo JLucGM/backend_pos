@@ -81,6 +81,15 @@ class ProductController extends Controller
                 'is_active',
                 'product_status_pos',
                 'tax_id',
+                'meta_title',
+                'meta_description',
+                'meta_keywords',
+                'og_title',
+                'og_description',
+                'og_image',
+                'twitter_title',
+                'twitter_description',
+                'twitter_image',
             ),
             ['company_id' => $user->company_id]
         ));
@@ -349,6 +358,15 @@ class ProductController extends Controller
             'is_active',
             'product_status_pos',
             'tax_id',
+            'meta_title',
+            'meta_description',
+            'meta_keywords',
+            'og_title',
+            'og_description',
+            'og_image',
+            'twitter_title',
+            'twitter_description',
+            'twitter_image',
         ));
 
         // Sync categories

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\CompanyScope;
+use App\Traits\HasSeo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
@@ -13,12 +14,21 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Product extends Model implements HasMedia
 {
-    use HasFactory, HasSlug;
+    use HasFactory, HasSlug, HasSeo;
     use InteractsWithMedia;
 
     protected $fillable = [
         'product_name',
         'slug',
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'og_title',
+        'og_description',
+        'og_image',
+        'twitter_title',
+        'twitter_description',
+        'twitter_image',
         'product_description',
         'product_price',
         'product_price_discount',
@@ -31,6 +41,7 @@ class Product extends Model implements HasMedia
 
     protected $casts = [
         'is_active' => 'boolean',
+        'meta_keywords' => 'array',
     ];
 
     public function getRouteKeyName()
