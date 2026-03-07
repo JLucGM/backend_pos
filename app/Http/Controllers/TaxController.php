@@ -14,12 +14,10 @@ class TaxController extends Controller
 {
     public function __construct()
     {
-        // $this->middleware('auth');
-
-        $this->middleware('can:admin.user.index')->only('index');
-        $this->middleware('can:admin.user.create')->only('create', 'store');
-        $this->middleware('can:admin.user.edit')->only('edit', 'update');
-        $this->middleware('can:admin.user.delete')->only('delete');
+        $this->middleware('can:admin.tax.index')->only('index');
+        $this->middleware('can:admin.tax.create')->only('create', 'store');
+        $this->middleware('can:admin.tax.edit')->only('edit', 'update');
+        $this->middleware('can:admin.tax.delete')->only('delete');
     }
 
     /**

@@ -12,6 +12,12 @@ use Inertia\Inertia;
 
 class SubscriptionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:admin.subscriptions.index')->only('index', 'payments', 'paymentSuccess', 'paymentPending');
+        $this->middleware('can:admin.subscriptions.create')->only('selectPlan', 'payment', 'processPayment');
+        $this->middleware('can:admin.subscriptions.delete')->only('cancel');
+    }
     /**
      * Mostrar los planes de suscripción
      */

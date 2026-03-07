@@ -15,6 +15,13 @@ use Inertia\Inertia;
 
 class InventoryTransferController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:admin.inventory-transfers.index')->only('index', 'show');
+        $this->middleware('can:admin.inventory-transfers.create')->only('create', 'store');
+        $this->middleware('can:admin.inventory-transfers.edit')->only('update');
+        $this->middleware('can:admin.inventory-transfers.delete')->only('destroy');
+    }
     /**
      * Display a listing of the resource.
      */

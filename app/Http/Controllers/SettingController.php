@@ -12,6 +12,11 @@ use Inertia\Inertia;
 
 class SettingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:admin.setting.index')->only('index');
+        $this->middleware('can:admin.setting.edit')->only('update', 'updateSettings', 'updateCompany', 'updateMedia', 'updateShippingRates');
+    }
     /**
      * Display a listing of the resource.
      */

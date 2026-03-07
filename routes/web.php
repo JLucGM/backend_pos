@@ -273,6 +273,13 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::post('cities/{city}', [CitiesController::class, 'update'])->name('cities.update');
     Route::delete('cities/{city}', [CitiesController::class, 'destroy'])->name('cities.destroy');
 
+    Route::get('roles', [\App\Http\Controllers\RolesController::class, 'index'])->name('roles.index');
+    Route::get('roles/create', [\App\Http\Controllers\RolesController::class, 'create'])->name('roles.create');
+    Route::post('roles', [\App\Http\Controllers\RolesController::class, 'store'])->name('roles.store');
+    Route::get('roles/{role}/edit', [\App\Http\Controllers\RolesController::class, 'edit'])->name('roles.edit');
+    Route::post('roles/{role}', [\App\Http\Controllers\RolesController::class, 'update'])->name('roles.update');
+    Route::delete('roles/{role}', [\App\Http\Controllers\RolesController::class, 'destroy'])->name('roles.destroy');
+
     Route::get('stores', [StoreController::class, 'index'])->name('stores.index');
     Route::get('stores/create', [StoreController::class, 'create'])->middleware('subscription:stores.create')->name('stores.create');
     Route::post('stores', [StoreController::class, 'store'])->middleware('subscription:stores.create')->name('stores.store');

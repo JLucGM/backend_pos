@@ -86,6 +86,7 @@ export function AppSidebar({ ...props }) {
         items: [
           { title: "Usuarios", url: "user.index" },
           { title: "Clientes", url: "client.index" },
+          { title: "Roles", url: "roles.index" },
         ],
       },
       {

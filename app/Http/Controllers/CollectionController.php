@@ -13,6 +13,13 @@ use Inertia\Inertia;
 
 class CollectionController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:admin.collections.index')->only('index');
+        $this->middleware('can:admin.collections.create')->only('create', 'store', 'previewSmart');
+        $this->middleware('can:admin.collections.edit')->only('edit', 'update', 'destroyImage');
+        $this->middleware('can:admin.collections.delete')->only('destroy');
+    }
     // ──────────────────────────────────────────────────────────────────────────
     // INDEX
     // ──────────────────────────────────────────────────────────────────────────

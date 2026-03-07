@@ -12,6 +12,11 @@ use Inertia\Inertia;
 
 class ReportController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:admin.reports.index');
+    }
+
     public function index(Request $request)
     {
         $desde = $request->input('desde')

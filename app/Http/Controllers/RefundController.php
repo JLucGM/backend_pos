@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Auth;
 
 class RefundController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:admin.orders.edit');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
