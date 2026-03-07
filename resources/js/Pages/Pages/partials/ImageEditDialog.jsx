@@ -523,7 +523,6 @@ const ImageEditDialog = ({
         onOpenChange={setIsImageSelectorOpen}
         onSelectImage={handleImageSelect}
         allImages={allImages}
-        page={page}
       />
     </div>
   );

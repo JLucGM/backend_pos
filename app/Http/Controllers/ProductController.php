@@ -51,8 +51,42 @@ class ProductController extends Controller
         $categories = Category::all();
         $taxes = Tax::all();
         $stores = Store::where('company_id', $user->company_id)->get();
+        $libraryMedia = $this->getLibraryMedia($user->company_id);
 
-        return Inertia::render('Products/Create', compact('categories', 'taxes', 'stores'));
+        return Inertia::render('Products/Create', compact('categories', 'taxes', 'stores', 'libraryMedia'));
+    }
+
+    private function getLibraryMedia($companyId)
+    {
+        $company = \App\Models\Company::find($companyId);
+        return $company->getMedia('library')->map(function ($media) {
+            $thumbUrl = $media->getUrl();
+            try {
+                if ($media->hasGeneratedConversion('thumb')) {
+                    $thumbUrl = $media->getUrl('thumb');
+                }
+            } catch (\Exception $e) {}
+
+            // Contar uso basado en el nombre del archivo
+            $usageProducts = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('file_name', $media->file_name)
+                ->where('model_type', \App\Models\Product::class)->count();
+            $usageCollections = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('file_name', $media->file_name)
+                ->where('model_type', \App\Models\Collection::class)->count();
+
+            return [
+                'id' => $media->id,
+                'src' => $media->getUrl(),
+                'thumb' => $thumbUrl,
+                'alt' => $media->name,
+                'file_name' => $media->file_name,
+                'size' => $media->human_readable_size,
+                'media_id' => $media->id,
+                'usage_products' => $usageProducts,
+                'usage_collections' => $usageCollections,
+                'is_page_image' => true,
+                'is_from_product' => false,
+            ];
+        });
     }
 
     /**
@@ -97,12 +131,17 @@ class ProductController extends Controller
         // Asociar las categorías al producto
         $product->categories()->attach($request->categories);
 
-        // Manejar la carga de imágenes
+        // Manejar la carga de imágenes (nuevas)
         if ($request->hasFile('images')) {
             $product->addMultipleMediaFromRequest(['images'])
                 ->each(function ($fileAdder) {
                     $fileAdder->toMediaCollection('products');
                 });
+        }
+
+        // Manejar imágenes de la librería
+        if ($request->has('library_media_ids') && is_array($request->library_media_ids)) {
+            $this->copyMediaFromLibrary($product, $request->library_media_ids, 'products');
         }
 
         // Crear atributos y sus valores
@@ -325,13 +364,15 @@ class ProductController extends Controller
 
         $categories = Category::all();
         $taxes = Tax::all();
+        $libraryMedia = $this->getLibraryMedia($user->company_id);
 
         return Inertia::render('Products/Edit', compact(
             'product',
             'categories',
             'taxes',
             'stores',
-            'combinationsData'
+            'combinationsData',
+            'libraryMedia'
         ));
     }
 
@@ -378,6 +419,11 @@ class ProductController extends Controller
                 ->each(function ($fileAdder) {
                     $fileAdder->toMediaCollection('products');
                 });
+        }
+
+        // Manejar imágenes de la librería
+        if ($request->has('library_media_ids') && is_array($request->library_media_ids)) {
+            $this->copyMediaFromLibrary($product, $request->library_media_ids, 'products');
         }
 
         $attributeMap = []; // [attribute_name => attribute_id]
@@ -678,5 +724,19 @@ class ProductController extends Controller
         }
 
         return to_route('products.edit', $newProduct->slug)->with('success', 'Producto duplicado con éxito.');
+    }
+
+    private function copyMediaFromLibrary($model, $mediaIds, $collectionName)
+    {
+        foreach ($mediaIds as $mediaId) {
+            $mediaItem = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($mediaId);
+            if ($mediaItem) {
+                $model->addMedia($mediaItem->getPath())
+                    ->preservingOriginal()
+                    ->usingName($mediaItem->name)
+                    ->usingFileName($mediaItem->file_name)
+                    ->toMediaCollection($collectionName);
+            }
+        }
     }
 }

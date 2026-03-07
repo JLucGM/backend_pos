@@ -437,8 +437,11 @@ class PageController extends RoutingController
             ];
         })->toArray();
 
-        // ----- 3. Unificar (puedes ordenar como quieras) -----
-        $allImages = array_merge($pageImages, $productImages);
+        // ----- 3. Imágenes de la librería global -----
+        $libraryMedia = $this->getLibraryMedia($companyId);
+
+        // ----- 4. Unificar (puedes ordenar como quieras) -----
+        $allImages = array_merge($libraryMedia->toArray(), $pageImages, $productImages);
 
         // ----- INYECTAR COMPONENTES GLOBALES (HEADER/FOOTER) -----
         $globalHeader = GlobalComponent::where('company_id', $companyId)->where('type', 'header')->where('is_active', true)->first();
@@ -860,6 +863,55 @@ class PageController extends RoutingController
             return back()->with('success', 'Imagen eliminada correctamente');
         } catch (\Exception $e) {
             return back()->withErrors(['delete' => 'Error al eliminar la imagen: ' . $e->getMessage()]);
+        }
+    }
+
+    private function getLibraryMedia($companyId)
+    {
+        $company = \App\Models\Company::find($companyId);
+        if (!$company) return collect();
+        
+        return $company->getMedia('library')->map(function ($media) {
+            $thumbUrl = $media->getUrl();
+            try {
+                if ($media->hasGeneratedConversion('thumb')) {
+                    $thumbUrl = $media->getUrl('thumb');
+                }
+            } catch (\Exception $e) {}
+
+            // Contar uso basado en el nombre del archivo
+            $usageProducts = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('file_name', $media->file_name)
+                ->where('model_type', \App\Models\Product::class)->count();
+            $usageCollections = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('file_name', $media->file_name)
+                ->where('model_type', \App\Models\Collection::class)->count();
+
+            return [
+                'id' => 'library-' . $media->id,
+                'src' => $media->getUrl(),
+                'thumb' => $thumbUrl,
+                'alt' => $media->name,
+                'file_name' => $media->file_name,
+                'size' => $media->human_readable_size,
+                'media_id' => $media->id,
+                'usage_products' => $usageProducts,
+                'usage_collections' => $usageCollections,
+                'is_page_image' => false,
+                'is_from_product' => false,
+            ];
+        });
+    }
+
+    private function copyMediaFromLibrary($model, $mediaIds, $collectionName)
+    {
+        foreach ($mediaIds as $mediaId) {
+            $mediaItem = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($mediaId);
+            if ($mediaItem) {
+                $model->addMedia($mediaItem->getPath())
+                    ->preservingOriginal()
+                    ->usingName($mediaItem->name)
+                    ->usingFileName($mediaItem->file_name)
+                    ->toMediaCollection($collectionName);
+            }
         }
     }
 }

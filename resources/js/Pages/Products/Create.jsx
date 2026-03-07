@@ -9,7 +9,7 @@ import Loader from '@/Components/ui/loader';
 // Lazy load ProductsForm
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
-export default function Create({ categories, taxes, stores }) {
+export default function Create({ categories, taxes, stores, libraryMedia = [] }) {
     // Encontrar la tienda con ecommerce activo por defecto
     const defaultStore = stores.find(store => store.is_ecommerce_active) || stores[0];
 
@@ -23,6 +23,7 @@ export default function Create({ categories, taxes, stores }) {
         is_active: false,
         product_status_pos: 0,
         categories: categories.length > 0 ? [categories[0].id] : [],
+        library_media_ids: [],
         attribute_names: [""],
         attribute_values: [[]],
         quantity: 0,
@@ -92,6 +93,7 @@ export default function Create({ categories, taxes, stores }) {
                                 categories={categories}
                                 taxes={taxes}
                                 stores={stores}
+                                libraryMedia={libraryMedia}
                             />
                         </div>
 

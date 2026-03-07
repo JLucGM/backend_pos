@@ -10,7 +10,7 @@ import Loader from '@/Components/ui/loader';
 // Lazy load ProductsForm
 const ProductsForm = lazy(() => import('./ProductsForm'));
 
-export default function Edit({ product, categories, taxes, stores, combinationsData }) {
+export default function Edit({ product, categories, taxes, stores, combinationsData, libraryMedia = [] }) {
     const selectedCategories = product.categories.map(category => category.id);
 
     // Encontrar la tienda con ecommerce activo por defecto
@@ -82,6 +82,7 @@ export default function Edit({ product, categories, taxes, stores, combinationsD
         is_active: product.is_active,
         product_status_pos: product.product_status_pos,
         categories: selectedCategories,
+        library_media_ids: [],
         // Para productos simples: datos por tienda
         stores_data: initialStoresData,
         // Para compatibilidad con campos antiguos (se usarán solo si hay una sola tienda)
@@ -179,6 +180,7 @@ export default function Edit({ product, categories, taxes, stores, combinationsD
                                 taxes={taxes}
                                 stores={stores}
                                 product={product}
+                                libraryMedia={libraryMedia}
                             />
                         </div>
 

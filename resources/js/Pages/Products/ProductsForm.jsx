@@ -10,7 +10,7 @@ import { useLocalErrors } from '@/hooks/useLocalErrors';
 import { useProductDataHandlers } from '@/hooks/useProductDataHandlers';
 import { useImageManagement } from '@/hooks/useImageManagement';
 
-export default function ProductsForm({ data, categories, taxes, stores, product = null, setData, errors }) {
+export default function ProductsForm({ data, categories, taxes, stores, product = null, setData, errors, libraryMedia = [] }) {
     const { categoryOptions, taxOptions, statusOptions } = useSelectOptions(categories, taxes);
 
     const {
@@ -112,8 +112,8 @@ export default function ProductsForm({ data, categories, taxes, stores, product 
                     handleCategoryChange={handleCategoryChange}
                     handleDeleteImage={handleDeleteImage}
                     product={product}
+                    libraryMedia={libraryMedia}
                 />
-
                 {!showAttributes && (
                     <ProductPricing
                         data={data}

@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Company extends Model
+class Company extends Model implements HasMedia
 {
-    use HasFactory, HasSlug;
+    use HasFactory, HasSlug, InteractsWithMedia;
 
     protected $fillable = [
         'name', 
@@ -24,6 +26,22 @@ class Company extends Model
         'subdomain',
         'domain',
     ];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('library')
+            ->useFallbackUrl('/img/placeholder.png')
+            ->useFallbackPath(public_path('/img/placeholder.png'));
+    }
+
+    public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(200)
+            ->height(200)
+            ->sharpen(10)
+            ->nonQueued();
+    }
 
     protected $casts = [
         'is_trial' => 'boolean',

@@ -32,6 +32,7 @@ class CollectionController extends Controller
 
     public function create()
     {
+        $user = Auth::user();
         $products = Product::with(
             'media',
             'categories',
@@ -40,8 +41,42 @@ class CollectionController extends Controller
             'combinations.combinationAttributeValue.attributeValue.attribute'
         )->get();
         $categories = Category::all();
+        $libraryMedia = $this->getLibraryMedia($user->company_id);
 
-        return Inertia::render('Collections/Create', compact('products', 'categories'));
+        return Inertia::render('Collections/Create', compact('products', 'categories', 'libraryMedia'));
+    }
+
+    private function getLibraryMedia($companyId)
+    {
+        $company = \App\Models\Company::find($companyId);
+        return $company->getMedia('library')->map(function ($media) {
+            $thumbUrl = $media->getUrl();
+            try {
+                if ($media->hasGeneratedConversion('thumb')) {
+                    $thumbUrl = $media->getUrl('thumb');
+                }
+            } catch (\Exception $e) {}
+
+            // Contar uso basado en el nombre del archivo
+            $usageProducts = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('file_name', $media->file_name)
+                ->where('model_type', \App\Models\Product::class)->count();
+            $usageCollections = \Spatie\MediaLibrary\MediaCollections\Models\Media::where('file_name', $media->file_name)
+                ->where('model_type', \App\Models\Collection::class)->count();
+
+            return [
+                'id' => $media->id,
+                'src' => $media->getUrl(),
+                'thumb' => $thumbUrl,
+                'alt' => $media->name,
+                'file_name' => $media->file_name,
+                'size' => $media->human_readable_size,
+                'media_id' => $media->id,
+                'usage_products' => $usageProducts,
+                'usage_collections' => $usageCollections,
+                'is_page_image' => true,
+                'is_from_product' => false,
+            ];
+        });
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -63,6 +98,8 @@ class CollectionController extends Controller
             'ends_at'          => 'nullable|date|after_or_equal:starts_at',
             'product_ids'      => 'nullable|array',
             'product_ids.*'    => 'integer|exists:products,id',
+            'library_media_ids' => 'nullable|array',
+            'library_media_ids.*' => 'integer|exists:media,id',
             // SEO fields
             'meta_title' => 'nullable|string|max:60',
             'meta_description' => 'nullable|string|max:160',
@@ -90,6 +127,10 @@ class CollectionController extends Controller
                 }
                 $collection->products()->sync($syncData);
             }
+
+            if (!empty($validated['library_media_ids'])) {
+                $this->copyMediaFromLibrary($collection, $validated['library_media_ids'], 'collections');
+            }
         });
 
         return to_route('collections.index')->with('success', 'Colección creada con éxito.');
@@ -107,6 +148,7 @@ class CollectionController extends Controller
         }
 
         $collection->load(
+            'media',
             'products.media',
             'products.stocks',
             'products.categories',
@@ -122,6 +164,7 @@ class CollectionController extends Controller
             'combinations.combinationAttributeValue.attributeValue.attribute'
         )->get();
         $categories = Category::all();
+        $libraryMedia = $this->getLibraryMedia($user->company_id);
 
         // Para colecciones inteligentes, calculamos el preview de productos
         $smartProducts = [];
@@ -136,7 +179,8 @@ class CollectionController extends Controller
             'collection',
             'products',
             'categories',
-            'smartProducts'
+            'smartProducts',
+            'libraryMedia'
         ));
     }
 
@@ -162,6 +206,8 @@ class CollectionController extends Controller
             'ends_at'          => 'nullable|date|after_or_equal:starts_at',
             'product_ids'      => 'nullable|array',
             'product_ids.*'    => 'integer|exists:products,id',
+            'library_media_ids' => 'nullable|array',
+            'library_media_ids.*' => 'integer|exists:media,id',
             // SEO fields
             'meta_title' => 'nullable|string|max:60',
             'meta_description' => 'nullable|string|max:160',
@@ -189,10 +235,28 @@ class CollectionController extends Controller
                 // Smart: remove all manual products since membership is dynamic
                 $collection->products()->detach();
             }
+
+            if (!empty($validated['library_media_ids'])) {
+                $this->copyMediaFromLibrary($collection, $validated['library_media_ids'], 'collections');
+            }
         });
 
         return to_route('collections.edit', $collection->slug)
             ->with('success', 'Colección actualizada con éxito.');
+    }
+
+    private function copyMediaFromLibrary($model, $mediaIds, $collectionName)
+    {
+        foreach ($mediaIds as $mediaId) {
+            $mediaItem = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($mediaId);
+            if ($mediaItem) {
+                $model->addMedia($mediaItem->getPath())
+                    ->preservingOriginal()
+                    ->usingName($mediaItem->name)
+                    ->usingFileName($mediaItem->file_name)
+                    ->toMediaCollection($collectionName);
+            }
+        }
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -212,6 +276,16 @@ class CollectionController extends Controller
         });
 
         return to_route('collections.index')->with('success', 'Colección eliminada con éxito.');
+    }
+
+    public function destroyImage($collectionId, $imageId)
+    {
+        $collection = Collection::findOrFail($collectionId);
+        $mediaItem = $collection->getMedia('collections')->find($imageId);
+
+        if ($mediaItem) {
+            $mediaItem->delete();
+        }
     }
 
     // ──────────────────────────────────────────────────────────────────────────

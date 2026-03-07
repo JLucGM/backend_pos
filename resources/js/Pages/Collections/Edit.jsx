@@ -9,19 +9,20 @@ import Loader from '@/Components/ui/loader';
 
 const CollectionForm = lazy(() => import('./CollectionForm'));
 
-export default function Edit({ collection, products, categories, smartProducts }) {
+export default function Edit({ collection, products, categories, smartProducts = [], libraryMedia = [] }) {
     const { data, setData, post, processing, errors } = useForm({
-        title: collection.title,
-        description: collection.description ?? '',
-        type: collection.type,
-        conditions: collection.conditions ?? [],
-        conditions_match: collection.conditions_match ?? 'all',
-        is_active: collection.is_active,
-        starts_at: collection.starts_at ?? '',
-        ends_at: collection.ends_at ?? '',
+        title: collection.title || '',
+        description: collection.description || '',
+        type: collection.type || 'manual',
+        conditions: collection.conditions || [],
+        conditions_match: collection.conditions_match || 'all',
+        is_active: !!collection.is_active,
+        starts_at: collection.starts_at || '',
+        ends_at: collection.ends_at || '',
         product_ids: collection.type === 'manual'
             ? (collection.products ?? []).map((p) => p.id)
             : [],
+        library_media_ids: [],
         // SEO fields
         meta_title: collection.meta_title || "",
         meta_description: collection.meta_description || "",
@@ -88,6 +89,7 @@ export default function Edit({ collection, products, categories, smartProducts }
                             categories={categories}
                             smartProducts={smartProducts}
                             collection={collection}
+                            libraryMedia={libraryMedia}
                         />
 
                         <div className="flex justify-end p-2.5">

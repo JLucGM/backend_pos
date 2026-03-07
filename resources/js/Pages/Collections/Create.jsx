@@ -8,7 +8,7 @@ import Loader from '@/Components/ui/loader';
 
 const CollectionForm = lazy(() => import('./CollectionForm'));
 
-export default function Create({ products, categories }) {
+export default function Create({ products, categories, libraryMedia = [] }) {
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         description: '',
@@ -19,6 +19,7 @@ export default function Create({ products, categories }) {
         starts_at: '',
         ends_at: '',
         product_ids: [],
+        library_media_ids: [],
         // SEO fields
         meta_title: "",
         meta_description: "",
@@ -63,6 +64,7 @@ export default function Create({ products, categories }) {
                             errors={errors}
                             products={products}
                             categories={categories}
+                            libraryMedia={libraryMedia}
                         />
 
                         <div className="flex justify-end p-2.5">

@@ -96,6 +96,7 @@ export function AppSidebar({ ...props }) {
           // { title: "Temas", url: "pages.themes" },
           { title: "Menus", url: "menus.index" },
           { title: "Paginas", url: "pages.index" },
+          { title: "Librería Media", url: "media.index" },
         ],
       },
       {

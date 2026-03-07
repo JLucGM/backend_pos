@@ -25,6 +25,7 @@ use App\Http\Controllers\RefundController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShippingRateController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\StatesController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StoreController;
@@ -296,6 +297,7 @@ Route::middleware(['auth', 'backend.company'])->prefix('dashboard')->group(funct
     Route::get('collections/{collection}/edit', [CollectionController::class, 'edit'])->name('collections.edit');
     Route::post('collections/{collection}', [CollectionController::class, 'update'])->name('collections.update');
     Route::delete('collections/{collection}', [CollectionController::class, 'destroy'])->name('collections.destroy');
+    Route::delete('collections/{collection}/images/{imageId}', [CollectionController::class, 'destroyImage'])->name('collections.images.destroy');
 
     Route::get('stocks', [StockController::class, 'index'])->name('stocks.index');
     Route::get('stocks/create', [StockController::class, 'create'])->name('stocks.create');
@@ -341,6 +343,12 @@ Route::resource('inventory-transfers', InventoryTransferController::class);
     Route::get('shipping-rates/{shippingRate}/edit', [ShippingRateController::class, 'edit'])->name('shippingrate.edit');
     Route::post('shipping-rates/{shippingRate}', [ShippingRateController::class, 'update'])->name('shippingrate.update');
     Route::delete('shipping-rates/{shippingRate}', [ShippingRateController::class, 'destroy'])->name('shippingrate.destroy');
+
+    // Media Library
+    Route::get('media', [MediaController::class, 'index'])->name('media.index');
+    Route::post('media', [MediaController::class, 'store'])->name('media.store');
+    Route::delete('media/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
+    Route::get('api/media', [MediaController::class, 'apiIndex'])->name('api.media.index');
 
     Route::patch('/pages/update-company-theme', [PageController::class, 'updateCompanyTheme'])->name('pages.update-company-theme');
     Route::get('pages', [PageController::class, 'index'])->name('pages.index');
