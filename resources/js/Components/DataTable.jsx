@@ -7,7 +7,8 @@ import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, ChevronDownIcon, Chevron
 import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
-export default function DataTable({ data, columns }) {
+export default function DataTable({ data, columns, isSuperAdmin, permissions }) {
+    console.log('DataTable Props:', { isSuperAdmin, permissions });
     const [filtering, setFiltering] = useState("");
     const [sorting, setSorting] = useState([]);
     const table = useReactTable({
@@ -29,8 +30,10 @@ export default function DataTable({ data, columns }) {
             }
         },
         onGlobalFilterChange: setFiltering,
-        // Opcional: Si quieres keys más robustas basadas en data, agrega getRowId
-        // getRowId: (row, index) => row.original.value || row.original.id || index.toString(), // Útil si no usas row.id
+        meta: {
+            isSuperAdmin,
+            permissions
+        }
     })
 
     return (
@@ -82,8 +85,6 @@ export default function DataTable({ data, columns }) {
                                 <TableRow>
                                     {
                                         row.getVisibleCells().map((cell) => (
-                                            // FIX: Removí key={index} aquí también, ya que TanStack maneja keys internas para cells.
-                                            // Si necesitas, usa cell.id o cell.column.id + row.id
                                             <TableCell key={cell.id} className="capitalize px-6 py-4">
                                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                             </TableCell>
@@ -92,7 +93,6 @@ export default function DataTable({ data, columns }) {
                                 </TableRow>
                                 {
                                     row.getIsExpanded() && (
-                                        // FIX: Cambia key a row.id para consistencia
                                         <TableRow key={`expanded-${row.id}`}>
                                             <TableCell colSpan={row.getVisibleCells().length + 1} className="p-4">
                                                 {columns.find((column) => column.accessorKey === 'id')?.expanded?.(row)}

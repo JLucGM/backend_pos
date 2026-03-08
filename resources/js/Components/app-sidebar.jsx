@@ -38,11 +38,10 @@ import { NavMain } from "@/Components/nav-main"
 import { NavUser } from "@/Components/nav-user"
 
 export function AppSidebar({ ...props }) {
-  const user = usePage().props.auth.user
+  const { user, isSuperAdmin } = usePage().props.auth
   const company = usePage().props.company // Asumiendo que la compañía actual está disponible
-  const userRoles = user.roles || []
-  const isSuperAdmin = userRoles.some(role => role.name === 'super admin')
   const env = props.env || {};
+
 
   const baseDomain = env?.SESSION_DOMAIN
     ? env.SESSION_DOMAIN.replace(/^\./, '')   // Elimina el punto inicial si existe
@@ -142,17 +141,18 @@ export function AppSidebar({ ...props }) {
         { title: "Analytics", url: "admin.subscriptions.analytics" },
         { title: "Planes de suscripción", url: "admin.subscriptionPlan.index" },
       ],
-    },
-      {
-        title: "Locaciones",
-        url: "#",
-        icon: MapPinned,
-        items: [
-          { title: "Paises", url: "countries.index" },
-          { title: "Estados", url: "states.index" },
-          { title: "Ciudades", url: "cities.index" },
-        ],
-      })
+    })
+
+    data.navMain.push({
+      title: "Locaciones",
+      url: "#",
+      icon: MapPinned,
+      items: [
+        { title: "Paises", url: "countries.index" },
+        { title: "Estados", url: "states.index" },
+        { title: "Ciudades", url: "cities.index" },
+      ],
+    })
   }
 
   // Datos de navegación simple (sin subítems)

@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Description } from '@headlessui/react'
 import { useState, lazy, Suspense } from 'react'
 import { useForm } from '@inertiajs/react';
@@ -14,6 +14,7 @@ const DataTable = lazy(() => import('@/Components/DataTable'));
 const CitiesForm = lazy(() => import('./CitiesForm'));
 
 export default function Index({ cities, state, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
     let [isOpen, setIsOpen] = useState(false)
     const { data, setData, errors, post } = useForm({
         city_name: "",
@@ -42,7 +43,7 @@ export default function Index({ cities, state, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Ciudades
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.cities.create') && (
+                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.cities.create')) && (
                         <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Anadir ciudad
@@ -64,6 +65,7 @@ export default function Index({ cities, state, permission }) {
                             editPermission={'admin.cities.edit'}
                             deletePermission={'admin.cities.delete'}
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         null

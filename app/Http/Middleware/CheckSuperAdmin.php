@@ -20,7 +20,7 @@ class CheckSuperAdmin
         }
 
         // Verificar si el usuario tiene el rol de super admin
-        if (!$user->hasRole('super admin')) {
+        if (!$user->isSuperAdmin()) {
             abort(403, 'No tienes permisos para acceder a esta sección.');
         }
 

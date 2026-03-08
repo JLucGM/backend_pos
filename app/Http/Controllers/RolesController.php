@@ -22,12 +22,28 @@ class RolesController extends Controller
     }
 
     /**
+     * Verifica si el usuario actual es el Super Admin (vía email).
+     */
+    private function isSuperAdmin()
+    {
+        return Auth::user()->isSuperAdmin();
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $roles = Role::with('permissions')->get();
-        $permissionsList = Permission::all();
+        $query = Role::with('permissions');
+        
+        // El rol Super Admin (virtual) no existe en DB, 
+        // pero protegemos el rol 'owner' para que no sea manipulable por otros
+        if (!$this->isSuperAdmin()) {
+            $query->where('name', '!=', 'owner');
+        }
+
+        $roles = $query->get();
+        $permissionsList = Permission::all(); // Restaurada la variable que faltaba
 
         $user = Auth::user();
         $userPermissions = $user->getAllPermissions();
@@ -59,6 +75,11 @@ class RolesController extends Controller
      */
     public function store(StoreRequest $request)
     {
+        // Prohibir la creación de roles protegidos
+        if (in_array(strtolower($request->name), ['super admin', 'owner'])) {
+            abort(403, 'El nombre "' . $request->name . '" está reservado por el sistema.');
+        }
+
         $role = Role::create([
             'name' => $request->name,
             'guard_name' => 'web'
@@ -72,18 +93,15 @@ class RolesController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Role $role)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Role $role)
     {
+        // Proteger el rol owner de edición por otros
+        if ($role->name === 'owner' && !$this->isSuperAdmin()) {
+            abort(403, 'El rol "owner" es inmutable.');
+        }
+
         $role->load('permissions');
         $permissionsList = Permission::all();
 
@@ -98,6 +116,11 @@ class RolesController extends Controller
      */
     public function update(UpdateRequest $request, Role $role)
     {
+        // No permitir renombrar nada a owner ni tocar el rol owner si no eres super admin
+        if (in_array(strtolower($request->name), ['super admin', 'owner']) || ($role->name === 'owner' && !$this->isSuperAdmin())) {
+            abort(403, 'El rol "owner" es inmutable.');
+        }
+
         $role->update([
             'name' => $request->name,
         ]);
@@ -114,6 +137,10 @@ class RolesController extends Controller
      */
     public function destroy(Role $role)
     {
+        if ($role->name === 'owner') {
+            abort(403, 'El rol "owner" no puede ser eliminado ya que es vital para el sistema.');
+        }
+
         $role->delete();
         return to_route('roles.index')->with('success', 'Rol eliminado con éxito.');
     }

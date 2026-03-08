@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import { Store } from 'lucide-react';
@@ -12,6 +12,7 @@ import HeadingSmall from '@/Components/heading-small';
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
 export default function Index({ orders, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
     return (
         <AuthenticatedLayout
             header={
@@ -19,7 +20,7 @@ export default function Index({ orders, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Pedidos
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.orders.create') && (
+                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.orders.create')) && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('orders.create')}
                         >
                             Crear Pedido
@@ -39,6 +40,7 @@ export default function Index({ orders, permission }) {
                             routeEdit={'orders.edit'}
                             editPermission={'admin.orders.edit'}
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-96">
@@ -48,7 +50,7 @@ export default function Index({ orders, permission }) {
                                 description="Puedes crear un nuevo pedido haciendo clic en el botón a continuación."
                                 className="text-center"
                             />
-                            {permission.some(perm => perm.name === 'admin.orders.create') && (
+                            {(isSuperAdmin || permission.some(perm => perm.name === 'admin.orders.create')) && (
                                 <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('orders.create')}>
                                     Crear Pedido
                                 </Link>

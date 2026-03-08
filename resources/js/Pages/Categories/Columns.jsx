@@ -11,23 +11,31 @@ export const categoriesColumns = [
     {
         header: "Acciones",
         accessorKey: "actions",
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions } = table.options.meta || {};
+            const canEdit = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.category.edit');
+            const canDelete = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.category.delete');
+
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('categories.edit', row.original)}>
-                                <Pen /> Editar
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('categories.destroy', [row.original])} method="delete">
-                                <Trash /> Eliminar
-                            </Link>
-                        </DropdownMenuItem>
+                        {canEdit && (
+                            <DropdownMenuItem>
+                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('category.edit', row.original)}>
+                                    <Pen /> Editar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                            <DropdownMenuItem>
+                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('category.destroy', [row.original])} method="delete">
+                                    <Trash /> Eliminar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

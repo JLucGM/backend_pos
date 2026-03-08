@@ -75,7 +75,7 @@ export default function Index({ stock, permission, stores, selectedStoreId }) {
     }, [stores, currentStoreId]);
 
     // Obtener configuraciones para el diseño
-    const { settings } = usePage().props;
+    const { settings, auth: { isSuperAdmin } } = usePage().props;
 
     return (
         <AuthenticatedLayout
@@ -115,13 +115,14 @@ export default function Index({ stock, permission, stores, selectedStoreId }) {
                         <DataTable
                             columns={StocksColumns}
                             data={filteredStock}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <div className="flex justify-between text-start px-8 py-16">
                             <div className="space-y-4">
                                 <h2 className="text-xl font-semibold text-gray-500">Añade tus productos</h2>
                                 <p className="text-sm text-gray-500">Comience por abastecer su tienda con productos que les encantarán a sus clientes.</p>
-                                {permission.some(perm => perm.name === 'admin.products.create') && (
+                                {(isSuperAdmin || permission.some(perm => perm.name === 'admin.products.create')) && (
                                     <Link className={buttonVariants({ variant: "default", size: "sm" })}
                                         href={route('products.create')}
                                     >

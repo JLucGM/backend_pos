@@ -1,10 +1,11 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react'; // Add Link import
+import { Head, Link, usePage } from '@inertiajs/react'; // Add Link import
 import { buttonVariants } from '@/Components/ui/button';
 import ThemeGallery from './partials/ThemeGallery';
 import DivSection from '@/Components/ui/div-section';
 
 export default function Themes({ themes, role, permission, currentThemeId, homepage, biopage }) {
+    const { isSuperAdmin } = usePage().props.auth;
     console.log(biopage)
     return (
         <AuthenticatedLayout
@@ -16,7 +17,7 @@ export default function Themes({ themes, role, permission, currentThemeId, homep
                     </h2>
                     <div className="flex gap-4 items-center">
 
-                        {biopage && permission.some(perm => perm.name === 'admin.pages.edit') && (
+                        {biopage && (isSuperAdmin || permission.some(perm => perm.name === 'admin.pages.edit')) && (
                             <div className="flex gap-2">
                                 <Link
                                     className={buttonVariants({ size: "sm" })}
@@ -26,7 +27,7 @@ export default function Themes({ themes, role, permission, currentThemeId, homep
                                 </Link>
                             </div>
                         )}
-                        {homepage && permission.some(perm => perm.name === 'admin.pages.edit') && (
+                        {homepage && (isSuperAdmin || permission.some(perm => perm.name === 'admin.pages.edit')) && (
                             <div className="flex gap-2">
                                 <Link
                                     className={buttonVariants({ size: "sm" })}

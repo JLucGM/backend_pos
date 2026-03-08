@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import {  lazy, Suspense } from 'react';
 import {  buttonVariants } from '@/Components/ui/button';
 import { userColumns } from './Columns';
@@ -9,6 +9,7 @@ import Loader from '@/Components/ui/loader';
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
 export default function Index({ users, roles, role, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
 
 console.log(users)
 
@@ -19,7 +20,7 @@ console.log(users)
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Usuarios
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.user.create') && (
+                    {(isSuperAdmin || (permission || []).some(perm => perm.name === 'admin.user.create')) && (
                         <Link
                             className={buttonVariants({ variant: "default", size: "sm" })}
                             href={route('user.create')}
@@ -43,6 +44,7 @@ console.log(users)
                             editPermission={'admin.user.edit'}
                             deletePermission={'admin.user.delete'}
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <p>no hay nada</p>

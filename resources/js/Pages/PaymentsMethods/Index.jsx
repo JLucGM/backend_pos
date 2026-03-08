@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 // import Breadcrumb from '@/Components/Breadcrumb';
 import { buttonVariants } from '@/Components/ui/button';
 import { PaymentMethodColumn } from './Columns';
@@ -9,6 +9,7 @@ import Loader from '@/Components/ui/loader';
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
 export default function Index({ paymentmethod, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
 
     return (
         <AuthenticatedLayout
@@ -18,7 +19,7 @@ export default function Index({ paymentmethod, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Método de pago
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.paymentmethod.create') && (
+                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.paymentmethod.create')) && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })}
                             href={route('paymentmethod.create')}
                         >
@@ -48,6 +49,7 @@ export default function Index({ paymentmethod, permission }) {
                             deletePermission={'admin.paymentmethod.delete'} // Pasa el permiso de eliminar
                             // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         null

@@ -41,6 +41,15 @@ class User extends Authenticatable implements HasMedia
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Determina si el usuario es el Super Administrador global.
+     * Basado en el email configurado en el archivo .env
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->email === config('app.super_admin_email');
+    }
+
     public function getRouteKeyName()
     {
         return 'slug';

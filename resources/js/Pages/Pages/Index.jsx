@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { lazy, Suspense } from 'react'
 import { buttonVariants } from '@/Components/ui/button';
 import { pagesColumns } from './Columns';
@@ -10,6 +10,7 @@ import { Palette, Edit } from 'lucide-react'; // Agregar Edit icon
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
 export default function Index({ pages, permission }) { // Agregar homepage en props
+    const { isSuperAdmin } = usePage().props.auth;
     return (
         <AuthenticatedLayout
             header={
@@ -17,7 +18,7 @@ export default function Index({ pages, permission }) { // Agregar homepage en pr
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Páginas
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.pages.create') && (
+                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.pages.create')) && (
                         <div className="flex gap-2">
                             <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('pages.create')}
                             >

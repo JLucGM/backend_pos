@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import { useState, Suspense, lazy } from 'react';
 import { useForm } from '@inertiajs/react';
@@ -14,6 +14,7 @@ const DataTable = lazy(() => import('@/Components/DataTable'));
 const CategoriesForm = lazy(() => import('./CategoriesForm'));
 
 export default function Index({ categories, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
     let [isOpen, setIsOpen] = useState(false);
     const { data, setData, errors, post } = useForm({
         category_name: "",
@@ -41,7 +42,7 @@ export default function Index({ categories, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Categorias
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.category.create') && (
+                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.category.create')) && (
                         <Button variant="default" size="sm" onClick={() => setIsOpen(true)}>
                             Añadir categoria
                         </Button>
@@ -62,6 +63,7 @@ export default function Index({ categories, permission }) {
                             editPermission={'admin.category.edit'}
                             deletePermission={'admin.category.delete'}
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     </Suspense>
                 ) : (

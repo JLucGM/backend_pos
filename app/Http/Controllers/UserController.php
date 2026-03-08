@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-// use App\Http\Requests\Users\StoreRequest;
-// use App\Http\Requests\Users\UpdateRequest;
-
 use App\Http\Requests\DeliveryLocations\StoreRequest as DeliveryLocationsStoreRequest;
 use App\Http\Requests\DeliveryLocations\UpdateRequest as DeliveryLocationsUpdateRequest;
 use App\Http\Requests\Users\StoreRequest;
@@ -33,7 +30,14 @@ class UserController extends Controller
         $this->middleware('can:admin.user.index')->only('index');
         $this->middleware('can:admin.user.create')->only('create', 'store');
         $this->middleware('can:admin.user.edit')->only('edit', 'update');
-        // $this->middleware('can:admin.user.delete')->only('delete');
+    }
+
+    /**
+     * Verifica si el usuario actual es el Super Admin (vía email).
+     */
+    private function isSuperAdmin()
+    {
+        return Auth::user()->isSuperAdmin();
     }
 
     /**
@@ -41,31 +45,44 @@ class UserController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
+        $authUser = Auth::user();
+        $isSuperAdmin = $this->isSuperAdmin();
 
-        // Cargar todos los usuarios que no sean super admin
-        $users = User::with('media', 'roles')
-            ->whereDoesntHave('roles', function ($query) {
-                $query->where('name', 'super admin');
+        $query = User::with('media', 'roles');
+
+        // Los Super Admins reales (vía email) son protegidos
+        if (!$isSuperAdmin) {
+            $query->where('email', '!=', config('app.super_admin_email'));
+            $query->where('company_id', $authUser->company_id);
+            
+            // ✅ Protegemos a los dueños (owner): No son visibles para otros empleados
+            $query->whereDoesntHave('roles', function($q) {
+                $q->where('name', 'owner');
             });
-
-        // Si el usuario autenticado no es super admin, filtrar por company_id
-        if (!$user->hasRole('super admin')) {
-            $users->where('company_id', $user->company_id);
         }
 
-        $users = $users->get(); // Obtener los usuarios filtrados
+        $users = $query->get();
+        
+        // ✅ Filtrar roles disponibles: 'owner' no se puede asignar manualmente
+        $rolesQuery = Role::query();
+        if (!$isSuperAdmin) {
+            $rolesQuery->where('name', '!=', 'owner');
+        }
+        $roles = $rolesQuery->get();
 
-        $roles = Role::all();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
+        $roleNames = $authUser->getRoleNames();
+        $permission = $authUser->getAllPermissions();
 
-        // Agregar la URL del avatar a cada usuario
         foreach ($users as $user) {
-            $user->avatar_url = $user->getFirstMediaUrl('avatars'); // 'avatars' es el nombre de la colección
+            $user->avatar_url = $user->getFirstMediaUrl('avatars');
         }
 
-        return Inertia::render('User/Index', compact('users', 'roles', 'role', 'permission'));
+        return Inertia::render('User/Index', [
+            'users' => $users,
+            'roles' => $roles,
+            'role' => $roleNames,
+            'permission' => $permission
+        ]);
     }
 
 
@@ -74,13 +91,22 @@ class UserController extends Controller
      */
     public function create()
     {
-        $user = Auth::user();
-        // $stores = Store::all();
+        $authUser = Auth::user();
+        $isSuperAdmin = $this->isSuperAdmin();
 
-        $roles = Role::where('name', '!=', 'super admin')->get();
-        $role = $user->getRoleNames();
+        // ✅ No permitir asignar el rol 'owner' manualmente
+        $rolesQuery = Role::query();
+        if (!$isSuperAdmin) {
+            $rolesQuery->where('name', '!=', 'owner');
+        }
+        $roles = $rolesQuery->get();
 
-        return Inertia::render('User/Create', compact('roles', 'role'));
+        $roleNames = $authUser->getRoleNames();
+
+        return Inertia::render('User/Create', [
+            'roles' => $roles,
+            'role' => $roleNames
+        ]);
     }
 
     /**
@@ -88,50 +114,42 @@ class UserController extends Controller
      */
     public function store(StoreRequest $request)
     {
-        $user = Auth::user();
-        // Obtener los datos de la solicitud
+        $authUser = Auth::user();
+        $isSuperAdmin = $this->isSuperAdmin();
+
+        // No se puede crear un usuario con el email protegido
+        if ($request->email === config('app.super_admin_email') && !$isSuperAdmin) {
+            abort(403, 'Este email está reservado para el Super Administrador del sistema.');
+        }
+
+        // ✅ Validar que no se intente asignar el rol 'owner' si no es Super Admin
+        if ($request->filled('role')) {
+            $role = Role::find($request->input('role'));
+            if ($role && $role->name === 'owner' && !$isSuperAdmin) {
+                abort(403, 'No tienes permiso para asignar el rol de Dueño (Owner).');
+            }
+        }
+
         $data = array_merge(
             $request->only('name', 'email', 'phone', 'is_active', 'identification'),
-            ['company_id' => $user->company_id]
+            ['company_id' => $authUser->company_id]
         );
 
-        // Encriptar la contraseña
         $data['password'] = bcrypt($request['password']);
-
-        // Crear el nuevo usuario
         $user = User::create($data);
 
-        // Manejar la carga del avatar
         if ($request->hasFile('avatar')) {
             $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
         }
 
-        // Asignar el rol al usuario
         if ($request->filled('role')) {
-            // Obtener el nombre del rol usando el ID
-            $roleId = $request->input('role');
-            $role = Role::find($roleId); // Asegúrate de importar el modelo Role
-
+            $role = Role::find($request->input('role'));
             if ($role) {
-                $user->assignRole($role->name); // Asignar el rol usando el nombre
+                $user->assignRole($role->name);
             }
         }
 
-        // Relacionar el usuario con la tienda
-        // if ($request->filled('store_id')) {
-        //     $user->stores()->attach($request->input('store_id'));
-        // }
-
-        // return to_route('user.index'); // Redirigir a la lista de usuarios
-        return to_route('user.edit', $user->slug)->with('success', 'Producto creado con éxito.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
-    {
-        //
+        return to_route('user.edit', $user->slug)->with('success', 'Usuario creado con éxito.');
     }
 
     /**
@@ -139,29 +157,42 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $users = Auth::user();
+        $authUser = Auth::user();
+        $isSuperAdmin = $this->isSuperAdmin();
 
-        if (!Auth::user()->hasRole('super admin')) {
-            if ($users->company_id !== $user->company_id) {
-                abort(403, 'No tienes permiso para esta operación.');
-            }
+        // Proteger al Super Admin real de edición
+        if ($user->email === config('app.super_admin_email') && !$isSuperAdmin) {
+            abort(403, 'No tienes permiso para editar al Super Administrador.');
         }
 
-        $user->load('roles', 'media')->get();
-        $user->avatar_url = $user->getFirstMediaUrl('avatars'); // Asegúrate de que 'avatars' sea el nombre de la colección
+        // ✅ Proteger al 'owner' de edición por parte de otros usuarios
+        if ($user->hasRole('owner') && !$isSuperAdmin) {
+            abort(403, 'No tienes permiso para editar al Dueño de la compañía.');
+        }
 
-        $roles = Role::where('name', '!=', 'super admin')->get();
-        // $stores = Store::all();
-        //  $stores = Store::where('company_id', $users->company_id)->get();
+        // Proteger pertenencia a compañía
+        if (!$isSuperAdmin && $authUser->company_id !== $user->company_id) {
+            abort(403, 'No tienes permiso para esta operación.');
+        }
 
-        $role = $users->getRoleNames();
-        $permission = $users->getAllPermissions();
-        $countries = Country::all(); // Asegúrate de importar el modelo Country
-        $states = State::all(); // Asegúrate de importar el modelo State
-        $cities = City::all(); // Asegúrate de importar el modelo City
+        $user->load('roles', 'media');
+        $user->avatar_url = $user->getFirstMediaUrl('avatars');
+
+        // ✅ Filtrar roles para asignar
+        $rolesQuery = Role::query();
+        if (!$isSuperAdmin) {
+            $rolesQuery->where('name', '!=', 'owner');
+        }
+        $roles = $rolesQuery->get();
+
+        $roleNames = $authUser->getRoleNames();
+        $permission = $authUser->getAllPermissions();
+        $countries = Country::all();
+        $states = State::all();
+        $cities = City::all();
         $deliveryLocations = $user->deliveryLocations()->with(['city', 'state', 'country'])->get();
 
-        return Inertia::render('User/Edit', compact('user', 'roles', 'role', 'permission', 'countries', 'states', 'cities', 'deliveryLocations'));
+        return Inertia::render('User/Edit', compact('user', 'roles', 'roleNames', 'permission', 'countries', 'states', 'cities', 'deliveryLocations'));
     }
 
     /**
@@ -169,38 +200,48 @@ class UserController extends Controller
      */
     public function update(UpdateRequest $request, User $user)
     {
-        // Obtener los datos de la solicitud
+        $authUser = Auth::user();
+        $isSuperAdmin = $this->isSuperAdmin();
+
+        // Proteger al Super Admin real de actualización
+        if ($user->email === config('app.super_admin_email') && !$isSuperAdmin) {
+            abort(403, 'No tienes permiso para editar al Super Administrador.');
+        }
+
+        // ✅ Proteger al 'owner'
+        if ($user->hasRole('owner') && !$isSuperAdmin) {
+            abort(403, 'No tienes permiso para modificar al Dueño de la compañía.');
+        }
+
+        // ✅ Validar asignación de rol 'owner'
+        if ($request->filled('role')) {
+            $role = Role::find($request->input('role'));
+            if ($role && $role->name === 'owner' && !$isSuperAdmin) {
+                abort(403, 'No tienes permiso para asignar el rol de Dueño (Owner).');
+            }
+        }
+
         $data = $request->only('name', 'email', 'phone', 'is_active', 'identification');
 
-        // Encriptar la contraseña si se proporciona
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request['password']);
         }
 
-        // Actualizar el usuario con los nuevos datos
         $user->update($data);
 
-        // Manejar la carga del avatar
         if ($request->hasFile('avatar')) {
-            // Eliminar el avatar anterior si existe
-            $user->clearMediaCollection('avatars'); // Elimina todos los avatares anteriores
-            // Agregar el nuevo avatar
+            $user->clearMediaCollection('avatars');
             $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
         }
 
-        // Actualizar el rol del usuario
         if ($request->filled('role')) {
-            // Sincronizar roles
-            $user->syncRoles([$request->input('role')]);
+            $role = Role::find($request->input('role'));
+            if ($role) {
+                $user->syncRoles([$role->name]);
+            }
         }
 
-        // Relacionar el usuario con la tienda
-        // if ($request->filled('store_id')) {
-        //     // Sincronizar tiendas
-        //     $user->stores()->sync([$request->input('store_id')]);
-        // }
-
-        return to_route('user.edit', $user); // Redirigir a la edición del usuario
+        return to_route('user.edit', $user->slug)->with('success', 'Usuario actualizado con éxito.');
     }
 
     /**
@@ -208,32 +249,34 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        // Verificar si el avatar existe y no es el default
-        if ($user->avatar && $user->avatar != asset('img/profile/default.jpg')) {
-            // Extraer el nombre del archivo de la URL completa
-            $nombreAvatar = basename($user->avatar);
+        $isSuperAdmin = $this->isSuperAdmin();
 
-            // Verificar que el archivo exista antes de intentar eliminarlo
-            if (file_exists(public_path('img/profile/' . $nombreAvatar))) {
-                unlink(public_path('img/profile/' . $nombreAvatar));
-            }
+        // El Super Admin real es inmortal
+        if ($user->email === config('app.super_admin_email')) {
+            abort(403, 'El Super Administrador no puede ser eliminado.');
         }
 
-        // Eliminar el usuario
+        // ✅ El rol 'owner' es protegido: un empleado no puede borrar a su jefe
+        if ($user->hasRole('owner') && !$isSuperAdmin) {
+            abort(403, 'El Dueño de la compañía no puede ser eliminado.');
+        }
+
+        if (Auth::id() === $user->id) {
+            abort(403, 'No puedes eliminar tu propia cuenta.');
+        }
+
+        $user->clearMediaCollection('avatars');
         $user->delete();
+        
+        return to_route('user.index')->with('success', 'Usuario eliminado.');
     }
 
     public function storeDeliveryLocation(DeliveryLocationsStoreRequest $request, User $user)
     {
-       
         DB::transaction(function () use ($user, $request) {
-            // Si la nueva dirección se establece como predeterminada,
-            // desmarca cualquier otra dirección que sea predeterminada para este usuario.
             if ($request['is_default']) {
                 $user->deliveryLocations()->update(['is_default' => false]);
             }
-
-            // Crea la nueva dirección
             $user->deliveryLocations()->create($request->validated());
         });
 
@@ -243,15 +286,11 @@ class UserController extends Controller
     public function updateDeliveryLocation(DeliveryLocationsUpdateRequest $request, User $user, DeliveryLocation $deliveryLocation)
     {
         DB::transaction(function () use ($user, $deliveryLocation, $request) {
-            // Si esta dirección se establece como predeterminada,
-            // desmarca todas las demás direcciones del usuario.
             if ($request['is_default']) {
                 $user->deliveryLocations()
                     ->where('id', '!=', $deliveryLocation->id)
                     ->update(['is_default' => false]);
             }
-
-            // Actualiza la dirección actual
             $deliveryLocation->update($request->validated());
         });
 

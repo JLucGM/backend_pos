@@ -26,7 +26,7 @@ class EnsureUserIsClient
         $user = Auth::user();
 
         // ✅ Permitir a super admins sin restricciones
-        if ($user->hasRole('super admin')) {
+        if ($user->isSuperAdmin()) {
             return $next($request);
         }
 

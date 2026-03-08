@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Description } from '@headlessui/react'
 import { useState, lazy, Suspense } from 'react'
 import { useForm } from '@inertiajs/react';
@@ -14,6 +14,7 @@ const DataTable = lazy(() => import('@/Components/DataTable'));
 const StatesForm = lazy(() => import('./StatesForm'));
 
 export default function Index({ states, countries, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
     let [isOpen, setIsOpen] = useState(false)
     const { data, setData, errors, post } = useForm({
         state_name: "",
@@ -43,7 +44,7 @@ export default function Index({ states, countries, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Estados
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.states.create') && (
+                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.states.create')) && (
                         <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Añadir estado
@@ -58,13 +59,14 @@ export default function Index({ states, countries, permission }) {
                 <DivSection>
                     {states.length > 0 ? (
                         <DataTable
-                            columns={StatesColumns}
+                            columns={StateColumns}
                             data={states}
                             routeEdit={'states.edit'}
                             routeDestroy={'states.destroy'}
                             editPermission={'admin.states.edit'}
                             deletePermission={'admin.states.delete'}
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         null

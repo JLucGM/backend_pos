@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
             'phone' => '04121234567',
             'is_active' => '1',
             'company_id' => 1,
-        ])->assignRole('super admin');
+        ]);
         User::create([
             'name' => 'Edduar Villegas',
             'email' => 'pepsi@gmail.com',

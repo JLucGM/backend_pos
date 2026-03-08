@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { buttonVariants } from '@/Components/ui/button';
 import { ProductColumns } from './Columns';
 import { ShoppingBagIcon } from '@heroicons/react/24/outline';
@@ -12,6 +12,7 @@ const DataTable = lazy(() => import('@/Components/DataTable'));
 const DivSection = lazy(() => import('@/Components/ui/div-section'));
 
 export default function Index({ product, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
     return (
         <AuthenticatedLayout
             header={
@@ -20,7 +21,7 @@ export default function Index({ product, permission }) {
                         Productos
                     </h2>
 
-                    {permission.some(perm => perm.name === 'admin.products.create') && (
+                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.products.create')) && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })}
                             href={route('products.create')}
                         >
@@ -43,13 +44,14 @@ export default function Index({ product, permission }) {
                             editPermission={'admin.products.edit'} // Pasa el permiso de editar
                             deletePermission={'admin.products.delete'} // Pasa el permiso de eliminar
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <div className="flex justify-between text-start px-8 py-16">
                             <div className="space-y-4">
                                 <h2 className="text-xl font-semibold text-gray-500">Añade tus productos</h2>
                                 <p className="text-sm text-gray-500">Comience por abastecer su tienda con productos que les encantarán a sus clientes.</p>
-                                {permission.some(perm => perm.name === 'admin.products.create') && (
+                                {(isSuperAdmin || permission.some(perm => perm.name === 'admin.products.create')) && (
                                     <Link className={buttonVariants({ variant: "default", size: "sm" })}
                                         href={route('products.create')}
                                     >

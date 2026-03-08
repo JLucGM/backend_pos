@@ -36,6 +36,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $user ? $user->load('roles', 'company') : null,
+                'isSuperAdmin' => $user ? $user->isSuperAdmin() : false,
             ],
             'company' => $user?->company, // Compañía directamente
             'settings' => function () use ($request) {
@@ -44,18 +45,11 @@ class HandleInertiaRequests extends Middleware
                 }
                 return null;
             },
-        //      'flash' => [
-        //     'message' => fn () => $request->session()->get('message'),
-        // ],
         'env' => [
             'SESSION_DOMAIN' => env('SESSION_DOMAIN', '.pos.test'),
             'APP_URL' => env('APP_URL'),
+            'SUPER_ADMIN_EMAIL' => config('app.super_admin_email'),
         ],
-        // 'ziggy' => function () use ($request) {
-        //     return array_merge((new Ziggy)->toArray(), [
-        //         'location' => $request->url(),
-        //     ]);
-        // },
         ];
     }
 }

@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
 import { userColumns } from './Columns';
 import DivSection from '@/Components/ui/div-section';
@@ -9,6 +9,7 @@ import { buttonVariants } from '@/Components/ui/button';
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
 export default function Index({ users, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
 
     return (
         <AuthenticatedLayout
@@ -17,7 +18,7 @@ export default function Index({ users, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Clientes
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.client.create') && (
+                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.client.create')) && (
                         <Link
                             className={buttonVariants({ variant: "default", size: "sm" })}
                             href={route('client.create')}
@@ -41,6 +42,7 @@ export default function Index({ users, permission }) {
                             editPermission={'admin.client.edit'}
                             deletePermission={'admin.client.delete'}
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <p>no hay nada</p>

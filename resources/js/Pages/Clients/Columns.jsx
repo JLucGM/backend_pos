@@ -11,10 +11,9 @@ export const userColumns = [
         accessorKey: "id",
         cell: ({ row }) => (
             <div className="flex items-center">
-                {/* <p className='me-2'>{row.original.id}</p> */}
                 <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={row.original.avatar_url} alt={row.original.name} />
-                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage src={row.original.avatar_url} alt={row.original.name} />
+                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
             </div>
         ),
@@ -35,11 +34,8 @@ export const userColumns = [
         header: "Publicado",
         accessorKey: "is_active",
         cell: ({ row }) => {
-            const isActive = row.original.is_active === true; // Verifica si el estado es "1" (Activo)
+            const isActive = row.original.is_active === true;
             return (
-                // <Badge variant={isActive ? "default" : "secondary"}>
-                //     {isActive ? 'Activo' : 'Inactivo'}
-                // </Badge>
                 <Badge variant={isActive === true ? 'success' : 'info'}>
                     {isActive === true ? 'Publicado' : 'Borrador'}
                 </Badge>
@@ -49,23 +45,31 @@ export const userColumns = [
     {
         header: "Acciones",
         accessorKey: "actions",
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions } = table.options.meta || {};
+            const canEdit = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.client.edit');
+            const canDelete = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.client.delete');
+
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('client.edit', row.original)}>
-                                <Pen /> Editar
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('client.destroy', [row.original])} method="delete">
-                                <Trash /> Eliminar
-                            </Link>
-                        </DropdownMenuItem>
+                        {canEdit && (
+                            <DropdownMenuItem>
+                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('client.edit', row.original)}>
+                                    <Pen /> Editar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                            <DropdownMenuItem>
+                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('client.destroy', [row.original])} method="delete">
+                                    <Trash /> Eliminar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Suspense, lazy } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import { Button, buttonVariants } from '@/Components/ui/button';
@@ -11,6 +11,7 @@ import HeadingSmall from '@/Components/heading-small';
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
 export default function Index({ discounts, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
 
     return (
         <AuthenticatedLayout
@@ -19,7 +20,7 @@ export default function Index({ discounts, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Descuentos
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.discount.create') && (
+                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.discount.create')) && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('discounts.create')}
                         >
                             Crear Descuento
@@ -41,6 +42,7 @@ export default function Index({ discounts, permission }) {
                             editPermission={'admin.discount.edit'}
                             deletePermission={'admin.discount.delete'}
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     </Suspense>
                 ) : (
@@ -51,7 +53,7 @@ export default function Index({ discounts, permission }) {
                             description="Puedes crear un nuevo descuento haciendo clic en el botón a continuación."
                             className="text-center"
                         />
-                        {permission.some(perm => perm.name === 'admin.discount.create') && (
+                        {(isSuperAdmin || permission.some(perm => perm.name === 'admin.discount.create')) && (
                             <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('discounts.create')}>
                                 Crear Descuento
                             </Link>

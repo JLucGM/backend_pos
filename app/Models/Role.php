@@ -33,7 +33,7 @@ class Role extends Model implements RoleContract
     {
         return 'slug';
     }
-    public function getSlugOptions() : SlugOptions
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('name')

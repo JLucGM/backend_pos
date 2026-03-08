@@ -40,7 +40,7 @@ class ClientController extends Controller
             });
 
         // Si el usuario autenticado no es super admin, filtrar por company_id
-        if (!$user->hasRole('super admin')) {
+        if (!$user->isSuperAdmin()) {
             $users->where('company_id', $user->company_id);
         }
 
@@ -122,7 +122,7 @@ class ClientController extends Controller
         $states = State::all(); // Asegúrate de importar el modelo State
         $cities = City::all(); // Asegúrate de importar el modelo City
         
-        if (!$user->hasRole('super admin')) {
+        if (!$user->isSuperAdmin()) {
             if ($user->company_id !== $client->company_id) {
                 abort(403, 'No tienes permiso para esta operación.');
             }

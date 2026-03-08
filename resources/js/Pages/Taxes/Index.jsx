@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, DialogDescription } from '@headlessui/react'
 import { useState } from 'react'
 import { useForm } from '@inertiajs/react';
@@ -17,6 +17,7 @@ const DataTable = lazy(() => import('@/Components/DataTable'));
 const TaxesForm = lazy(() => import('./TaxesForm'));
 
 export default function Index({ taxes, permission }) {
+    const { isSuperAdmin } = usePage().props.auth;
     let [isOpen, setIsOpen] = useState(false);
     const { data, setData, errors, post } = useForm({
         tax_name: "",
@@ -49,7 +50,7 @@ export default function Index({ taxes, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Impuestos
                     </h2>
-                    {permission.some(perm => perm.name === 'admin.tax.create') && (
+                    {(isSuperAdmin || (permission || []).some(perm => perm.name === 'admin.tax.create')) && (
                         <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Añadir impuesto
@@ -71,6 +72,7 @@ export default function Index({ taxes, permission }) {
                             editPermission={'admin.tax.edit'}
                             deletePermission={'admin.tax.delete'}
                             permissions={permission}
+                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-96">
@@ -80,7 +82,7 @@ export default function Index({ taxes, permission }) {
                                 description="Puedes crear un nuevo impuesto haciendo clic en el botón a continuación."
                                 className="text-center"
                             />
-                            {permission.some(perm => perm.name === 'admin.tax.create') && (
+                            {(isSuperAdmin || (permission || []).some(perm => perm.name === 'admin.tax.create')) && (
                         <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Añadir impuesto

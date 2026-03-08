@@ -1,5 +1,5 @@
 import { buttonVariants } from "@/Components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Ellipsis, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { Badge } from "@/Components/ui/badge";
@@ -33,23 +33,53 @@ export const RolesColumns = [
     {
         header: "Acciones",
         accessorKey: "actions",
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
+            const meta = table.options.meta || {};
+            const isSuperAdmin = meta.isSuperAdmin;
+            const permissions = meta.permissions || [];
+
+            const canEdit = isSuperAdmin || permissions.some(p => p.name === 'admin.roles.edit');
+            const canDelete = isSuperAdmin || permissions.some(p => p.name === 'admin.roles.delete');
+
+            // Usamos el slug para rutas amigables (Laravel Sluggable)
+            // Si el slug no existe por alguna razón, usamos el ID como fallback
+            const roleIdentifier = row.original.slug || row.original.id;
+
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full justify-start'} href={route('roles.edit', row.original)}>
-                                <Pen className="mr-2 h-4 w-4" /> Editar
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full justify-start text-red-600'} href={route('roles.destroy', [row.original])} method="delete">
-                                <Trash className="mr-2 h-4 w-4" /> Eliminar
-                            </Link>
-                        </DropdownMenuItem>
+                        {canEdit && (
+                            <DropdownMenuItem>
+                                <Link
+                                    className={buttonVariants({ variant: 'ghost' }) + ' w-full'}
+                                    href={route('roles.edit', { role: roleIdentifier })}
+                                >
+                                    <Pen />
+                                    <span>Editar</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                            <DropdownMenuItem>
+                                <Link
+                                    className={buttonVariants({ variant: 'ghost' }) + ' w-full'}
+                                    href={route('roles.destroy', { role: roleIdentifier })}
+                                    method="delete"
+                                    as="button"
+                                >
+                                    <Trash />
+                                    <span>Eliminar</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                        {!canEdit && !canDelete && (
+                            <div className="px-2 py-1.5 text-xs text-gray-500 italic">
+                                Sin acciones
+                            </div>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

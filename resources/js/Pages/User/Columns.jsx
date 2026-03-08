@@ -1,7 +1,7 @@
 import { Badge } from '@/Components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { buttonVariants } from "@/Components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/Components/ui/dropdown-menu"
 import { Ellipsis, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
 
@@ -37,9 +37,6 @@ export const userColumns = [
         cell: ({ row }) => {
             const isActive = row.original.is_active === true; // Verifica si el estado es "1" (Activo)
             return (
-                // <Badge variant={isActive ? "default" : "secondary"}>
-                //     {isActive ? 'Activo' : 'Inactivo'}
-                // </Badge>
                 <Badge variant={isActive === true ? 'success' : 'info'}>
                     {isActive === true ? 'Publicado' : 'Borrador'}
                 </Badge>
@@ -49,23 +46,31 @@ export const userColumns = [
     {
         header: "Acciones",
         accessorKey: "actions",
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions } = table.options.meta || {};
+            const canEdit = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.user.edit' || p.name === 'admin.client.edit');
+            const canDelete = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.user.delete' || p.name === 'admin.client.delete');
+
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('user.edit', row.original)}>
-                                <Pen /> Editar
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('user.destroy', [row.original])} method="delete">
-                                <Trash /> Eliminar
-                            </Link>
-                        </DropdownMenuItem>
+                        {canEdit && (
+                            <DropdownMenuItem>
+                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route(row.original.roles?.some(r => r.name === 'client') ? 'client.edit' : 'user.edit', row.original)}>
+                                    <Pen /> Editar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                            <DropdownMenuItem>
+                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route(row.original.roles?.some(r => r.name === 'client') ? 'client.destroy' : 'user.destroy', [row.original])} method="delete">
+                                    <Trash /> Eliminar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

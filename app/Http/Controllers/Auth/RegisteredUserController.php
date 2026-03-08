@@ -135,8 +135,8 @@ class RegisteredUserController extends Controller
             $user->company()->associate($company);
             $user->save();
 
-            // Asignar rol de admin
-            $user->assignRole('admin');
+            // Asignar rol de owner
+            $user->assignRole('owner');
         });
 
         // Obtener el usuario creado para login y eventos

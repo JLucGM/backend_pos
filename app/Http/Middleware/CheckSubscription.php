@@ -21,12 +21,12 @@ class CheckSubscription
         }
 
         // ✅ Super admins siempre tienen acceso, sin importar la compañía o suscripción
-        if ($user->hasRole('super admin')) {
+        if ($user->isSuperAdmin()) {
             return $next($request);
         }
 
         // Para usuarios que no son super admin, necesitamos la compañía
-        if (!$user->company) {
+        if (!$user->company_id) {
             return redirect()->route('login');
         }
 
