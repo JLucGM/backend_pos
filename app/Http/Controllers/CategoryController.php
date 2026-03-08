@@ -26,11 +26,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::all();
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
-        return Inertia::render('Categories/Index', compact('categories','role','permission'));
+        return Inertia::render('Categories/Index', compact('categories'));
     }
 
     /**

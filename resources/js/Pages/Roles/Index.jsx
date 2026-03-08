@@ -8,7 +8,10 @@ import Loader from '@/Components/ui/loader';
 
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ roles, permission }) {
+import { usePermission } from '@/hooks/usePermission';
+
+export default function Index({ roles }) {
+    const { can } = usePermission();
     const { isSuperAdmin } = usePage().props.auth;
 
     return (
@@ -18,12 +21,12 @@ export default function Index({ roles, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Roles
                     </h2>
-                    {(isSuperAdmin || (permission || []).some(perm => perm.name === 'admin.roles.create')) && (
-                        <Link 
-                            href={route('roles.create')}
+                    {can('admin.roles.create') && (
+                        <Link
                             className={buttonVariants({ variant: "default", size: "sm" })}
+                            href={route('roles.create')}
                         >
-                            Añadir rol
+                            Añadir Rol
                         </Link>
                     )}
                 </div>
@@ -31,8 +34,8 @@ export default function Index({ roles, permission }) {
         >
             <Head title="Roles" />
 
-            <Suspense fallback={<Loader />}>
-                <DivSection>
+            <DivSection>
+                <Suspense fallback={<Loader />}>
                     {roles.length > 0 ? (
                         <DataTable
                             columns={RolesColumns}
@@ -41,14 +44,12 @@ export default function Index({ roles, permission }) {
                             routeDestroy={'roles.destroy'}
                             editPermission={'admin.roles.edit'}
                             deletePermission={'admin.roles.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <div className="text-center py-4 text-gray-500">No hay roles definidos.</div>
                     )}
-                </DivSection>
-            </Suspense>
+                </Suspense>
+            </DivSection>
         </AuthenticatedLayout>
     )
 }

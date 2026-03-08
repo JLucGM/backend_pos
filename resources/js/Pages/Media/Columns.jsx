@@ -64,7 +64,10 @@ export const MediaColumns = (onShowDetails, copyingId, setCopyingId) => [
     {
         header: "Acciones",
         accessorKey: "actions",
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions = [] } = table.options.meta || {};
+            const canDelete = isSuperAdmin || permissions.includes('admin.media.delete');
+
             const copyToClipboard = (e) => {
                 e.preventDefault();
                 navigator.clipboard.writeText(row.original.url);
@@ -99,9 +102,11 @@ export const MediaColumns = (onShowDetails, copyingId, setCopyingId) => [
                             )}
                             Copiar URL
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
-                            <Trash className="mr-2 h-4 w-4" /> Eliminar
-                        </DropdownMenuItem>
+                        {canDelete && (
+                            <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+                                <Trash className="mr-2 h-4 w-4" /> Eliminar
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

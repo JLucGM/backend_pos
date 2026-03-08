@@ -23,8 +23,6 @@ import {
   Wallpaper,
 } from "lucide-react"
 
-import { NavProjects } from "@/components/nav-projects"
-import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarHeader,
@@ -36,18 +34,17 @@ import { usePage } from "@inertiajs/react"
 import { NavSingle } from "./nav-single"
 import { NavMain } from "@/Components/nav-main"
 import { NavUser } from "@/Components/nav-user"
+import { usePermission } from "@/hooks/usePermission"
 
 export function AppSidebar({ ...props }) {
-  const { user, isSuperAdmin } = usePage().props.auth
-  const company = usePage().props.company // Asumiendo que la compañía actual está disponible
+  const { user, isSuperAdmin, can } = usePermission()
+  const company = usePage().props.company 
   const env = props.env || {};
 
-
   const baseDomain = env?.SESSION_DOMAIN
-    ? env.SESSION_DOMAIN.replace(/^\./, '')   // Elimina el punto inicial si existe
+    ? env.SESSION_DOMAIN.replace(/^\./, '')   
     : window.location.hostname.replace(/^[^.]+\./, '');
 
-  // Construir la URL del frontend
   let frontendUrl = '#'
   if (company) {
     if (company.domain) {
@@ -57,25 +54,19 @@ export function AppSidebar({ ...props }) {
     }
   }
 
-
   // Datos de navegación con subítems
-  const data = {
-    user: {
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-    },
+  const navData = {
     navMain: [
       {
         title: "Productos",
         url: "#",
         icon: ShoppingBag,
         items: [
-          { title: "Productos", url: "products.index" },
-          { title: "Colecciones", url: "collections.index" },
-          { title: "Inventarios", url: "stocks.index" },
-          { title: "Transferencias", url: "inventory-transfers.index" },
-          { title: "Gift Cards", url: "giftCards.index" },
+          { title: "Productos", url: "products.index", permission: "admin.products.index" },
+          { title: "Colecciones", url: "collections.index", permission: "admin.collections.index" },
+          { title: "Inventarios", url: "stocks.index", permission: "admin.products.index" },
+          { title: "Transferencias", url: "inventory-transfers.index", permission: "admin.inventory-transfers.index" },
+          { title: "Gift Cards", url: "giftCards.index", permission: "admin.giftCards.index" },
         ],
       },
       {
@@ -83,9 +74,9 @@ export function AppSidebar({ ...props }) {
         url: "#",
         icon: Bot,
         items: [
-          { title: "Usuarios", url: "user.index" },
-          { title: "Clientes", url: "client.index" },
-          { title: "Roles", url: "roles.index" },
+          { title: "Usuarios", url: "user.index", permission: "admin.user.index" },
+          { title: "Clientes", url: "client.index", permission: "admin.client.index" },
+          { title: "Roles", url: "roles.index", permission: "admin.roles.index" },
         ],
       },
       {
@@ -93,10 +84,9 @@ export function AppSidebar({ ...props }) {
         url: "",
         icon: Wallpaper,
         items: [
-          // { title: "Temas", url: "pages.themes" },
-          { title: "Menus", url: "menus.index" },
-          { title: "Paginas", url: "pages.index" },
-          { title: "Librería Media", url: "media.index" },
+          { title: "Menus", url: "menus.index", permission: "admin.menus.index" },
+          { title: "Paginas", url: "pages.index", permission: "admin.pages.index" },
+          { title: "Librería Media", url: "media.index", permission: "admin.media.index" },
         ],
       },
       {
@@ -104,12 +94,12 @@ export function AppSidebar({ ...props }) {
         url: "",
         icon: Cog,
         items: [
-          { title: "Configuración", url: "setting.index" },
-          { title: "Políticas", url: "policy.index" },
-          { title: "Tiendas", url: "stores.index" },
-          { title: "Metodo de pago", url: "paymentmethod.index" },
-          { title: "Impuestos", url: "tax.index" },
-          { title: "Tarifa de envio", url: "shippingrate.index" },
+          { title: "Configuración", url: "setting.index", permission: "admin.setting.index" },
+          { title: "Políticas", url: "policy.index", permission: "admin.pages.index" },
+          { title: "Tiendas", url: "stores.index", permission: "admin.stores.index" },
+          { title: "Metodo de pago", url: "paymentmethod.index", permission: "admin.paymentmethod.index" },
+          { title: "Impuestos", url: "tax.index", permission: "admin.tax.index" },
+          { title: "Tarifa de envio", url: "shippingrate.index", permission: "admin.shippingRate.index" },
         ],
       },
       {
@@ -121,66 +111,82 @@ export function AppSidebar({ ...props }) {
           { title: "Historial de Pagos", url: "subscriptions.payments" },
         ],
       },
-    ],
-    projects: [
-      { name: "Design Engineering", url: "#", icon: Frame },
-      { name: "Sales & Marketing", url: "#", icon: PieChart },
-      { name: "Travel", url: "#", icon: Map },
-    ],
-  }
-
-  // Agregar secciones solo para super admin
-  if (isSuperAdmin) {
-    data.navMain.push({
-      title: "Administración",
-      url: "#",
-      icon: Crown,
-      items: [
-        { title: "Dashboard Suscripciones", url: "admin.subscriptions.index" },
-        { title: "Crear Suscripción", url: "admin.subscriptions.create" },
-        { title: "Analytics", url: "admin.subscriptions.analytics" },
-        { title: "Planes de suscripción", url: "admin.subscriptionPlan.index" },
-      ],
-    })
-
-    data.navMain.push({
-      title: "Locaciones",
-      url: "#",
-      icon: MapPinned,
-      items: [
-        { title: "Paises", url: "countries.index" },
-        { title: "Estados", url: "states.index" },
-        { title: "Ciudades", url: "cities.index" },
-      ],
-    })
-  }
-
-  // Datos de navegación simple (sin subítems)
-  const datasingle = {
-    navMain: [
-      { title: "Inicio", url: "dashboard", icon: HomeIcon },
-      { title: "Pedidos", url: "orders.index", icon: ShoppingBasket },
-      { title: "Descuentos", url: "discounts.index", icon: BadgePercent },
-      { title: "Reportes", url: "reportes.index", icon: ChartColumnBigIcon },
+      // ✅ SECCIÓN EXCLUSIVA DE SUPER ADMIN
       {
-        title: "Tienda online",
-        url: "pages.themes",
-        icon: ShoppingBagIcon,
-        action: (
-          <a
-            href={frontendUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Eye className="h-4 w-4" />
-          </a>
-
-        ),
+        title: "Administración",
+        url: "#",
+        icon: Crown,
+        onlySuperAdmin: true, 
+        items: [
+          { title: "Dashboard Suscripciones", url: "admin.subscriptions.index" },
+          { title: "Crear Suscripción", url: "admin.subscriptions.create" },
+          { title: "Analytics", url: "admin.subscriptions.analytics" },
+          { title: "Planes de suscripción", url: "admin.subscriptionPlan.index" },
+        ],
+      },
+      // ✅ SECCIÓN EXCLUSIVA DE SUPER ADMIN
+      {
+        title: "Locaciones",
+        url: "#",
+        icon: MapPinned,
+        onlySuperAdmin: true,
+        items: [
+          { title: "Paises", url: "countries.index" },
+          { title: "Estados", url: "states.index" },
+          { title: "Ciudades", url: "cities.index" },
+        ],
       },
     ],
   }
+
+  const singleData = [
+    { title: "Inicio", url: "dashboard", icon: HomeIcon },
+    { title: "Pedidos", url: "orders.index", icon: ShoppingBasket, permission: "admin.orders.index" },
+    { title: "Descuentos", url: "discounts.index", icon: BadgePercent, permission: "admin.discount.index" },
+    { title: "Reportes", url: "reportes.index", icon: ChartColumnBigIcon, permission: "admin.reports.index" },
+    {
+      title: "Tienda online",
+      url: "pages.themes",
+      icon: ShoppingBagIcon,
+      permission: "admin.pages.index",
+      action: (
+        <a
+          href={frontendUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-muted-foreground hover:text-foreground"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Eye className="h-4 w-4" />
+        </a>
+      ),
+    },
+  ]
+
+  // Lógica de filtrado de navegación
+  const filteredNavMain = navData.navMain.map(category => {
+    // 1. Si es solo para Super Admin y el usuario no lo es, ocultar
+    if (category.onlySuperAdmin && !isSuperAdmin) return null;
+
+    // 2. Filtrar subítems por permisos
+    if (category.items) {
+      const visibleItems = category.items.filter(item => 
+        !item.permission || can(item.permission)
+      );
+
+      // Si una categoría normal se queda sin ítems, ocultarla
+      if (visibleItems.length === 0) return null;
+
+      return { ...category, items: visibleItems };
+    }
+
+    return category;
+  }).filter(Boolean);
+
+  // Filtrar ítems simples
+  const filteredNavSingle = singleData.filter(item => 
+    !item.permission || can(item.permission)
+  );
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -190,12 +196,15 @@ export function AppSidebar({ ...props }) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavSingle items={datasingle.navMain} />
-        <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
+        <NavSingle items={filteredNavSingle} />
+        <NavMain items={filteredNavMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={{
+          name: user?.name,
+          email: user?.email,
+          avatar: user?.avatar,
+        }} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

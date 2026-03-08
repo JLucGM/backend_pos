@@ -4,8 +4,10 @@ import { buttonVariants } from '@/Components/ui/button';
 import ThemeGallery from './partials/ThemeGallery';
 import DivSection from '@/Components/ui/div-section';
 
-export default function Themes({ themes, role, permission, currentThemeId, homepage, biopage }) {
-    const { isSuperAdmin } = usePage().props.auth;
+import { usePermission } from '@/hooks/usePermission';
+
+export default function Themes({ themes, currentThemeId, homepage, biopage }) {
+    const { can } = usePermission();
     console.log(biopage)
     return (
         <AuthenticatedLayout
@@ -17,7 +19,7 @@ export default function Themes({ themes, role, permission, currentThemeId, homep
                     </h2>
                     <div className="flex gap-4 items-center">
 
-                        {biopage && (isSuperAdmin || permission.some(perm => perm.name === 'admin.pages.edit')) && (
+                        {biopage && can('admin.pages.edit') && (
                             <div className="flex gap-2">
                                 <Link
                                     className={buttonVariants({ size: "sm" })}
@@ -27,7 +29,7 @@ export default function Themes({ themes, role, permission, currentThemeId, homep
                                 </Link>
                             </div>
                         )}
-                        {homepage && (isSuperAdmin || permission.some(perm => perm.name === 'admin.pages.edit')) && (
+                        {homepage && can('admin.pages.edit') && (
                             <div className="flex gap-2">
                                 <Link
                                     className={buttonVariants({ size: "sm" })}

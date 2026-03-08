@@ -70,9 +70,6 @@ class UserController extends Controller
         }
         $roles = $rolesQuery->get();
 
-        $roleNames = $authUser->getRoleNames();
-        $permission = $authUser->getAllPermissions();
-
         foreach ($users as $user) {
             $user->avatar_url = $user->getFirstMediaUrl('avatars');
         }
@@ -80,8 +77,6 @@ class UserController extends Controller
         return Inertia::render('User/Index', [
             'users' => $users,
             'roles' => $roles,
-            'role' => $roleNames,
-            'permission' => $permission
         ]);
     }
 
@@ -91,7 +86,6 @@ class UserController extends Controller
      */
     public function create()
     {
-        $authUser = Auth::user();
         $isSuperAdmin = $this->isSuperAdmin();
 
         // ✅ No permitir asignar el rol 'owner' manualmente
@@ -101,11 +95,8 @@ class UserController extends Controller
         }
         $roles = $rolesQuery->get();
 
-        $roleNames = $authUser->getRoleNames();
-
         return Inertia::render('User/Create', [
             'roles' => $roles,
-            'role' => $roleNames
         ]);
     }
 
@@ -185,14 +176,12 @@ class UserController extends Controller
         }
         $roles = $rolesQuery->get();
 
-        $roleNames = $authUser->getRoleNames();
-        $permission = $authUser->getAllPermissions();
         $countries = Country::all();
         $states = State::all();
         $cities = City::all();
         $deliveryLocations = $user->deliveryLocations()->with(['city', 'state', 'country'])->get();
 
-        return Inertia::render('User/Edit', compact('user', 'roles', 'roleNames', 'permission', 'countries', 'states', 'cities', 'deliveryLocations'));
+        return Inertia::render('User/Edit', compact('user', 'roles', 'countries', 'states', 'cities', 'deliveryLocations'));
     }
 
     /**

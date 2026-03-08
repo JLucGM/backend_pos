@@ -7,6 +7,7 @@ use App\Models\Currency;
 use App\Models\Setting;
 use App\Models\ShippingRate;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -27,10 +28,7 @@ class SettingController extends Controller
         $user = Auth::user();
         $setting = Setting::with('media', 'company', 'currency')->where('company_id', $user->company_id)->first();
 
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
-        return Inertia::render('Settings/Edit', compact('setting', 'currencies', 'role', 'permission'));
+        return Inertia::render('Settings/Edit', compact('setting', 'currencies'));
     }
 
     /**

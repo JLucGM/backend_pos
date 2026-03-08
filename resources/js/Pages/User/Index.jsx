@@ -1,17 +1,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import {  lazy, Suspense } from 'react';
-import {  buttonVariants } from '@/Components/ui/button';
+import { lazy, Suspense } from 'react';
+import { buttonVariants } from '@/Components/ui/button';
 import { userColumns } from './Columns';
-import DivSection from '@/Components/ui/div-section';
 import Loader from '@/Components/ui/loader';
+import { usePermission } from '@/hooks/usePermission';
+import DivSection from '@/Components/ui/div-section';
 
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ users, roles, role, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ users, roles }) {
+    const { can, isSuperAdmin } = usePermission();
 
-console.log(users)
+    // console.log(users)
 
     return (
         <AuthenticatedLayout
@@ -20,7 +21,7 @@ console.log(users)
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Usuarios
                     </h2>
-                    {(isSuperAdmin || (permission || []).some(perm => perm.name === 'admin.user.create')) && (
+                    {can('admin.user.create') && (
                         <Link
                             className={buttonVariants({ variant: "default", size: "sm" })}
                             href={route('user.create')}
@@ -43,8 +44,6 @@ console.log(users)
                             routeDestroy={'user.destroy'}
                             editPermission={'admin.user.edit'}
                             deletePermission={'admin.user.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <p>no hay nada</p>

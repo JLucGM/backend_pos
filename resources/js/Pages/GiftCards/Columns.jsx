@@ -38,33 +38,33 @@ export const giftCardsColumns = [
     {
         header: "Acciones",
         accessorKey: "actions",
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions = [] } = table.options.meta || {};
+            const canEdit = isSuperAdmin || permissions.includes('admin.giftCards.edit');
+            const canDelete = isSuperAdmin || permissions.includes('admin.giftCards.delete');
+
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('giftCards.edit', row.original)}>
-                                <Pen /> Editar
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('giftCards.destroy', [row.original])} method="delete">
-                                <Trash /> Eliminar
-                            </Link>
-                        </DropdownMenuItem>
+                        {canEdit && (
+                            <DropdownMenuItem>
+                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('giftCards.edit', row.original)}>
+                                    <Pen /> Editar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                            <DropdownMenuItem>
+                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('giftCards.destroy', [row.original])} method="delete">
+                                    <Trash /> Eliminar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
-                // <div className="flex space-x-2">
-                //     <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('giftCards.edit', row.original)}>
-                //         Editar
-                //     </Link>
-                //     <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('giftCards.destroy', [row.original])} method="delete">
-                //         Eliminar
-                //     </Link>
-                // </div>
             );
         },
     }

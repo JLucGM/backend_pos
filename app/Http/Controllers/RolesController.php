@@ -30,6 +30,26 @@ class RolesController extends Controller
     }
 
     /**
+     * Obtiene la lista de permisos filtrada para el tenant.
+     */
+    private function getFilteredPermissions()
+    {
+        $query = Permission::query();
+
+        // Si no es Super Admin, ocultar permisos globales/técnicos
+        if (!$this->isSuperAdmin()) {
+            $query->where('name', 'NOT LIKE', 'admin.category.%')
+                  ->where('name', 'NOT LIKE', 'admin.countries.%')
+                  ->where('name', 'NOT LIKE', 'admin.states.%')
+                  ->where('name', 'NOT LIKE', 'admin.cities.%')
+                  ->where('name', 'NOT LIKE', 'admin.subscriptionPlan.%')
+                  ->where('name', 'NOT LIKE', 'admin.attribute.%');
+        }
+
+        return $query->get();
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index()
@@ -43,15 +63,11 @@ class RolesController extends Controller
         }
 
         $roles = $query->get();
-        $permissionsList = Permission::all(); // Restaurada la variable que faltaba
-
-        $user = Auth::user();
-        $userPermissions = $user->getAllPermissions();
+        $permissionsList = $this->getFilteredPermissions();
 
         return Inertia::render('Roles/Index', [
             'roles' => $roles,
             'permissionsList' => $permissionsList,
-            'permission' => $userPermissions,
         ]);
     }
 
@@ -60,13 +76,10 @@ class RolesController extends Controller
      */
     public function create()
     {
-        $permissionsList = Permission::all();
-        $user = Auth::user();
-        $userPermissions = $user->getAllPermissions();
+        $permissionsList = $this->getFilteredPermissions();
 
         return Inertia::render('Roles/Create', [
             'permissionsList' => $permissionsList,
-            'permission' => $userPermissions,
         ]);
     }
 
@@ -86,7 +99,11 @@ class RolesController extends Controller
         ]);
 
         if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+            // ✅ Validar que el usuario no intente asignar permisos prohibidos vía API/Postman
+            $allowedIds = $this->getFilteredPermissions()->pluck('id')->toArray();
+            $filteredPermissions = array_intersect($request->permissions, $allowedIds);
+            
+            $role->syncPermissions($filteredPermissions);
         }
 
         return to_route('roles.index')->with('success', 'Rol creado con éxito.');
@@ -103,7 +120,7 @@ class RolesController extends Controller
         }
 
         $role->load('permissions');
-        $permissionsList = Permission::all();
+        $permissionsList = $this->getFilteredPermissions();
 
         return Inertia::render('Roles/Edit', [
             'role' => $role,
@@ -126,7 +143,11 @@ class RolesController extends Controller
         ]);
 
         if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+            // ✅ Validar permisos permitidos
+            $allowedIds = $this->getFilteredPermissions()->pluck('id')->toArray();
+            $filteredPermissions = array_intersect($request->permissions, $allowedIds);
+
+            $role->syncPermissions($filteredPermissions);
         }
 
         return to_route('roles.index')->with('success', 'Rol actualizado con éxito.');

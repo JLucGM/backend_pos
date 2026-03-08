@@ -81,26 +81,30 @@ export const InventoryTransferColumns = [
     {
         header: "Acciones",
         id: "actions",
-        cell: ({ row }) => (
-            <DropdownMenu>
-                <DropdownMenuTrigger>
-                    <Ellipsis />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem>
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions = [] } = table.options.meta || {};
+            const canShow = isSuperAdmin || permissions.includes('admin.inventory-transfers.show');
 
-                        <Link
-                            href={route('inventory-transfers.show', row.original.id)}
-                            className={buttonVariants({ variant: 'ghost' }) + ' w-full'}
-                        >
-                            <Eye />
-                            Mostrar
-                        </Link>
-
-                    </DropdownMenuItem>
-
-                </DropdownMenuContent>
-            </DropdownMenu>
-        )
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger>
+                        <Ellipsis />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        {canShow && (
+                            <DropdownMenuItem>
+                                <Link
+                                    href={route('inventory-transfers.show', row.original.id)}
+                                    className={buttonVariants({ variant: 'ghost' }) + ' w-full'}
+                                >
+                                    <Eye />
+                                    Mostrar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            );
+        }
     }
 ];

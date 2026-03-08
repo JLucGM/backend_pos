@@ -8,10 +8,12 @@ import Loader from '@/Components/ui/loader';
 import { BadgePercent, Store } from 'lucide-react';
 import HeadingSmall from '@/Components/heading-small';
 
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ subscriptionPlan, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ subscriptionPlan }) {
+    const { can } = usePermission();
 
     return (
         <AuthenticatedLayout
@@ -20,7 +22,7 @@ export default function Index({ subscriptionPlan, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Planes de suscripción
                     </h2>
-                    {(isSuperAdmin || (permission || []).some(perm => perm.name === 'admin.subscriptionPlan.create')) && (
+                    {can('admin.subscriptionPlan.create') && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('admin.subscriptionPlan.create')}
                         >
                             Crear Plan de Suscripción
@@ -41,8 +43,6 @@ export default function Index({ subscriptionPlan, permission }) {
                             routeDestroy={'admin.subscriptionPlan.destroy'}
                             editPermission={'admin.subscriptionPlan.edit'}
                             deletePermission={'admin.subscriptionPlan.destroy'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     </Suspense>
                 ) : (
@@ -53,7 +53,7 @@ export default function Index({ subscriptionPlan, permission }) {
                             description="Puedes crear un nuevo plan de suscripción haciendo clic en el botón a continuación."
                             className="text-center"
                         />
-                        {(isSuperAdmin || (permission || []).some(perm => perm.name === 'admin.subscriptionPlan.create')) && (
+                        {can('admin.subscriptionPlan.create') && (
                             <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('admin.subscriptionPlan.create')}>
                                 Crear Plan de Suscripción
                             </Link>

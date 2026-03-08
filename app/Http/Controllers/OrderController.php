@@ -32,10 +32,7 @@ class OrderController extends Controller
         $userAuth = Auth::user();
         $orders = Order::with('user')->where('company_id', $userAuth->company_id)->get();
 
-        $role = $userAuth->getRoleNames();
-        $permission = $userAuth->getAllPermissions();
-
-        return Inertia::render('Orders/Index', compact('orders', 'role', 'permission'));
+        return Inertia::render('Orders/Index', compact('orders'));
     }
 
     /**

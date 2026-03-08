@@ -22,22 +22,17 @@ class StoreController extends Controller
     }
 
     /**
-     * Display a listing of the resource.d
+     * Display a listing of the resource.
      */
     public function index()
     {
-        $user = Auth::user();
-
-        $stores = Store::where('company_id', $user->company_id)->get();
+        // El CompanyScope se encarga de filtrar por la compañía del usuario logueado
+        $stores = Store::all();
         $countries = Country::all();
         $states = State::all();
         $cities = City::all();
 
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
-        return Inertia::render('Stores/Index', compact('stores', 'countries', 'states', 'cities', 'role', 'permission'));
+        return Inertia::render('Stores/Index', compact('stores', 'countries', 'states', 'cities'));
     }
 
     /**
@@ -53,7 +48,7 @@ class StoreController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
             'address' => 'required|string|max:255',
@@ -67,12 +62,15 @@ class StoreController extends Controller
         ]);
 
         $user = Auth::user();
-        $data = $request->only('name', 'phone', 'address', 'is_ecommerce_active', 'allow_delivery', 'allow_pickup', 'allow_shipping', 'country_id', 'state_id', 'city_id');
-        $data['company_id'] = $user->company_id;
+        
+        // Asignar company_id solo si el usuario tiene uno (para tenancy)
+        if ($user->company_id) {
+            $data['company_id'] = $user->company_id;
+        }
 
         // Si se está creando un store con is_ecommerce_active = true
-        if (isset($data['is_ecommerce_active']) && $data['is_ecommerce_active'] == true) {
-            // Primero, actualizar todos los stores de la misma compañía a false
+        if (!empty($data['is_ecommerce_active'])) {
+            // Desactivar ecommerce en las otras tiendas de la misma compañía
             Store::where('company_id', $user->company_id)
                 ->update(['is_ecommerce_active' => false]);
         }
@@ -80,9 +78,8 @@ class StoreController extends Controller
         // Crear la nueva tienda
         Store::create($data);
 
-        return to_route('stores.index');
+        return to_route('stores.index')->with('success', 'Tienda creada con éxito.');
     }
-
 
     /**
      * Display the specified resource.
@@ -97,9 +94,9 @@ class StoreController extends Controller
      */
     public function edit(Store $store)
     {
-        // Verificar si el store pertenece a la misma company_id que el usuario logueado
+        // Verificar si el store pertenece a la misma compañía (aunque el scope ya filtra, por seguridad)
         $user = Auth::user();
-        if ($store->company_id !== $user->company_id) {
+        if ($user->company_id && $store->company_id !== $user->company_id) {
             abort(403, 'No tienes permiso para esta operación.');
         }
 
@@ -110,19 +107,17 @@ class StoreController extends Controller
         return Inertia::render('Stores/Edit', compact('store', 'countries', 'states', 'cities'));
     }
 
-
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Store $store)
     {
-        // Verificar si el store pertenece a la misma company_id que el usuario logueado
         $user = Auth::user();
-        if ($store->company_id !== $user->company_id) {
+        if ($user->company_id && $store->company_id !== $user->company_id) {
             abort(403, 'No tienes permiso para esta operación.');
         }
 
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
             'address' => 'required|string|max:255',
@@ -135,11 +130,9 @@ class StoreController extends Controller
             'city_id' => 'required|exists:cities,id',
         ]);
 
-        $data = $request->only('name', 'phone', 'address', 'is_ecommerce_active', 'allow_delivery', 'allow_pickup', 'allow_shipping', 'country_id', 'state_id', 'city_id');
-
         // Si se está actualizando a is_ecommerce_active = true
-        if (isset($data['is_ecommerce_active']) && $data['is_ecommerce_active'] == true) {
-            // Actualizar todos los stores de la misma compañía a false (excepto el actual)
+        if (!empty($data['is_ecommerce_active'])) {
+            // Desactivar ecommerce en las otras tiendas de la misma compañía
             Store::where('company_id', $user->company_id)
                 ->where('id', '!=', $store->id)
                 ->update(['is_ecommerce_active' => false]);
@@ -147,21 +140,20 @@ class StoreController extends Controller
 
         $store->update($data);
 
-        return to_route('stores.edit', $store);
+        return to_route('stores.edit', $store)->with('success', 'Tienda actualizada con éxito.');
     }
-
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Store $store)
     {
-        // Verificar si el store pertenece a la misma company_id que el usuario logueado
         $user = Auth::user();
-        if ($store->company_id !== $user->company_id) {
+        if ($user->company_id && $store->company_id !== $user->company_id) {
             abort(403, 'No tienes permiso para esta operación.');
         }
 
         $store->delete();
+        return to_route('stores.index')->with('success', 'Tienda eliminada con éxito.');
     }
 }

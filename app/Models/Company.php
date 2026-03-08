@@ -112,6 +112,16 @@ class Company extends Model implements HasMedia
         return $this->hasMany(Collection::class);
     }
 
+    public function stores()
+    {
+        return $this->hasMany(Store::class);
+    }
+
+    public function taxes()
+    {
+        return $this->hasMany(Tax::class);
+    }
+
     // Relaciones de suscripción
     public function subscriptions()
     {
@@ -169,7 +179,7 @@ class Company extends Model implements HasMedia
         $trialLimits = [
             'orders' => 0,
             'products' => 10,
-            'users' => 1,
+            'users' => 5, // Aumentado de 1 a 5 para permitir pruebas
         ];
 
         return $trialLimits[$key] ?? null;

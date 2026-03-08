@@ -26,11 +26,7 @@ class AttributeController extends Controller
     public function index()
     {
         $attribute = Attribute::all();
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
-        return Inertia::render('Attributes/Index', compact('attribute','role','permission'));
+        return Inertia::render('Attributes/Index', compact('attribute'));
     }
 
     /**

@@ -26,11 +26,8 @@ class TaxController extends Controller
     public function index()
     {
         $taxes = Tax::all();
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
 
-        return Inertia::render('Taxes/Index', compact('taxes', 'role', 'permission'));
+        return Inertia::render('Taxes/Index', compact('taxes'));
     }
 
     /**

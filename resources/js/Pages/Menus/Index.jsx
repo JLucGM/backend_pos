@@ -7,10 +7,12 @@ import { menusColumns } from './Columns';
 import DivSection from '@/Components/ui/div-section';
 import Loader from '@/Components/ui/loader';
 
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ menus, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ menus }) {
+    const { can } = usePermission();
 
     return (
         <AuthenticatedLayout
@@ -19,7 +21,7 @@ export default function Index({ menus, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Menus
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.menus.create')) && (
+                    {can('admin.menus.create') && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('menus.create')}
                         >
                             Crear menu
@@ -31,17 +33,14 @@ export default function Index({ menus, permission }) {
             <Head className="capitalize" title="Menus" />
             <Suspense fallback={<Loader />}>
                 <DivSection>
-                    <DataTable
-                        columns={menusColumns}
-                        data={menus}
-                        routeEdit={'menus.edit'}
-                        routeDestroy={'menus.destroy'}
-                        editPermission={'admin.menus.edit'}
-                        deletePermission={'admin.menus.delete'}
-                        permissions={permission}
-                        isSuperAdmin={isSuperAdmin}
-                    />
-                            isSuperAdmin={isSuperAdmin}
+                    {menus.length > 0 ? (
+                        <DataTable
+                            columns={menusColumns}
+                            data={menus}
+                            routeEdit={'menus.edit'}
+                            routeDestroy={'menus.destroy'}
+                            editPermission={'admin.menus.edit'}
+                            deletePermission={'admin.menus.delete'}
                         />
                     ) : (
                         null

@@ -15,9 +15,13 @@ export const pagesColumns = [
     {
         header: "Acciones",
         accessorKey: "actions",
-        cell: ({ row }) => {
-            const isDeletable = row.original.is_deletable; // Asumiendo que is_default es un booleano
-            const isEditable = row.original.is_editable; // Asumiendo que is_editable es un booleano
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions = [] } = table.options.meta || {};
+            const canEdit = isSuperAdmin || permissions.includes('admin.pages.edit');
+            const canDelete = isSuperAdmin || permissions.includes('admin.pages.delete');
+
+            const isDeletable = row.original.is_deletable; 
+            const isEditable = row.original.is_editable; 
 
             return (
                 <DropdownMenu>
@@ -25,24 +29,14 @@ export const pagesColumns = [
                         <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        {/* <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.show', row.original)}>
-                                <Eye /> Ver
-                            </Link>
-                        </DropdownMenuItem> */}
-                        {!isEditable == false && ( // Solo mostrar "Editar" si NO es por defecto}
+                        {canEdit && isEditable && ( 
                         <DropdownMenuItem>
                             <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.edit', row.original)}>
                                 <Pen /> Editar
                             </Link>
                         </DropdownMenuItem>
                             )}
-                        {/* <DropdownMenuItem>
-                            <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.builder', row.original)}>
-                                <Palette /> Personalizar
-                            </Link>
-                        </DropdownMenuItem> */}
-                        {!isDeletable == false && ( // Solo mostrar "Eliminar" si NO es por defecto
+                        {canDelete && isDeletable && ( 
                             <DropdownMenuItem>
                                 <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.destroy', [row.original])} method="delete">
                                     <Trash /> Eliminar

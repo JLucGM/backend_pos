@@ -27,11 +27,8 @@ class GiftCardController extends Controller
     public function index()
     {
         $giftCards = GiftCard::all();
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
 
-        return Inertia::render('GiftCards/Index', compact('giftCards', 'role', 'permission'));
+        return Inertia::render('GiftCards/Index', compact('giftCards'));
     }
 
     /**

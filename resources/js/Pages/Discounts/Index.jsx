@@ -8,10 +8,12 @@ import Loader from '@/Components/ui/loader';
 import { BadgePercent, Store } from 'lucide-react';
 import HeadingSmall from '@/Components/heading-small';
 
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ discounts, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ discounts }) {
+    const { can } = usePermission();
 
     return (
         <AuthenticatedLayout
@@ -20,7 +22,7 @@ export default function Index({ discounts, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Descuentos
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.discount.create')) && (
+                    {can('admin.discount.create') && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('discounts.create')}
                         >
                             Crear Descuento
@@ -41,8 +43,6 @@ export default function Index({ discounts, permission }) {
                             routeDestroy={'discounts.destroy'}
                             editPermission={'admin.discount.edit'}
                             deletePermission={'admin.discount.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     </Suspense>
                 ) : (
@@ -53,7 +53,7 @@ export default function Index({ discounts, permission }) {
                             description="Puedes crear un nuevo descuento haciendo clic en el botón a continuación."
                             className="text-center"
                         />
-                        {(isSuperAdmin || permission.some(perm => perm.name === 'admin.discount.create')) && (
+                        {can('admin.discount.create') && (
                             <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('discounts.create')}>
                                 Crear Descuento
                             </Link>

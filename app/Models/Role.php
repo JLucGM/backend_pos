@@ -15,6 +15,8 @@ use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\RefreshesPermissionCache;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @property ?\Illuminate\Support\Carbon $created_at
@@ -26,8 +28,34 @@ class Role extends Model implements RoleContract
     use RefreshesPermissionCache;
     use HasSlug;
 
-    protected $fillable = ['name', 'slug', 'guard_name']; // Define los campos que son asignables en masa
+    protected $fillable = ['name', 'slug', 'guard_name', 'company_id']; 
 
+    /**
+     * The "booted" method of the model.
+     * Implementa Multi-tenancy para Roles
+     */
+    protected static function booted()
+    {
+        static::addGlobalScope('tenant', function (Builder $builder) {
+            if (Auth::check()) {
+                $user = Auth::user();
+                // El Super Admin ve todo (globales y de empresas)
+                if ($user->isSuperAdmin()) {
+                    return;
+                }
+                // Las empresas SOLO ven sus propios roles
+                // Ya no ven los NULL para evitar ver las "plantillas" del sistema
+                $builder->where('company_id', $user->company_id);
+            }
+        });
+
+        // Asignar company_id automáticamente al crear si no se especifica
+        static::creating(function ($role) {
+            if (Auth::check() && is_null($role->company_id)) {
+                $role->company_id = Auth::user()->company_id;
+            }
+        });
+    }
     
     public function getRouteKeyName()
     {
@@ -52,29 +80,53 @@ class Role extends Model implements RoleContract
     }
 
     /**
-     * @return RoleContract|Role
-     *
-     * @throws RoleAlreadyExists
+     * Sobrescrito para soportar multi-tenancy
      */
     public static function create(array $attributes = [])
     {
         $attributes['guard_name'] = $attributes['guard_name'] ?? Guard::getDefaultName(static::class);
-
-        $params = ['name' => $attributes['name'], 'guard_name' => $attributes['guard_name']];
-        if (app(PermissionRegistrar::class)->teams) {
-            $teamsKey = app(PermissionRegistrar::class)->teamsKey;
-
-            if (array_key_exists($teamsKey, $attributes)) {
-                $params[$teamsKey] = $attributes[$teamsKey];
-            } else {
-                $attributes[$teamsKey] = getPermissionsTeamId();
-            }
+        
+        // No sobreescribir si ya viene definido (ej. en Seeders)
+        if (!array_key_exists('company_id', $attributes)) {
+            $attributes['company_id'] = Auth::check() ? Auth::user()->company_id : null;
         }
+
+        $params = [
+            'name' => $attributes['name'], 
+            'guard_name' => $attributes['guard_name'],
+            'company_id' => $attributes['company_id']
+        ];
+
         if (static::findByParam($params)) {
             throw RoleAlreadyExists::create($attributes['name'], $attributes['guard_name']);
         }
 
         return static::query()->create($attributes);
+    }
+
+    /**
+     * Sobrescrito para soportar multi-tenancy
+     */
+    public static function findOrCreate(string $name, ?string $guardName = null): RoleContract
+    {
+        $guardName = $guardName ?? Guard::getDefaultName(static::class);
+        $companyId = Auth::check() ? Auth::user()->company_id : null;
+
+        $role = static::findByParam([
+            'name' => $name, 
+            'guard_name' => $guardName,
+            'company_id' => $companyId
+        ]);
+
+        if (! $role) {
+            return static::query()->create([
+                'name' => $name, 
+                'guard_name' => $guardName,
+                'company_id' => $companyId
+            ]);
+        }
+
+        return $role;
     }
 
     /**
@@ -106,16 +158,16 @@ class Role extends Model implements RoleContract
 
     /**
      * Find a role by its name and guard name.
-     *
-     * @return RoleContract|Role
-     *
-     * @throws RoleDoesNotExist
      */
     public static function findByName(string $name, ?string $guardName = null): RoleContract
     {
         $guardName = $guardName ?? Guard::getDefaultName(static::class);
+        $companyId = Auth::check() ? Auth::user()->company_id : null;
 
-        $role = static::findByParam(['name' => $name, 'guard_name' => $guardName]);
+        // Intentar buscar en la compañía o globalmente
+        $role = static::where('name', $name)
+                     ->where('guard_name', $guardName)
+                     ->first();
 
         if (! $role) {
             throw RoleDoesNotExist::named($name, $guardName);
@@ -126,8 +178,6 @@ class Role extends Model implements RoleContract
 
     /**
      * Find a role by its id (and optionally guardName).
-     *
-     * @return RoleContract|Role
      */
     public static function findById(int|string $id, ?string $guardName = null): RoleContract
     {
@@ -143,40 +193,11 @@ class Role extends Model implements RoleContract
     }
 
     /**
-     * Find or create role by its name (and optionally guardName).
-     *
-     * @return RoleContract|Role
-     */
-    public static function findOrCreate(string $name, ?string $guardName = null): RoleContract
-    {
-        $guardName = $guardName ?? Guard::getDefaultName(static::class);
-
-        $role = static::findByParam(['name' => $name, 'guard_name' => $guardName]);
-
-        if (! $role) {
-            return static::query()->create(['name' => $name, 'guard_name' => $guardName] + (app(PermissionRegistrar::class)->teams ? [app(PermissionRegistrar::class)->teamsKey => getPermissionsTeamId()] : []));
-        }
-
-        return $role;
-    }
-
-    /**
      * Finds a role based on an array of parameters.
-     *
-     * @return RoleContract|Role|null
      */
     protected static function findByParam(array $params = []): ?RoleContract
     {
         $query = static::query();
-
-        if (app(PermissionRegistrar::class)->teams) {
-            $teamsKey = app(PermissionRegistrar::class)->teamsKey;
-
-            $query->where(fn ($q) => $q->whereNull($teamsKey)
-                ->orWhere($teamsKey, $params[$teamsKey] ?? getPermissionsTeamId())
-            );
-            unset($params[$teamsKey]);
-        }
 
         foreach ($params as $key => $value) {
             $query->where($key, $value);
@@ -187,10 +208,6 @@ class Role extends Model implements RoleContract
 
     /**
      * Determine if the role may perform the given permission.
-     *
-     * @param  string|int|\Spatie\Permission\Contracts\Permission|\BackedEnum  $permission
-     *
-     * @throws PermissionDoesNotExist|GuardDoesNotMatch
      */
     public function hasPermissionTo($permission, ?string $guardName = null): bool
     {

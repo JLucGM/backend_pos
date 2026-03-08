@@ -1,5 +1,5 @@
 import React from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -7,8 +7,11 @@ import { Badge } from '@/Components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import { Eye, Plus, TrendingUp, Users, DollarSign, Clock } from 'lucide-react';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import { usePermission } from '@/hooks/usePermission';
 
 export default function SubscriptionsAdminIndex({ subscriptions, stats }) {
+    const { can } = usePermission();
+
     const getStatusColor = (status) => {
         const colors = {
             active: 'bg-green-100 text-green-800',
@@ -39,18 +42,22 @@ export default function SubscriptionsAdminIndex({ subscriptions, stats }) {
                         Administración de Suscripciones
                     </h2>
                     <div className="flex gap-2">
-                        <Button asChild variant="outline">
-                            <Link href={route('admin.subscriptions.analytics')}>
-                                <TrendingUp className="h-4 w-4 mr-2" />
-                                Analytics
-                            </Link>
-                        </Button>
-                        <Button asChild>
-                            <Link href={route('admin.subscriptions.create')}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Nueva Suscripción
-                            </Link>
-                        </Button>
+                        {can('admin.subscriptions.analytics') && (
+                            <Button asChild variant="outline">
+                                <Link href={route('admin.subscriptions.analytics')}>
+                                    <TrendingUp className="h-4 w-4 mr-2" />
+                                    Analytics
+                                </Link>
+                            </Button>
+                        )}
+                        {can('admin.subscriptions.create') && (
+                            <Button asChild>
+                                <Link href={route('admin.subscriptions.create')}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Nueva Suscripción
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
             }

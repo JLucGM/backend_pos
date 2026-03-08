@@ -13,8 +13,11 @@ import Loader from '@/Components/ui/loader';
 const UserForm = lazy(() => import('./UserForm'));
 // const DeliveryLocationForm = lazy(() => import('./DeliveryLocationForm'));
 
+import { usePermission } from '@/hooks/usePermission';
+
 // Asegúrate de recibir todas las props desde el controlador
-export default function Edit({ user, roles, role, permission, countries, states, cities, deliveryLocations }) {
+export default function Edit({ user, roles, countries, states, cities, deliveryLocations }) {
+    const { can } = usePermission();
     const { data, setData, errors, post, processing } = useForm({
         name: user.name,
         email: user.email,
@@ -54,8 +57,6 @@ export default function Edit({ user, roles, role, permission, countries, states,
 
     return (
         <AuthenticatedLayout
-            roles={role}
-            permission={permission}
             header={
                 <div className='flex justify-between items-center'>
                     <div className="flex justify-start items-center">

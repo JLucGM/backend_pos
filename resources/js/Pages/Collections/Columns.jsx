@@ -60,31 +60,41 @@ export const CollectionColumns = [
     {
         header: 'Acciones',
         accessorKey: 'actions',
-        cell: ({ row }) => (
-            <DropdownMenu>
-                <DropdownMenuTrigger>
-                    <Ellipsis />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem>
-                        <Link
-                            className={buttonVariants({ variant: 'ghost' }) + ' w-full'}
-                            href={route('collections.edit', row.original.slug)}
-                        >
-                            <Pen /> Editar
-                        </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <Link
-                            className={buttonVariants({ variant: 'ghost' }) + ' w-full'}
-                            href={route('collections.destroy', row.original.slug)}
-                            method="delete"
-                        >
-                            <Trash /> Eliminar
-                        </Link>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        ),
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions = [] } = table.options.meta || {};
+            const canEdit = isSuperAdmin || permissions.includes('admin.collections.edit');
+            const canDelete = isSuperAdmin || permissions.includes('admin.collections.delete');
+
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger>
+                        <Ellipsis />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        {canEdit && (
+                            <DropdownMenuItem>
+                                <Link
+                                    className={buttonVariants({ variant: 'ghost' }) + ' w-full'}
+                                    href={route('collections.edit', row.original.slug)}
+                                >
+                                    <Pen /> Editar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                            <DropdownMenuItem>
+                                <Link
+                                    className={buttonVariants({ variant: 'ghost' }) + ' w-full'}
+                                    href={route('collections.destroy', row.original.slug)}
+                                    method="delete"
+                                >
+                                    <Trash /> Eliminar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            );
+        },
     },
 ];

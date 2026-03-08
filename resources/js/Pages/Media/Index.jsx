@@ -2,7 +2,6 @@ import React, { useState, useMemo, Suspense, lazy } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
 import { 
     Upload, 
     Loader2
@@ -11,11 +10,13 @@ import { toast } from 'sonner';
 import MediaDetailsDialog from '@/Components/MediaDetailsDialog';
 import { MediaColumns } from './Columns';
 import Loader from '@/Components/ui/loader';
+import { usePermission } from '@/hooks/usePermission';
 
 const DataTable = lazy(() => import('@/Components/DataTable'));
 const DivSection = lazy(() => import('@/Components/ui/div-section'));
 
 export default function MediaIndex({ libraryMedia = [], productMedia = [] }) {
+    const { can } = usePermission();
     const [isUploading, setIsUploading] = useState(false);
     const [copyingId, setCopyingId] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -75,23 +76,25 @@ export default function MediaIndex({ libraryMedia = [], productMedia = [] }) {
                     <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Librería Media
                     </h2>
-                    <div className="flex items-center gap-2">
-                        <Button 
-                            onClick={() => document.getElementById('media-upload').click()} 
-                            disabled={isUploading}
-                            size="sm"
-                        >
-                            {isUploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                            Subir Imagen
-                        </Button>
-                        <input 
-                            id="media-upload" 
-                            type="file" 
-                            className="hidden" 
-                            accept="image/*"
-                            onChange={handleUpload}
-                        />
-                    </div>
+                    {can('admin.media.create') && (
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                onClick={() => document.getElementById('media-upload').click()} 
+                                disabled={isUploading}
+                                size="sm"
+                            >
+                                {isUploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                                Subir Imagen
+                            </Button>
+                            <input 
+                                id="media-upload" 
+                                type="file" 
+                                className="hidden" 
+                                accept="image/*"
+                                onChange={handleUpload}
+                            />
+                        </div>
+                    )}
                 </div>
             }
         >
@@ -103,7 +106,6 @@ export default function MediaIndex({ libraryMedia = [], productMedia = [] }) {
                         <DataTable
                             columns={columns}
                             data={allMediaUnified}
-                            // Las rutas de editar/eliminar se manejan dentro de las columnas por ser media global
                         />
                     </DivSection>
                 </Suspense>

@@ -36,11 +36,7 @@ class PageController extends RoutingController
 
             ->get();
 
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
-        return Inertia::render('Pages/Index', compact('pages', 'role', 'permission'));
+        return Inertia::render('Pages/Index', compact('pages'));
     }
 
     public function indexPolicy()
@@ -48,11 +44,7 @@ class PageController extends RoutingController
         $pages = Page::where('page_type', 'policy')
             ->get();
 
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
-        return Inertia::render('Pages/Policy', compact('pages', 'role', 'permission'));
+        return Inertia::render('Pages/Policy', compact('pages'));
     }
 
     public function themes()
@@ -71,10 +63,7 @@ class PageController extends RoutingController
             ->where('page_type', 'link_bio') // Si tienes este campo
             ->first();
 
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
-        return Inertia::render('Pages/Themes', compact('themes', 'currentThemeId', 'homepage', 'biopage', 'role', 'permission'));
+        return Inertia::render('Pages/Themes', compact('themes', 'currentThemeId', 'homepage', 'biopage'));
     }
 
     /**
@@ -82,11 +71,8 @@ class PageController extends RoutingController
      */
     public function create()
     {
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
         // dd('create pages');
-        return Inertia::render('Pages/Create', compact('role', 'permission'));
+        return Inertia::render('Pages/Create');
     }
 
     /**
@@ -163,9 +149,6 @@ class PageController extends RoutingController
     {
         $page->load('theme', 'company.setting.media');
 
-        $user = Auth::user();
-        $companyId = $user->company_id;
-
         $companyId = $page->company_id; // Use page's company ID to be safe and correct.
 
         $products = Product::with('stocks', 'combinations.combinationAttributeValue.attributeValue.attribute', 'categories', 'media')
@@ -240,8 +223,6 @@ class PageController extends RoutingController
     public function edit(Page $page)
     {
         $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
 
         $page->load('theme', 'template.theme');
 
@@ -251,7 +232,7 @@ class PageController extends RoutingController
             ->with('theme')
             ->get();
 
-        return Inertia::render('Pages/Edit', compact('page', 'role', 'permission', 'availableTemplates'));
+        return Inertia::render('Pages/Edit', compact('page', 'availableTemplates'));
     }
 
     /**

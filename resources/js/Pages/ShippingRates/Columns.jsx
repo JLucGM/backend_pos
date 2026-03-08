@@ -25,30 +25,38 @@ export const shippingRateColumns = [
     {
         header: "Acciones",
         accessorKey: "actions",
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions = [] } = table.options.meta || {};
+            const canEdit = isSuperAdmin || permissions.includes('admin.shippingRate.edit');
+            const canDelete = isSuperAdmin || permissions.includes('admin.shippingRate.delete');
+
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Ellipsis className="h-5 w-5" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                            <Link className="flex items-center gap-2 w-full px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-                                href={route('shippingrate.edit', row.original)}
-                            >
-                                <Pen className="h-4 w-4" /> Editar
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <Link className="flex items-center gap-2 w-full px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-red-600 dark:text-red-400"
-                                href={route('shippingrate.destroy', [row.original])} 
-                                method="delete"
-                                as="button"
-                                confirm="¿Estás seguro de eliminar esta tarifa de envío?"
-                            >
-                                <Trash className="h-4 w-4" /> Eliminar
-                            </Link>
-                        </DropdownMenuItem>
+                        {canEdit && (
+                            <DropdownMenuItem>
+                                <Link className="flex items-center gap-2 w-full px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                                    href={route('shippingrate.edit', row.original)}
+                                >
+                                    <Pen className="h-4 w-4" /> Editar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                            <DropdownMenuItem>
+                                <Link className="flex items-center gap-2 w-full px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-red-600 dark:text-red-400"
+                                    href={route('shippingrate.destroy', [row.original])} 
+                                    method="delete"
+                                    as="button"
+                                    confirm="¿Estás seguro de eliminar esta tarifa de envío?"
+                                >
+                                    <Trash className="h-4 w-4" /> Eliminar
+                                </Link>
+                            </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             );

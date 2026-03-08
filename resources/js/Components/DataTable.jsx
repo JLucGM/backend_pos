@@ -7,8 +7,11 @@ import { ChevronDoubleLeftIcon, ChevronDoubleRightIcon, ChevronDownIcon, Chevron
 import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
-export default function DataTable({ data, columns, isSuperAdmin, permissions }) {
-    console.log('DataTable Props:', { isSuperAdmin, permissions });
+import { usePermission } from '@/hooks/usePermission';
+
+export default function DataTable({ data, columns }) {
+    const { isSuperAdmin, permissions } = usePermission();
+
     const [filtering, setFiltering] = useState("");
     const [sorting, setSorting] = useState([]);
     const table = useReactTable({

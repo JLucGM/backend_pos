@@ -16,9 +16,9 @@ export const taxesColumns = [
         header: "Acciones",
         accessorKey: "actions",
         cell: ({ row, table }) => {
-            const { isSuperAdmin, permissions } = table.options.meta || {};
-            const canEdit = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.tax.edit');
-            const canDelete = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.tax.delete');
+            const { isSuperAdmin, permissions = [] } = table.options.meta || {};
+            const canEdit = isSuperAdmin || permissions.includes('admin.tax.edit');
+            const canDelete = isSuperAdmin || permissions.includes('admin.tax.delete');
 
             return (
                 <DropdownMenu>

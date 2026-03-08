@@ -13,10 +13,13 @@ import { useSelectOptions } from '@/hooks/useSelectOptions';
 import { usePage } from '@inertiajs/react';
 import { customStyles } from '@/hooks/custom-select';
 
+import { usePermission } from '@/hooks/usePermission';
+
 // Define DataTable as lazy component
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ stock, permission, stores, selectedStoreId }) {
+export default function Index({ stock, stores, selectedStoreId }) {
+    const { can, isSuperAdmin } = usePermission();
     const [filteredStock, setFilteredStock] = useState(stock);
     const [currentStoreId, setCurrentStoreId] = useState(selectedStoreId);
     const animatedComponents = makeAnimated();
@@ -75,7 +78,7 @@ export default function Index({ stock, permission, stores, selectedStoreId }) {
     }, [stores, currentStoreId]);
 
     // Obtener configuraciones para el diseño
-    const { settings, auth: { isSuperAdmin } } = usePage().props;
+    const { settings } = usePage().props;
 
     return (
         <AuthenticatedLayout
@@ -115,14 +118,13 @@ export default function Index({ stock, permission, stores, selectedStoreId }) {
                         <DataTable
                             columns={StocksColumns}
                             data={filteredStock}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <div className="flex justify-between text-start px-8 py-16">
                             <div className="space-y-4">
                                 <h2 className="text-xl font-semibold text-gray-500">Añade tus productos</h2>
                                 <p className="text-sm text-gray-500">Comience por abastecer su tienda con productos que les encantarán a sus clientes.</p>
-                                {(isSuperAdmin || permission.some(perm => perm.name === 'admin.products.create')) && (
+                                {can('admin.products.create') && (
                                     <Link className={buttonVariants({ variant: "default", size: "sm" })}
                                         href={route('products.create')}
                                     >

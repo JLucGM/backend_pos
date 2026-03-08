@@ -8,6 +8,7 @@ use App\Models\SubscriptionPayment;
 use App\Models\SystemPaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 
 class SubscriptionController extends Controller

@@ -43,13 +43,8 @@ class ShippingRateController extends RoutingController
 
         $shippingRate = $shippingRateQuery->get();
 
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
         return Inertia::render('ShippingRates/Index', compact(
             'shippingRate',
-            'role',
-            'permission',
             'stores',
             'selectedStoreId'
         ));

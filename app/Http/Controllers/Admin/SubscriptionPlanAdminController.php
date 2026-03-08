@@ -25,13 +25,9 @@ class SubscriptionPlanAdminController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
         $subscriptionPlan = SubscriptionPlan::orderBy('sort_order')->get();
 
-        return Inertia::render('Admin/SubscriptionPlans/Index', compact('role', 'permission', 'subscriptionPlan'));
+        return Inertia::render('Admin/SubscriptionPlans/Index', compact('subscriptionPlan'));
     }
 
     /**

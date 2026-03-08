@@ -11,11 +11,14 @@ import { Pen } from 'lucide-react';
 import AddressDialog from '@/Components/Clients/AddressDialog';
 import DivSection from '@/Components/ui/div-section';
 
+import { usePermission } from '@/hooks/usePermission';
+
 // Importa los nuevos componentes
 const ClientsForm = lazy(() => import('./ClientsForm'));
 
 // Asegúrate de recibir todas las props desde el controlador
-export default function Edit({ client, roles, role, permission, countries, states, cities, deliveryLocations }) {
+export default function Edit({ client, roles, countries, states, cities, deliveryLocations }) {
+    const { can } = usePermission();
     const settings = usePage().props.settings;
 
     const { data, setData, errors, post, processing } = useForm({
@@ -59,8 +62,6 @@ export default function Edit({ client, roles, role, permission, countries, state
 
     return (
         <AuthenticatedLayout
-            roles={role}
-            permission={permission}
             header={
                 <div className='flex justify-between items-center'>
                     <div className="flex justify-start items-center">

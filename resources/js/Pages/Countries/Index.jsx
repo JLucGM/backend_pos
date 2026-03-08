@@ -9,11 +9,13 @@ import { countriesColumns } from './Columns';
 import DivSection from '@/Components/ui/div-section';
 import Loader from '@/Components/ui/loader';
 
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 const CountriesForm = lazy(() => import('./CountriesForm'));
 
-export default function Index({ countries, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ countries }) {
+    const { can } = usePermission();
     let [isOpen, setIsOpen] = useState(false);
     const { data, setData, errors, post } = useForm({
         country_name: "",
@@ -42,7 +44,7 @@ export default function Index({ countries, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Paises
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.countries.create')) && (
+                    {can('admin.countries.create') && (
                         <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Añadir pais
@@ -62,8 +64,6 @@ export default function Index({ countries, permission }) {
                             routeDestroy={'countries.destroy'}
                             editPermission={'admin.countries.edit'}
                             deletePermission={'admin.countries.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         null

@@ -8,11 +8,14 @@ import Loader from '@/Components/ui/loader';
 import { buttonVariants } from '@/Components/ui/button';
 import HeadingSmall from '@/Components/heading-small';
 
+import { usePermission } from '@/hooks/usePermission';
+
 // Define DataTable and ordersColumns as lazy components
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ orders, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ orders }) {
+    const { can } = usePermission();
+
     return (
         <AuthenticatedLayout
             header={
@@ -20,7 +23,7 @@ export default function Index({ orders, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Pedidos
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.orders.create')) && (
+                    {can('admin.orders.create') && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('orders.create')}
                         >
                             Crear Pedido
@@ -39,8 +42,6 @@ export default function Index({ orders, permission }) {
                             data={orders}
                             routeEdit={'orders.edit'}
                             editPermission={'admin.orders.edit'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-96">
@@ -50,7 +51,7 @@ export default function Index({ orders, permission }) {
                                 description="Puedes crear un nuevo pedido haciendo clic en el botón a continuación."
                                 className="text-center"
                             />
-                            {(isSuperAdmin || permission.some(perm => perm.name === 'admin.orders.create')) && (
+                            {can('admin.orders.create') && (
                                 <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('orders.create')}>
                                     Crear Pedido
                                 </Link>

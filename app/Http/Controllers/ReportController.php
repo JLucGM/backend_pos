@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Refund;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 

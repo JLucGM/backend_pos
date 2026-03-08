@@ -28,11 +28,8 @@ class PaymentMethodController extends Controller
     public function index()
     {
         $paymentmethod = PaymentMethod::all();
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
 
-        return Inertia::render('PaymentsMethods/Index', compact('paymentmethod', 'role', 'permission'));
+        return Inertia::render('PaymentsMethods/Index', compact('paymentmethod'));
     }
 
     /**

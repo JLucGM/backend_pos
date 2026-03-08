@@ -27,11 +27,8 @@ class DiscountController extends Controller
     public function index()
     {
         $discounts = Discount::all();
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
 
-        return Inertia::render('Discounts/Index', compact('discounts', 'role', 'permission'));
+        return Inertia::render('Discounts/Index', compact('discounts'));
     }
 
     /**

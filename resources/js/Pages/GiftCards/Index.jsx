@@ -8,11 +8,13 @@ import Loader from '@/Components/ui/loader';
 import HeadingSmall from '@/Components/heading-small';
 import { GiftIcon } from 'lucide-react';
 
+import { usePermission } from '@/hooks/usePermission';
+
 // Cargar los componentes de forma diferida
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ giftCards, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ giftCards }) {
+    const { can } = usePermission();
 console.log(giftCards)
     return (
         <AuthenticatedLayout
@@ -21,7 +23,7 @@ console.log(giftCards)
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Tarjetas de Regalo
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.giftCards.create')) && (
+                    {can('admin.giftCards.create') && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('giftCards.create')}>
                             Crear Tarjeta de Regalo
                         </Link>
@@ -41,8 +43,6 @@ console.log(giftCards)
                             routeDestroy={'giftCards.destroy'}
                             editPermission={'admin.giftCards.edit'}
                             deletePermission={'admin.giftCards.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     </Suspense>
                 ) : (
@@ -53,7 +53,7 @@ console.log(giftCards)
                             description="Puedes crear una nueva tarjeta de regalo haciendo clic en el botón a continuación."
                             className="text-center"
                         />
-                        {(isSuperAdmin || permission.some(perm => perm.name === 'admin.giftCards.create')) && (
+                        {can('admin.giftCards.create') && (
                             <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('giftCards.create')}>
                                 Crear Tarjeta de Regalo
                             </Link>

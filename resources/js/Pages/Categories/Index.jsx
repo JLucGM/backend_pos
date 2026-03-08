@@ -9,12 +9,14 @@ import { Button } from '@/Components/ui/button';
 import { categoriesColumns } from './Columns';
 import Loader from '@/Components/ui/loader';
 
+import { usePermission } from '@/hooks/usePermission';
+
 // Cargar los componentes de forma diferida
 const DataTable = lazy(() => import('@/Components/DataTable'));
 const CategoriesForm = lazy(() => import('./CategoriesForm'));
 
-export default function Index({ categories, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ categories }) {
+    const { can, isSuperAdmin } = usePermission();
     let [isOpen, setIsOpen] = useState(false);
     const { data, setData, errors, post } = useForm({
         category_name: "",
@@ -42,7 +44,7 @@ export default function Index({ categories, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Categorias
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.category.create')) && (
+                    {can('admin.category.create') && (
                         <Button variant="default" size="sm" onClick={() => setIsOpen(true)}>
                             Añadir categoria
                         </Button>
@@ -62,8 +64,6 @@ export default function Index({ categories, permission }) {
                             routeDestroy={'category.destroy'}
                             editPermission={'admin.category.edit'}
                             deletePermission={'admin.category.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     </Suspense>
                 ) : (

@@ -47,15 +47,13 @@ class ClientController extends Controller
         $users = $users->get(); // Obtener los usuarios filtrados
 
         $roles = Role::all();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
 
         // Agregar la URL del avatar a cada usuario
         foreach ($users as $user) {
             $user->avatar_url = $user->getFirstMediaUrl('avatars'); // 'avatars' es el nombre de la colección
         }
 
-        return Inertia::render('Clients/Index', compact('users', 'roles', 'role', 'permission'));
+        return Inertia::render('Clients/Index', compact('users', 'roles'));
     }
 
 
@@ -64,13 +62,7 @@ class ClientController extends Controller
      */
     public function create()
     {
-        $user = Auth::user();
-        // $stores = Store::all();
-
-        // $roles = Role::where('name', '!=', 'super admin')->get();
-        $role = $user->getRoleNames();
-
-        return Inertia::render('Clients/Create', compact('role'));
+        return Inertia::render('Clients/Create');
     }
 
     /**
@@ -130,14 +122,11 @@ class ClientController extends Controller
 
         $client->load('roles', 'media'); // Cargar roles y medios
         $client->avatar_url = $client->getFirstMediaUrl('avatars'); // Asegúrate de que 'avatars' sea el nombre de la colección
-        // Cargar roles y permisos del usuario
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
         $deliveryLocations = $client->deliveryLocations()->with(['city', 'state', 'country'])->get();
 
 
 
-        return Inertia::render('Clients/Edit', compact('client', 'role', 'permission', 'countries', 'states', 'cities', 'deliveryLocations'));
+        return Inertia::render('Clients/Edit', compact('client', 'countries', 'states', 'cities', 'deliveryLocations'));
     }
 
     /**

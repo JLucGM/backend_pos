@@ -10,8 +10,10 @@ import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import SubscriptionStatus from '@/Components/SubscriptionStatus';
 import { ColorPicker } from '@/Components/ui/color-picker';
 
+import { usePermission } from '@/hooks/usePermission';
+
 export default function Dashboard({ user, usersCount, orders, ordersCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod, company, currentSubscription }) {
-    const userAuth = usePage().props.auth.user;
+    const { user: userAuth } = usePermission();
     const settings = usePage().props.settings;
 
     // Convertir los datos de user a un formato adecuado para el gráfico

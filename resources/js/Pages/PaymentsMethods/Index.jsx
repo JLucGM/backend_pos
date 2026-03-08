@@ -6,10 +6,12 @@ import { PaymentMethodColumn } from './Columns';
 import DivSection from '@/Components/ui/div-section';
 import { lazy, Suspense } from 'react';
 import Loader from '@/Components/ui/loader';
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ paymentmethod, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ paymentmethod }) {
+    const { can } = usePermission();
 
     return (
         <AuthenticatedLayout
@@ -19,7 +21,7 @@ export default function Index({ paymentmethod, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Método de pago
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.paymentmethod.create')) && (
+                    {can('admin.paymentmethod.create') && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })}
                             href={route('paymentmethod.create')}
                         >
@@ -47,9 +49,6 @@ export default function Index({ paymentmethod, permission }) {
                             routeDestroy={'paymentmethod.destroy'}
                             editPermission={'admin.paymentmethod.edit'} // Pasa el permiso de editar
                             deletePermission={'admin.paymentmethod.delete'} // Pasa el permiso de eliminar
-                            // downloadPdfPermission={'downloadPdfPermission'} // Pasa el permiso de descargar PDF
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         null

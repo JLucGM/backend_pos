@@ -20,8 +20,6 @@ class DashboardController extends Controller
         $users = User::where('company_id', $userAuth->company_id)->get();
         $orders = Order::all();
 
-        $role = $userAuth->getRoleNames();
-        $permission = $userAuth->getAllPermissions();
         $products = Product::with('stocks', 'media')->get(); // Asegúrate de cargar la relación de stocks
 
         $ordersCount = $orders->count();
@@ -80,8 +78,6 @@ class DashboardController extends Controller
                 'ordersByPaymentMethod' => $ordersByPaymentMethod,
                 'lowStockProducts' => $lowStockProducts, // Pasar los productos con bajo stock
                 'totalTodayOrdersAmount' => $totalTodayOrdersAmount,
-                'role' => $role,
-                'permission' => $permission,
                 'company' => $company,
                 'currentSubscription' => $currentSubscription,
             ]

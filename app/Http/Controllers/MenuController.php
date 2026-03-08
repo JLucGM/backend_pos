@@ -39,15 +39,8 @@ class MenuController extends RoutingController
             }])
             ->get();
 
-        // 3. Obtener datos del usuario y permisos (se mantiene tu lógica)
-        $user = Auth::user();
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions()->pluck('name'); // Usamos pluck('name') para un array simple
-
         return Inertia::render('Menus/Index', [
             'menus' => $menus,
-            'role' => $role,
-            'permission' => $permission,
         ]);
     }
 

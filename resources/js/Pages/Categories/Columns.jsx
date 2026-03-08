@@ -12,9 +12,9 @@ export const categoriesColumns = [
         header: "Acciones",
         accessorKey: "actions",
         cell: ({ row, table }) => {
-            const { isSuperAdmin, permissions } = table.options.meta || {};
-            const canEdit = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.category.edit');
-            const canDelete = isSuperAdmin || (permissions || []).some(p => p.name === 'admin.category.delete');
+            const { isSuperAdmin, permissions = [] } = table.options.meta || {};
+            const canEdit = isSuperAdmin || permissions.includes('admin.category.edit');
+            const canDelete = isSuperAdmin || permissions.includes('admin.category.delete');
 
             return (
                 <DropdownMenu>

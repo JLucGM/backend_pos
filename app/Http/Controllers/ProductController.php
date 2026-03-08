@@ -33,13 +33,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
         $product = Product::with('stocks', 'categories', 'media')->get();
 
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
-        return Inertia::render('Products/Index', compact('product', 'role', 'permission'));
+        return Inertia::render('Products/Index', compact('product'));
     }
 
     /**

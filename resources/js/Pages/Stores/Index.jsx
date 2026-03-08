@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Description } from '@headlessui/react'
 import { useState } from 'react'
 import { useForm } from '@inertiajs/react';
@@ -7,14 +7,17 @@ import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
-import { StoresColumns } from './Columns';
 import Loader from '@/Components/ui/loader';
 
 // Define DataTable and StoresForm as lsazy components
 const DataTable = lazy(() => import('@/Components/DataTable'));
 const StoresForm = lazy(() => import('@/Pages/Stores/StoresForm'));
 
-export default function Index({ stores, countries, states, cities, permission }) {
+import { usePermission } from '@/hooks/usePermission';
+import { StoresColumns } from './Columns';
+
+export default function Index({ stores, countries, states, cities }) {
+    const { can } = usePermission();
     const { isSuperAdmin } = usePage().props.auth;
     let [isOpen, setIsOpen] = useState(false)
     const { data, setData, errors, post } = useForm({
@@ -58,7 +61,7 @@ export default function Index({ stores, countries, states, cities, permission })
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Tiendas
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.stores.create')) && (
+                    {can('admin.stores.create') && (
                         <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Añadir tienda
@@ -79,8 +82,6 @@ export default function Index({ stores, countries, states, cities, permission })
                             routeDestroy={'stores.destroy'}
                             editPermission={'admin.stores.edit'}
                             deletePermission={'admin.stores.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <p>No hay tiendas registradas.</p>

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\PaymentMethod;
 use App\Models\Setting;
@@ -12,9 +11,10 @@ use App\Models\SubscriptionPlan;
 use App\Models\Subscription;
 use App\Models\Tax;
 use App\Models\User;
-use App\Services\DefaultMenuService; // <-- Agregar esta línea
+use App\Services\DefaultMenuService;
 use App\Services\DefaultPageService;
 use App\Services\DefaultGlobalComponentService;
+use App\Services\DefaultRoleService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +26,7 @@ use Inertia\Response;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Routing\Controller;
 
 class RegisteredUserController extends Controller
 {
@@ -129,6 +130,9 @@ class RegisteredUserController extends Controller
 
             // Crear páginas por defecto para la empresa <-- Agregar esta línead
             DefaultPageService::createForCompany($company);
+
+            // Crear roles por defecto para la empresa
+            DefaultRoleService::createForCompany($company);
 
             DefaultGlobalComponentService::createForCompany($company);
             // Asociar la empresa al usuario

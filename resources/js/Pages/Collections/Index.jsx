@@ -6,10 +6,14 @@ import { CollectionColumns } from './Columns';
 import { FolderOpen, Plus } from 'lucide-react';
 import Loader from '@/Components/ui/loader';
 
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 const DivSection = lazy(() => import('@/Components/ui/div-section'));
 
 export default function Index({ collections }) {
+    const { can } = usePermission();
+
     return (
         <AuthenticatedLayout
             header={
@@ -17,13 +21,15 @@ export default function Index({ collections }) {
                     <h2 className="capitalize text-xl font-semibold text-gray-800 dark:text-gray-200 leading-tight">
                         Colecciones
                     </h2>
-                    <Link
-                        className={buttonVariants({ variant: 'default', size: 'sm' })}
-                        href={route('collections.create')}
-                    >
-                        <Plus className="size-4" />
-                        Nueva colección
-                    </Link>
+                    {can('admin.collections.create') && (
+                        <Link
+                            className={buttonVariants({ variant: 'default', size: 'sm' })}
+                            href={route('collections.create')}
+                        >
+                            <Plus className="size-4" />
+                            Nueva colección
+                        </Link>
+                    )}
                 </div>
             }
         >
@@ -37,7 +43,6 @@ export default function Index({ collections }) {
                             data={collections}
                             routeEdit={'collections.edit'}
                             routeDestroy={'collections.destroy'}
-                            permissions={[]}
                         />
                     ) : (
                         <div className="flex justify-between text-start px-8 py-16">
@@ -48,13 +53,15 @@ export default function Index({ collections }) {
                                 <p className="text-sm text-gray-500">
                                     Agrupa productos por categoría, temporada o promociones para facilitar la navegación en tu tienda.
                                 </p>
-                                <Link
-                                    className={buttonVariants({ variant: 'default', size: 'sm' })}
-                                    href={route('collections.create')}
-                                >
-                                    <Plus className="size-4" />
-                                    Nueva colección
-                                </Link>
+                                {can('admin.collections.create') && (
+                                    <Link
+                                        className={buttonVariants({ variant: 'default', size: 'sm' })}
+                                        href={route('collections.create')}
+                                    >
+                                        <Plus className="size-4" />
+                                        Nueva colección
+                                    </Link>
+                                )}
                             </div>
                             <FolderOpen className="size-10 text-gray-400" />
                         </div>

@@ -16,8 +16,10 @@ import HeadingSmall from '@/Components/heading-small';
 const DataTable = lazy(() => import('@/Components/DataTable'));
 const TaxesForm = lazy(() => import('./TaxesForm'));
 
-export default function Index({ taxes, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+import { usePermission } from '@/hooks/usePermission';
+
+export default function Index({ taxes }) {
+    const { can } = usePermission();
     let [isOpen, setIsOpen] = useState(false);
     const { data, setData, errors, post } = useForm({
         tax_name: "",
@@ -50,7 +52,7 @@ export default function Index({ taxes, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Impuestos
                     </h2>
-                    {(isSuperAdmin || (permission || []).some(perm => perm.name === 'admin.tax.create')) && (
+                    {can('admin.tax.create') && (
                         <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Añadir impuesto
@@ -71,8 +73,6 @@ export default function Index({ taxes, permission }) {
                             routeDestroy={'tax.destroy'}
                             editPermission={'admin.tax.edit'}
                             deletePermission={'admin.tax.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <div className="flex flex-col items-center justify-center h-96">
@@ -82,12 +82,12 @@ export default function Index({ taxes, permission }) {
                                 description="Puedes crear un nuevo impuesto haciendo clic en el botón a continuación."
                                 className="text-center"
                             />
-                            {(isSuperAdmin || (permission || []).some(perm => perm.name === 'admin.tax.create')) && (
-                        <Button variant="default" size="sm"
-                            onClick={() => setIsOpen(true)}>
-                            Añadir impuesto
-                        </Button>
-                    )}
+                            {can('admin.tax.create') && (
+                                <Button variant="default" size="sm"
+                                    onClick={() => setIsOpen(true)}>
+                                    Añadir impuesto
+                                </Button>
+                            )}
                         </div>
                     )}
                 </DivSection>

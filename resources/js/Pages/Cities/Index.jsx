@@ -10,11 +10,13 @@ import { Button } from '@/Components/ui/button';
 import { CitiesColumns } from './Columns';
 import Loader from '@/Components/ui/loader';
 
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 const CitiesForm = lazy(() => import('./CitiesForm'));
 
-export default function Index({ cities, state, permission }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ cities, state }) {
+    const { can, isSuperAdmin } = usePermission();
     let [isOpen, setIsOpen] = useState(false)
     const { data, setData, errors, post } = useForm({
         city_name: "",
@@ -43,7 +45,7 @@ export default function Index({ cities, state, permission }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Ciudades
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.cities.create')) && (
+                    {can('admin.cities.create') && (
                         <Button variant="default" size="sm"
                             onClick={() => setIsOpen(true)}>
                             Anadir ciudad
@@ -64,8 +66,6 @@ export default function Index({ cities, state, permission }) {
                             routeDestroy={'cities.destroy'}
                             editPermission={'admin.cities.edit'}
                             deletePermission={'admin.cities.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         null

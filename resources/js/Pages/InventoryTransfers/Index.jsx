@@ -7,9 +7,13 @@ import { InventoryTransferColumns } from './Columns';
 import Loader from '@/Components/ui/loader';
 import { Button } from '@/Components/ui/button';
 
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
 export default function Index({ transfers }) {
+    const { can } = usePermission();
+
     return (
         <AuthenticatedLayout
             header={
@@ -17,11 +21,13 @@ export default function Index({ transfers }) {
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Transferencias de Inventario
                     </h2>
-                    <Button asChild size="sm">
-                        <Link href={route('inventory-transfers.create')}>
-                            Nueva Transferencia
-                        </Link>
-                    </Button>
+                    {can('admin.inventory-transfers.create') && (
+                        <Button asChild size="sm">
+                            <Link href={route('inventory-transfers.create')}>
+                                Nueva Transferencia
+                            </Link>
+                        </Button>
+                    )}
                 </div>
             }
         >

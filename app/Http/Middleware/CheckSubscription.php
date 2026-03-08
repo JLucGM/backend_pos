@@ -74,6 +74,7 @@ class CheckSubscription
             'dashboard.view',
             'products.view',
             'products.edit',
+            'staff_users.create', // Permitir crear usuarios en trial
         ];
 
         // Características BLOQUEADAS en trial
@@ -95,7 +96,9 @@ class CheckSubscription
     {
         switch ($feature) {
             case 'staff_users.create':
-                $limit = $company->getSubscriptionLimit('staff_users');
+                // Sincronizar con la clave 'users' definida en Company.php y planes
+                $limit = $company->getSubscriptionLimit('users');
+                if ($limit === null) return true; // Si no hay límite definido, permitir
                 if ($limit === 0) return false;
                 if ($limit === -1) return true;
                 

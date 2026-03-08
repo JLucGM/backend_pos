@@ -50,13 +50,8 @@ class StockController extends Controller
 
         $stock = $stockQuery->get();
 
-        $role = $user->getRoleNames();
-        $permission = $user->getAllPermissions();
-
         return Inertia::render('Stocks/Index', compact(
             'stock',
-            'role',
-            'permission',
             'stores',
             'selectedStoreId'
         ));

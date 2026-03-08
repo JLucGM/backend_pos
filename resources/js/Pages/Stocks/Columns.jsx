@@ -78,7 +78,14 @@ export const StocksColumns = [
     {
         header: "Actualizar Stock",
         accessorKey: "update_stock",
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
+            const { isSuperAdmin, permissions = [] } = table.options.meta || {};
+            const canUpdateStock = isSuperAdmin || permissions.includes('admin.products.edit');
+
+            if (!canUpdateStock) {
+                return <span className="text-gray-400 text-sm">No autorizado</span>;
+            }
+
             const originalQuantity = row.original.quantity;
             const stockId = row.original.id;
             const [localQuantity, setLocalQuantity] = useState(originalQuantity);

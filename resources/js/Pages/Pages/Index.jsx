@@ -7,10 +7,13 @@ import DivSection from '@/Components/ui/div-section';
 import Loader from '@/Components/ui/loader';
 import { Palette, Edit } from 'lucide-react'; // Agregar Edit icon
 
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ pages, permission }) { // Agregar homepage en props
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ pages }) { // Agregar homepage en props
+    const { can } = usePermission();
+
     return (
         <AuthenticatedLayout
             header={
@@ -18,7 +21,7 @@ export default function Index({ pages, permission }) { // Agregar homepage en pr
                     <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Páginas
                     </h2>
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.pages.create')) && (
+                    {can('admin.pages.create') && (
                         <div className="flex gap-2">
                             <Link className={buttonVariants({ variant: "default", size: "sm" })} href={route('pages.create')}
                             >
@@ -41,7 +44,6 @@ export default function Index({ pages, permission }) { // Agregar homepage en pr
                             routeDestroy={'pages.destroy'}
                             editPermission={'admin.pages.edit'}
                             deletePermission={'admin.pages.delete'}
-                            permissions={permission}
                         />
                     ) : (
                         <div className="text-center py-8">

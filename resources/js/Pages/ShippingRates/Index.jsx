@@ -11,10 +11,12 @@ import makeAnimated from 'react-select/animated';
 import { useSelectOptions } from '@/hooks/useSelectOptions';
 import { customStyles } from '@/hooks/custom-select';
 
+import { usePermission } from '@/hooks/usePermission';
+
 const DataTable = lazy(() => import('@/Components/DataTable'));
 
-export default function Index({ shippingRate, permission, stores, selectedStoreId }) {
-    const { isSuperAdmin } = usePage().props.auth;
+export default function Index({ shippingRate, stores, selectedStoreId }) {
+    const { can, isSuperAdmin } = usePermission();
     const [filteredShippingRates, setFilteredShippingRates] = useState(shippingRate);
     const [currentStoreId, setCurrentStoreId] = useState(selectedStoreId);
     const animatedComponents = makeAnimated();
@@ -100,7 +102,7 @@ export default function Index({ shippingRate, permission, stores, selectedStoreI
                         )}
                     </div>
                     
-                    {(isSuperAdmin || permission.some(perm => perm.name === 'admin.shippingRate.create')) && (
+                    {can('admin.shippingRate.create') && (
                         <Link className={buttonVariants({ variant: "default", size: "sm" })}
                             href={route('shippingrate.create')}
                         >
@@ -122,8 +124,6 @@ export default function Index({ shippingRate, permission, stores, selectedStoreI
                             routeDestroy={'shippingRates.destroy'}
                             editPermission={'admin.shippingRate.edit'}
                             deletePermission={'admin.shippingRate.delete'}
-                            permissions={permission}
-                            isSuperAdmin={isSuperAdmin}
                         />
                     ) : (
                         <div className="flex justify-between text-start px-8 py-16">
@@ -137,7 +137,7 @@ export default function Index({ shippingRate, permission, stores, selectedStoreI
                                         : 'Comience por configurar las tarifas de envío para sus tiendas.'
                                     }
                                 </p>
-                                {(isSuperAdmin || permission.some(perm => perm.name === 'admin.shippingRate.create')) && (
+                                {can('admin.shippingRate.create') && (
                                     <Link className={buttonVariants({ variant: "default", size: "sm" })}
                                         href={route('shippingrate.create')}
                                     >
