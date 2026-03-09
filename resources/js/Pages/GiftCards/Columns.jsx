@@ -4,6 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { formatDate } from "@/utils/dateFormatter";
 import { Link } from "@inertiajs/react";
 import { Ellipsis, Pen, Trash } from "lucide-react";
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const giftCardsColumns = [
     {
@@ -57,10 +58,8 @@ export const giftCardsColumns = [
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
-                            <DropdownMenuItem>
-                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('giftCards.destroy', [row.original])} method="delete">
-                                    <Trash /> Eliminar
-                                </Link>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog url={route('giftCards.destroy', row.original)} />
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>

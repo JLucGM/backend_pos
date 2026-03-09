@@ -2,6 +2,7 @@ import { buttonVariants } from "@/Components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Ellipsis, Eye, Palette, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const pagesColumns = [
     // {
@@ -37,10 +38,8 @@ export const pagesColumns = [
                         </DropdownMenuItem>
                             )}
                         {canDelete && isDeletable && ( 
-                            <DropdownMenuItem>
-                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('pages.destroy', [row.original])} method="delete">
-                                    <Trash /> Eliminar
-                                </Link>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog url={route('pages.destroy', row.original)} />
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>

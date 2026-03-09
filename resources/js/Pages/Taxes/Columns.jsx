@@ -2,6 +2,7 @@ import { buttonVariants } from "@/Components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Ellipsis, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const taxesColumns = [
     {
@@ -34,10 +35,8 @@ export const taxesColumns = [
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
-                            <DropdownMenuItem>
-                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('tax.destroy', [row.original])} method="delete">
-                                    <Trash /> Eliminar
-                                </Link>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog url={route('tax.destroy', [row.original])} />
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>

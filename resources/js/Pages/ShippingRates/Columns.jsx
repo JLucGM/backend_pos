@@ -3,6 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Ellipsis, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { Badge } from "@/Components/ui/badge";
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const shippingRateColumns = [
     {
@@ -46,15 +47,8 @@ export const shippingRateColumns = [
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
-                            <DropdownMenuItem>
-                                <Link className="flex items-center gap-2 w-full px-2 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-red-600 dark:text-red-400"
-                                    href={route('shippingrate.destroy', [row.original])} 
-                                    method="delete"
-                                    as="button"
-                                    confirm="¿Estás seguro de eliminar esta tarifa de envío?"
-                                >
-                                    <Trash className="h-4 w-4" /> Eliminar
-                                </Link>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog url={route('shippingrate.destroy', [row.original])} />
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>

@@ -3,6 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Ellipsis, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { Badge } from "@/Components/ui/badge";
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const RolesColumns = [
     {
@@ -63,16 +64,10 @@ export const RolesColumns = [
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
-                            <DropdownMenuItem>
-                                <Link
-                                    className={buttonVariants({ variant: 'ghost' }) + ' w-full'}
-                                    href={route('roles.destroy', { role: roleIdentifier })}
-                                    method="delete"
-                                    as="button"
-                                >
-                                    <Trash />
-                                    <span>Eliminar</span>
-                                </Link>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog
+                                    url={route('roles.destroy', { role: roleIdentifier })}
+                                />
                             </DropdownMenuItem>
                         )}
                         {!canEdit && !canDelete && (

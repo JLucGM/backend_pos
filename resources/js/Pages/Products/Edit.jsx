@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { ArrowLongLeftIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/Components/ui/badge';
 import Loader from '@/Components/ui/loader';
+import ConfirmDeleteDialog from '@/Components/ConfirmDeleteDialog';
 
 // Lazy load ProductsForm
 const ProductsForm = lazy(() => import('./ProductsForm'));
@@ -151,17 +152,16 @@ export default function Edit({ product, categories, taxes, stores, combinationsD
                         </Badge>
                     </div>
 
-                    <div className="">
+                    <div className="flex items-center space-x-2">
                         <Button variant="ghost" onClick={handleDuplicate} >
                             Duplicar
                         </Button>
 
-                        <Link
-                            className={buttonVariants({ variant: "outlineDestructive" })}
-                            href={route('products.destroy', [product])} method='delete' as="button">
-                            <TrashIcon className='size-6' />
-                            Eliminar producto
-                        </Link>
+                        <ConfirmDeleteDialog 
+                            url={route('products.destroy', product)} 
+                            title={`¿Eliminar ${product.product_name}?`}
+                            description="Esta acción eliminará el producto y todos sus registros de inventario de forma permanente."
+                        />
                     </div>
                 </div>
             }

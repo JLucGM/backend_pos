@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Ellipsis, Trash, Info, Copy, CheckCircle2 } from "lucide-react";
 import { Link, router } from "@inertiajs/react";
 import { toast } from 'sonner';
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const MediaColumns = (onShowDetails, copyingId, setCopyingId) => [
     {
@@ -76,13 +77,6 @@ export const MediaColumns = (onShowDetails, copyingId, setCopyingId) => [
                 setTimeout(() => setCopyingId(null), 2000);
             };
 
-            const handleDelete = (e) => {
-                e.preventDefault();
-                if (confirm('¿Estás seguro de eliminar esta imagen?')) {
-                    router.delete(route('media.destroy', row.original.id));
-                }
-            };
-
             return (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -103,8 +97,8 @@ export const MediaColumns = (onShowDetails, copyingId, setCopyingId) => [
                             Copiar URL
                         </DropdownMenuItem>
                         {canDelete && (
-                            <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
-                                <Trash className="mr-2 h-4 w-4" /> Eliminar
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog url={route('media.destroy', row.original.id)} />
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>

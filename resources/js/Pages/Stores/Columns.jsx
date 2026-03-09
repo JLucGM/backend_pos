@@ -3,6 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Ellipsis, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
 import { Badge } from "@/Components/ui/badge";
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const StoresColumns = [
     {
@@ -56,10 +57,8 @@ export const StoresColumns = [
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
-                            <DropdownMenuItem>
-                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('stores.destroy', [row.original])} method="delete">
-                                    <Trash /> Eliminar
-                                </Link>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog url={route('stores.destroy', [row.original])} />
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>

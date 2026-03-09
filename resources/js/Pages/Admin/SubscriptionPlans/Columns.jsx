@@ -3,6 +3,7 @@ import { buttonVariants } from "@/Components/ui/button";
 import { Link } from "@inertiajs/react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Ellipsis, Pen, Trash } from "lucide-react";
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const subscriptionPlansColumns = [
     {
@@ -79,10 +80,8 @@ export const subscriptionPlansColumns = [
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
-                            <DropdownMenuItem>
-                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('admin.subscriptionPlan.destroy', [row.original])} method="delete">
-                                    <Trash /> Eliminar
-                                </Link>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog url={route('admin.subscriptionPlan.destroy', row.original)} />
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>

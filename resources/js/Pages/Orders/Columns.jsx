@@ -5,6 +5,7 @@ import { Link, usePage } from "@inertiajs/react";
 import { formatDate } from "@/utils/dateFormatter";
 import { Badge } from "@/Components/ui/badge";
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const ordersColumns = [
     {
@@ -107,10 +108,8 @@ export const ordersColumns = [
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
-                            <DropdownMenuItem>
-                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full'} href={route('orders.destroy', [row.original])} method="delete">
-                                    <Trash /> Eliminar
-                                </Link>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog url={route('orders.destroy', [row.original])} />
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>

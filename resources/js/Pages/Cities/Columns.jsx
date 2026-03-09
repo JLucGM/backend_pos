@@ -2,6 +2,7 @@ import { buttonVariants } from "@/Components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Ellipsis, Pen, Trash } from "lucide-react";
 import { Link } from "@inertiajs/react";
+import ConfirmDeleteDialog from "@/Components/ConfirmDeleteDialog";
 
 export const CitiesColumns = [
     {
@@ -30,10 +31,8 @@ export const CitiesColumns = [
                             </DropdownMenuItem>
                         )}
                         {canDelete && (
-                            <DropdownMenuItem>
-                                <Link className={buttonVariants({ variant: 'ghost' }) + ' w-full justify-start text-red-600'} href={route('cities.destroy', [row.original])} method="delete">
-                                    <Trash className="mr-2 h-4 w-4" /> Eliminar
-                                </Link>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ConfirmDeleteDialog url={route('cities.destroy', [row.original])} />
                             </DropdownMenuItem>
                         )}
                     </DropdownMenuContent>
