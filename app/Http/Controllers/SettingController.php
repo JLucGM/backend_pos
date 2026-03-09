@@ -27,8 +27,28 @@ class SettingController extends Controller
 
         $user = Auth::user();
         $setting = Setting::with('media', 'company', 'currency')->where('company_id', $user->company_id)->first();
+        
+        // Obtener o crear las relaciones de monedas para esta compañía
+        $companyCurrencies = \App\Models\CompanyCurrency::with('currency')
+            ->where('company_id', $user->company_id)
+            ->get();
 
-        return Inertia::render('Settings/Edit', compact('setting', 'currencies'));
+        if ($companyCurrencies->isEmpty()) {
+            // Solo creamos la moneda base por defecto
+            \App\Models\CompanyCurrency::create([
+                'company_id' => $user->company_id,
+                'currency_id' => $setting->currency_id,
+                'exchange_rate' => 1.0,
+                'is_active' => true,
+                'is_base' => true
+            ]);
+            
+            $companyCurrencies = \App\Models\CompanyCurrency::with('currency')
+                ->where('company_id', $user->company_id)
+                ->get();
+        }
+
+        return Inertia::render('Settings/Edit', compact('setting', 'currencies', 'companyCurrencies'));
     }
 
     /**
@@ -68,14 +88,15 @@ class SettingController extends Controller
      */
     public function update(Request $request, Setting $setting)
     {
-        // dd($request->all());
         // Validar los datos de entrada
         $request->validate([
             'currency_id' => 'required|exists:currencies,id',
-            'name' => 'required|string|max:255', // Validación para el nombre de la compañía
-            // 'email' => 'required|email|max:255', // Validación para el correo de la compañía
-            // 'phone' => 'required|string|max:255', // Validación para el teléfono de la compañía
-            // 'address' => 'required|string|max:255', // Validación para la dirección de la compañía
+            'name' => 'required|string|max:255',
+            'selected_currencies' => 'nullable|array', // Monedas que el usuario quiere tener activas
+            'selected_currencies.*' => 'exists:currencies,id',
+            'company_currencies' => 'nullable|array',
+            'company_currencies.*.id' => 'required|exists:company_currencies,id',
+            'company_currencies.*.exchange_rate' => 'required|numeric|min:0',
         ]);
 
         $user = Auth::user();
@@ -83,10 +104,50 @@ class SettingController extends Controller
             abort(403, 'No tienes permiso para esta operación.');
         }
 
-        // Actualizar los ajustes
+        // 1. Actualizar los ajustes principales
         $setting->update($request->only(
             'currency_id',
         ));
+
+        // 2. Sincronizar monedas habilitadas para la compañía
+        $selectedCurrencyIds = $request->input('selected_currencies', []);
+        
+        // Asegurar que la moneda base esté siempre en la lista de seleccionadas
+        if (!in_array($request->currency_id, $selectedCurrencyIds)) {
+            $selectedCurrencyIds[] = $request->currency_id;
+        }
+
+        // Eliminar monedas que ya no están seleccionadas (excepto la base si hubiera error)
+        \App\Models\CompanyCurrency::where('company_id', $user->company_id)
+            ->whereNotIn('currency_id', $selectedCurrencyIds)
+            ->delete();
+
+        // Agregar nuevas monedas seleccionadas que no existían
+        foreach ($selectedCurrencyIds as $id) {
+            \App\Models\CompanyCurrency::firstOrCreate(
+                ['company_id' => $user->company_id, 'currency_id' => $id],
+                ['exchange_rate' => 1.0, 'is_active' => true, 'is_base' => ($id == $request->currency_id)]
+            );
+        }
+
+        // 3. Sincronizar is_base en company_currencies (por si cambió la base)
+        \App\Models\CompanyCurrency::where('company_id', $user->company_id)
+            ->update(['is_base' => false]);
+            
+        \App\Models\CompanyCurrency::where('company_id', $user->company_id)
+            ->where('currency_id', $request->currency_id)
+            ->update(['is_base' => true, 'exchange_rate' => 1.0]);
+
+        // 4. Actualizar tasas de cambio de las monedas activas
+        if ($request->has('company_currencies')) {
+            foreach ($request->company_currencies as $currData) {
+                \App\Models\CompanyCurrency::where('id', $currData['id'])
+                    ->where('company_id', $user->company_id)
+                    ->update([
+                        'exchange_rate' => $currData['exchange_rate'],
+                    ]);
+            }
+        }
         // Actualizar los campos de la compañía
         $company = $setting->company; // Obtener la compañía asociada
         $company->update($request->only(

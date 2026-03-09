@@ -26,24 +26,25 @@ class Order extends Model
         'company_id',
         'shipping_rate_id',
         'store_id',
+        'currency_id',
+        'exchange_rate',
+        'total_base_currency',
     ];
 
-    // protected $casts = [
-    //     'status' => 'string',
-    //     'delivery_type' => 'string',
-    //     'payment_status' => 'string',
-    //     'totalshipping' => 'decimal:2',
-    //     'totaldiscounts' => 'decimal:2',
-    //     'subtotal' => 'decimal:2',
-    //     'tax_amount' => 'decimal:2',
-    //     'total' => 'decimal:2',
-    //     'order_origin' => 'string',
-    // ];
+    protected $casts = [
+        'exchange_rate' => 'decimal:8',
+        'total_base_currency' => 'decimal:2',
+    ];
 
     protected static function booted()
     {
         // Registra tu ámbito global aquí
         static::addGlobalScope(new CompanyScope);
+    }
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class);
     }
 
     public function orderItems()

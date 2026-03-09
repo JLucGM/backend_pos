@@ -34,12 +34,74 @@ export default function OrdersForm({
     discounts = [],
     shippingRates = [],
     stores = [],
+    companyCurrencies = [],
     setData,
     errors,
     isDisabled = false,
     isEdit = false // AGREGAR: Nueva prop para modo edición
 }) {
     const settings = usePage().props.settings;
+
+    // Inicializar moneda por defecto (la base)
+    useEffect(() => {
+        if (!isEdit && !data.currency_id && companyCurrencies.length > 0) {
+            const baseCurrency = companyCurrencies.find(cc => cc.is_base);
+            if (baseCurrency) {
+                setData('currency_id', baseCurrency.currency_id);
+            }
+        }
+    }, [companyCurrencies, data.currency_id, isEdit]);
+
+    // Calcular tasa de cambio actual o histórica para la visualización
+    const selectedCompanyCurrency = useMemo(() => {
+        return companyCurrencies.find(cc => cc.currency_id === data.currency_id);
+    }, [data.currency_id, companyCurrencies]);
+
+    const exchangeRate = useMemo(() => {
+        if (isEdit && orders && orders.exchange_rate) {
+            return parseFloat(orders.exchange_rate);
+        }
+        return selectedCompanyCurrency ? parseFloat(selectedCompanyCurrency.exchange_rate) : 1;
+    }, [isEdit, orders, selectedCompanyCurrency]);
+
+    // Objeto de moneda para visualización (dinámico)
+    const displayCurrency = useMemo(() => {
+        return selectedCompanyCurrency ? selectedCompanyCurrency.currency : settings.currency;
+    }, [selectedCompanyCurrency, settings.currency]);
+
+    // Verificar si la moneda seleccionada es la base
+    const isBaseSelected = useMemo(() => {
+        if (!selectedCompanyCurrency) return true; // Si no hay selección, es la base por defecto
+        return selectedCompanyCurrency.is_base;
+    }, [selectedCompanyCurrency]);
+
+    // Lógica de conversión inteligente: ¿Multiplicar o Dividir?
+    const shouldDivide = useMemo(() => {
+        if (isBaseSelected) return false;
+
+        const baseCurrencyCode = settings.currency?.code;
+        const targetCurrencyCode = displayCurrency?.code;
+        const strongCurrencies = ['USD', 'EUR'];
+        
+        const isBaseStrong = strongCurrencies.includes(baseCurrencyCode);
+        const isTargetStrong = strongCurrencies.includes(targetCurrencyCode);
+        
+        return isTargetStrong && !isBaseStrong;
+    }, [settings.currency, displayCurrency, isBaseSelected]);
+
+    const convertAmount = (amount) => {
+        const val = parseFloat(amount) || 0;
+        if (isBaseSelected || exchangeRate === 0) return val;
+        return shouldDivide ? val / exchangeRate : val * exchangeRate;
+    };
+
+    const currencyOptions = useMemo(() => {
+        return companyCurrencies.map(cc => ({
+            value: cc.currency_id,
+            label: `${cc.currency.name} (${cc.currency.symbol}) ${cc.is_base ? '- Base' : ''}`,
+            currency: cc.currency
+        }));
+    }, [companyCurrencies]);
 
     const paymentOptions = useMemo(() => mapToSelectOptions(paymentMethods, 'id', 'payment_method_name', true), [paymentMethods]);
     const shippingRatesOptions = useMemo(() => {
@@ -146,7 +208,7 @@ useEffect(() => {
         orderTotalAutomaticDiscount,
         findApplicableDiscount,
         error,
-    } = useDiscountsAndGiftCards(data, discounts, users, selectedUser, products, setData, appliedGiftCard);
+    } = useDiscountsAndGiftCards(data, discounts, users, selectedUser, products, setData, orders?.applied_gift_card || appliedGiftCard);
 
     const {
         productOptions,
@@ -162,7 +224,7 @@ useEffect(() => {
 
     const {
         orderItemsColumns,
-    } = useOrderItems(data, discounts, setData, isDisabled, findApplicableDiscount, products);
+    } = useOrderItems(data, discounts, setData, isDisabled, findApplicableDiscount, products, displayCurrency, exchangeRate, isBaseSelected);
 
     useOrderTotals(data, appliedDiscount, orderTotalAutomaticDiscount, data.gift_card_amount || 0, setData);
 
@@ -279,6 +341,25 @@ useEffect(() => {
                             <InputData htmlFor="payments_method_id" value="Método de Pago" />
                             <InputError message={errors.payments_method_id} className="mt-2" />
                         </div>
+
+                        {companyCurrencies.length > 1 && (
+                            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/30">
+                                <InputLabel htmlFor="currency_id" value="Moneda de Transacción" className="text-blue-700 dark:text-blue-300" />
+                                <Select
+                                    id="currency_id"
+                                    name="currency_id"
+                                    options={currencyOptions}
+                                    value={currencyOptions.find(option => option.value === data.currency_id)}
+                                    onChange={(selected) => setData('currency_id', selected.value)}
+                                    styles={customStyles}
+                                    isDisabled={isDisabled || isEdit} // Deshabilitado en edición para mantener integridad histórica
+                                />
+                                <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+                                    {isEdit ? 'Tasa utilizada: ' : 'Tasa actual: '}
+                                    1 {settings.currency?.code} = {exchangeRate} {selectedCompanyCurrency?.currency?.code}
+                                </p>
+                            </div>
+                        )}
 
                         <div className="mt-4">
                             <InputLabel htmlFor="delivery_type" value="Tipo de Entrega" />
@@ -402,33 +483,51 @@ useEffect(() => {
                                 <TableRow>
                                     <TableCell colSpan="3" className="text-right font-medium">Subtotal (post-descuentos por ítem)</TableCell>
                                     <TableCell className="font-medium">
-                                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.subtotal) || 0} />
+                                        <CurrencyDisplay currency={displayCurrency} amount={convertAmount(data.subtotal)} />
                                     </TableCell>
                                     <TableCell></TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell colSpan="3" className="text-right font-medium">Total Descuentos</TableCell>
                                     <TableCell className="font-medium text-red-600">
-                                        -<CurrencyDisplay currency={settings.currency} amount={parseFloat(data.totaldiscounts) || 0} />
+                                        -<CurrencyDisplay currency={displayCurrency} amount={convertAmount(data.totaldiscounts)} />
                                     </TableCell>
                                     <TableCell></TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell colSpan="3" className="text-right font-medium">Costo de Envío</TableCell>
-                                    <TableCell className="font-medium"><CurrencyDisplay currency={settings.currency} amount={parseFloat(data.totalshipping) || 0} /></TableCell>
+                                    <TableCell className="font-medium">
+                                        <CurrencyDisplay currency={displayCurrency} amount={convertAmount(data.totalshipping)} />
+                                    </TableCell>
                                     <TableCell></TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell colSpan="3" className="text-right font-medium">Impuestos</TableCell>
                                     <TableCell className="font-medium">
-                                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.tax_amount) || 0} />
+                                        <CurrencyDisplay currency={displayCurrency} amount={convertAmount(data.tax_amount)} />
                                     </TableCell>
                                     <TableCell></TableCell>
                                 </TableRow>
-                                <TableRow className="bg-gray-50 dark:bg-gray-800">
-                                    <TableCell colSpan="3" className="text-right font-bold text-lg">Total Final</TableCell>
-                                    <TableCell className="font-bold text-lg">
-                                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(data.total) || 0} />
+                                <TableRow className="bg-gray-50 dark:bg-gray-800 border-t-2 border-gray-200 dark:border-gray-700">
+                                    <TableCell colSpan="3" className="text-right font-bold text-lg align-top pt-4 text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+                                        Total Final
+                                    </TableCell>
+                                    <TableCell className="font-bold text-lg pt-4">
+                                        {/* Valor en Moneda Seleccionada (ej. VES si se eligió) */}
+                                        <div className="text-gray-900 dark:text-gray-100 mb-1">
+                                            <CurrencyDisplay currency={displayCurrency} amount={convertAmount(data.total)} />
+                                        </div>
+                                        
+                                        {/* Valor en Moneda Base (ej. USD) como referencia pequeña si es secundaria */}
+                                        {!isBaseSelected && (
+                                            <div className="text-[10px] font-normal text-gray-500 border-t pt-1 flex items-center">
+                                                <span className="mr-1">Original:</span>
+                                                <CurrencyDisplay 
+                                                    currency={settings.currency} 
+                                                    amount={parseFloat(data.total) || 0} 
+                                                />
+                                            </div>
+                                        )}
                                     </TableCell>
                                     <TableCell></TableCell>
                                 </TableRow>

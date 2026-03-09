@@ -16,7 +16,7 @@ import { usePage } from '@inertiajs/react';
  * @param {Array} products - Products para stock dinámico (siempre).
  * @returns {Object} Handlers y columnas para DataTable.
  */
-export const useOrderItems = (data, discounts, setData, isDisabled, findApplicableDiscount, products = []) => {
+export const useOrderItems = (data, discounts, setData, isDisabled, findApplicableDiscount, products = [], displayCurrency = null, exchangeRate = 1, isBaseSelected = true) => {
     const settings = usePage().props.settings;
 
     const handleQuantityChange = useCallback((index, newQuantity) => {
@@ -97,7 +97,10 @@ export const useOrderItems = (data, discounts, setData, isDisabled, findApplicab
         isDisabled,
         showDiscount: true,
         settings,
-    }), [handleQuantityChange, handleRemoveItem, isDisabled, settings]);
+        displayCurrency: displayCurrency || settings.currency,
+        exchangeRate: exchangeRate || 1,
+        isBaseSelected,
+    }), [handleQuantityChange, handleRemoveItem, isDisabled, settings, displayCurrency, exchangeRate, isBaseSelected]);
 
     return {
         handleQuantityChange,

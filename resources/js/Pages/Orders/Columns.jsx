@@ -81,8 +81,13 @@ export const ordersColumns = [
         accessorKey: "total",
         cell: ({ row }) => {
             const { settings } = usePage().props;
+            // Priorizamos la moneda capturada en la orden (snapshot)
+            // Si no existe (órdenes antiguas), usamos la global de settings
             return (
-                <p><CurrencyDisplay currency={settings?.currency} amount={row.original.total} /></p>
+                <p><CurrencyDisplay 
+                    currency={row.original.currency || settings?.currency} 
+                    amount={row.original.total} 
+                /></p>
             );
         },
     },

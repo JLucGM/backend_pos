@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
-export default function Create({ paymentMethods, products, users, discounts, shippingRates, stores }) {
+export default function Create({ paymentMethods, products, users, discounts, shippingRates, stores, companyCurrencies }) {
 // console.log(products)
     const initialValues = {
         status: 'pending', // Estado inicial por defecto
@@ -25,6 +25,7 @@ export default function Create({ paymentMethods, products, users, discounts, shi
         delivery_location_id: null,
         shipping_rate_id: null,
         store_id: null, // AGREGAR: store_id inicial
+        currency_id: null, // Moneda de la transacción
     }
     const { data, setData, errors, post, processing } = useForm(initialValues)
 
@@ -74,6 +75,7 @@ export default function Create({ paymentMethods, products, users, discounts, shi
                         discounts={discounts} // Pasa los descuentos al OrdersForm
                         shippingRates={shippingRates}
                         stores={stores} // AGREGAR: Pasa las tiendas
+                        companyCurrencies={companyCurrencies} // AGREGAR: Monedas de la empresa
                         data={data}
                         setData={setData}
                         errors={errors}

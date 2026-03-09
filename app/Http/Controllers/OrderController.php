@@ -12,6 +12,8 @@ use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\ShippingRate;
+use App\Models\Setting;
+use App\Models\CompanyCurrency;
 use App\Models\Store;
 use App\Models\User;
 use Carbon\Carbon;
@@ -82,7 +84,13 @@ class OrderController extends Controller
         // AGREGAR: Cargar las tiendas de la compañía
         $stores = Store::where('company_id', $userAuth->company_id)->get();
 
-        return Inertia::render('Orders/Create', compact('paymentMethods', 'products', 'users', 'discounts', 'shippingRates', 'stores'));
+        // Obtener monedas de la compañía para la reconversión en el frontend
+        $companyCurrencies = CompanyCurrency::with('currency')
+            ->where('company_id', $userAuth->company_id)
+            ->where('is_active', true)
+            ->get();
+
+        return Inertia::render('Orders/Create', compact('paymentMethods', 'products', 'users', 'discounts', 'shippingRates', 'stores', 'companyCurrencies'));
     }
 
     /**
@@ -133,6 +141,26 @@ class OrderController extends Controller
             $appliedGiftCard = $giftCard;
         }
 
+        // Obtener moneda seleccionada o usar la base de la compañía
+        $currencyId = $request->input('currency_id');
+        $exchangeRate = 1.0;
+        
+        if ($currencyId) {
+            $companyCurrency = CompanyCurrency::where('company_id', $userAuth->company_id)
+                ->where('currency_id', $currencyId)
+                ->first();
+            
+            if ($companyCurrency) {
+                $exchangeRate = (float) $companyCurrency->exchange_rate;
+            }
+        } else {
+            // Fallback a moneda base si no se envió ninguna
+            $setting = Setting::where('company_id', $userAuth->company_id)->first();
+            $currencyId = $setting->currency_id ?? null;
+        }
+
+        // Cargar productos, descuentos, etc. (ya se hizo arriba)
+
         // Pre-calcular descuentos y totales
         $orderItemsData = $request['order_items'] ?? [];
         $totalDiscounts = 0;
@@ -140,12 +168,7 @@ class OrderController extends Controller
         $taxAmount = 0;
         $subtotalPreDiscount = 0;
 
-        // DEBUG: Log inicial
-        \Log::info('Iniciando procesamiento de items:', ['count' => count($orderItemsData)]);
-
         foreach ($orderItemsData as $index => &$itemData) {
-            \Log::info("Procesando ítem {$index}:", $itemData);
-
             // Mapeo de campos
             if (isset($itemData['product_price'])) {
                 $itemData['price_product'] = $itemData['product_price'];
@@ -156,91 +179,50 @@ class OrderController extends Controller
             $combinationId = $itemData['combination_id'] ?? null;
             $quantity = $itemData['quantity'];
 
-            \Log::info("Buscando producto:", [
-                'product_id' => $productId,
-                'combination_id' => $combinationId,
-                'company_id' => $userAuth->company_id
-            ]);
-
-            // CORRECCIÓN IMPORTANTE: Buscar producto CON combinaciones y stocks
-            $product = Product::with([
-                'categories',
-                'discounts:id,name,discount_type,value,applies_to',
-                'taxes',
-                'stocks',
-                'combinations' // Asegurar que cargue combinaciones
-            ])
+            $product = Product::with(['categories', 'discounts', 'taxes', 'stocks', 'combinations'])
                 ->where('company_id', $userAuth->company_id)
                 ->find($productId);
 
             if (!$product) {
-                \Log::error('Producto no encontrado:', [
-                    'product_id' => $productId,
-                    'company_id' => $userAuth->company_id
-                ]);
                 throw ValidationException::withMessages(['order_items' => 'Producto no encontrado: ' . $productId]);
             }
 
-            \Log::info('Producto encontrado:', [
-                'id' => $product->id,
-                'name' => $product->product_name,
-                'has_combinations' => $product->combinations ? $product->combinations->count() : 0,
-                'stocks_count' => $product->stocks ? $product->stocks->count() : 0
-            ]);
-
-            // Validar stock por combination_id
+            // Validar stock
             $stock = $this->getProductStock($product, $combinationId, $request->store_id);
-
-            \Log::info('Stock verificado:', [
-                'product_id' => $productId,
-                'combination_id' => $combinationId,
-                'stock' => $stock,
-                'quantity' => $quantity
-            ]);
-
             if ($stock < $quantity) {
                 $varName = $combinationId ? ' (variación ID: ' . $combinationId . ')' : '';
                 throw ValidationException::withMessages(['order_items' => 'Stock insuficiente para: ' . $product->product_name . $varName]);
             }
 
-            // Determinar precios
+            // **CÁLCULO EN MONEDA BASE (USD) PARA VALIDACIÓN**
             $productOriginalPrice = (float) $product->product_price;
-            $productDiscountedPrice = $product->product_price_discount && $product->product_price_discount > 0
+            $productDiscountedPrice = ($product->product_price_discount && $product->product_price_discount > 0)
                 ? (float) $product->product_price_discount
                 : $productOriginalPrice;
 
-            $hasDirectDiscount = false;
-            $directDiscountAmount = 0;
-
-            // CORRECCIÓN: Para productos CON combinación, usar el precio de la combinación
             if ($combinationId && $product->combinations) {
                 $combination = $product->combinations->firstWhere('id', $combinationId);
                 if ($combination) {
                     $productOriginalPrice = (float) $combination->combination_price;
-                    $productDiscountedPrice = $productOriginalPrice; // Las combinaciones no tienen descuento directo
-                    \Log::info('Usando precio de combinación:', [
-                        'combination_id' => $combinationId,
-                        'price' => $productOriginalPrice
-                    ]);
+                    $productDiscountedPrice = $productOriginalPrice;
                 }
-            } elseif (is_null($combinationId) && $product->product_price_discount && $product->product_price_discount > 0) {
-                // Solo productos simples sin combinación pueden tener descuento directo
-                $hasDirectDiscount = true;
-                $directDiscountAmount = ($productOriginalPrice - $productDiscountedPrice) * $quantity;
-                \Log::info('Descuento directo aplicado:', [
-                    'original' => $productOriginalPrice,
-                    'discounted' => $productDiscountedPrice,
-                    'amount' => $directDiscountAmount
-                ]);
             }
 
-            $basePrice = $productOriginalPrice;
             $effectivePrice = $productDiscountedPrice;
+            $itemData['price_product'] = $productOriginalPrice; // Guardar precio convertido
 
-            $itemData['price_product'] = $basePrice;
+            $hasDirectDiscount = false;
+            $directDiscountAmount = 0;
+
+            if ($product->product_price_discount && $product->product_price_discount > 0 && !$combinationId) {
+                $hasDirectDiscount = true;
+                $directDiscountAmount = ($productOriginalPrice - $productDiscountedPrice) * $quantity;
+            }
 
             $originalSubtotal = $effectivePrice * $quantity;
             $subtotalPreDiscount += $originalSubtotal;
+            
+            // ... resto del cálculo de descuentos (usando effectivePrice ya convertido)
 
             \Log::info('Cálculos preliminares:', [
                 'originalSubtotal' => $originalSubtotal,
@@ -489,57 +471,115 @@ class OrderController extends Controller
             ]
         ]);
 
+        // Comparación frontend vs backend (en moneda base)
         if (
             abs($frontendSubtotal - $backendSubtotal) > 0.01 ||
             abs($frontendTax - $backendTax) > 0.01 ||
             abs($frontendTotal - $backendTotal) > 0.01
         ) {
-
             throw ValidationException::withMessages([
                 'order' => "Los cálculos no coinciden. Frontend: Subtotal=$$frontendSubtotal, Tax=$$frontendTax, Total=$$frontendTotal. Backend: Subtotal=$$backendSubtotal, Tax=$$backendTax, Total=$$backendTotal."
             ]);
         }
-        // dd($request['delivery_location_id']);
-        // Crear orden
-        $order = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $userAuth, $manualDiscountCode, $manualDiscountAmount, $shippingRateId, $totalShipping, $appliedOrderDiscount, $appliedManualDiscount, $orderTotalDiscount, $appliedGiftCard, $giftCardAmount, $giftCardId) {
 
+        // Obtener moneda seleccionada y tasa
+        $currencyId = $request->input('currency_id');
+        $exchangeRate = 1.0;
+        $targetIsStrong = false;
+        $baseIsStrong = false;
+        
+        $setting = Setting::with('currency')->where('company_id', $userAuth->company_id)->first();
+        $baseCurrencyCode = $setting->currency->code ?? 'USD';
+        $baseIsStrong = in_array($baseCurrencyCode, ['USD', 'EUR']);
+
+        if ($currencyId) {
+            $companyCurrency = CompanyCurrency::with('currency')->where('company_id', $userAuth->company_id)
+                ->where('currency_id', $currencyId)
+                ->first();
+            
+            if ($companyCurrency) {
+                $exchangeRate = (float) $companyCurrency->exchange_rate;
+                $targetIsStrong = in_array($companyCurrency->currency->code, ['USD', 'EUR']);
+            }
+        } else {
+            $currencyId = $setting->currency_id ?? null;
+        }
+
+        // Determinar si debemos multiplicar o dividir la tasa
+        // Si Target es Fuerte (USD) y Base NO es Fuerte (VES): Dividimos (VES / 45 = USD)
+        // Si Target es Débil (VES) y Base ES Fuerte (USD): Multiplicamos (USD * 45 = VES)
+        $shouldDivide = $targetIsStrong && !$baseIsStrong && $exchangeRate > 0;
+
+        // Snapshot de moneda base (USD o la que sea base en el sistema)
+        $totalBaseCurrency = $backendTotal;
+
+        // CONVERSIÓN FINAL A MONEDA DE TRANSACCIÓN
+        $finalSubtotalConverted = $shouldDivide ? $backendSubtotal / $exchangeRate : $backendSubtotal * $exchangeRate;
+        $taxAmountConverted = $shouldDivide ? $backendTax / $exchangeRate : $backendTax * $exchangeRate;
+        $finalTotalConverted = $shouldDivide ? $backendTotal / $exchangeRate : $backendTotal * $exchangeRate;
+        $grandTotalDiscountsConverted = $shouldDivide ? $grandTotalDiscounts / $exchangeRate : $grandTotalDiscounts * $exchangeRate;
+        $manualDiscountAmountConverted = $shouldDivide ? $manualDiscountAmount / $exchangeRate : $manualDiscountAmount * $exchangeRate;
+        $totalShippingConverted = $shouldDivide ? $totalShipping / $exchangeRate : $totalShipping * $exchangeRate;
+        $giftCardAmountConverted = $shouldDivide ? $giftCardAmount / $exchangeRate : $giftCardAmount * $exchangeRate;
+
+        // Crear orden con valores convertidos
+        $order = DB::transaction(function () use ($orderItemsData, $finalSubtotalConverted, $taxAmountConverted, $finalTotalConverted, $grandTotalDiscountsConverted, $request, $userAuth, $manualDiscountCode, $manualDiscountAmountConverted, $shippingRateId, $totalShippingConverted, $appliedOrderDiscount, $appliedManualDiscount, $orderTotalDiscount, $appliedGiftCard, $giftCardAmountConverted, $giftCardId, $currencyId, $exchangeRate, $totalBaseCurrency, $shouldDivide) {
+            
             // Solo asignar delivery_location_id si es delivery
             $deliveryLocationId = $request['delivery_type'] === 'delivery'
                 ? $request['delivery_location_id']
                 : null;
 
-            $order = Order::create([
+            $newOrder = Order::create([
                 'status' => $request['status'],
                 'payment_status' => $request['payments_method_id'] ? 'paid' : 'pending',
                 'delivery_type' => $request['delivery_type'] ?? 'delivery',
-                'tax_amount' => $taxAmount,
-                'subtotal' => $finalSubtotal,
-                'total' => $finalTotal,
-                'totaldiscounts' => $grandTotalDiscounts,
+                'tax_amount' => $taxAmountConverted,
+                'subtotal' => $finalSubtotalConverted,
+                'total' => $finalTotalConverted,
+                'totaldiscounts' => $grandTotalDiscountsConverted,
                 'manual_discount_code' => $manualDiscountCode,
-                'manual_discount_amount' => $manualDiscountAmount,
+                'manual_discount_amount' => $manualDiscountAmountConverted,
                 'delivery_location_id' => $deliveryLocationId,
                 'payments_method_id' => $request['payments_method_id'],
                 'order_origin' => $request['order_origin'],
                 'user_id' => $request['user_id'],
                 'company_id' => $userAuth->company_id,
                 'shipping_rate_id' => $shippingRateId,
-                'totalshipping' => $totalShipping,
+                'totalshipping' => $totalShippingConverted,
                 'gift_card_id' => $giftCardId,
-                'gift_card_amount' => $giftCardAmount,
+                'gift_card_amount' => $giftCardAmountConverted,
                 'store_id' => $request->store_id,
+                'currency_id' => $currencyId,
+                'exchange_rate' => $exchangeRate,
+                'total_base_currency' => $totalBaseCurrency,
             ]);
 
-            \Log::info('Orden creada:', ['order_id' => $order->id]);
+            \Log::info('Orden creada:', ['order_id' => $newOrder->id, 'total' => $finalTotalConverted, 'currency' => $currencyId]);
 
             foreach ($orderItemsData as $itemData) {
-                $order->orderItems()->create($itemData);
-
+                // Convertir precios del ítem antes de guardarlos usando la lógica shouldDivide
+                if ($shouldDivide) {
+                    $itemData['price_product'] /= $exchangeRate;
+                    $itemData['discount_amount'] /= $exchangeRate;
+                    $itemData['discounted_price'] /= $exchangeRate;
+                    $itemData['subtotal'] /= $exchangeRate;
+                    $itemData['tax_amount'] /= $exchangeRate;
+                } else {
+                    $itemData['price_product'] *= $exchangeRate;
+                    $itemData['discount_amount'] *= $exchangeRate;
+                    $itemData['discounted_price'] *= $exchangeRate;
+                    $itemData['subtotal'] *= $exchangeRate;
+                    $itemData['tax_amount'] *= $exchangeRate;
+                }
+                
+                $newOrder->orderItems()->create($itemData);
+                
                 if (isset($itemData['applied_discount_id'])) {
                     DiscountUsage::create([
                         'discount_id' => $itemData['applied_discount_id'],
-                        'order_id' => $order->id,
-                        'user_id' => $order->user_id,
+                        'order_id' => $newOrder->id,
+                        'user_id' => $newOrder->user_id,
                         'discount_amount' => $itemData['applied_discount_amount'],
                     ]);
                 }
@@ -548,8 +588,8 @@ class OrderController extends Controller
             if ($appliedOrderDiscount) {
                 DiscountUsage::create([
                     'discount_id' => $appliedOrderDiscount->id,
-                    'order_id' => $order->id,
-                    'user_id' => $order->user_id,
+                    'order_id' => $newOrder->id,
+                    'user_id' => $newOrder->user_id,
                     'discount_amount' => $orderTotalDiscount,
                 ]);
             }
@@ -557,9 +597,9 @@ class OrderController extends Controller
             if ($appliedManualDiscount && $appliedManualDiscount->applies_to === 'order_total') {
                 DiscountUsage::create([
                     'discount_id' => $appliedManualDiscount->id,
-                    'order_id' => $order->id,
-                    'user_id' => $order->user_id,
-                    'discount_amount' => $manualDiscountAmount,
+                    'order_id' => $newOrder->id,
+                    'user_id' => $newOrder->user_id,
+                    'discount_amount' => $manualDiscountAmountConverted,
                 ]);
             }
 
@@ -570,9 +610,9 @@ class OrderController extends Controller
 
                 GiftCardUsage::create([
                     'gift_card_id' => $appliedGiftCard->id,
-                    'order_id' => $order->id,
-                    'user_id' => $order->user_id,
-                    'amount_used' => $giftCardAmount,
+                    'order_id' => $newOrder->id,
+                    'user_id' => $newOrder->user_id,
+                    'amount_used' => $giftCardAmountConverted,
                 ]);
             }
 
@@ -580,12 +620,11 @@ class OrderController extends Controller
             foreach ($orderItemsData as $itemData) {
                 $product = Product::find($itemData['product_id']);
                 if ($product) {
-                    // $this->decrementStock($product, $itemData['quantity'], $itemData['combination_id'] ?? null);
                     $this->decrementStock($product, $itemData['quantity'], $itemData['combination_id'] ?? null, $request->store_id);
                 }
             }
 
-            return $order;
+            return $newOrder;
         });
 
         $redirect = redirect()->route('orders.edit', $order)->with('success', 'Orden creada con éxito.');
@@ -764,7 +803,12 @@ class OrderController extends Controller
         }
 
         // Carga las relaciones necesarias para la orden
-        $orders->load('user', 'orderItems.product.taxes', 'paymentMethod', 'deliveryLocation', 'store'); // Agregar 'store'
+        $orders->load('user', 'orderItems.product.taxes', 'paymentMethod', 'deliveryLocation', 'store', 'currency'); // Agregar 'currency'
+
+        // Obtener monedas de la compañía
+        $companyCurrencies = CompanyCurrency::with('currency')
+            ->where('company_id', $userAuth->company_id)
+            ->get();
 
         // FIX: Carga descuentos activos (como en store, para recálculos en frontend)
         $discounts = Discount::where('is_active', true)
@@ -822,6 +866,7 @@ class OrderController extends Controller
             'users' => $users,
             'discounts' => $discounts,
             'stores' => $stores, // AGREGAR: Pasar tiendas a la vista
+            'companyCurrencies' => $companyCurrencies, // AGREGAR: Pasar monedas
         ]);
     }
 
@@ -841,6 +886,9 @@ class OrderController extends Controller
             ->with(['products:id,product_name', 'categories:id,category_name'])
             ->get();
 
+        // Usar la tasa grabada en la orden para mantener consistencia histórica
+        $exchangeRate = (float) ($orders->exchange_rate ?? 1.0);
+
         // Pre-calcular como en store
         $orderItemsData = $request['order_items'] ?? [];
         $totalDiscounts = 0;
@@ -849,13 +897,11 @@ class OrderController extends Controller
         $subtotalPreDiscount = 0;
 
         // FIX: Track stock changes y IDs para delete
-        $existingItems = $orders->orderItems->keyBy('id'); // <-- Definida aquí
-        $stockChanges = []; // [item_id => delta_quantity]
-        $sentIds = collect(); // Para delete no enviados
+        $existingItems = $orders->orderItems->keyBy('id');
+        $stockChanges = [];
+        $sentIds = collect();
 
-        // Validar y recalcular descuentos por ítem (igual que store)
         foreach ($orderItemsData as &$itemData) {
-            // FIX: Mapeo consistente (siempre, como store)
             if (isset($itemData['product_price'])) {
                 $itemData['price_product'] = $itemData['product_price'];
                 unset($itemData['product_price']);
@@ -865,14 +911,7 @@ class OrderController extends Controller
             $combinationId = $itemData['combination_id'] ?? null;
             $quantity = $itemData['quantity'];
 
-            // CORRECCIÓN: Cargar combinaciones como en store
-            $product = Product::with([
-                'categories',
-                'discounts:id,name,discount_type,value,applies_to',
-                'taxes',
-                'stocks',
-                'combinations' // Añadido para manejar combinaciones
-            ])
+            $product = Product::with(['categories', 'discounts', 'taxes', 'stocks', 'combinations'])
                 ->where('company_id', $userAuth->company_id)
                 ->find($productId);
 
@@ -880,55 +919,32 @@ class OrderController extends Controller
                 throw ValidationException::withMessages(['order_items' => 'Producto no encontrado: ' . $productId]);
             }
 
-            // FIX: Track stock change (solo si item existente)
             $itemId = $itemData['id'] ?? null;
-            if ($itemId && is_numeric($itemId) && $existingItems->has($itemId)) { // <-- Usa $existingItems aquí (fuera de closure)
+            if ($itemId && is_numeric($itemId) && $existingItems->has($itemId)) {
                 $existingItem = $existingItems[$itemId];
                 $deltaQuantity = $quantity - $existingItem->quantity;
-                $stockChanges[$itemId] = $deltaQuantity; // >0: decrementa, <0: incrementa
+                $stockChanges[$itemId] = $deltaQuantity;
                 $sentIds->push($itemId);
             }
 
-            // **CORRECCIÓN IMPORTANTE: Determinar el precio base correcto (igual que en store)**
+            // **CÁLCULO EN MONEDA BASE (USD) PARA VALIDACIÓN**
             $productOriginalPrice = (float) $product->product_price;
-            $productDiscountedPrice = $product->product_price_discount && $product->product_price_discount > 0
+            $productDiscountedPrice = ($product->product_price_discount && $product->product_price_discount > 0)
                 ? (float) $product->product_price_discount
                 : $productOriginalPrice;
 
-            $hasDirectDiscount = false;
-            $directDiscountAmount = 0;
-
-            // CORRECCIÓN: Para productos CON combinación, usar el precio de la combinación
             if ($combinationId && $product->combinations) {
                 $combination = $product->combinations->firstWhere('id', $combinationId);
                 if ($combination) {
                     $productOriginalPrice = (float) $combination->combination_price;
-                    $productDiscountedPrice = $productOriginalPrice; // Las combinaciones no tienen descuento directo
-
-                    Log::info('Usando precio de combinación en update:', [
-                        'combination_id' => $combinationId,
-                        'price' => $productOriginalPrice
-                    ]);
+                    $productDiscountedPrice = $productOriginalPrice;
                 }
-            } elseif (is_null($combinationId) && $product->product_price_discount && $product->product_price_discount > 0) {
-                // Solo productos simples sin combinación pueden tener descuento directo
-                $hasDirectDiscount = true;
-                $directDiscountAmount = ($productOriginalPrice - $productDiscountedPrice) * $quantity;
-
-                Log::info('Descuento directo aplicado en update:', [
-                    'original' => $productOriginalPrice,
-                    'discounted' => $productDiscountedPrice,
-                    'amount' => $directDiscountAmount
-                ]);
             }
 
-            $basePrice = $productOriginalPrice;
             $effectivePrice = $productDiscountedPrice;
+            $itemData['price_product'] = $productOriginalPrice;
 
-            // **IMPORTANTE: Actualizar el price_product con el precio original**
-            $itemData['price_product'] = $basePrice; // Guarda el precio original
-
-            $originalSubtotal = $effectivePrice * $quantity; // Usa el precio con descuento directo para cálculos
+            $originalSubtotal = $effectivePrice * $quantity;
             $subtotalPreDiscount += $originalSubtotal;
 
             // Validar stock actual (después de change)
@@ -1099,47 +1115,69 @@ class OrderController extends Controller
         }
 
         $finalSubtotal = $subtotalPostDiscount;
-        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount - $giftCardAmount + $totalShipping;  // NUEVO: Resta giftCardAmount
-        $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount + $giftCardAmount;  // NUEVO: Incluye giftCardAmount en totaldiscounts
+        $finalTotal = $finalSubtotal + $taxAmount - $orderTotalDiscount - $manualDiscountAmount - $giftCardAmount + $totalShipping;
+        $grandTotalDiscounts = $totalDiscounts + $manualDiscountAmount + $giftCardAmount;
+
+        // Tasa histórica de la orden y Snapshot de moneda base (USD)
+        $exchangeRate = (float) ($orders->exchange_rate ?? 1.0);
+        $totalBaseCurrency = $finalTotal;
+
+        // CONVERSIÓN FINAL A MONEDA DE TRANSACCIÓN HISTÓRICA
+        $finalSubtotalConverted = $finalSubtotal * $exchangeRate;
+        $taxAmountConverted = $taxAmount * $exchangeRate;
+        $finalTotalConverted = $finalTotal * $exchangeRate;
+        $grandTotalDiscountsConverted = $grandTotalDiscounts * $exchangeRate;
+        $manualDiscountAmountConverted = $manualDiscountAmount * $exchangeRate;
+        $totalShippingConverted = $totalShipping * $exchangeRate;
+        $giftCardAmountConverted = $giftCardAmount * $exchangeRate;
 
         // Update con transacción – FIX: Agrega $existingItems y $sentIds en use()
-        $orders = DB::transaction(function () use ($orderItemsData, $finalSubtotal, $shippingRateId, $totalShipping, $taxAmount, $finalTotal, $grandTotalDiscounts, $request, $orders, $stockChanges, $sentIds, $existingItems, $manualDiscountCode, $manualDiscountAmount, $appliedGiftCard, $giftCardAmount, $giftCardId, $orderTotalDiscount, $appliedOrderDiscount) {
+        $orders = DB::transaction(function () use ($orderItemsData, $finalSubtotalConverted, $taxAmountConverted, $finalTotalConverted, $grandTotalDiscountsConverted, $request, $orders, $stockChanges, $sentIds, $existingItems, $manualDiscountCode, $manualDiscountAmountConverted, $appliedGiftCard, $giftCardAmountConverted, $giftCardId, $orderTotalDiscount, $appliedOrderDiscount, $exchangeRate, $totalBaseCurrency) {
             try {
 
                 $deliveryLocationId = $request['delivery_type'] === 'delivery'
                     ? $request['delivery_location_id']
                     : null;
 
-                // Update orden principal
+                // Update orden principal con valores convertidos
                 $orders->update([
                     'status' => $request['status'],
                     'payment_status' => $request['payments_method_id'] ? 'paid' : 'pending',
                     'delivery_type' => $request['delivery_type'],
-                    'tax_amount' => $taxAmount,
-                    'total' => $finalTotal,
-                    'subtotal' => $finalSubtotal,
-                    'totaldiscounts' => $grandTotalDiscounts,
+                    'tax_amount' => $taxAmountConverted,
+                    'total' => $finalTotalConverted,
+                    'subtotal' => $finalSubtotalConverted,
+                    'totaldiscounts' => $grandTotalDiscountsConverted,
                     'manual_discount_code' => $manualDiscountCode,
-                    'manual_discount_amount' => $manualDiscountAmount,
+                    'manual_discount_amount' => $manualDiscountAmountConverted,
                     'payments_method_id' => $request['payments_method_id'],
                     'user_id' => $request['user_id'] ?? $orders->user_id,
                     'delivery_location_id' => $deliveryLocationId,
                     'shipping_rate_id' => $shippingRateId,
-                    'totalshipping' => $totalShipping,
+                    'totalshipping' => $totalShippingConverted,
                     'gift_card_id' => $giftCardId,
-                    'gift_card_amount' => $giftCardAmount,
+                    'gift_card_amount' => $giftCardAmountConverted,
+                    'currency_id' => $request['currency_id'] ?? $orders->currency_id,
+                    'total_base_currency' => $totalBaseCurrency,
                 ]);
-                Log::info('Order updated: ID=' . $orders->id . ', total=' . $finalTotal); // Debug
+                Log::info('Order updated: ID=' . $orders->id . ', total=' . $finalTotalConverted); // Debug
 
                 // FIX: Lógica separada para update vs create (resuelve no guardar nuevos)
                 foreach ($orderItemsData as $itemData) {
+                    // Convertir montos a la moneda de transacción histórica
+                    $itemData['price_product'] *= $exchangeRate;
+                    $itemData['discount_amount'] *= $exchangeRate;
+                    $itemData['discounted_price'] *= $exchangeRate;
+                    $itemData['subtotal'] *= $exchangeRate;
+                    $itemData['tax_amount'] *= $exchangeRate;
+
                     $itemId = $itemData['id'] ?? null;
                     if ($itemId && is_numeric($itemId) && $existingItems->has($itemId)) { // <-- Ahora $existingItems disponible
                         // Update existente
                         $orderItem = $orders->orderItems()->find($itemId);
                         if ($orderItem) {
-                            $orderItem->update($itemData); // Usa recalculado
-                            Log::info("Updated item ID {$itemId}: quantity={$itemData['quantity']}, subtotal={$itemData['subtotal']}"); // Debug
+                            $orderItem->update($itemData); // Usa convertido
+                            Log::info("Updated item ID {$itemId}: quantity={$itemData['quantity']}, subtotal={$itemData['subtotal']}");
 
                             // **NUEVO: Registrar uso por ítem si hay descuento aplicado (similar a store)**
                             if (isset($itemData['applied_discount_id'])) {
@@ -1153,14 +1191,14 @@ class OrderController extends Controller
                                     'discount_id' => $itemData['applied_discount_id'],
                                     'order_id' => $orders->id,
                                     'user_id' => $orders->user_id,
-                                    'discount_amount' => $itemData['applied_discount_amount'],
+                                    'discount_amount' => $itemData['applied_discount_amount'] * $exchangeRate,
                                 ]);
                             }
                         }
                     } else {
                         // Create nuevo (sin ID)
-                        $newItem = $orders->orderItems()->create($itemData); // order_id ya seteado arriba
-                        Log::info("Created new item ID {$newItem->id}: product_id={$itemData['product_id']}, subtotal={$itemData['subtotal']}"); // Debug
+                        $newItem = $orders->orderItems()->create($itemData); // order_id ya seteado arriba y valores convertidos
+                        Log::info("Created new item ID {$newItem->id}: product_id={$itemData['product_id']}, subtotal={$itemData['subtotal']}");
 
                         // **NUEVO: Registrar uso por ítem si hay descuento aplicado**
                         if (isset($itemData['applied_discount_id'])) {
@@ -1168,7 +1206,7 @@ class OrderController extends Controller
                                 'discount_id' => $itemData['applied_discount_id'],
                                 'order_id' => $orders->id,
                                 'user_id' => $orders->user_id,
-                                'discount_amount' => $itemData['applied_discount_amount'],
+                                'discount_amount' => $itemData['applied_discount_amount'] * $exchangeRate,
                             ]);
                         }
                     }

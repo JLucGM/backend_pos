@@ -12,37 +12,63 @@ import OrderStatusButtons from '@/Components/Orders/OrderStatusButtons';
 
 const OrdersForm = lazy(() => import('./OrdersForm'));
 
-export default function Edit({ orders, paymentMethods, products, users, discounts, shippingRates, appliedGiftCard, stores }) {
+export default function Edit({ orders, paymentMethods, products, users, discounts, shippingRates, appliedGiftCard, stores, companyCurrencies }) {
     console.log(orders)
     const { flash } = usePage().props;
     if (flash?.success) toast.success(flash.success);
     if (flash?.error) toast.error(flash.error);
 
+    // Tasa de cambio histórica de la orden
+    const rate = parseFloat(orders.exchange_rate || 1);
+    
+    // Determinar dirección de la conversión para normalizar a moneda base
+    const baseCurrencyCode = usePage().props.settings.currency?.code;
+    const orderCurrencyCode = orders.currency?.code;
+    const strongCurrencies = ['USD', 'EUR'];
+    
+    const isBaseStrong = strongCurrencies.includes(baseCurrencyCode);
+    const isOrderStrong = strongCurrencies.includes(orderCurrencyCode);
+    
+    // Si la orden es Fuerte (USD) y la base NO (VES), multiplicamos para volver a base (5.54 * 440 = 2437)
+    // De lo contrario, dividimos (440 VES / 440 = 1 USD)
+    const shouldMultiply = isOrderStrong && !isBaseStrong;
+
+    const normalize = (amount) => {
+        const val = parseFloat(amount) || 0;
+        if (rate === 0) return val;
+        return shouldMultiply ? val * rate : val / rate;
+    };
+
     const initialValues = {
         status: orders.status,
         payment_status: orders.payment_status || 'pending',
         delivery_type: orders.delivery_type || 'delivery',
-        tax_amount: parseFloat(orders.tax_amount) || 0,
-        total: parseFloat(orders.total) || 0,
-        subtotal: parseFloat(orders.subtotal) || 0,
-        totaldiscounts: parseFloat(orders.totaldiscounts) || 0,
-        totalshipping: parseFloat(orders.totalshipping) || 0,
+        tax_amount: normalize(orders.tax_amount),
+        total: normalize(orders.total),
+        subtotal: normalize(orders.subtotal),
+        totaldiscounts: normalize(orders.totaldiscounts),
+        totalshipping: normalize(orders.totalshipping),
         user_id: orders.user_id || null,
         payments_method_id: orders.payments_method_id || null,
         manual_discount_code: orders.manual_discount_code || null,
-        manual_discount_amount: parseFloat(orders.manual_discount_amount) || 0,
+        manual_discount_amount: normalize(orders.manual_discount_amount),
         delivery_location_id: orders.delivery_type === 'delivery' ? orders.delivery_location_id : null,
         gift_card_id: appliedGiftCard?.id || null,
-        gift_card_amount: parseFloat(appliedGiftCard?.amount_used) || 0,
+        gift_card_amount: normalize(appliedGiftCard?.amount_used),
         shipping_rate_id: orders.shipping_rate_id || null,
-        store_id: orders.store_id || null, // AGREGAR: store_id de la orden
+        store_id: orders.store_id || null,
+        currency_id: orders.currency_id || null,
         order_items: orders.order_items ? orders.order_items.map((item, index) => {
             const quantity = parseInt(item.quantity || 1);
-            const originalPrice = parseFloat(item.price_product || 0);
-            const discountedPrice = parseFloat(item.discounted_price || originalPrice);
+            
+            // Normalizar precios de items a moneda base
+            const originalPrice = normalize(item.price_product);
+            const discountedPrice = normalize(item.discounted_price);
+            
             const taxRate = item.product && item.product.taxes ? parseFloat(item.product.taxes.tax_rate) : 0;
-            const calculatedSubtotal = parseFloat(item.subtotal || (quantity * discountedPrice));
-            const calculatedTaxAmount = parseFloat(item.tax_amount || (calculatedSubtotal * (taxRate / 100)));
+            const calculatedSubtotal = normalize(item.subtotal);
+            const calculatedTaxAmount = normalize(item.tax_amount);
+            const discountAmount = normalize(item.discount_amount);
 
             let attributesDisplay = null;
             if (item.product_details) {
@@ -66,7 +92,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                 tax_rate: taxRate,
                 tax_amount: calculatedTaxAmount,
                 discount_id: item.discount_id || null,
-                discount_amount: parseFloat(item.discount_amount || 0),
+                discount_amount: discountAmount,
                 discount_type: item.discount_type || null,
                 combination_id: item.combination_id || null,
                 product_details: item.product_details || null,
@@ -159,6 +185,7 @@ export default function Edit({ orders, paymentMethods, products, users, discount
                             discounts={discounts}
                             shippingRates={shippingRates}
                             stores={stores} // Pasar stores al componente
+                            companyCurrencies={companyCurrencies} // Pasar monedas
                             setData={setData}
                             errors={errors}
                             isEdit={true} // AGREGAR: Indicar que estamos en modo edición
