@@ -7,7 +7,7 @@ import Loader from '@/Components/ui/loader';
 import ClientsForm from './ClientsForm';
 import { toast } from 'sonner';
 
-export default function Create({ role }) {
+export default function Create({ roles, role }) {
     const initialValues = {
         name: "",
         phone: "",
@@ -16,23 +16,23 @@ export default function Create({ role }) {
         password: "",
         is_active: false,
         avatar: null,
+        role: roles?.length > 0 ? roles[0].id : null,
     };
 
-    const { data, setData, errors, post } = useForm(initialValues);
+    const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('client.store')), {
+        post(route('client.store'), {
             onSuccess: () => {
-                toast("Cliente creado con éxito.");
-
+                toast.success("Cliente creado con éxito.");
             },
             onError: (error) => {
                 console.error("Error al crear el cliente:", error);
                 toast.error("Error al crear el cliente.");
             }
-        };
-    }
+        });
+    };
 
     return (
         <AuthenticatedLayout
@@ -55,13 +55,13 @@ export default function Create({ role }) {
                                 data={data}
                                 setData={setData}
                                 errors={errors}
-                                // stores={stores}
+                                roles={roles}
                                 role={role}
                             />
 
                         <div className="flex justify-end p-2.5">
-                            <Button>
-                                Guardar
+                            <Button disabled={processing}>
+                                {processing ? 'Guardando...' : 'Guardar'}
                             </Button>
                         </div>
                     </form>

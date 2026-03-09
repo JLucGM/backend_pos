@@ -1,6 +1,6 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, Description } from '@headlessui/react'
+import SettingsLayout from '@/Layouts/SettingsLayout';
+import { Head, usePage } from '@inertiajs/react';
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { useState } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
@@ -55,38 +55,39 @@ export default function Index({ stores, countries, states, cities }) {
     }
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div className='flex justify-between items-center'>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Tiendas
-                    </h2>
-                    {can('admin.stores.create') && (
-                        <Button variant="default" size="sm"
-                            onClick={() => setIsOpen(true)}>
-                            Añadir tienda
-                        </Button>
-                    )}
-                </div>
-            }
-        >
+        <SettingsLayout>
             <Head className="capitalize" title="Tiendas" />
 
             <Suspense fallback={<Loader />}>
-                <DivSection>
-                    {stores.length > 0 ? (
-                        <DataTable
-                            columns={StoresColumns}
-                            data={stores}
-                            routeEdit={'stores.edit'}
-                            routeDestroy={'stores.destroy'}
-                            editPermission={'admin.stores.edit'}
-                            deletePermission={'admin.stores.delete'}
-                        />
-                    ) : (
-                        <p>No hay tiendas registradas.</p>
-                    )}
-                </DivSection>
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                                Tiendas
+                            </h2>
+                        </div>
+                        {can('admin.stores.create') && (
+                            <Button variant="default" size="sm" onClick={() => setIsOpen(true)}>
+                                Añadir tienda
+                            </Button>
+                        )}
+                    </div>
+
+                    <DivSection>
+                        {stores.length > 0 ? (
+                            <DataTable
+                                columns={StoresColumns}
+                                data={stores}
+                                routeEdit={'stores.edit'}
+                                routeDestroy={'stores.destroy'}
+                                editPermission={'admin.stores.edit'}
+                                deletePermission={'admin.stores.delete'}
+                            />
+                        ) : (
+                            <p>No hay tiendas registradas.</p>
+                        )}
+                    </DivSection>
+                </div>
             </Suspense>
 
 
@@ -96,9 +97,6 @@ export default function Index({ stores, countries, states, cities }) {
                 <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
                     <DialogPanel className="w-[40rem] space-y-4 border bg-white p-8 dark:bg-gray-800 rounded-2xl">
                         <DialogTitle className="font-bold text-gray-700 dark:text-gray-300 capitalize">Crear tiendas</DialogTitle>
-                        {/* <Description className={'text-sm text-gray-700 dark:text-gray-300'}>
-                            Estos datos podrían estar disponibles públicamente. No utilice su información personal.
-                        </Description> */}
                         <form onSubmit={submit} className='space-y-4'>
                             <Suspense fallback={<Loader />}>
                                 <StoresForm
@@ -122,7 +120,7 @@ export default function Index({ stores, countries, states, cities }) {
                     </DialogPanel>
                 </div>
             </Dialog>
-        </AuthenticatedLayout>
+        </SettingsLayout>
     )
 }
 

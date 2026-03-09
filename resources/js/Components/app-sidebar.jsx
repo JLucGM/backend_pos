@@ -29,12 +29,21 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarRail,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from "@/Components/ui/sidebar"
-import { usePage } from "@inertiajs/react"
+import { usePage, Link } from "@inertiajs/react"
 import { NavSingle } from "./nav-single"
 import { NavMain } from "@/Components/nav-main"
-import { NavUser } from "@/Components/nav-user"
 import { usePermission } from "@/hooks/usePermission"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/Components/ui/dropdown-menu"
+import { ChevronUp } from "lucide-react"
 
 export function AppSidebar({ ...props }) {
   const { user, isSuperAdmin, can } = usePermission()
@@ -70,16 +79,6 @@ export function AppSidebar({ ...props }) {
         ],
       },
       {
-        title: "Usuarios",
-        url: "#",
-        icon: Bot,
-        items: [
-          { title: "Usuarios", url: "user.index", permission: "admin.user.index" },
-          { title: "Clientes", url: "client.index", permission: "admin.client.index" },
-          { title: "Roles", url: "roles.index", permission: "admin.roles.index" },
-        ],
-      },
-      {
         title: "Contenido",
         url: "",
         icon: Wallpaper,
@@ -87,19 +86,6 @@ export function AppSidebar({ ...props }) {
           { title: "Menus", url: "menus.index", permission: "admin.menus.index" },
           { title: "Paginas", url: "pages.index", permission: "admin.pages.index" },
           { title: "Librería Media", url: "media.index", permission: "admin.media.index" },
-        ],
-      },
-      {
-        title: "Settings",
-        url: "",
-        icon: Cog,
-        items: [
-          { title: "Configuración", url: "setting.index", permission: "admin.setting.index" },
-          { title: "Políticas", url: "policy.index", permission: "admin.pages.index" },
-          { title: "Tiendas", url: "stores.index", permission: "admin.stores.index" },
-          { title: "Metodo de pago", url: "paymentmethod.index", permission: "admin.paymentmethod.index" },
-          { title: "Impuestos", url: "tax.index", permission: "admin.tax.index" },
-          { title: "Tarifa de envio", url: "shippingrate.index", permission: "admin.shippingRate.index" },
         ],
       },
       {
@@ -139,9 +125,23 @@ export function AppSidebar({ ...props }) {
     ],
   }
 
+  const settingsData = {
+    title: "Settings",
+    icon: Cog,
+    items: [
+      { title: "Configuración", url: "setting.index", permission: "admin.setting.index" },
+      { title: "Políticas", url: "policy.index", permission: "admin.pages.index" },
+      { title: "Tiendas", url: "stores.index", permission: "admin.stores.index" },
+      { title: "Metodo de pago", url: "paymentmethod.index", permission: "admin.paymentmethod.index" },
+      { title: "Impuestos", url: "tax.index", permission: "admin.tax.index" },
+      { title: "Tarifa de envio", url: "shippingrate.index", permission: "admin.shippingRate.index" },
+    ],
+  }
+
   const singleData = [
     { title: "Inicio", url: "dashboard", icon: HomeIcon },
     { title: "Pedidos", url: "orders.index", icon: ShoppingBasket, permission: "admin.orders.index" },
+    { title: "Clientes", url: "client.index", icon: Bot, permission: "admin.client.index" },
     { title: "Descuentos", url: "discounts.index", icon: BadgePercent, permission: "admin.discount.index" },
     { title: "Reportes", url: "reportes.index", icon: ChartColumnBigIcon, permission: "admin.reports.index" },
     {
@@ -183,6 +183,11 @@ export function AppSidebar({ ...props }) {
     return category;
   }).filter(Boolean);
 
+  // Filtrar ítems de settings
+  const filteredSettingsItems = settingsData.items.filter(item =>
+    !item.permission || can(item.permission)
+  );
+
   // Filtrar ítems simples
   const filteredNavSingle = singleData.filter(item => 
     !item.permission || can(item.permission)
@@ -200,11 +205,16 @@ export function AppSidebar({ ...props }) {
         <NavMain items={filteredNavMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={{
-          name: user?.name,
-          email: user?.email,
-          avatar: user?.avatar,
-        }} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip={settingsData.title}>
+              <Link href={route('setting.index')}>
+                <settingsData.icon />
+                <span>{settingsData.title}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

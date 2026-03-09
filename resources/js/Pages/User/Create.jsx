@@ -1,9 +1,9 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import SettingsLayout from '@/Layouts/SettingsLayout';
+import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
-import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { lazy, Suspense } from 'react';
 import Loader from '@/Components/ui/loader';
+import DivSection from '@/Components/ui/div-section';
 
 // Define UserForm como un componente cargado de forma lazy
 const UserForm = lazy(() => import('./UserForm'));
@@ -18,54 +18,52 @@ export default function Create({ roles, role }) {
         is_active: false,
         avatar: null,
         role: roles.length > 0 ? roles[0].id : null,
-        // store_id: stores.length > 0 ? stores[0].id : null,
     };
 
-    const { data, setData, errors, post } = useForm(initialValues);
+    const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
-        console.log(data);
         post(route('user.store'));
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div className='flex justify-start items-center'>
-                    <Link href={route('user.index')}>
-                        <ArrowLongLeftIcon className='size-6' />
-                    </Link>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Crear Usuario
-                    </h2>
-                </div>
-            }
-        >
-            <Head className="capitalize" title="Usuario" />
+        <SettingsLayout>
+            <Head className="capitalize" title="Nuevo Staff" />
 
-            <Suspense fallback={<Loader />}>
-                <div className="text-gray-900 dark:text-gray-100">
-                    <form onSubmit={submit} className='space-y-4'>
-                        <div className="grid grid-cols-3 gap-4">
-                            <UserForm
-                                data={data}
-                                setData={setData}
-                                errors={errors}
-                                // stores={stores}
-                                roles={roles}
-                                role={role}
-                            />
-                        </div>
-
-                        <div className="flex justify-end p-2.5">
-                            <Button>
-                                Guardar
-                            </Button>
-                        </div>
-                    </form>
+            <div className="space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Crear Staff</h2>
+                    <p className="text-slate-500">Añade un nuevo miembro al personal administrativo de tu tienda.</p>
                 </div>
-            </Suspense>
-        </AuthenticatedLayout>
+
+                <form onSubmit={submit} className='space-y-6'>
+                    <DivSection>
+                        <Suspense fallback={<Loader />}>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <UserForm
+                                    data={data}
+                                    setData={setData}
+                                    errors={errors}
+                                    roles={roles}
+                                    role={role}
+                                />
+                            </div>
+                        </Suspense>
+                    </DivSection>
+
+                    <div className="flex justify-end pt-4 border-t">
+                        <Button 
+                            type="submit" 
+                            disabled={processing}
+                            size="lg"
+                            className="px-12 rounded-xl shadow-xl shadow-blue-100"
+                        >
+                            {processing ? 'Guardando...' : 'Crear Usuario'}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </SettingsLayout>
     );
 }

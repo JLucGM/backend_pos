@@ -1,4 +1,4 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SettingsLayout from '@/Layouts/SettingsLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
@@ -10,7 +10,6 @@ import Loader from '@/Components/ui/loader';
 const SettingsForm = lazy(() => import('@/Pages/Settings/SettingsForm'));
 
 export default function Edit({ setting, currencies, companyCurrencies }) {
-    // console.log("Entrada", setting);
     const initialValues = {
         name: setting.company.name,
         currency_id: setting.currency_id || '',
@@ -24,7 +23,6 @@ export default function Edit({ setting, currencies, companyCurrencies }) {
     const { data, setData, errors, post } = useForm(initialValues)
 
     const submit = (e) => {
-        // console.log("salida", data);
         e.preventDefault();
         post(route('setting.update', setting), {
             onSuccess: () => {
@@ -38,46 +36,30 @@ export default function Edit({ setting, currencies, companyCurrencies }) {
     }
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div className='flex justify-between items-center '>
-                    <div className="flex justify-start items-center">
-                        <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            {setting.company.name}
-                        </h2>
-                    </div>
-                </div>
-            }
-        >
-            <Head className="capitalize" title={setting.company.name} />
+        <SettingsLayout>
+            <Head className="capitalize" title="Configuración General" />
 
-            <div className="max-w-7xl mx-auto ">
-                <div className=" overflow-hidden">
-                    <div className="text-gray-900 dark:text-gray-100">
-                        <form onSubmit={submit} >
-                            <div className="grid grid-cols-1 gap-4">
-                                <DivSection>
-                                    <Suspense fallback={<Loader />}>
-                                        <SettingsForm
-                                            data={data}
-                                            setData={setData}
-                                            errors={errors}
-                                            setting={setting}
-                                            currencies={currencies}
-                                        />
-                                    </Suspense>
-                                </DivSection>
-                            </div>
+            <div className="space-y-6">
+                <form onSubmit={submit} className="space-y-6">
+                    <DivSection>
+                        <Suspense fallback={<Loader />}>
+                            <SettingsForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                                setting={setting}
+                                currencies={currencies}
+                            />
+                        </Suspense>
+                    </DivSection>
 
-                            <div className="flex justify-end p-2.5">
-                                <Button>
-                                    Guardar
-                                </Button>
-                            </div>
-                        </form>
+                    <div className="flex justify-end pt-4 border-t">
+                        <Button size="lg" className="px-12 rounded-xl shadow-xl shadow-blue-100">
+                            Guardar Cambios
+                        </Button>
                     </div>
-                </div>
+                </form>
             </div>
-        </AuthenticatedLayout>
+        </SettingsLayout>
     )
 }

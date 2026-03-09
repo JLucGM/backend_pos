@@ -1,5 +1,5 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import SettingsLayout from '@/Layouts/SettingsLayout';
+import { Head, Link } from '@inertiajs/react';
 import { lazy, Suspense } from 'react'
 import DivSection from '@/Components/ui/div-section';
 import { buttonVariants } from '@/Components/ui/button';
@@ -12,15 +12,18 @@ import { usePermission } from '@/hooks/usePermission';
 
 export default function Index({ roles }) {
     const { can } = usePermission();
-    const { isSuperAdmin } = usePage().props.auth;
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div className='flex justify-between items-center'>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Roles
-                    </h2>
+        <SettingsLayout>
+            <Head title="Roles" />
+
+            <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                            Roles
+                        </h2>
+                    </div>
                     {can('admin.roles.create') && (
                         <Link
                             className={buttonVariants({ variant: "default", size: "sm" })}
@@ -30,26 +33,24 @@ export default function Index({ roles }) {
                         </Link>
                     )}
                 </div>
-            }
-        >
-            <Head title="Roles" />
 
-            <DivSection>
-                <Suspense fallback={<Loader />}>
-                    {roles.length > 0 ? (
-                        <DataTable
-                            columns={RolesColumns}
-                            data={roles}
-                            routeEdit={'roles.edit'}
-                            routeDestroy={'roles.destroy'}
-                            editPermission={'admin.roles.edit'}
-                            deletePermission={'admin.roles.delete'}
-                        />
-                    ) : (
-                        <div className="text-center py-4 text-gray-500">No hay roles definidos.</div>
-                    )}
-                </Suspense>
-            </DivSection>
-        </AuthenticatedLayout>
+                <DivSection>
+                    <Suspense fallback={<Loader />}>
+                        {roles.length > 0 ? (
+                            <DataTable
+                                columns={RolesColumns}
+                                data={roles}
+                                routeEdit={'roles.edit'}
+                                routeDestroy={'roles.destroy'}
+                                editPermission={'admin.roles.edit'}
+                                deletePermission={'admin.roles.delete'}
+                            />
+                        ) : (
+                            <div className="text-center py-8 text-gray-500">No hay roles definidos.</div>
+                        )}
+                    </Suspense>
+                </DivSection>
+            </div>
+        </SettingsLayout>
     )
 }

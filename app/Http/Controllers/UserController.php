@@ -48,7 +48,10 @@ class UserController extends Controller
         $authUser = Auth::user();
         $isSuperAdmin = $this->isSuperAdmin();
 
-        $query = User::with('media', 'roles');
+        $query = User::with('media', 'roles')
+            ->whereHas('roles', function($q) {
+                $q->where('name', '!=', 'client'); // Excluir clientes
+            });
 
         // Los Super Admins reales (vía email) son protegidos
         if (!$isSuperAdmin) {
@@ -63,8 +66,8 @@ class UserController extends Controller
 
         $users = $query->get();
         
-        // ✅ Filtrar roles disponibles: 'owner' no se puede asignar manualmente
-        $rolesQuery = Role::query();
+        // ✅ Filtrar roles disponibles: 'owner' no se puede asignar manualmente, 'client' es para otro módulo
+        $rolesQuery = Role::query()->where('name', '!=', 'client');
         if (!$isSuperAdmin) {
             $rolesQuery->where('name', '!=', 'owner');
         }
@@ -88,8 +91,8 @@ class UserController extends Controller
     {
         $isSuperAdmin = $this->isSuperAdmin();
 
-        // ✅ No permitir asignar el rol 'owner' manualmente
-        $rolesQuery = Role::query();
+        // ✅ No permitir asignar el rol 'owner' o 'client' manualmente aquí
+        $rolesQuery = Role::query()->where('name', '!=', 'client');
         if (!$isSuperAdmin) {
             $rolesQuery->where('name', '!=', 'owner');
         }
@@ -169,8 +172,8 @@ class UserController extends Controller
         $user->load('roles', 'media');
         $user->avatar_url = $user->getFirstMediaUrl('avatars');
 
-        // ✅ Filtrar roles para asignar
-        $rolesQuery = Role::query();
+        // ✅ Filtrar roles para asignar: excluir 'client' y 'owner' (si no es superadmin)
+        $rolesQuery = Role::query()->where('name', '!=', 'client');
         if (!$isSuperAdmin) {
             $rolesQuery->where('name', '!=', 'owner');
         }

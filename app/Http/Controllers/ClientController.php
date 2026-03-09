@@ -46,7 +46,7 @@ class ClientController extends Controller
 
         $users = $users->get(); // Obtener los usuarios filtrados
 
-        $roles = Role::all();
+        $roles = Role::where('name', 'client')->get();
 
         // Agregar la URL del avatar a cada usuario
         foreach ($users as $user) {
@@ -62,7 +62,8 @@ class ClientController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Clients/Create');
+        $roles = Role::where('name', 'client')->get();
+        return Inertia::render('Clients/Create', compact('roles'));
     }
 
     /**
@@ -124,9 +125,9 @@ class ClientController extends Controller
         $client->avatar_url = $client->getFirstMediaUrl('avatars'); // Asegúrate de que 'avatars' sea el nombre de la colección
         $deliveryLocations = $client->deliveryLocations()->with(['city', 'state', 'country'])->get();
 
+        $roles = Role::where('name', 'client')->get();
 
-
-        return Inertia::render('Clients/Edit', compact('client', 'countries', 'states', 'cities', 'deliveryLocations'));
+        return Inertia::render('Clients/Edit', compact('client', 'countries', 'states', 'cities', 'deliveryLocations', 'roles'));
     }
 
     /**

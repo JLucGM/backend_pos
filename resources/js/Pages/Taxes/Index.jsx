@@ -1,11 +1,11 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import SettingsLayout from '@/Layouts/SettingsLayout';
+import { Head } from '@inertiajs/react';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle, DialogDescription } from '@headlessui/react'
 import { useState } from 'react'
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
-import { Button, buttonVariants } from '@/Components/ui/button';
+import { Button } from '@/Components/ui/button';
 import DivSection from '@/Components/ui/div-section';
 import { taxesColumns } from './Columns';
 import Loader from '@/Components/ui/loader';
@@ -46,51 +46,51 @@ export default function Index({ taxes }) {
     }
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div className='flex justify-between items-center'>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Impuestos
-                    </h2>
-                    {can('admin.tax.create') && (
-                        <Button variant="default" size="sm"
-                            onClick={() => setIsOpen(true)}>
-                            Añadir impuesto
-                        </Button>
-                    )}
-                </div>
-            }
-        >
+        <SettingsLayout>
             <Head className="capitalize" title="Impuestos" />
 
             <Suspense fallback={<Loader />}>
-                <DivSection>
-                    {taxes.length > 0 ? (
-                        <DataTable
-                            columns={taxesColumns}
-                            data={taxes}
-                            routeEdit={'tax.edit'}
-                            routeDestroy={'tax.destroy'}
-                            editPermission={'admin.tax.edit'}
-                            deletePermission={'admin.tax.delete'}
-                        />
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-96">
-                            <ReceiptText size={64} />
-                            <HeadingSmall
-                                title="Tus impuestos se mostrarán aquí"
-                                description="Puedes crear un nuevo impuesto haciendo clic en el botón a continuación."
-                                className="text-center"
-                            />
-                            {can('admin.tax.create') && (
-                                <Button variant="default" size="sm"
-                                    onClick={() => setIsOpen(true)}>
-                                    Añadir impuesto
-                                </Button>
-                            )}
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h2 className="text-2xl font-bold tracking-tight">Impuestos</h2>
+                            <p className="text-muted-foreground">Configura los impuestos aplicables a tus productos y servicios.</p>
                         </div>
-                    )}
-                </DivSection>
+                        {can('admin.tax.create') && (
+                            <Button variant="default" size="sm" onClick={() => setIsOpen(true)}>
+                                Añadir impuesto
+                            </Button>
+                        )}
+                    </div>
+
+                    <DivSection>
+                        {taxes.length > 0 ? (
+                            <DataTable
+                                columns={taxesColumns}
+                                data={taxes}
+                                routeEdit={'tax.edit'}
+                                routeDestroy={'tax.destroy'}
+                                editPermission={'admin.tax.edit'}
+                                deletePermission={'admin.tax.delete'}
+                            />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-96">
+                                <ReceiptText size={64} className="text-slate-300" />
+                                <HeadingSmall
+                                    title="Tus impuestos se mostrarán aquí"
+                                    description="Puedes crear un nuevo impuesto haciendo clic en el botón a continuación."
+                                    className="text-center"
+                                />
+                                {can('admin.tax.create') && (
+                                    <Button variant="default" size="sm"
+                                        onClick={() => setIsOpen(true)}>
+                                        Añadir impuesto
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+                    </DivSection>
+                </div>
             </Suspense>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50 ">
@@ -119,7 +119,7 @@ export default function Index({ taxes }) {
                     </DialogPanel>
                 </div>
             </Dialog>
-        </AuthenticatedLayout>
+        </SettingsLayout>
     )
 }
 

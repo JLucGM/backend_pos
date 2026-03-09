@@ -1,9 +1,8 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SettingsLayout from '@/Layouts/SettingsLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button, buttonVariants } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import DivSection from '@/Components/ui/div-section';
-import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import { lazy, Suspense } from 'react';
 import Loader from '@/Components/ui/loader';
 import { Badge } from '@/Components/ui/badge';
@@ -21,7 +20,6 @@ export default function Edit({ payment_method }) {
 
     const { data, setData, errors, post } = useForm(initialValues);
 
-    // Función para agregar un detalle de pago
     const submit = (e) => {
         e.preventDefault();
         post(route('paymentmethod.update', payment_method), {
@@ -36,35 +34,36 @@ export default function Edit({ payment_method }) {
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div className='flex justify-between items-center'>
-                    <div className="flex items-center space-x-2">
-                        <Link href={route('paymentmethod.index')} >
-                            <ArrowLongLeftIcon className='size-6' />
-                        </Link>
-                        <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            Actualizar {payment_method.payment_method_name}
-                        </h2>
-                        <Badge variant={payment_method.is_active === true ? 'success' : 'info'}>
-                            {payment_method.is_active === true ? 'Publicado' : 'Borrador'}
-                        </Badge>
+        <SettingsLayout>
+            <Head title={`Editar Pago: ${payment_method.payment_method_name}`} />
+
+            <div className="space-y-6">
+                <div className='flex justify-between items-start'>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                                Editar Método de Pago
+                            </h2>
+                            <Badge variant={payment_method.is_active === true ? 'success' : 'info'}>
+                                {payment_method.is_active === true ? 'Activo' : 'Inactivo'}
+                            </Badge>
+                        </div>
+                        <p className="text-slate-500">Configura los detalles de <strong>{payment_method.payment_method_name}</strong>.</p>
                     </div>
 
                     <Link
-                            className={buttonVariants({ variant: "outlineDestructive" })}
-                            href={route('paymentmethod.destroy', [payment_method])} method='delete' as="button">
-                            <TrashIcon className='size-6' />
-                            Eliminar método de pago
-                        </Link>
+                        className={buttonVariants({ variant: "outlineDestructive", size: "sm" })}
+                        href={route('paymentmethod.destroy', [payment_method])} 
+                        method='delete' 
+                        as="button"
+                    >
+                        <TrashIcon className='size-4 mr-2' />
+                        Eliminar
+                    </Link>
                 </div>
-            }
-        >
-            <Head title="Actualizar Método de Pago" />
 
-            <div className=" text-gray-900 dark:text-gray-100">
-                <div className="relative overflow-x-auto">
-                    <form onSubmit={submit} className='space-y-4'>
+                <form onSubmit={submit} className='space-y-6'>
+                    <DivSection>
                         <Suspense fallback={<Loader />}>
                             <PaymentMethodForm
                                 data={data}
@@ -72,18 +71,20 @@ export default function Edit({ payment_method }) {
                                 errors={errors}
                             />
                         </Suspense>
+                    </DivSection>
 
-                        <div className="flex justify-end p-2.5">
-                            <Button
-                                variant="default"
-                                type="submit"
-                            >
-                                Guardar
-                            </Button>
-                        </div>
-                    </form>
-                </div>
+                    <div className="flex justify-end pt-4 border-t">
+                        <Button
+                            variant="default"
+                            size="lg"
+                            type="submit"
+                            className="px-8 rounded-xl shadow-lg shadow-blue-100"
+                        >
+                            Guardar Cambios
+                        </Button>
+                    </div>
+                </form>
             </div>
-        </AuthenticatedLayout>
+        </SettingsLayout>
     );
 }

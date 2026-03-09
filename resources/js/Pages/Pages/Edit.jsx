@@ -1,4 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import SettingsLayout from '@/Layouts/SettingsLayout'; // Importar el nuevo layout
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
@@ -11,65 +12,80 @@ import Loader from '@/Components/ui/loader';
 const PagesForm = lazy(() => import('./PagesForm'));
 
 export default function Edit({ page }) {
+    const isPolicy = page.page_type === 'policy';
+    const Layout = isPolicy ? SettingsLayout : AuthenticatedLayout;
 
     const initialValues = {
         title: page.title,
         content: page.content,
-        // is_default: "",
         is_published: page.is_published,
-        // is_homepage: "",
     };
 
-    const { data, setData, errors, post, recentlySuccessful } = useForm(initialValues);
+    const { data, setData, errors, post, processing } = useForm(initialValues);
 
     const submit = (e) => {
         e.preventDefault();
         post(route('pages.update', page), {
             onSuccess: () => {
-                toast("País actualizado con éxito.");
+                toast.success("Página actualizada con éxito.");
             },
             onError: () => {
-                toast.error("Error al actualizar el país.");
+                toast.error("Error al actualizar la página.");
             }
         });
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <div className='flex justify-between items-center '>
-                    <div className="flex justify-start items-center">
-                        <Link href={route('pages.index')} >
-                            <ArrowLongLeftIcon className='size-6' />
-                        </Link>
-                        <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            {page.title}
-                        </h2>
+        <Layout
+            {...(!isPolicy && {
+                header: (
+                    <div className='flex justify-between items-center '>
+                        <div className="flex justify-start items-center">
+                            <Link href={route('pages.index')} >
+                                <ArrowLongLeftIcon className='size-6' />
+                            </Link>
+                            <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                                {page.title}
+                            </h2>
+                        </div>
                     </div>
-                </div>
-            }
+                )
+            })}
         >
-            <Head className="capitalize" title={page.title} />
+            <Head className="capitalize" title={isPolicy ? `Editar Política: ${page.title}` : page.title} />
 
-            <div className=" text-gray-900 dark:text-gray-100">
-                <form onSubmit={submit} className='space-y-4'>
-                    <Suspense fallback={<Loader />}>
-                        <PagesForm
-                            data={data}
-                            setData={setData}
-                            errors={errors}
-                        />
-                    </Suspense>
-                    <div className="flex justify-end p-2.5">
+            <div className={isPolicy ? "space-y-6" : "text-gray-900 dark:text-gray-100"}>
+                {isPolicy && (
+                    <div>
+                        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Editar Política</h2>
+                        <p className="text-slate-500">Actualiza el contenido legal de <strong>{page.title}</strong>.</p>
+                    </div>
+                )}
+
+                <form onSubmit={submit} className='space-y-6'>
+                    <DivSection>
+                        <Suspense fallback={<Loader />}>
+                            <PagesForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                            />
+                        </Suspense>
+                    </DivSection>
+                    
+                    <div className={`flex justify-end ${isPolicy ? 'pt-4 border-t' : 'p-2.5'}`}>
                         <Button
                             variant="default"
+                            size={isPolicy ? "lg" : "default"}
+                            className={isPolicy ? "px-12 rounded-xl shadow-xl shadow-blue-100" : ""}
+                            disabled={processing}
                         >
-                            Guardar
+                            {processing ? "Guardando..." : "Guardar Cambios"}
                         </Button>
                     </div>
                 </form>
             </div>
-        </AuthenticatedLayout>
+        </Layout>
     );
 }
 

@@ -1,11 +1,10 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import SettingsLayout from '@/Layouts/SettingsLayout';
+import { Head, useForm } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import Loader from '@/Components/ui/loader';
 import DivSection from '@/Components/ui/div-section';
-import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 const ShippingRatesForm = lazy(() => import('../ShippingRates/ShippingRatesForm'));
 
@@ -23,53 +22,49 @@ export default function Edit({ shippingRate, stores }) {
         e.preventDefault();
         post(route('shippingrate.update', shippingRate), {
             onSuccess: () => {
-                toast("tarifa de envio actualizado con éxito.");
+                toast.success("Tarifa de envío actualizada con éxito.");
             },
             onError: () => {
-                toast.error("Error al actualizar el tarifa de envio.");
+                toast.error("Error al actualizar la tarifa de envío.");
             }
         });
     };
 
     return (
-        <AuthenticatedLayout header={
-            <div className='flex justify-between items-center'>
-                <div className="flex justify-start items-center">
-                    <Link href={route('shippingrate.index')}>
-                        <ArrowLongLeftIcon className='size-6' />
-                    </Link>
-                    <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Editar tarifa de envío
-                    </h2>
-                </div>
-            </div>
-        }>
+        <SettingsLayout>
             <Head title={`Editar Tarifa: ${shippingRate.name}`} />
 
-            {/* <div className="max-w-7xl mx-auto">
-                <div className="text-gray-900 dark:text-gray-100"> */}
-                    <form onSubmit={submit} className='space-y-4'>
-                        {/* <div className="grid grid-cols-1 gap-4">
-                            <DivSection> */}
-                                <Suspense fallback={<Loader />}>
-                                    <ShippingRatesForm
-                                        data={data}
-                                        setData={setData}
-                                        errors={errors}
-                                        stores={stores}
-                                    />
-                                </Suspense>
-                            {/* </DivSection>
-                        </div> */}
+            <div className="space-y-6">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Editar Tarifa de Envío</h2>
+                    <p className="text-slate-500">Modifica los detalles de la regla de envío <strong>{shippingRate.name}</strong>.</p>
+                </div>
 
-                        <div className="flex justify-end p-2.5">
-                            <Button variant="default" type="submit" disabled={processing}>
-                                {processing ? "Actualizando..." : "Actualizar"}
-                            </Button>
-                        </div>
-                    </form>
-                {/* </div>
-            </div> */}
-        </AuthenticatedLayout>
+                <form onSubmit={submit} className='space-y-6'>
+                    <DivSection>
+                        <Suspense fallback={<Loader />}>
+                            <ShippingRatesForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                                stores={stores}
+                            />
+                        </Suspense>
+                    </DivSection>
+
+                    <div className="flex justify-end pt-4 border-t">
+                        <Button 
+                            variant="default" 
+                            size="lg" 
+                            type="submit" 
+                            disabled={processing}
+                            className="px-8 rounded-xl shadow-lg shadow-blue-100"
+                        >
+                            {processing ? "Actualizando..." : "Actualizar Tarifa"}
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </SettingsLayout>
     );
 }
