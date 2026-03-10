@@ -53,8 +53,7 @@ export default function Index({ taxes }) {
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">
                         <div>
-                            <h2 className="text-2xl font-bold tracking-tight">Impuestos</h2>
-                            <p className="text-muted-foreground">Configura los impuestos aplicables a tus productos y servicios.</p>
+                            <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Impuestos</h2>
                         </div>
                         {can('admin.tax.create') && (
                             <Button variant="default" size="sm" onClick={() => setIsOpen(true)}>

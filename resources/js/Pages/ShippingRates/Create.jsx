@@ -38,8 +38,7 @@ export default function Create({ stores }) {
 
             <div className="space-y-6">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Nueva Tarifa de Envío</h2>
-                    <p className="text-slate-500">Define una nueva regla de costo logístico para tus tiendas.</p>
+                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Nueva Tarifa de Envío</h2>
                 </div>
 
                 <form onSubmit={submit} className='space-y-6'>
@@ -55,10 +54,10 @@ export default function Create({ stores }) {
                     </DivSection>
 
                     <div className="flex justify-end pt-4 border-t">
-                        <Button 
-                            variant="default" 
-                            size="lg" 
-                            type="submit" 
+                        <Button
+                            variant="default"
+                            size="lg"
+                            type="submit"
                             disabled={processing}
                             className="px-8 rounded-xl shadow-lg shadow-blue-100"
                         >

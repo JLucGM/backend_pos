@@ -47,11 +47,13 @@ import { ChevronUp } from "lucide-react"
 
 export function AppSidebar({ ...props }) {
   const { user, isSuperAdmin, can } = usePermission()
-  const company = usePage().props.company 
+  const { url } = usePage(); // Obtener la URL actual de Inertia
+  const company = usePage().props.company
+
   const env = props.env || {};
 
   const baseDomain = env?.SESSION_DOMAIN
-    ? env.SESSION_DOMAIN.replace(/^\./, '')   
+    ? env.SESSION_DOMAIN.replace(/^\./, '')
     : window.location.hostname.replace(/^[^.]+\./, '');
 
   let frontendUrl = '#'
@@ -102,7 +104,7 @@ export function AppSidebar({ ...props }) {
         title: "Administración",
         url: "#",
         icon: Crown,
-        onlySuperAdmin: true, 
+        onlySuperAdmin: true,
         items: [
           { title: "Dashboard Suscripciones", url: "admin.subscriptions.index" },
           { title: "Crear Suscripción", url: "admin.subscriptions.create" },
@@ -163,41 +165,53 @@ export function AppSidebar({ ...props }) {
     },
   ]
 
-  // Lógica de filtrado de navegación
+  // Lógica de filtrado y detección de estado activo
   const filteredNavMain = navData.navMain.map(category => {
     // 1. Si es solo para Super Admin y el usuario no lo es, ocultar
     if (category.onlySuperAdmin && !isSuperAdmin) return null;
 
     // 2. Filtrar subítems por permisos
     if (category.items) {
-      const visibleItems = category.items.filter(item => 
+      const visibleItems = category.items.filter(item =>
         !item.permission || can(item.permission)
-      );
+      ).map(item => {
+        // Detectar si el subítem está activo
+        const itemUrl = route(item.url);
+        const isActive = url === new URL(itemUrl).pathname || url.startsWith(new URL(itemUrl).pathname + '/');
+        return { ...item, isActive };
+      });
 
       // Si una categoría normal se queda sin ítems, ocultarla
       if (visibleItems.length === 0) return null;
 
-      return { ...category, items: visibleItems };
+      // La categoría está abierta (isActive) si alguno de sus subítems está activo
+      const hasActiveChild = visibleItems.some(item => item.isActive);
+      return { ...category, items: visibleItems, isActive: hasActiveChild };
     }
 
     return category;
   }).filter(Boolean);
 
-  // Filtrar ítems de settings
-  const filteredSettingsItems = settingsData.items.filter(item =>
+  // Filtrar ítems simples y detectar activos
+  const filteredNavSingle = singleData.filter(item =>
     !item.permission || can(item.permission)
-  );
+  ).map(item => {
+    const itemUrl = route(item.url);
+    const itemPath = new URL(itemUrl).pathname;
 
-  // Filtrar ítems simples
-  const filteredNavSingle = singleData.filter(item => 
-    !item.permission || can(item.permission)
-  );
+    // Regresa true solo si la URL es idéntica para dashboard, o si empieza por la ruta para el resto
+    const isActive = item.url === 'dashboard'
+      ? url === itemPath
+      : (url === itemPath || url.startsWith(itemPath + '/'));
+
+    return { ...item, isActive };
+  });
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <div className="mx-auto">
-          <h1 className="text-xl font-bold">RUBICON</h1>
+          <h1 className="text-xl font-bold uppercase">Audaz</h1>
         </div>
       </SidebarHeader>
       <SidebarContent>

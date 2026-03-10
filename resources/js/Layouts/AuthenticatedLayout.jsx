@@ -30,7 +30,7 @@ export default function AuthenticatedLayout({ header, children }) {
           </div>
         </header>
 
-        <div className="bg-gray-100 h-screen ">
+        <div className="bg-gray-100 h-full ">
           <main className='bg-gray-100 px-5 md:px-16'>
             {header && (
               <header className="bg-gray-100  dark:bg-gray-800">

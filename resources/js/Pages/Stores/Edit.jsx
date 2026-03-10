@@ -43,8 +43,7 @@ export default function Edit({ store, countries, states, cities, }) {
 
             <div className="space-y-6">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Actualizar Tienda</h2>
-                    <p className="text-slate-500">Modifica los detalles de <strong>{store.name}</strong>.</p>
+                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Actualizar Tienda</h2>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">

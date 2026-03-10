@@ -30,11 +30,11 @@ export function NavMain({
           <Collapsible
             key={item.title}
             asChild
-            defaultOpen={item.isActive}
+            defaultOpen={item.isActive} // Mantener abierto si está activo
             className="group/collapsible">
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
+                <SidebarMenuButton tooltip={item.title} isActive={item.isActive}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                   <ChevronRight
@@ -45,7 +45,7 @@ export function NavMain({
                 <SidebarMenuSub>
                   {item.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
+                      <SidebarMenuSubButton asChild isActive={subItem.isActive}>
                         <Link href={route(subItem.url)}>
                           <span>{subItem.title}</span>
                         </Link>

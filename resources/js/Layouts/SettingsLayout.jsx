@@ -37,7 +37,9 @@ export default function SettingsLayout({ children }) {
             <Sidebar collapsible="icon">
                 <SidebarHeader>
                     <div className="mx-auto">
-                        <h1 className="text-xl font-bold uppercase">Ajustes</h1>
+                        <h1 className="text-xl font-bold uppercase">
+                            Audaz
+                        </h1>
                     </div>
                 </SidebarHeader>
 
@@ -69,7 +71,7 @@ export default function SettingsLayout({ children }) {
                     </div>
                 </header>
 
-                <main className="bg-gray-100 px-5 md:px-16">
+                <main className="bg-gray-100 px-5 md:px-16 h-full">
                     {/* <div className="max-w-5xl mx-auto py-12 px-8"> */}
                     {children}
                     {/* </div> */}

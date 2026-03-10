@@ -36,8 +36,7 @@ export default function Edit({ tax }) {
 
             <div className="space-y-6">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Actualizar Impuesto</h2>
-                    <p className="text-slate-500">Modifica los detalles fiscales de <strong>{tax.tax_name}</strong>.</p>
+                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Actualizar Impuesto</h2>
                 </div>
 
                 <form onSubmit={submit} className='space-y-6'>
