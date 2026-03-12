@@ -48,6 +48,7 @@ const CheckoutComponent = ({
     cities = [],
 }) => {
     const { props } = usePage();
+    const { currency } = props;
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
 
     // ===========================================
@@ -747,6 +748,7 @@ const CheckoutComponent = ({
             gift_card: giftCardData,
             totals: totalsData,
             company_id: companyId,
+            currency_id: currency?.selected?.id || null, // Moneda seleccionada
         }, {
             preserveScroll: true,
             onSuccess: (page) => {

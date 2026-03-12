@@ -30,6 +30,7 @@ const HeaderComponent = ({
     products = []
 }) => {
     const { props } = usePage();
+    const { currency } = props;
     const user = props.auth?.user;
     const cart = props.cart || { items_count: 0 };
 
@@ -360,9 +361,52 @@ useEffect(() => {
     const renderButtons = () => {
         const isAuthenticated = user && mode === 'frontend';
         const cartCount = getCartCount();
+        // Datos de moneda (reales o ejemplo para builder)
+        const activeCurrencies = currency?.active_currencies || (mode === 'builder' ? [
+            { id: 1, code: 'USD', symbol: '$' },
+            { id: 2, code: 'VES', symbol: 'Bs' }
+        ] : []);
+        
+        const selectedCurrencyId = currency?.selected?.id || (mode === 'builder' ? 1 : null);
+
+        const handleCurrencyChange = (e) => {
+            if (mode !== 'frontend') return;
+            router.post(route('currency.select'), { id: e.target.value }, {
+                preserveScroll: true,
+            });
+        };
+
+        // Configuración de moneda personalizada
+        const currencyConfig = content?.buttons?.currency || {};
+        const currencyStyles = currencyConfig.styles || {};
 
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: buttonsGap }}>
+                {/* Selector de Moneda: Mostrar si hay más de una O si estamos en el Builder */}
+                {(activeCurrencies.length > 1 || mode === 'builder') && (
+                    <div className="mr-2">
+                        <select
+                            value={selectedCurrencyId}
+                            onChange={handleCurrencyChange}
+                            className="bg-transparent text-sm font-medium focus:ring-0 cursor-pointer p-1 transition-colors"
+                            style={{
+                                color: resolveValue(currencyStyles.textColor || themeWithDefaults.text),
+                                fontSize: withUnit(currencyStyles.fontSize || 14),
+                                fontWeight: currencyStyles.fontWeight || '500',
+                                border: `${withUnit(currencyStyles.borderWidth || 0)} solid ${resolveValue(currencyStyles.borderColor || 'transparent')}`,
+                                borderRadius: withUnit(currencyStyles.borderRadius || 4),
+                                fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme),
+                            }}
+                        >
+                            {activeCurrencies.map((c) => (
+                                <option key={c.id} value={c.id} className="text-black">
+                                    {c.code} ({c.symbol})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
                 {showSearch && (
                     <div className="relative" ref={searchRef}>
                         <div className="flex items-center">

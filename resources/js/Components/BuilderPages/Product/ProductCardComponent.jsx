@@ -3,7 +3,7 @@ import ProductImageComponent from './ProductImageComponent';
 import ProductNameComponent from './ProductNameComponent';
 import ProductPriceComponent from './ProductPriceComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import FormattedPrice from '@/Components/FormattedPrice';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, resolveStyleValue, getResolvedFont } from '@/utils/themeUtils';
 
@@ -208,19 +208,17 @@ const ProductCardComponent = ({
                 </h3>
 
                 <div className="product-price" style={priceStyle}>
-                    {productData?.product_price_discount && settings?.currency ? (
+                    {productData?.product_price_discount ? (
                         <>
                             <span style={{ textDecoration: 'line-through', marginRight: '8px', opacity: 0.6 }}>
-                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(productData.product_price || 0)} />
+                                <FormattedPrice amount={parseFloat(productData.product_price || 0)} />
                             </span>
                             <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
-                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(productData.product_price_discount)} />
+                                <FormattedPrice amount={parseFloat(productData.product_price_discount)} />
                             </span>
                         </>
-                    ) : settings?.currency ? (
-                        <span><CurrencyDisplay currency={settings.currency} amount={parseFloat(productData?.product_price || 0)} /></span>
                     ) : (
-                        <span>${parseFloat(productData?.product_price || 0).toFixed(2)}</span>
+                        <FormattedPrice amount={parseFloat(productData?.product_price || 0)} />
                     )}
                 </div>
             </div>

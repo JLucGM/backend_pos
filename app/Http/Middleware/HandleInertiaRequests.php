@@ -41,6 +41,39 @@ class HandleInertiaRequests extends Middleware
                 'isSuperAdmin' => $user ? $user->isSuperAdmin() : false,
             ],
             'company' => $user?->company, // Compañía directamente
+            'currency' => function () use ($request) {
+                // Prioridad 1: Atributo 'company' del middleware IdentifyCompany (Frontend)
+                // Prioridad 2: Usuario autenticado (Dashboard/Builder)
+                $company = $request->attributes->get('company') ?: $request->user()?->company;
+                $companyId = $company?->id;
+                
+                if (!$companyId) return null;
+
+                $activeCurrencies = \App\Models\CompanyCurrency::with('currency')
+                    ->where('company_id', $companyId)
+                    ->where('is_active', true)
+                    ->get();
+
+                $selectedId = session('selected_currency_id');
+                $selected = $activeCurrencies->where('currency_id', $selectedId)->first() 
+                    ?? $activeCurrencies->where('is_base', true)->first();
+
+                return [
+                    'active_currencies' => $activeCurrencies->map(fn($cc) => [
+                        'id' => $cc->currency_id,
+                        'code' => $cc->currency->code,
+                        'symbol' => $cc->currency->symbol,
+                        'exchange_rate' => (float) $cc->exchange_rate,
+                        'is_base' => $cc->is_base,
+                    ])->values(),
+                    'selected' => $selected ? [
+                        'id' => $selected->currency_id,
+                        'code' => $selected->currency->code,
+                        'symbol' => $selected->currency->symbol,
+                        'exchange_rate' => (float) $selected->exchange_rate,
+                    ] : null,
+                ];
+            },
             'settings' => function () use ($request) {
                 if ($request->user() && $request->user()->company_id) {
                     return Setting::with('currency')->where('company_id', $request->user()->company_id)->first();

@@ -867,7 +867,7 @@ class FrontendController extends Controller
                 'paymentMethod',
                 'shippingRate',
                 'deliveryLocation',
-                // 'giftCardUsages'
+                'currency', // CARGAR RELACIÓN DE MONEDA
             ])
             ->orderBy('created_at', 'desc')
             ->limit(10) // Limitar a las últimas 10 órdenes para performances
@@ -883,6 +883,7 @@ class FrontendController extends Controller
                     'subtotal' => $order->subtotal,
                     'tax_amount' => $order->tax_amount,
                     'created_at' => $order->created_at->toISOString(),
+                    'currency' => $order->currency, // INCLUIR OBJETO MONEDA
                     'items' => $order->items->map(function ($item) {
                         return [
                             'id' => $item->id,

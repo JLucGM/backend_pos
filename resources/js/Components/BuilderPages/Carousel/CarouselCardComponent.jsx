@@ -3,7 +3,7 @@ import CarouselImageComponent from './CarouselImageComponent';
 import CarouselNameComponent from './CarouselNameComponent';
 import CarouselPriceComponent from './CarouselPriceComponent';
 import ComponentWithHover from '../ComponentWithHover';
-import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import FormattedPrice from '@/Components/FormattedPrice';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, getComponentStyles, getButtonStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
@@ -214,32 +214,17 @@ const CarouselCardComponent = ({
 
                 {/* Precio del producto */}
                 <div className="carousel-price" style={priceStyle}>
-                    {productData?.product_price_discount && settings?.currency ? (
+                    {productData?.product_price_discount ? (
                         <>
                             <span style={{ textDecoration: 'line-through', marginRight: '6px', opacity: 0.6, fontSize: '0.9em' }}>
-                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(productData.product_price || 0)} />
+                                <FormattedPrice amount={parseFloat(productData.product_price || 0)} />
                             </span>
                             <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
-                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(productData.product_price_discount)} />
+                                <FormattedPrice amount={parseFloat(productData.product_price_discount)} />
                             </span>
                         </>
-                    ) : settings?.currency ? (
-                        <span><CurrencyDisplay currency={settings.currency} amount={parseFloat(productData?.product_price || 0)} /></span>
                     ) : (
-                        <>
-                            {productData?.product_price_discount ? (
-                                <>
-                                    <span style={{ textDecoration: 'line-through', marginRight: '6px', opacity: 0.6, fontSize: '0.9em' }}>
-                                        ${parseFloat(productData.product_price || 0).toFixed(2)}
-                                    </span>
-                                    <span style={{ color: '#dc2626', fontWeight: 'bold' }}>
-                                        ${parseFloat(productData.product_price_discount).toFixed(2)}
-                                    </span>
-                                </>
-                            ) : (
-                                <span>${parseFloat(productData?.product_price || 0).toFixed(2)}</span>
-                            )}
-                        </>
+                        <FormattedPrice amount={parseFloat(productData?.product_price || 0)} />
                     )}
                 </div>
             </div>

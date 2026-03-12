@@ -436,4 +436,7 @@ Route::get('/', function () {
     ]);
 });
 
+// Ruta para cambiar la moneda en el frontend
+Route::post('/currency/select', [\App\Http\Controllers\CurrencyController::class, 'select'])->name('currency.select');
+
 require __DIR__ . '/auth.php';

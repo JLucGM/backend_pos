@@ -81,6 +81,7 @@ class CheckoutController extends Controller
                 'totals.gift_card_amount' => 'required|numeric|min:0',
 
                 'company_id' => 'required|integer|exists:companies,id',
+                'currency_id' => 'nullable|integer|exists:currencies,id',
             ]);
 
             if ($validator->fails()) {
@@ -226,22 +227,43 @@ class CheckoutController extends Controller
                 }
             }
 
+            // ==================== MONEDA Y CONVERSIÓN ====================
+            $currencyId = $request->input('currency_id');
+            $exchangeRate = 1.0;
+            
+            if ($currencyId) {
+                $companyCurrency = \App\Models\CompanyCurrency::where('company_id', $validated['company_id'])
+                    ->where('currency_id', $currencyId)
+                    ->first();
+                
+                if ($companyCurrency) {
+                    $exchangeRate = (float) $companyCurrency->exchange_rate;
+                }
+            } else {
+                // Fallback a moneda base si no se envió ninguna
+                $setting = \App\Models\Setting::where('company_id', $validated['company_id'])->first();
+                $currencyId = $setting->currency_id ?? null;
+            }
+
+            // Snapshot de moneda base (monto original antes de convertir)
+            $totalBaseCurrency = $validated['totals']['total'];
+
             // ==================== CREAR LA ORDEN ====================
 
             // Calcular total de descuentos
             $totalDiscounts = $validated['totals']['automatic_discounts'] +
                 $validated['totals']['manual_discounts'];
 
-            // Preparar datos de la orden
+            // Preparar datos de la orden con valores convertidos
             $orderData = [
                 'status' => 'pending',
                 'payment_status' => 'pending', // Se actualizará cuando se procese el pago
                 'delivery_type' => $validated['shipping_info']['delivery_type'],
-                'subtotal' => $validated['totals']['subtotal'],
-                'tax_amount' => $validated['totals']['tax'],
-                'total' => $validated['totals']['total'],
-                'totaldiscounts' => $totalDiscounts,
-                'manual_discount_amount' => $validated['totals']['manual_discounts'],
+                'subtotal' => $validated['totals']['subtotal'] * $exchangeRate,
+                'tax_amount' => $validated['totals']['tax'] * $exchangeRate,
+                'total' => $validated['totals']['total'] * $exchangeRate,
+                'totaldiscounts' => $totalDiscounts * $exchangeRate,
+                'manual_discount_amount' => $validated['totals']['manual_discounts'] * $exchangeRate,
                 'manual_discount_code' => !empty($validated['discounts']) ?
                     implode(', ', array_column($validated['discounts'], 'code')) : null,
                 'delivery_location_id' => $validated['user_info']['delivery_location_id'] ?? null,
@@ -250,12 +272,15 @@ class CheckoutController extends Controller
                 'company_id' => $validated['company_id'],
                 'order_origin' => 'web',
                 'shipping_rate_id' => $validated['shipping_info']['shipping_rate_id'] ?? null,
-                'totalshipping' => $shippingAmount,
+                'totalshipping' => $shippingAmount * $exchangeRate,
                 'gift_card_id' => $giftCard->id ?? null,
-                'gift_card_amount' => $giftCardAmountUsed,
+                'gift_card_amount' => $giftCardAmountUsed * $exchangeRate,
                 'notes' => $request->input('notes', null),
                 'order_number' => $this->generateOrderNumber($validated['company_id']),
                 'store_id' => $storeId,
+                'currency_id' => $currencyId,
+                'exchange_rate' => $exchangeRate,
+                'total_base_currency' => $totalBaseCurrency,
             ];
 
             // Crear la orden
@@ -286,19 +311,19 @@ class CheckoutController extends Controller
                     }
                 }
 
-                // Preparar datos del item
+                // Preparar datos del item con valores convertidos
                 $orderItemData = [
                     'order_id' => $order->id,
                     'product_id' => $item['product_id'],
                     'combination_id' => $item['combination_id'] ?? null,
                     'quantity' => $item['quantity'],
-                    'price_product' => $originalUnitPrice,
-                    'discounted_price' => $unitPrice,
-                    'discount_amount' => $itemDiscountAmount,
+                    'price_product' => $originalUnitPrice * $exchangeRate,
+                    'discounted_price' => $unitPrice * $exchangeRate,
+                    'discount_amount' => $itemDiscountAmount * $exchangeRate,
                     'discount_id' => $itemDiscount->id ?? null,
                     'discount_type' => $item['discount_type'] ?? null,
-                    'subtotal' => $unitPrice * $item['quantity'],
-                    'tax_amount' => $item['tax_amount'] ?? ($unitPrice * $item['quantity'] * ($item['tax_rate'] / 100)),
+                    'subtotal' => ($unitPrice * $item['quantity']) * $exchangeRate,
+                    'tax_amount' => ($item['tax_amount'] ?? ($unitPrice * $item['quantity'] * ($item['tax_rate'] / 100))) * $exchangeRate,
                     'tax_rate' => $item['tax_rate'],
                     'name_product' => $item['product_name'],
                     'product_details' => isset($item['combination_name']) && $item['combination_name']

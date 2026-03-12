@@ -20,10 +20,10 @@ class OrderController extends Controller
         
         $orders = Order::where('user_id', $user->id)
             ->where('company_id', $company->id)
-            ->with(['items', 'paymentMethod', 'shippingRate'])
+            ->with(['items', 'paymentMethod', 'shippingRate', 'currency'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        dd($orders);
+
         return Inertia::render('Frontend/Orders/Index', [
             'orders' => $orders,
             'companyName' => $company->company_name,

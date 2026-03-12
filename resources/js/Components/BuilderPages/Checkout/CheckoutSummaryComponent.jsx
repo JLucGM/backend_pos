@@ -1,6 +1,6 @@
 // components/BuilderPages/Checkout/CheckoutSummaryComponent.jsx - VERSIÓN ACTUALIZADA CON SOPORTE PARA REFERENCIAS AL TEMA
 import React from 'react';
-import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import FormattedPrice from '@/Components/FormattedPrice';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
@@ -149,11 +149,7 @@ const CheckoutSummaryComponent = ({
                     {item.discountType === 'direct_discount' ? 'Descuento directo' :
                         item.discountType === 'product_automatic' ? 'Descuento automático' :
                             'Descuento aplicado'}
-                    : {settings?.currency ? (
-                        <>-<CurrencyDisplay currency={settings.currency} amount={discountAmount} /></>
-                    ) : (
-                        `-$${discountAmount.toFixed(2)}`
-                    )}
+                    : -<FormattedPrice amount={discountAmount} />
                 </div>
                 <div className="text-xs" style={{ color: resolveValue(themeWithDefaults.text) }}>
                     {discountPercentage}% de descuento
@@ -203,27 +199,15 @@ const CheckoutSummaryComponent = ({
                                                     {item.originalPrice > item.price ? (
                                                         <>
                                                             <span className="line-through ml-1" style={{ color: resolveValue(themeWithDefaults.text), opacity: '0.6' }}>
-                                                                {settings?.currency ? (
-                                                                    <CurrencyDisplay currency={settings.currency} amount={item.originalPrice} />
-                                                                ) : (
-                                                                    `$${item.originalPrice.toFixed(2)}`
-                                                                )}
+                                                                <FormattedPrice amount={item.originalPrice} />
                                                             </span>
                                                             <span className="ml-1 font-medium" style={{ color: resolveValue(themeWithDefaults.success_color) }}>
-                                                                {settings?.currency ? (
-                                                                    <CurrencyDisplay currency={settings.currency} amount={item.price} />
-                                                                ) : (
-                                                                    `$${item.price.toFixed(2)}`
-                                                                )}
+                                                                <FormattedPrice amount={item.price} />
                                                             </span>
                                                         </>
                                                     ) : (
                                                         <span className="ml-1">
-                                                            {settings?.currency ? (
-                                                                <CurrencyDisplay currency={settings.currency} amount={item.price} />
-                                                            ) : (
-                                                                `$${item.price.toFixed(2)}`
-                                                            )}
+                                                            <FormattedPrice amount={item.price} />
                                                         </span>
                                                     )}
                                                 </span>
@@ -236,7 +220,7 @@ const CheckoutSummaryComponent = ({
                                                     <div className="text-xs" style={{ color: resolveValue(themeWithDefaults.links) }}>
                                                         {item.manualDiscount.discount_type === 'percentage'
                                                             ? `${item.manualDiscount.value}% de descuento aplicado`
-                                                            : `$${item.manualDiscount.value} de descuento aplicado`}
+                                                            : <FormattedPrice amount={item.manualDiscount.value} />} de descuento aplicado
                                                     </div>
                                                 </div>
                                             )}
@@ -245,21 +229,13 @@ const CheckoutSummaryComponent = ({
                                             {item.taxRate > 0 && (
                                                 <div className="text-xs mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
                                                     Impuesto ({item.taxName || `${item.taxRate}%`}):
-                                                    {settings?.currency ? (
-                                                        <CurrencyDisplay currency={settings.currency} amount={(item.price * item.quantity) * (item.taxRate / 100)} />
-                                                    ) : (
-                                                        `$${((item.price * item.quantity) * (item.taxRate / 100)).toFixed(2)}`
-                                                    )}
+                                                    <FormattedPrice amount={(item.price * item.quantity) * (item.taxRate / 100)} />
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                     <div className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
-                                        {settings?.currency ? (
-                                            <CurrencyDisplay currency={settings.currency} amount={item.price * item.quantity} />
-                                        ) : (
-                                            `$${(item.price * item.quantity).toFixed(2)}`
-                                        )}
+                                        <FormattedPrice amount={item.price * item.quantity} />
                                     </div>
                                 </div>
                             ))}
@@ -273,11 +249,7 @@ const CheckoutSummaryComponent = ({
                     <div className="flex justify-between">
                         <span style={{ color: resolveValue(themeWithDefaults.text) }}>Subtotal original</span>
                         <span className="line-through" style={{ color: resolveValue(themeWithDefaults.text), opacity: '0.6' }}>
-                            {settings?.currency ? (
-                                <CurrencyDisplay currency={settings.currency} amount={originalSubtotal} />
-                            ) : (
-                                `$${originalSubtotal.toFixed(2)}`
-                            )}
+                            <FormattedPrice amount={originalSubtotal} />
                         </span>
                     </div>
 
@@ -286,11 +258,7 @@ const CheckoutSummaryComponent = ({
                         <div className="flex justify-between" style={{ color: resolveValue(themeWithDefaults.success_color) }}>
                             <span>Descuentos automáticos</span>
                             <span>
-                                {settings?.currency ? (
-                                    <>-<CurrencyDisplay currency={settings.currency} amount={displayAutomaticDiscounts} /></>
-                                ) : (
-                                    `-$${displayAutomaticDiscounts.toFixed(2)}`
-                                )}
+                                -<FormattedPrice amount={displayAutomaticDiscounts} />
                             </span>
                         </div>
                     )}
@@ -302,11 +270,7 @@ const CheckoutSummaryComponent = ({
                                 Gift Card ({appliedGiftCard.code})
                             </span>
                             <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.success_color) }}>
-                                {settings?.currency ? (
-                                    <>-<CurrencyDisplay currency={settings.currency} amount={giftCardAmount} /></>
-                                ) : (
-                                    `-$${giftCardAmount.toFixed(2)}`
-                                )}
+                                -<FormattedPrice amount={giftCardAmount} />
                             </span>
                         </div>
                     )}
@@ -315,22 +279,14 @@ const CheckoutSummaryComponent = ({
                     {appliedGiftCard && giftCardAmount > 0 && (
                         <div className="text-xs italic mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
                             Saldo restante en {appliedGiftCard.code}:
-                            {settings?.currency ? (
-                                <CurrencyDisplay currency={settings.currency} amount={parseFloat(appliedGiftCard.current_balance) - giftCardAmount} />
-                            ) : (
-                                `$${(parseFloat(appliedGiftCard.current_balance) - giftCardAmount).toFixed(2)}`
-                            )}
+                            <FormattedPrice amount={parseFloat(appliedGiftCard.current_balance) - giftCardAmount} />
                         </div>
                     )}
 
                     <div className="flex justify-between font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                         <span>Subtotal</span>
                         <span>
-                            {settings?.currency ? (
-                                <CurrencyDisplay currency={settings.currency} amount={calculatedSubtotal} />
-                            ) : (
-                                `$${calculatedSubtotal.toFixed(2)}`
-                            )}
+                            <FormattedPrice amount={calculatedSubtotal} />
                         </span>
                     </div>
 
@@ -339,11 +295,7 @@ const CheckoutSummaryComponent = ({
                         <div className="flex justify-between">
                             <span style={{ color: resolveValue(themeWithDefaults.text) }}>Envío</span>
                             <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
-                                {settings?.currency ? (
-                                    <CurrencyDisplay currency={settings.currency} amount={displayShipping} />
-                                ) : (
-                                    `$${displayShipping.toFixed(2)}`
-                                )}
+                                <FormattedPrice amount={displayShipping} />
                             </span>
                         </div>
                     )}
@@ -359,11 +311,7 @@ const CheckoutSummaryComponent = ({
                                                 {taxDetail.name} ({taxDetail.rate})
                                             </span>
                                             <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
-                                                {settings?.currency ? (
-                                                    <CurrencyDisplay currency={settings.currency} amount={taxDetail.amount} />
-                                                ) : (
-                                                    `$${taxDetail.amount.toFixed(2)}`
-                                                )}
+                                                <FormattedPrice amount={taxDetail.amount} />
                                             </span>
                                         </div>
                                     ))}
@@ -371,11 +319,7 @@ const CheckoutSummaryComponent = ({
                                         <div className="flex justify-between border-t pt-1" style={{ borderColor: resolveValue(themeWithDefaults.borders) }}>
                                             <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.text) }}>Total impuestos</span>
                                             <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
-                                                {settings?.currency ? (
-                                                    <CurrencyDisplay currency={settings.currency} amount={displayTax} />
-                                                ) : (
-                                                    `$${displayTax.toFixed(2)}`
-                                                )}
+                                                <FormattedPrice amount={displayTax} />
                                             </span>
                                         </div>
                                     )}
@@ -384,11 +328,7 @@ const CheckoutSummaryComponent = ({
                                 <div className="flex justify-between">
                                     <span style={{ color: resolveValue(themeWithDefaults.text) }}>Impuestos</span>
                                     <span className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
-                                        {settings?.currency ? (
-                                            <CurrencyDisplay currency={settings.currency} amount={displayTax} />
-                                        ) : (
-                                            `$${displayTax.toFixed(2)}`
-                                        )}
+                                        <FormattedPrice amount={displayTax} />
                                     </span>
                                 </div>
                             )}
@@ -402,11 +342,7 @@ const CheckoutSummaryComponent = ({
                             <div className="flex justify-between font-bold text-lg" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                 <span>Total</span>
                                 <span>
-                                    {settings?.currency ? (
-                                        <CurrencyDisplay currency={settings.currency} amount={displayOrderTotal} />
-                                    ) : (
-                                        `$${displayOrderTotal.toFixed(2)}`
-                                    )}
+                                    <FormattedPrice amount={displayOrderTotal} />
                                 </span>
                             </div>
                         </>
@@ -426,11 +362,7 @@ const CheckoutSummaryComponent = ({
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: resolveValue(themeWithDefaults.success_color) }}></div>
                         <span className="text-sm font-medium" style={{ color: resolveValue(themeWithDefaults.success_color) }}>
-                            ¡Has ahorrado {settings?.currency ? (
-                                <CurrencyDisplay currency={settings.currency} amount={displayAutomaticDiscounts} />
-                            ) : (
-                                `$${displayAutomaticDiscounts.toFixed(2)}`
-                            )} con descuentos automáticos!
+                            ¡Has ahorrado <FormattedPrice amount={displayAutomaticDiscounts} /> con descuentos automáticos!
                         </span>
                     </div>
                 </div>

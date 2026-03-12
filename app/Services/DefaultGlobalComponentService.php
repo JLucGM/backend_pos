@@ -105,6 +105,16 @@ class DefaultGlobalComponentService
                             'fontSize' => '16px'
                         ]
                     ],
+                    'currency' => [
+                        'styles' => [
+                            'textColor' => 'theme.text',
+                            'fontSize' => '14px',
+                            'fontWeight' => '500',
+                            'borderColor' => 'transparent',
+                            'borderWidth' => '0px',
+                            'borderRadius' => '4px'
+                        ]
+                    ],
                 ],
                 'children' => [
                     [

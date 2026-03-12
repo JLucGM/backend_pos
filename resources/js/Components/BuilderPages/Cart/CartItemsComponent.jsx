@@ -1,7 +1,7 @@
 // CartItemsComponent.jsx - VERSIÓN COMPLETA CON SOPORTE PARA COMBINATIONNAME
 import React from 'react';
 import { Trash2 } from 'lucide-react';
-import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import FormattedPrice from '@/Components/FormattedPrice';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, getComponentStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
@@ -237,31 +237,19 @@ const CartItemsComponent = ({
                                                     color: '#999',
                                                     fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
                                                 }}>
-                                                    {settings?.currency ? (
-                                                        <CurrencyDisplay currency={settings.currency} amount={item.originalPrice * item.quantity} />
-                                                    ) : (
-                                                        `$${(item.originalPrice * item.quantity).toFixed(2)}`
-                                                    )}
+                                                    <FormattedPrice amount={item.originalPrice * item.quantity} />
                                                 </div>
                                                 <div className="font-semibold" style={{
                                                     color: resolveValue(themeWithDefaults.primary_color),
                                                     fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme)
                                                 }}>
-                                                    {settings?.currency ? (
-                                                        <CurrencyDisplay currency={settings.currency} amount={item.price * item.quantity} />
-                                                    ) : (
-                                                        `$${(item.price * item.quantity).toFixed(2)}`
-                                                    )}
+                                                    <FormattedPrice amount={item.price * item.quantity} />
                                                 </div>
                                                 <div className="text-xs mt-1" style={{
                                                     color: '#059669',
                                                     fontFamily: getResolvedFont(themeWithDefaults, 'body_font', appliedTheme)
                                                 }}>
-                                                    Ahorras: {settings?.currency ? (
-                                                        <CurrencyDisplay currency={settings.currency} amount={item.discountAmount || 0} />
-                                                    ) : (
-                                                        `$${(item.discountAmount || 0).toFixed(2)}`
-                                                    )}
+                                                    Ahorras: <FormattedPrice amount={item.discountAmount || 0} />
                                                 </div>
                                             </div>
                                         ) : (
@@ -270,18 +258,10 @@ const CartItemsComponent = ({
                                                     color: resolveValue(themeWithDefaults.primary_color),
                                                     fontFamily: getResolvedFont(themeWithDefaults, 'heading_font', appliedTheme)
                                                 }}>
-                                                    {settings?.currency ? (
-                                                        <CurrencyDisplay currency={settings.currency} amount={item.price * item.quantity} />
-                                                    ) : (
-                                                        `$${(item.price * item.quantity).toFixed(2)}`
-                                                    )}
+                                                    <FormattedPrice amount={item.price * item.quantity} />
                                                 </div>
                                                 <div className="text-sm" style={{ color: '#6b7280' }}>
-                                                    {settings?.currency ? (
-                                                        <><CurrencyDisplay currency={settings.currency} amount={item.price} /> c/u</>
-                                                    ) : (
-                                                        `$${item.price.toFixed(2)} c/u`
-                                                    )}
+                                                    <FormattedPrice amount={item.price} /> c/u
                                                 </div>
                                             </div>
                                         )}

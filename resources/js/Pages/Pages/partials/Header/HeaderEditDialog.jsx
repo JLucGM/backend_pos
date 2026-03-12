@@ -15,6 +15,7 @@ import { ColorPicker } from '@/components/ui/color-picker';
 import CartButtonEditor from './CartButtonEditor';
 import SearchButtonEditor from './SearchButtonEditor';
 import ProfileButtonEditor from './ProfileButtonEditor';
+import CurrencySelectorEditor from './CurrencySelectorEditor';
 
 const HeaderEditDialog = ({
     editContent,
@@ -253,6 +254,13 @@ const HeaderEditDialog = ({
                         <ProfileButtonEditor
                             buttonConfig={editContent?.buttons?.profile || {}}
                             onUpdate={(newConfig) => updateButtonConfig('profile', newConfig)}
+                            themeSettings={themeSettings}
+                            appliedTheme={appliedTheme}
+                        />
+                        <Separator className='my-4' />
+                        <CurrencySelectorEditor
+                            buttonConfig={editContent?.buttons?.currency || {}}
+                            onUpdate={(newConfig) => updateButtonConfig('currency', newConfig)}
                             themeSettings={themeSettings}
                             appliedTheme={appliedTheme}
                         />

@@ -1,5 +1,5 @@
 import React from 'react';
-import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import FormattedPrice from '@/Components/FormattedPrice';
 import { usePage } from '@inertiajs/react';
 import { getThemeWithDefaults, getTextStyles, getResolvedFont, resolveStyleValue } from '@/utils/themeUtils';
 
@@ -102,8 +102,8 @@ const CarouselPriceComponent = ({
 
     // Mostrar precio con moneda si hay configuración disponible
     const renderPrice = () => {
-        if (settings?.currency && comp.content && typeof comp.content === 'number') {
-            return <CurrencyDisplay currency={settings.currency} amount={comp.content} />;
+        if (comp.content && typeof comp.content === 'number') {
+            return <FormattedPrice amount={comp.content} />;
         }
 
         return comp.content || (

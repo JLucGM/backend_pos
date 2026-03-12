@@ -1,5 +1,5 @@
 import React from 'react';
-import CurrencyDisplay from '@/Components/CurrencyDisplay';
+import FormattedPrice from '@/Components/FormattedPrice';
 import { usePage } from '@inertiajs/react';
 import {
     getThemeWithDefaults,
@@ -199,7 +199,7 @@ const ProductDetailPriceComponent = ({
         const hasDiscount = product.product_price_discount && parseFloat(product.product_price_discount) > 0;
         const showDiscount = customStyles.showDiscount !== false;
 
-        if (hasDiscount && showDiscount && settings?.currency) {
+        if (hasDiscount && showDiscount) {
             return (
                 <>
                     <span
@@ -210,7 +210,7 @@ const ProductDetailPriceComponent = ({
                             opacity: 0.7,
                         }}
                     >
-                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(product.product_price)} />
+                        <FormattedPrice amount={parseFloat(product.product_price)} />
                     </span>
                     <span
                         style={{
@@ -219,23 +219,15 @@ const ProductDetailPriceComponent = ({
                             fontWeight: 'bold',
                         }}
                     >
-                        <CurrencyDisplay currency={settings.currency} amount={parseFloat(product.product_price_discount)} />
+                        <FormattedPrice amount={parseFloat(product.product_price_discount)} />
                     </span>
                 </>
             );
         }
 
-        if (settings?.currency) {
-            return (
-                <span style={{ fontWeight: 'bold' }}>
-                    <CurrencyDisplay currency={settings.currency} amount={parseFloat(price)} />
-                </span>
-            );
-        }
-
         return (
             <span style={{ fontWeight: 'bold' }}>
-                ${parseFloat(price).toFixed(2)}
+                <FormattedPrice amount={parseFloat(price)} />
             </span>
         );
     };
