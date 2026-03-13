@@ -12,5 +12,5 @@ export const getFrontendRoute = (routeBaseName) => {
 };
 
 // Ejemplo de uso:
-// const loginRoute = getFrontendRoute('frontend.login');
-// const checkoutRoute = getFrontendRoute('frontend.checkout');
+// const loginRoute = getFrontendRoute('storefront.login');
+// const checkoutRoute = getFrontendRoute('storefront.checkout');

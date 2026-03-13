@@ -11,7 +11,7 @@ use App\Models\Store;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class FrontendController extends Controller
+class StorefrontController extends Controller
 {
     public function showWithCollection(Request $request)
     {
@@ -163,7 +163,7 @@ class FrontendController extends Controller
         }
         $page->layout = $layout;
 
-        return Inertia::render('Frontend/Index', array_merge(
+        return Inertia::render('Storefront/Index', array_merge(
             [
                 'page' => $page,
                 'themeSettings' => $themeSettings,
@@ -451,7 +451,7 @@ class FrontendController extends Controller
         }
 
         // AGREGAR: Pasar la tienda principal a la vista
-        return Inertia::render('Frontend/Index', array_merge(
+        return Inertia::render('Storefront/Index', array_merge(
             [
                 'page' => $page,
                 'themeSettings' => $themeSettings,

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Frontend;
+namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\DeliveryLocation;
@@ -20,7 +20,7 @@ class ProfileController extends Controller
         $company = $request->attributes->get('company');
         $user = Auth::user();
         
-        return Inertia::render('Frontend/Profile/Edit', [
+        return Inertia::render('Storefront/Profile/Edit', [
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,

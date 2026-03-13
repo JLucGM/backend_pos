@@ -310,10 +310,10 @@ useEffect(() => {
             const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
             if (hostname.endsWith(sessionDomain)) {
                 const subdomain = hostname.split('.')[0];
-                return user ? route('frontend.logout', { subdomain }) : route('frontend.login', { subdomain });
+                return user ? route('storefront.logout', { subdomain }) : route('storefront.login', { subdomain });
             }
             const domain = hostname;
-            return user ? route('frontend.logout.custom', { domain }) : route('frontend.login.custom', { domain });
+            return user ? route('storefront.logout.custom', { domain }) : route('storefront.login.custom', { domain });
         } catch (error) {
             console.error('Error generating auth route:', error);
             return '#';
@@ -327,10 +327,10 @@ useEffect(() => {
             const sessionDomain = props.env?.SESSION_DOMAIN || '.pos.test';
             if (hostname.endsWith(sessionDomain)) {
                 const subdomain = hostname.split('.')[0];
-                return route('frontend.cart', { subdomain });
+                return route('storefront.cart', { subdomain });
             }
             const domain = hostname;
-            return route('frontend.cart.custom', { domain });
+            return route('storefront.cart.custom', { domain });
         } catch (error) {
             console.error('Error generating cart route:', error);
             return '#';

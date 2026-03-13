@@ -1,7 +1,7 @@
 <?php
 // app/Http\Controllers\Frontend\CheckoutController.php
 
-namespace App\Http\Controllers\Frontend;
+namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
@@ -415,13 +415,13 @@ class CheckoutController extends Controller
 
             if (str_ends_with($host, '.' . $baseDomain)) {
                 $subdomain = $request->route('subdomain');
-                return redirect()->route('frontend.checkout.success', [
+                return redirect()->route('storefront.checkout.success', [
                     'subdomain' => $subdomain,
                     'order' => $order->id
                 ]);
             } else {
                 $domain = $request->route('domain');
-                return redirect()->route('frontend.checkout.success.custom', [
+                return redirect()->route('storefront.checkout.success.custom', [
                     'domain' => $domain,
                     'order' => $order->id
                 ]);
@@ -686,7 +686,7 @@ class CheckoutController extends Controller
             }
         }
 
-        return inertia('Frontend/Index', [
+        return inertia('Storefront/Index', [
             'page' => $successPage,
             'themeSettings' => $themeSettings,
             'currentProduct' => $order, // Pasar la orden como currentProduct

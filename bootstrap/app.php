@@ -21,7 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'company' => \App\Http\Middleware\IdentifyCompany::class,
             'backend.company' => \App\Http\Middleware\SetBackendCompany::class,
             'client' => \App\Http\Middleware\EnsureUserIsClient::class,
-            'frontend.guest' => \App\Http\Middleware\RedirectIfFrontendAuthenticated::class,
+            'storefront.guest' => \App\Http\Middleware\RedirectIfFrontendAuthenticated::class,
             'subscription' => \App\Http\Middleware\CheckSubscription::class,
             'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,

@@ -102,11 +102,11 @@ const RegisterComponent = ({
 
         if (hostname.endsWith(sessionDomain)) {
             const subdomain = hostname.split('.')[0];
-            return route('frontend.register.store', { subdomain });
+            return route('storefront.register.store', { subdomain });
         }
 
         const domain = hostname;
-        return route('frontend.register.store.custom', { domain });
+        return route('storefront.register.store.custom', { domain });
     };
 
     // Función para obtener la ruta de login correcta
@@ -115,11 +115,11 @@ const RegisterComponent = ({
 
         if (hostname.endsWith(sessionDomain)) {
             const subdomain = hostname.split('.')[0];
-            return route('frontend.login', { subdomain });
+            return route('storefront.login', { subdomain });
         }
 
         const domain = hostname;
-        return route('frontend.login.custom', { domain });
+        return route('storefront.login.custom', { domain });
     };
 
     useEffect(() => {

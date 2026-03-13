@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Frontend;
+namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
@@ -24,7 +24,7 @@ class OrderController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return Inertia::render('Frontend/Orders/Index', [
+        return Inertia::render('Storefront/Orders/Index', [
             'orders' => $orders,
             'companyName' => $company->company_name,
         ]);
@@ -50,7 +50,7 @@ class OrderController extends Controller
             'shippingRate',
         ]);
         
-        return Inertia::render('Frontend/Orders/Show', [
+        return Inertia::render('Storefront/Orders/Show', [
             'order' => $order,
             'companyName' => $company->company_name,
         ]);

@@ -22,11 +22,11 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess, themeSettin
 
         if (hostname.includes('.pos.test') && hostname.split('.').length > 2) {
             const subdomain = hostname.split('.')[0];
-            return route('frontend.login.store', { subdomain });
+            return route('storefront.login.store', { subdomain });
         }
 
         const domain = hostname;
-        return route('frontend.login.store.custom', { domain });
+        return route('storefront.login.store.custom', { domain });
     };
 
     // Función para obtener la URL de registro basada en el hostname actual
@@ -37,11 +37,11 @@ const CheckoutAuthModalComponent = ({ onClose, companyId, onSuccess, themeSettin
 
         if (hostname.includes('.pos.test') && hostname.split('.').length > 2) {
             const subdomain = hostname.split('.')[0];
-            return route('frontend.register.store', { subdomain });
+            return route('storefront.register.store', { subdomain });
         }
 
         const domain = hostname;
-        return route('frontend.register.store.custom', { domain });
+        return route('storefront.register.store.custom', { domain });
     };
 
     // Formulario de login

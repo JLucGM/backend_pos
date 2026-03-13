@@ -17,9 +17,9 @@ class EnsureUserIsClient
 
             // Redirigir al login de clientes
             if (str_ends_with($request->getHost(), '.pos.test')) {
-                return redirect()->route('frontend.login', ['subdomain' => $company->subdomain]);
+                return redirect()->route('storefront.login', ['subdomain' => $company->subdomain]);
             } else {
-                return redirect()->route('frontend.login.custom', ['domain' => $company->domain]);
+                return redirect()->route('storefront.login.custom', ['domain' => $company->domain]);
             }
         }
 
@@ -43,9 +43,9 @@ class EnsureUserIsClient
             $request->session()->regenerateToken();
 
             if (str_ends_with($request->getHost(), '.pos.test')) {
-                return redirect()->route('frontend.login', ['subdomain' => $company->subdomain]);
+                return redirect()->route('storefront.login', ['subdomain' => $company->subdomain]);
             } else {
-                return redirect()->route('frontend.login.custom', ['domain' => $company->domain]);
+                return redirect()->route('storefront.login.custom', ['domain' => $company->domain]);
             }
         }
 

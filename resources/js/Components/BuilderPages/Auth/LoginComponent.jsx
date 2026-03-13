@@ -101,11 +101,11 @@ const LoginComponent = ({
 
         if (hostname.endsWith(sessionDomain)) {
             const subdomain = hostname.split('.')[0];
-            return route('frontend.login.store', { subdomain });
+            return route('storefront.login.store', { subdomain });
         }
 
         const domain = hostname;
-        return route('frontend.login.store.custom', { domain });
+        return route('storefront.login.store.custom', { domain });
     };
 
     // Función para obtener la ruta de registro correcta
@@ -114,11 +114,11 @@ const LoginComponent = ({
 
         if (hostname.endsWith(sessionDomain)) {
             const subdomain = hostname.split('.')[0];
-            return route('frontend.register', { subdomain });
+            return route('storefront.register', { subdomain });
         }
 
         const domain = hostname;
-        return route('frontend.register.custom', { domain });
+        return route('storefront.register.custom', { domain });
     };
 
     useEffect(() => {
@@ -321,7 +321,7 @@ const LoginComponent = ({
 
                         {/* {content.showForgotPassword && mode === 'frontend' && (
                             <Link
-                                href={route('frontend.password.request')}
+                                href={route('storefront.password.request')}
                                 className="text-sm text-blue-600 hover:text-blue-800"
                             >
                                 {content.forgotPasswordText || '¿Olvidaste tu contraseña?'}

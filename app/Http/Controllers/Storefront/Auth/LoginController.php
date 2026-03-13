@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Frontend\Auth;
+namespace App\Http\Controllers\Storefront\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
@@ -19,7 +19,7 @@ class LoginController extends Controller
     {
         $company = $request->attributes->get('company');
 
-        return Inertia::render('Frontend/Auth/Login', [
+        return Inertia::render('Storefront/Auth/Login', [
             'companyId' => $company->id,
             'companyName' => $company->company_name,
         ]);

@@ -8,12 +8,12 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscountController;
-use App\Http\Controllers\Frontend\Auth\LoginController;
-use App\Http\Controllers\Frontend\Auth\RegisterController;
-use App\Http\Controllers\Frontend\CheckoutController;
-use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
-use App\Http\Controllers\Frontend\OrderController as FrontendOrderController;
-use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\Storefront\Auth\LoginController;
+use App\Http\Controllers\Storefront\Auth\RegisterController;
+use App\Http\Controllers\Storefront\CheckoutController;
+use App\Http\Controllers\Storefront\ProfileController as StorefrontProfileController;
+use App\Http\Controllers\Storefront\OrderController as StorefrontOrderController;
+use App\Http\Controllers\StorefrontController;
 use App\Http\Controllers\GiftCardController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
@@ -43,75 +43,75 @@ Route::domain('{subdomain}.' . $baseDomain)->middleware(['company'])->group(func
     // dd($host = request()->getHost());
     // ========== RUTAS PÚBLICAS DEL FRONTEND ==========
     // Página principal y páginas dinámicas
-    Route::get('/{page_path}/{collection_slug}', [FrontendController::class, 'showWithCollection'])
+    Route::get('/{page_path}/{collection_slug}', [StorefrontController::class, 'showWithCollection'])
         ->where('page_path', '[a-zA-Z0-9\-_]+')
         ->where('collection_slug', '[a-zA-Z0-9\-_]+')
         ->name('subdomain.page.collection');
-    Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('subdomain.page');
+    Route::get('/{page_path?}', [StorefrontController::class, 'show'])->name('subdomain.page');
 
     // Detalles de producto
-    Route::get('/detalles-del-producto', [FrontendController::class, 'productDetail'])->name('subdomain.product.detail');
+    Route::get('/detalles-del-producto', [StorefrontController::class, 'productDetail'])->name('subdomain.product.detail');
 
     // ========== AUTENTICACIÓN DE CLIENTES ==========
     // Solo para invitados (no autenticados)
-    Route::middleware('frontend.guest')->group(function () {
+    Route::middleware('storefront.guest')->group(function () {
         // Login de clientes
 
-        Route::post('iniciar-sesion', [LoginController::class, 'store'])->name('frontend.login.store');
+        Route::post('iniciar-sesion', [LoginController::class, 'store'])->name('storefront.login.store');
 
         // Registro de clientes
         Route::get('/registrarse', [RegisterController::class, 'create'])
-            ->name('frontend.register');
+            ->name('storefront.register');
         Route::post('/registrarse', [RegisterController::class, 'store'])
-            ->name('frontend.register.store');
+            ->name('storefront.register.store');
     });
 
     // ========== RUTAS PROTEGIDAS (SOLO CLIENTES AUTENTICADOS) ==========
     Route::middleware(['auth', 'client'])->group(function () {
         // Logout
         Route::post('/logout', [LoginController::class, 'destroy'])
-            ->name('frontend.logout');
+            ->name('storefront.logout');
 
         // Perfil de usuario
-        Route::get('/perfil', [FrontendProfileController::class, 'edit'])
-            ->name('frontend.profile.edit');
-        Route::put('/profile', [FrontendProfileController::class, 'update'])
-            ->name('frontend.profile.update');
+        Route::get('/perfil', [StorefrontProfileController::class, 'edit'])
+            ->name('storefront.profile.edit');
+        Route::put('/profile', [StorefrontProfileController::class, 'update'])
+            ->name('storefront.profile.update');
 
         // Direcciones de entrega
-        Route::post('/profile/addresses', [FrontendProfileController::class, 'storeAddress'])
-            ->name('frontend.profile.addresses.store');
-        Route::put('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'updateAddress'])
-            ->name('frontend.profile.addresses.update');
-        Route::delete('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'destroyAddress'])
-            ->name('frontend.profile.addresses.destroy');
+        Route::post('/profile/addresses', [StorefrontProfileController::class, 'storeAddress'])
+            ->name('storefront.profile.addresses.store');
+        Route::put('/profile/addresses/{deliveryLocation}', [StorefrontProfileController::class, 'updateAddress'])
+            ->name('storefront.profile.addresses.update');
+        Route::delete('/profile/addresses/{deliveryLocation}', [StorefrontProfileController::class, 'destroyAddress'])
+            ->name('storefront.profile.addresses.destroy');
 
         // Pedidos del cliente
-        Route::get('/pedidos', [FrontendOrderController::class, 'index'])
-            ->name('frontend.orders.index');
-        Route::get('/pedidos/{order}', [FrontendOrderController::class, 'show'])
-            ->name('frontend.orders.show');
+        Route::get('/pedidos', [StorefrontOrderController::class, 'index'])
+            ->name('storefront.orders.index');
+        Route::get('/pedidos/{order}', [StorefrontOrderController::class, 'show'])
+            ->name('storefront.orders.show');
 
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
             ->middleware('subscription:orders.create')
-            ->name('frontend.checkout.process');
+            ->name('storefront.checkout.process');
 
         // Confirmación de orden
         Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
-            ->name('frontend.order.confirmation');
+            ->name('storefront.order.confirmation');
 
         // Direcciones desde checkout
         Route::post('/checkout/addresses', [CheckoutController::class, 'storeAddress'])
-            ->name('frontend.checkout.addresses.store');
+            ->name('storefront.checkout.addresses.store');
         Route::put('/checkout/addresses/{deliveryLocation}', [CheckoutController::class, 'updateAddress'])
-            ->name('frontend.checkout.addresses.update');
+            ->name('storefront.checkout.addresses.update');
         Route::delete('/checkout/addresses/{deliveryLocation}', [CheckoutController::class, 'destroyAddress'])
-            ->name('frontend.checkout.addresses.destroy');
+            ->name('storefront.checkout.addresses.destroy');
     });
 
     // Página de éxito del checkout (fuera de autenticación para evitar problemas de sesión)
     Route::get('/checkout/success/{order}', [CheckoutController::class, 'checkoutSuccess'])
-        ->name('frontend.checkout.success');
+        ->name('storefront.checkout.success');
 });
 
 // ==============================================================
@@ -125,78 +125,78 @@ Route::group([
 
     // ========== RUTAS PÚBLICAS DEL FRONTEND ==========
     // Página principal y páginas dinámicas
-    Route::get('/{page_path}/{collection_slug}', [FrontendController::class, 'showWithCollection'])
+    Route::get('/{page_path}/{collection_slug}', [StorefrontController::class, 'showWithCollection'])
         ->where('page_path', '[a-zA-Z0-9\-_]+')
         ->where('collection_slug', '[a-zA-Z0-9\-_]+')
         ->name('custom.page.collection');
-    Route::get('/{page_path?}', [FrontendController::class, 'show'])->name('custom.page');
+    Route::get('/{page_path?}', [StorefrontController::class, 'show'])->name('custom.page');
 
     // Detalles de producto
-    Route::get('/detalles-del-producto', [FrontendController::class, 'productDetail'])->name('custom.product.detail');
+    Route::get('/detalles-del-producto', [StorefrontController::class, 'productDetail'])->name('custom.product.detail');
 
     // ========== AUTENTICACIÓN DE CLIENTES ==========
     // Solo para invitados (no autenticados)
-    Route::middleware('frontend.guest')->group(function () {
+    Route::middleware('storefront.guest')->group(function () {
         // Login de clientes
         Route::get('/iniciar-sesion', [LoginController::class, 'create'])
-            ->name('frontend.login.custom');
+            ->name('storefront.login.custom');
         Route::post('/iniciar-sesion', [LoginController::class, 'store'])
-            ->name('frontend.login.store.custom');
+            ->name('storefront.login.store.custom');
 
         // Registro de clientes
         Route::get('/registrarse', [RegisterController::class, 'create'])
-            ->name('frontend.register.custom');
+            ->name('storefront.register.custom');
         Route::post('/registrarse', [RegisterController::class, 'store'])
-            ->name('frontend.register.store.custom');
+            ->name('storefront.register.store.custom');
     });
 
     // ========== RUTAS PROTEGIDAS (SOLO CLIENTES AUTENTICADOS) ==========
     Route::middleware(['auth', 'client'])->group(function () {
         // Logout
         Route::post('/logout', [LoginController::class, 'destroy'])
-            ->name('frontend.logout.custom');
+            ->name('storefront.logout.custom');
 
         // Perfil de usuario
-        Route::get('/perfil', [FrontendProfileController::class, 'edit'])
-            ->name('frontend.profile.edit.custom');
-        Route::put('/profile', [FrontendProfileController::class, 'update'])
-            ->name('frontend.profile.update.custom');
+        Route::get('/perfil', [StorefrontProfileController::class, 'edit'])
+            ->name('storefront.profile.edit.custom');
+        Route::put('/profile', [StorefrontProfileController::class, 'update'])
+            ->name('storefront.profile.update.custom');
 
         // Direcciones de entrega
-        Route::post('/profile/addresses', [FrontendProfileController::class, 'storeAddress'])
-            ->name('frontend.profile.addresses.store.custom');
-        Route::put('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'updateAddress'])
-            ->name('frontend.profile.addresses.update.custom');
-        Route::delete('/profile/addresses/{deliveryLocation}', [FrontendProfileController::class, 'destroyAddress'])
-            ->name('frontend.profile.addresses.destroy.custom');
+        Route::post('/profile/addresses', [StorefrontProfileController::class, 'storeAddress'])
+            ->name('storefront.profile.addresses.store.custom');
+        Route::put('/profile/addresses/{deliveryLocation}', [StorefrontProfileController::class, 'updateAddress'])
+            ->name('storefront.profile.addresses.update.custom');
+        Route::delete('/profile/addresses/{deliveryLocation}', [StorefrontProfileController::class, 'destroyAddress'])
+            ->name('storefront.profile.addresses.destroy.custom');
 
         // Pedidos del cliente
-        Route::get('/pedidos', [FrontendOrderController::class, 'index'])
-            ->name('frontend.orders.index.custom');
-        Route::get('/pedidos/{order}', [FrontendOrderController::class, 'show'])
-            ->name('frontend.orders.show.custom');
+        Route::get('/pedidos', [StorefrontOrderController::class, 'index'])
+            ->name('storefront.orders.index.custom');
+        Route::get('/pedidos/{order}', [StorefrontOrderController::class, 'show'])
+            ->name('storefront.orders.show.custom');
 
         Route::post('/checkout/process', [CheckoutController::class, 'processOrder'])
             ->middleware('subscription:orders.create')
-            ->name('frontend.checkout.process');
+            ->name('storefront.checkout.process');
 
         // Confirmación de orden
         Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])
-            ->name('frontend.order.confirmation');
+            ->name('storefront.order.confirmation');
     });
 
     // Página de éxito del checkout (fuera de autenticación para evitar problemas de sesión)
     Route::get('/checkout/success/{order}', [CheckoutController::class, 'checkoutSuccess'])
-        ->name('frontend.checkout.success.custom');
+        ->name('storefront.checkout.success.custom');
 
     // Direcciones desde checkout (Custom Domain)
     Route::middleware(['auth', 'client'])->group(function () {
         Route::post('/checkout/addresses', [CheckoutController::class, 'storeAddress'])
-            ->name('frontend.checkout.addresses.store.custom');
+            ->name('storefront.checkout.addresses.store.custom');
         Route::put('/checkout/addresses/{deliveryLocation}', [CheckoutController::class, 'updateAddress'])
-            ->name('frontend.checkout.addresses.update.custom');
+            ->name('storefront.checkout.addresses.update.custom');
         Route::delete('/checkout/addresses/{deliveryLocation}', [CheckoutController::class, 'destroyAddress'])
-            ->name('frontend.checkout.addresses.destroy.custom');
+            ->name('storefront.checkout.addresses.destroy.custom');
     });
 });
 

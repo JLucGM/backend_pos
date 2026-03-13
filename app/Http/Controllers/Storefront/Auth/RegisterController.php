@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Frontend\Auth;
+namespace App\Http\Controllers\Storefront\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
@@ -22,14 +22,14 @@ class RegisterController extends Controller
     {
         $company = $request->attributes->get('company');
 
-        return Inertia::render('Frontend/Auth/Register', [
+        return Inertia::render('Storefront/Auth/Register', [
             'companyId' => $company->id,
             'companyName' => $company->company_name,
-            'termsUrl' => route('frontend.page.show', [
+            'termsUrl' => route('subdomain.page', [
                 'company_slug' => $company->slug,
                 'page_path' => 'terminos-de-servicio'
             ]),
-            'privacyUrl' => route('frontend.page.show', [
+            'privacyUrl' => route('subdomain.page', [
                 'company_slug' => $company->slug,
                 'page_path' => 'politicas-de-privacidad'
             ]),
