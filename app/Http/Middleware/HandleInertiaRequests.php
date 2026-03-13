@@ -71,6 +71,7 @@ class HandleInertiaRequests extends Middleware
                         'code' => $selected->currency->code,
                         'symbol' => $selected->currency->symbol,
                         'exchange_rate' => (float) $selected->exchange_rate,
+                        'is_base' => (bool) $selected->is_base,
                     ] : null,
                 ];
             },

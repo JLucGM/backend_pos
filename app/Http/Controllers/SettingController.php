@@ -143,6 +143,7 @@ class SettingController extends Controller
             foreach ($request->company_currencies as $currData) {
                 \App\Models\CompanyCurrency::where('id', $currData['id'])
                     ->where('company_id', $user->company_id)
+                    ->where('is_base', false) // No permitir sobrescribir la tasa de la moneda base
                     ->update([
                         'exchange_rate' => $currData['exchange_rate'],
                     ]);

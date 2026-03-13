@@ -21,8 +21,11 @@ export default function FormattedPrice({ amount, className = "" }) {
     );
   }
 
-  const { symbol, code, exchange_rate } = currency.selected;
-  const convertedAmount = baseAmount * (exchange_rate || 1.0);
+  const { symbol, code, exchange_rate, is_base } = currency.selected;
+  
+  // Si es la moneda base, el factor es 1.0 independientemente de lo que diga la DB
+  const rate = is_base ? 1.0 : (exchange_rate || 1.0);
+  const convertedAmount = baseAmount * rate;
 
   return (
     <span className={className}>
