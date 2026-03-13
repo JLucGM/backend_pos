@@ -14,13 +14,7 @@ export const StoresColumns = [
         header: "Dirección",
         accessorKey: "address",
     },
-    {
-        header: "Tienda en línea",
-        accessorKey: "is_ecommerce_active",
-        cell: ({ row }) => {
-            return row.original.is_ecommerce_active ? "Sí" : "No";
-        }
-    },
+
     {
         header: "Tienda en línea",
         accessorKey: "is_ecommerce_active",

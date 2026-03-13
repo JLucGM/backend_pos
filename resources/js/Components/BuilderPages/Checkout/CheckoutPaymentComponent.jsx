@@ -151,16 +151,25 @@ const CheckoutPaymentComponent = ({
                                         <div className="font-medium" style={{ color: resolveValue(themeWithDefaults.heading) }}>
                                             {method.name}
                                         </div>
-                                        {method.description && (
-                                            <div className="text-sm mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
-                                                {method.description}
-                                            </div>
-                                        )}
+                                        <div 
+                                            className="overflow-hidden transition-all duration-300 ease-in-out"
+                                            style={{ 
+                                                maxHeight: isSelected ? '100px' : '0',
+                                                opacity: isSelected ? 1 : 0,
+                                                marginTop: isSelected ? '8px' : '0'
+                                            }}
+                                        >
+                                            {method.description && (
+                                                <div className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
+                                                    {method.description}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         {isSelected && (
                                             <div
-                                                className="w-5 h-5 rounded-full flex items-center justify-center"
+                                                className="w-5 h-5 rounded-full flex items-center justify-center transform scale-110 transition-transform duration-300"
                                                 style={{ backgroundColor: resolveValue(themeWithDefaults.links) }}
                                             >
                                                 <div className="w-2 h-2 rounded-full bg-white"></div>
