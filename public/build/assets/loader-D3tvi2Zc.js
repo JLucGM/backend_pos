@@ -1,1 +1,0 @@
-import{j as e}from"./app-mTH7TOUc.js";import{L as t}from"./loader-circle-BN5TSbOp.js";function m({className:r="",size:s=30}){return e.jsx("div",{className:"flex items-center justify-center",children:e.jsx(t,{className:"animate-spin text-gray-500 "+r,size:s})})}export{m as L};

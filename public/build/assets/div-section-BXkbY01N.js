@@ -1,0 +1,1 @@
+import{j as e}from"./app-CcHSDUWA.js";function a({className:d="",children:i,title:s,subtitle:r,...o}){return e.jsxs("div",{...o,className:"bg-white dark:bg-gray-800 border shadow rounded-3xl p-4 mb-4 "+d,children:[r&&e.jsx("p",{children:r}),i]})}export{a as default};

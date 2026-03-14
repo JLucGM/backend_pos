@@ -1,1 +1,0 @@
-import{j as e}from"./app-mTH7TOUc.js";function r({title:m,description:s,className:t=""}){return e.jsxs("header",{className:`mb-6 ${t}`,children:[e.jsx("h3",{className:"mb-0.5 text-base font-medium",children:m}),s&&e.jsx("p",{className:"text-muted-foreground text-sm",children:s})]})}export{r as H};
