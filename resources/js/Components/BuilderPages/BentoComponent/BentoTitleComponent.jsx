@@ -104,8 +104,8 @@ const BentoTitleComponent = ({
         const finalColor = resolveValue(color);
 
         // 🔹 Manejo especial para el color de fondo: si es 'transparent', lo dejamos tal cual
-        const backgroundColor = rawStyles.backgroundColor === 'transparent' 
-            ? 'transparent' 
+        const backgroundColor = rawStyles.backgroundColor === 'transparent'
+            ? 'transparent'
             : resolveValue(rawStyles.backgroundColor || 'transparent');
 
         return {

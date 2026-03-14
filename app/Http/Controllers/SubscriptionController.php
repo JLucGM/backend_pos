@@ -15,7 +15,7 @@ class SubscriptionController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('can:admin.subscriptions.index')->only('index', 'payments', 'paymentSuccess', 'paymentPending');
+        $this->middleware('can:admin.subscriptions.index')->only('index', 'management', 'payments', 'paymentSuccess', 'paymentPending');
         $this->middleware('can:admin.subscriptions.create')->only('selectPlan', 'payment', 'processPayment');
         $this->middleware('can:admin.subscriptions.delete')->only('cancel');
     }
@@ -38,6 +38,28 @@ class SubscriptionController extends Controller
             'plans' => $plans,
             'currentSubscription' => $currentSubscription,
             'company' => $currentCompany,
+        ]);
+    }
+
+    /**
+     * Gestión centralizada de la suscripción del merchant
+     */
+    public function management()
+    {
+        $user = Auth::user();
+        $company = $user->company;
+        $subscription = $company->currentSubscription;
+
+        if ($subscription) {
+            $subscription->load(['plan', 'payments' => function($q) {
+                $q->orderBy('created_at', 'desc')->take(5);
+            }]);
+        }
+
+        return Inertia::render('Subscriptions/Management', [
+            'subscription' => $subscription,
+            'company' => $company,
+            'plans' => SubscriptionPlan::active()->where('is_public', true)->get(),
         ]);
     }
 
@@ -172,9 +194,9 @@ class SubscriptionController extends Controller
         // Marcar pago como completado (esto normalmente se haría desde webhook)
         $payment->markAsCompleted();
         
-        // Activar suscripción
+        // Activar o renovar suscripción
         $subscription = $payment->subscription;
-        $subscription->update(['status' => 'active']);
+        $subscription->renew();
         
         // Actualizar empresa
         $company = $subscription->company;

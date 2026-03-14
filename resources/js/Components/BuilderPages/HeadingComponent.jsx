@@ -5,7 +5,7 @@ import { getTextStyles, getResolvedFont, getThemeWithDefaults, resolveStyleValue
 const HeadingComponent = ({ comp, getStyles, onEdit, isPreview, themeSettings, appliedTheme }) => {
     // Obtener configuración del tema con valores por defecto
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
-// console.log(getStyles(comp));
+
     // Función para resolver referencias
     const resolveValue = (value) => {
         return resolveStyleValue(value, themeWithDefaults, appliedTheme);

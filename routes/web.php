@@ -393,6 +393,7 @@ Route::resource('inventory-transfers', InventoryTransferController::class);
 
     // Rutas de suscripciones
     Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+        Route::get('/management', [SubscriptionController::class, 'management'])->name('management');
         Route::get('/', [SubscriptionController::class, 'index'])->name('index');
         Route::post('/select-plan/{plan}', [SubscriptionController::class, 'selectPlan'])->name('select-plan');
         Route::get('/payment/{subscription}', [SubscriptionController::class, 'payment'])->name('payment');
@@ -427,14 +428,8 @@ Route::resource('inventory-transfers', InventoryTransferController::class);
 });
 
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        // 'canLogin' => Route::has('login'),
-        // 'canRegister' => Route::has('register'),
-        // 'laravelVersion' => Application::VERSION,
-        // 'phpVersion' => PHP_VERSION,
-    ]);
-});
+Route::get('/', [\App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/pricing', [\App\Http\Controllers\HomeController::class, 'pricing'])->name('pricing');
 
 // Ruta para cambiar la moneda en el frontend
 Route::post('/currency/select', [\App\Http\Controllers\CurrencyController::class, 'select'])->name('currency.select');

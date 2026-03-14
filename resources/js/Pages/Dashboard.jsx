@@ -55,7 +55,7 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
 
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                 {/* Estado de Suscripción */}
-                {/* <SubscriptionStatus company={company} currentSubscription={currentSubscription} /> */}
+                <SubscriptionStatus company={company} currentSubscription={currentSubscription} />
 
                 {/* Debug temporal - remover después */}
                 {/* {process.env.NODE_ENV === 'development' && (

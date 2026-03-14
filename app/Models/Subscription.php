@@ -130,16 +130,15 @@ class Subscription extends Model
         ]);
     }
 
-    /**
-     * Renovar la suscripción
-     */
     public function renew($months = 1)
     {
+        $baseDate = ($this->ends_at && $this->ends_at->isFuture()) ? $this->ends_at : now();
+        
         $this->update([
             'status' => 'active',
             'ends_at' => $this->billing_cycle === 'yearly' 
-                ? $this->ends_at->addYear() 
-                : $this->ends_at->addMonths($months),
+                ? $baseDate->addYear() 
+                : $baseDate->addMonths($months),
         ]);
     }
 }

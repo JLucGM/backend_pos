@@ -69,40 +69,103 @@ class SubscriptionAdminController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'company_id' => 'required|exists:companies,id',
+        $isNewCompany = $request->input('creation_mode') === 'new';
+
+        $rules = [
             'subscription_plan_id' => 'required|exists:subscription_plans,id',
             'billing_cycle' => 'required|in:monthly,yearly',
             'status' => 'required|in:active,inactive,trial,cancelled',
             'starts_at' => 'required|date',
             'ends_at' => 'required|date|after:starts_at',
-        ]);
+        ];
 
-        $plan = SubscriptionPlan::find($request->subscription_plan_id);
-        $amount = $plan->getPriceForCycle($request->billing_cycle);
+        if ($isNewCompany) {
+            $rules = array_merge($rules, [
+                'owner_name' => 'required|string|max:255',
+                'owner_email' => 'required|string|email|max:255|unique:users,email',
+                'owner_password' => 'required|string|min:8',
+                'company_name' => 'required|string|max:255|unique:companies,name',
+                'subdomain' => 'required|string|max:255|unique:companies,subdomain',
+            ]);
+        } else {
+            $rules['company_id'] = 'required|exists:companies,id';
+        }
 
-        $subscription = Subscription::create([
-            'company_id' => $request->company_id,
-            'subscription_plan_id' => $request->subscription_plan_id,
-            'status' => $request->status,
-            'billing_cycle' => $request->billing_cycle,
-            'amount' => $amount,
-            'currency' => $plan->currency,
-            'starts_at' => $request->starts_at,
-            'ends_at' => $request->ends_at,
-        ]);
+        $request->validate($rules);
 
-        // Actualizar empresa si es necesario
-        $company = Company::find($request->company_id);
-        if ($request->status === 'active' || $request->status === 'trial') {
+        $subscription = \DB::transaction(function () use ($request, $isNewCompany) {
+            $companyId = $request->company_id;
+
+            if ($isNewCompany) {
+                // 1. Crear Usuario Owner
+                $user = \App\Models\User::create([
+                    'name' => $request->owner_name,
+                    'email' => $request->owner_email,
+                    'password' => \Hash::make($request->owner_password),
+                    'is_active' => 1,
+                ]);
+
+                // 2. Crear Empresa
+                $company = Company::create([
+                    'name' => $request->company_name,
+                    'subdomain' => \Str::slug($request->subdomain),
+                    'is_trial' => $request->status === 'trial',
+                ]);
+
+                // Asociar
+                $user->company()->associate($company);
+                $user->save();
+
+                // Roles y servicios por defecto
+                \App\Services\DefaultRoleService::createForCompany($company);
+                $user->assignRole('owner');
+                
+                \App\Services\DefaultMenuService::createForCompany($company);
+                \App\Services\DefaultPageService::createForCompany($company);
+                \App\Services\DefaultGlobalComponentService::createForCompany($company);
+
+                // Configuración básica y tienda
+                $store = \App\Models\Store::create([
+                    'name' => 'Tienda Principal',
+                    'company_id' => $company->id,
+                    'is_ecommerce_active' => true,
+                ]);
+
+                \App\Models\Setting::create([
+                    'company_id' => $company->id,
+                    'currency_id' => 1,
+                ]);
+
+                $companyId = $company->id;
+            }
+
+            // 3. Crear Suscripción
+            $plan = SubscriptionPlan::find($request->subscription_plan_id);
+            $amount = $plan->getPriceForCycle($request->billing_cycle);
+
+            $subscription = Subscription::create([
+                'company_id' => $companyId,
+                'subscription_plan_id' => $request->subscription_plan_id,
+                'status' => $request->status,
+                'billing_cycle' => $request->billing_cycle,
+                'amount' => $amount,
+                'currency' => $plan->currency,
+                'starts_at' => $request->starts_at,
+                'ends_at' => $request->ends_at,
+            ]);
+
+            // Actualizar empresa con la suscripción actual
+            $company = Company::find($companyId);
             $company->update([
                 'current_subscription_id' => $subscription->id,
                 'is_trial' => $request->status === 'trial',
             ]);
-        }
+
+            return $subscription;
+        });
 
         return redirect()->route('admin.subscriptions.index')
-            ->with('message', 'Suscripción creada exitosamente.');
+            ->with('message', 'Suscripción ' . ($isNewCompany ? 'y empresa ' : '') . 'creada exitosamente.');
     }
 
     /**
@@ -142,9 +205,9 @@ class SubscriptionAdminController extends Controller
     {
         $payment->markAsCompleted();
         
-        // Activar suscripción
+        // Activar o renovar suscripción
         $subscription = $payment->subscription;
-        $subscription->update(['status' => 'active']);
+        $subscription->renew();
         
         // Actualizar empresa
         $company = $subscription->company;

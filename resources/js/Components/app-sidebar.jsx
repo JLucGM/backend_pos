@@ -95,7 +95,8 @@ export function AppSidebar({ ...props }) {
         url: "#",
         icon: CreditCard,
         items: [
-          { title: "Mi Suscripción", url: "subscriptions.index" },
+          { title: "Facturación", url: "subscriptions.management" },
+          { title: "Planes", url: "subscriptions.index" },
           { title: "Historial de Pagos", url: "subscriptions.payments" },
         ],
       },

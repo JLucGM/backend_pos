@@ -4,10 +4,13 @@ import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Card, CardContent } from '@/Components/ui/card';
 import { AlertTriangle, Clock, CheckCircle, Crown } from 'lucide-react';
+import { usePermission } from '@/hooks/usePermission';
 
 export default function SubscriptionStatus({ company, currentSubscription }) {
-    // Si no hay empresa, no mostrar nada
-    if (!company) return null;
+    const { isSuperAdmin } = usePermission();
+
+    // Si no hay empresa o el usuario es Super Admin, no mostrar nada
+    if (!company || isSuperAdmin) return null;
 
     // Calcular días restantes
     const getDaysRemaining = () => {
@@ -76,7 +79,7 @@ export default function SubscriptionStatus({ company, currentSubscription }) {
 
     // Si tiene suscripción activa
     if (currentSubscription) {
-        const isExpiringSoon = daysRemaining <= 7 && daysRemaining > 0;
+        const isExpiringSoon = daysRemaining <= 10 && daysRemaining > 0;
         const isExpired = daysRemaining === 0;
         const isActive = currentSubscription.status === 'active';
 
@@ -104,7 +107,7 @@ export default function SubscriptionStatus({ company, currentSubscription }) {
                                     {isExpired ? 'Expirada' : 'Inactiva'}
                                 </Badge>
                                 <Button asChild size="sm">
-                                    <Link href={route('subscriptions.index')}>
+                                    <Link href={route('subscriptions.payment', currentSubscription.id)}>
                                         Renovar Plan
                                     </Link>
                                 </Button>
@@ -117,27 +120,29 @@ export default function SubscriptionStatus({ company, currentSubscription }) {
 
         if (isExpiringSoon) {
             return (
-                <Card className="mb-6 border-orange-500 bg-orange-50">
-                    <CardContent className="p-4">
+                <Card className="mb-6 border-2 border-orange-500 bg-orange-50 shadow-md">
+                    <CardContent className="p-5">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                                <Clock className="h-6 w-6 text-orange-500" />
+                            <div className="flex items-center space-x-4">
+                                <div className="bg-orange-200 p-2 rounded-full">
+                                    <Clock className="h-6 w-6 text-orange-700" />
+                                </div>
                                 <div>
-                                    <h3 className="font-semibold text-orange-900">
-                                        Suscripción por Vencer
+                                    <h3 className="font-bold text-lg text-orange-900">
+                                        ¡Atención! Tu suscripción vence pronto
                                     </h3>
-                                    <p className="text-sm text-orange-700">
-                                        Tu suscripción {currentSubscription.plan?.name} vence en {daysRemaining} día{daysRemaining !== 1 ? 's' : ''}.
+                                    <p className="text-sm text-orange-800">
+                                        El plan <strong>{currentSubscription.plan?.name}</strong> caduca en {daysRemaining} día{daysRemaining !== 1 ? 's' : ''}. Renueva ahora para evitar interrupciones.
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                            <div className="flex items-center space-x-3">
+                                <Badge variant="secondary" className="bg-orange-200 text-orange-900 border-orange-300">
                                     {currentSubscription.plan?.name}
                                 </Badge>
-                                <Button asChild size="sm">
-                                    <Link href={route('subscriptions.index')}>
-                                        Renovar
+                                <Button asChild size="lg" className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg">
+                                    <Link href={route('subscriptions.payment', currentSubscription.id)}>
+                                        Renovar Ahora
                                     </Link>
                                 </Button>
                             </div>
@@ -147,37 +152,8 @@ export default function SubscriptionStatus({ company, currentSubscription }) {
             );
         }
 
-        // Suscripción activa y no expira pronto - mostrar estado positivo discreto
-        return (
-            <Card className="mb-6 border-green-500 bg-green-50">
-                <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                            <CheckCircle className="h-6 w-6 text-green-500" />
-                            <div>
-                                <h3 className="font-semibold text-green-900">
-                                    Suscripción Activa
-                                </h3>
-                                <p className="text-sm text-green-700">
-                                    Plan {currentSubscription.plan?.name} - Vence el {new Date(currentSubscription.ends_at).toLocaleDateString()}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                <Crown className="h-3 w-3 mr-1" />
-                                {currentSubscription.plan?.name}
-                            </Badge>
-                            <Button variant="outline" asChild size="sm">
-                                <Link href={route('subscriptions.index')}>
-                                    Gestionar
-                                </Link>
-                            </Button>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        );
+        // Si está activa y NO expira pronto, no mostrar nada para no estorbar la vista
+        return null;
     }
 
     // No debería llegar aquí, pero por seguridad
