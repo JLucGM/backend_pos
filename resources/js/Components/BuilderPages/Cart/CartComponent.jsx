@@ -198,7 +198,7 @@ const CartComponent = ({
                         combinationName: item.combinationName || null, // ← NUEVO: tomar del item del carrito
                         image: item.image || (product && product.media && product.media[0]
                             ? product.media[0].original_url
-                            : 'https://picsum.photos/80'),
+                            : '/product-example.png'),
                         stock: stock,
                         hasDirectDiscount: item.hasDirectDiscount || false,
                         automaticDiscount: item.automaticDiscount || null,
@@ -235,7 +235,7 @@ const CartComponent = ({
                             ]
                         },
                         combinationName: 'talla: mediano, marca: lacoste', // ← para builder
-                        image: 'https://picsum.photos/80',
+                        image: '/product-example.png',
                         stock: 12,
                         hasDirectDiscount: true,
                         discountAmount: 6.00,
@@ -250,7 +250,7 @@ const CartComponent = ({
                         quantity: 1,
                         combination: null,
                         combinationName: null,
-                        image: 'https://picsum.photos/80',
+                        image: '/product-example.png',
                         stock: 9,
                         hasDirectDiscount: false,
                         automaticDiscount: {

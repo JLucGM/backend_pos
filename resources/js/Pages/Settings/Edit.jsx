@@ -13,6 +13,8 @@ export default function Edit({ setting, currencies, companyCurrencies }) {
     const initialValues = {
         name: setting.company.name,
         currency_id: setting.currency_id || '',
+        subdomain: setting.company.subdomain || '',
+        domain: setting.company.domain || '',
         email: setting.company.email,
         address: setting.company.address,
         phone: setting.company.phone,

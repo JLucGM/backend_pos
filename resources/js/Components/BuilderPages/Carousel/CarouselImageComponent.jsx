@@ -96,11 +96,11 @@ const CarouselImageComponent = ({
             className={!isPreview ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}
         >
             <img
-                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
+                src={comp.content || '/product-example.png'}
                 alt="Producto"
                 style={imageStyles}
                 onError={(e) => {
-                    e.target.src = 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+                    e.target.src = '/product-example.png';
                 }}
             />
         </div>

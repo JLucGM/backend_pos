@@ -425,7 +425,7 @@ class TemplateSeeder extends Seeder
                 'paddingBottom' => 'theme.banner_paddingBottom',
                 'paddingLeft' => 'theme.banner_paddingLeft',
                 'backgroundColor' => 'theme.background',
-                'backgroundImage' => null,
+                'backgroundImage' => '/banner-example.png',
                 'backgroundVideo' => null,
                 'backgroundSize' => 'cover',
                 'backgroundPosition' => 'center center',

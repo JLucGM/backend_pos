@@ -47,7 +47,7 @@ const ImageCarouselComponent = ({
                 const mediaUrl = product.media?.[0]?.original_url;
                 return {
                     id: product.id,
-                    src: mediaUrl || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png',
+                    src: mediaUrl || '/product-example.png',
                     title: product.product_name || product.name,
                     text: product.product_price ? `$${parseFloat(product.product_price).toFixed(2)}` : '',
                     link: `/detalles-del-producto?product=${product.slug || product.id}`
@@ -302,7 +302,7 @@ const ImageCarouselComponent = ({
                                                 src={image.src}
                                                 alt={image.title || ''}
                                                 onError={(e) => {
-                                                    e.target.src = 'https://via.placeholder.com/400x300?text=Sin+imagen';
+                                                    e.target.src = '/product-example.png';
                                                 }}
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
@@ -331,7 +331,7 @@ const ImageCarouselComponent = ({
                                                 src={image.src}
                                                 alt={image.title || ''}
                                                 onError={(e) => {
-                                                    e.target.src = 'https://via.placeholder.com/400x300?text=Sin+imagen';
+                                                    e.target.src = '/product-example.png';
                                                 }}
                                             />
                                         </div>

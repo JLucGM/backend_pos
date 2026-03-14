@@ -598,7 +598,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
             if (selectedType === 'link') content = 'https://example.com';
             if (selectedType === 'image') {
                 content = {
-                    src: 'https://picsum.photos/400/300',
+                    src: '/product-example.png',
                     alt: 'Imagen de ejemplo'
                 };
 
@@ -2615,7 +2615,7 @@ export default function Builder({ page, products, availableTemplates, themes, pa
                             id: imageId,
                             type: 'image',
                             content: {
-                                src: 'https://picsum.photos/600/400',
+                                src: '/product-example.png',
                                 alt: 'Imagen de ejemplo'
                             },
                             styles: {

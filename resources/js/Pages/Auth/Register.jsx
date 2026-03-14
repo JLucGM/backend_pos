@@ -300,10 +300,11 @@ export default function Register({ subscriptionPlans = [] }) {
         <GuestLayout>
             <Head title="Registro" />
 
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Create an account</h2>
-                <p className="mt-2 text-sm text-gray-600">Please fill in your details to get started.</p>
-            </div>
+            <div className="max-w-3xl mx-auto">
+                <div className="mb-10 text-center lg:text-left">
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Create your account</h2>
+                    <p className="mt-2 text-sm text-gray-600">Join our platform and start managing your business efficiently.</p>
+                </div>
 
             <form onSubmit={submit} encType="multipart/form-data" className="space-y-6">
                 <Stepper steps={steps} activeStep={currentStep} onStepChange={setCurrentStep} />
@@ -336,6 +337,7 @@ export default function Register({ subscriptionPlans = [] }) {
                     </div>
                 </div>
             </form>
+            </div>
         </GuestLayout>
     );
 }

@@ -61,13 +61,14 @@ const BannerComponent = ({
     const paddingBottom = resolveValue(bannerConfig.paddingBottom) || themeWithDefaults.banner_paddingBottom || '20px';
     const paddingLeft = resolveValue(bannerConfig.paddingLeft) || themeWithDefaults.banner_paddingLeft || '20px';
     const backgroundColor = resolveValue(bannerConfig.backgroundColor) || themeWithDefaults.banner_backgroundColor || 'transparent';
-    const backgroundImage = resolveValue(bannerConfig.backgroundImage) || null;
+    const backgroundImage = resolveValue(bannerConfig.backgroundImage) || '/banner-example.png';
     const backgroundVideo = resolveValue(bannerConfig.backgroundVideo) || null;
     const backgroundSize = resolveValue(bannerConfig.backgroundSize) || 'cover';
     const backgroundPosition = resolveValue(bannerConfig.backgroundPosition) || 'center center';
     const containerVerticalPosition = resolveValue(bannerConfig.containerVerticalPosition) || 'center';
     const containerHorizontalPosition = resolveValue(bannerConfig.containerHorizontalPosition) || 'center';
     const contentDirection = resolveValue(bannerConfig.contentDirection) || 'vertical';
+    const backgroundType = bannerConfig.backgroundType || (backgroundImage ? 'image' : 'color');
 
     // Configuración del contenedor interno
     const innerContainerBackgroundColor = resolveValue(bannerConfig.innerContainerBackgroundColor) || themeWithDefaults.banner_innerContainerBackgroundColor || 'transparent';
@@ -111,10 +112,10 @@ const BannerComponent = ({
         paddingRight: withUnit(paddingRight),
         paddingBottom: withUnit(paddingBottom),
         paddingLeft: withUnit(paddingLeft),
-        backgroundColor: (bannerConfig.backgroundType === 'image' && backgroundImage) || bannerConfig.backgroundType === 'gradient' ? 'transparent' : backgroundColor,
-        backgroundImage: bannerConfig.backgroundType === 'image' && backgroundImage
+        backgroundColor: (backgroundType === 'image' && backgroundImage) || backgroundType === 'gradient' ? 'transparent' : backgroundColor,
+        backgroundImage: backgroundType === 'image' && backgroundImage
             ? `url(${backgroundImage})`
-            : (bannerConfig.backgroundType === 'gradient' ? (bannerConfig.gradientColors || 'none') : 'none'),
+            : (backgroundType === 'gradient' ? (bannerConfig.gradientColors || 'none') : 'none'),
         backgroundSize,
         backgroundPosition,
         backgroundRepeat: 'no-repeat',

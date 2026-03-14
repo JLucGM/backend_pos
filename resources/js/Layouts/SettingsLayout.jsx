@@ -1,4 +1,5 @@
-import { Head, usePage } from "@inertiajs/react";
+import { Head, usePage, Link } from "@inertiajs/react";
+import ApplicationLogo from "@/Components/ApplicationLogo";
 import { Cog, ShieldCheck, Store, CreditCard, Receipt, Truck, HomeIcon, Users, UserCog } from "lucide-react"; // Importar Users y UserCog
 import { NavUser } from "@/Components/nav-user";
 import { NavSingle } from "@/Components/nav-single";
@@ -36,10 +37,10 @@ export default function SettingsLayout({ children }) {
         <SidebarProvider>
             <Sidebar collapsible="icon">
                 <SidebarHeader>
-                    <div className="mx-auto">
-                        <h1 className="text-xl font-bold uppercase">
-                            Audaz
-                        </h1>
+                    <div className="flex items-center justify-center py-4">
+                        <Link href={route('dashboard')}>
+                            <ApplicationLogo className="h-10 w-auto" />
+                        </Link>
                     </div>
                 </SidebarHeader>
 

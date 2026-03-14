@@ -14,6 +14,8 @@ import {
     ChevronRight
 } from 'lucide-react';
 import { Button } from '@/Components/ui/button';
+import ApplicationLogo from '@/Components/ApplicationLogo';
+import { Facebook, Instagram, Linkedin } from 'lucide-react';
 
 export default function PricingComparison({ auth, subscriptionPlans = [] }) {
     // Definimos las características que queremos comparar de forma explícita
@@ -52,15 +54,12 @@ export default function PricingComparison({ auth, subscriptionPlans = [] }) {
             <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-8">
-                        <Link href={route('home')} className="flex items-center gap-2">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white shadow-lg shadow-indigo-200">
-                                P
-                            </div>
-                            <span className="text-xl font-bold tracking-tight text-slate-800">POS SaaS</span>
+                        <Link href="/" className="flex items-center gap-3">
+                            <ApplicationLogo className="h-10 w-auto" />
                         </Link>
                         
                         <div className="hidden md:flex items-center gap-6">
-                            <Link href="/#pricing" className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
+                            <Link href={route('pricing')} className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">
                                 Planes
                             </Link>
                         </div>
@@ -284,17 +283,75 @@ export default function PricingComparison({ auth, subscriptionPlans = [] }) {
             </section>
 
             {/* Footer */}
-            <footer className="bg-white py-12 border-t">
-                <div className="mx-auto max-w-7xl px-6 flex flex-col items-center justify-between gap-6 md:flex-row">
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 font-bold text-white">
-                            P
+            <footer className="bg-white pt-24 pb-12 border-t border-slate-100 overflow-hidden">
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                    <div className="xl:grid xl:grid-cols-3 xl:gap-8">
+                        {/* Brand Section */}
+                        <div className="space-y-8">
+                            <Link href="/" className="flex items-center gap-3">
+                                <ApplicationLogo className="h-10 w-auto" />
+                            </Link>
+                            <p className="text-sm leading-6 text-slate-600 max-w-xs">
+                                Potenciando la próxima generación de emprendedores digitales con herramientas de clase mundial.
+                            </p>
                         </div>
-                        <span className="text-lg font-bold tracking-tight text-slate-800">POS SaaS</span>
+
+                        {/* Links Sections */}
+                        <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
+                            <div className="md:grid md:grid-cols-2 md:gap-8">
+                                <div>
+                                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">Plataforma</h3>
+                                    <ul role="list" className="mt-6 space-y-4">
+                                        <li><Link href={route('pricing')} className="text-sm leading-6 text-slate-600 hover:text-indigo-600 transition-colors">Planes</Link></li>
+                                        <li><Link href={route('login')} className="text-sm leading-6 text-slate-600 hover:text-indigo-600 transition-colors">Iniciar Sesión</Link></li>
+                                        <li><Link href={route('register')} className="text-sm leading-6 text-slate-600 hover:text-indigo-600 transition-colors">Crear Tienda</Link></li>
+                                    </ul>
+                                </div>
+                                <div className="mt-10 md:mt-0">
+                                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">Legal</h3>
+                                    <ul role="list" className="mt-6 space-y-4">
+                                        <li><Link href="#" className="text-sm leading-6 text-slate-600 hover:text-indigo-600 transition-colors">Privacidad</Link></li>
+                                        <li><Link href="#" className="text-sm leading-6 text-slate-600 hover:text-indigo-600 transition-colors">Términos</Link></li>
+                                        <li><Link href="#" className="text-sm leading-6 text-slate-600 hover:text-indigo-600 transition-colors">Cookies</Link></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end justify-start space-y-6">
+                                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">Síguenos</h3>
+                                <div className="flex gap-6">
+                                    <a href="https://www.facebook.com/profile.php?id=61587188022464&mibextid=wwXIfr&rdid=9rYdEayyihYlWcAA&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1DMaeeTrSJ%2F%3Fmibextid%3DwwXIfr#" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-600 transition-all hover:scale-110">
+                                        <Facebook className="h-7 w-7" />
+                                    </a>
+                                    <a href="https://www.instagram.com/knots.agency?igsh=ZXJicjBjcTFwOG92" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-600 transition-all hover:scale-110">
+                                        <Instagram className="h-7 w-7" />
+                                    </a>
+                                    <a href="https://www.linkedin.com/showcase/knotsagencyfp/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-600 transition-all hover:scale-110">
+                                        <Linkedin className="h-7 w-7" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <p className="text-sm text-slate-500">
-                        &copy; {new Date().getFullYear()} POS SaaS Platform.
-                    </p>
+
+                    {/* Bottom Section */}
+                    <div className="mt-16 border-t border-slate-100 pt-8 flex flex-col items-center justify-center gap-6 text-center">
+                        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+                            <p className="text-xs leading-5 text-slate-400">
+                                &copy; {new Date().getFullYear()} Audaz Platform. Todos los derechos reservados.
+                            </p>
+                            <p className="text-xs text-slate-400">
+                                Desarrollado por{' '}
+                                <a
+                                    href="https://knots.agency/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-bold text-slate-600 hover:text-indigo-600 transition-colors"
+                                >
+                                    Knots Agency
+                                </a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </footer>
         </div>

@@ -674,6 +674,9 @@ class StorefrontController extends Controller
             ];
         }
 
+        // Incrementar contador de vistas
+        $currentProduct->increment('views_count');
+
         // Filtrar combinaciones que tengan stock en la tienda principal
         if ($currentProduct->combinations && $currentProduct->combinations->isNotEmpty() && $mainStore) {
             $currentProduct->combinations = $currentProduct->combinations->filter(function ($combination) use ($mainStore) {

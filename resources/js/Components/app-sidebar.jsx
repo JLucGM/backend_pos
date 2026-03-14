@@ -1,5 +1,6 @@
 // resources/js/Components/app-sidebar.jsx
 import * as React from "react"
+import ApplicationLogo from "@/Components/ApplicationLogo"
 import {
   AudioWaveform,
   BadgePercent,
@@ -47,10 +48,9 @@ import { ChevronUp } from "lucide-react"
 
 export function AppSidebar({ ...props }) {
   const { user, isSuperAdmin, can } = usePermission()
-  const { url } = usePage(); // Obtener la URL actual de Inertia
-  const company = usePage().props.company
-
-  const env = props.env || {};
+  const { url, props: pageProps } = usePage(); // Obtener la URL actual y props de Inertia
+  const company = pageProps.company
+  const env = pageProps.env || {};
 
   const baseDomain = env?.SESSION_DOMAIN
     ? env.SESSION_DOMAIN.replace(/^\./, '')
@@ -146,7 +146,7 @@ export function AppSidebar({ ...props }) {
     { title: "Pedidos", url: "orders.index", icon: ShoppingBasket, permission: "admin.orders.index" },
     { title: "Clientes", url: "client.index", icon: Bot, permission: "admin.client.index" },
     { title: "Descuentos", url: "discounts.index", icon: BadgePercent, permission: "admin.discount.index" },
-    { title: "Reportes", url: "reportes.index", icon: ChartColumnBigIcon, permission: "admin.reports.index" },
+    { title: "Reportes", url: "reports.index", icon: ChartColumnBigIcon, permission: "admin.reports.index" },
     {
       title: "Tienda online",
       url: "pages.themes",
@@ -211,8 +211,10 @@ export function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <div className="mx-auto">
-          <h1 className="text-xl font-bold uppercase">Audaz</h1>
+        <div className="flex items-center justify-center py-4">
+          <Link href={route('dashboard')}>
+            <ApplicationLogo className="h-10 w-auto" />
+          </Link>
         </div>
       </SidebarHeader>
       <SidebarContent>

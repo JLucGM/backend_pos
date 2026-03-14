@@ -918,7 +918,7 @@ const CanvasItem = ({
                                     discounted_price: 75.00,
                                     subtotal: 150.00,
                                     product_details: JSON.stringify({
-                                        image: 'https://picsum.photos/100/100',
+                                        image: '/product-example.png',
                                         combination_name: 'Talla M, Color Azul'
                                     })
                                 },
@@ -930,7 +930,7 @@ const CanvasItem = ({
                                     discounted_price: 99.99,
                                     subtotal: 99.99,
                                     product_details: JSON.stringify({
-                                        image: 'https://picsum.photos/100/100',
+                                        image: '/product-example.png',
                                         combination_name: null
                                     })
                                 }

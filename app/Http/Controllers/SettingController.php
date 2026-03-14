@@ -92,13 +92,13 @@ class SettingController extends Controller
         $request->validate([
             'currency_id' => 'required|exists:currencies,id',
             'name' => 'required|string|max:255',
+            'domain' => 'nullable|string|max:255|unique:companies,domain,' . ($setting->company->id),
             'selected_currencies' => 'nullable|array', // Monedas que el usuario quiere tener activas
             'selected_currencies.*' => 'exists:currencies,id',
             'company_currencies' => 'nullable|array',
             'company_currencies.*.id' => 'required|exists:company_currencies,id',
             'company_currencies.*.exchange_rate' => 'required|numeric|min:0',
         ]);
-
         $user = Auth::user();
         if ($setting->company_id !== $user->company_id) {
             abort(403, 'No tienes permiso para esta operación.');
@@ -149,13 +149,12 @@ class SettingController extends Controller
                     ]);
             }
         }
+
         // Actualizar los campos de la compañía
         $company = $setting->company; // Obtener la compañía asociada
         $company->update($request->only(
             'name',
-            // 'email',
-            // 'phone',
-            // 'address'
+            'domain',
         ));
 
         // Verificar si se ha subido un nuevo logo

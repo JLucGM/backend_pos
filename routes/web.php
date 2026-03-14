@@ -386,7 +386,7 @@ Route::resource('inventory-transfers', InventoryTransferController::class);
     // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
     Route::post('setting/{setting}', [SettingController::class, 'update'])->name('setting.update');
 
-    Route::get('/reports', [ReportController::class, 'index'])->name('reportes.index');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
     Route::post('/refunds', [RefundController::class, 'store'])->name('refunds.store');
     Route::post('/orders/{order}/status', [OrderController::class, 'changeStatus'])->name('orders.changeStatus');

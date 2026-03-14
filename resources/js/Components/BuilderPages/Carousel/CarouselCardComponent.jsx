@@ -198,12 +198,9 @@ const CarouselCardComponent = ({
                 {/* Imagen del producto */}
                 <div className="carousel-image-container" style={imageContainerStyle}>
                     <img
-                        src={productData?.media?.[0]?.original_url || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
+                        src={productData?.media?.[0]?.original_url || '/product-example.png'}
                         alt={productData?.product_name || 'Producto'}
-                        style={imageStyle}
-                        onError={(e) => {
-                            e.target.src = 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
-                        }}
+                        onError={(e) => { e.target.src = '/product-example.png'; }}
                     />
                 </div>
 

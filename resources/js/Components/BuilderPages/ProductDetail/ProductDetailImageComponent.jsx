@@ -84,7 +84,7 @@ const ProductDetailImageComponent = ({
     };
 
     // Determinar la imagen a mostrar
-    const displayImage = currentImage || product?.media?.[0]?.original_url || comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+    const displayImage = currentImage || product?.media?.[0]?.original_url || comp.content || '/product-example.png';
 
     // Galería de miniaturas (solo si hay más de una imagen)
     const showGallery = styles.showGallery !== false && imageGallery.length > 1;
@@ -102,7 +102,7 @@ const ProductDetailImageComponent = ({
                     alt={product?.product_name || 'Producto'}
                     style={imageStyles}
                     onError={(e) => {
-                        e.target.src = 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+                        e.target.src = '/product-example.png';
                     }}
                 />
             </div>
@@ -148,7 +148,7 @@ const ProductDetailImageComponent = ({
                                         objectFit: 'cover'
                                     }}
                                     onError={(e) => {
-                                        e.target.src = 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+                                        e.target.src = '/product-example.png';
                                     }}
                                 />
                             </button>

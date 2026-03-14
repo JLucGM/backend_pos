@@ -307,7 +307,7 @@ export default function ComponentTree({
             case 'button':
                 return { text: 'Nuevo botón', url: '#' }; // Objeto
             case 'image':
-                return { src: 'https://picsum.photos/150', alt: 'Nueva imagen' }; // Objeto
+                return { src: '/product-example.png', alt: 'Nueva imagen' }; // Objeto
             case 'video':
                 return { src: '', title: 'Nuevo video' }; // Objeto
             case 'link':

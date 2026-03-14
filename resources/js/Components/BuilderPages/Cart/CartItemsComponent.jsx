@@ -196,12 +196,15 @@ const CartItemsComponent = ({
                             {content.showImage !== false && (
                                 <div className="flex-shrink-0">
                                     <img
-                                        src={item.image}
+                                        src={item.image || '/product-example.png'}
                                         alt={item.name}
                                         className="rounded-md object-cover"
                                         style={{
                                             width: withUnit(styles.imageSize || '80px'),
                                             height: withUnit(styles.imageSize || '80px'),
+                                        }}
+                                        onError={(e) => {
+                                            e.target.src = '/product-example.png';
                                         }}
                                     />
                                 </div>

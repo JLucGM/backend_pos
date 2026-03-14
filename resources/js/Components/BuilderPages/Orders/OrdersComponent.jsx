@@ -88,7 +88,7 @@ function OrdersComponent({
                     discounted_price: 50.00,
                     subtotal: 100.00,
                     tax_amount: 8.00,
-                    image: 'https://picsum.photos/80/80?random=1',
+                    image: '/product-example.png',
                     product_details: '{"attributes":" - color: rojo, talla: m"}'
                 }
             ],
@@ -135,7 +135,7 @@ function OrdersComponent({
                     subtotal: parseFloat(item.subtotal) || 0,
                     tax_amount: parseFloat(item.tax_amount) || 0,
                     combinationText: combinationText,
-                    image: `https://picsum.photos/80/80?random=${item.id}`
+                    image: '/product-example.png'
                 };
             });
 
@@ -330,7 +330,7 @@ function OrdersComponent({
                                                     <div className="space-y-3">
                                                         {order.items.map((item) => (
                                                             <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-4 p-3 rounded-lg" style={{ backgroundColor: themeWithDefaults.background, border: `1px solid ${themeWithDefaults.borders}` }}>
-                                                                <img src={item.image} alt={item.product_name} className="w-16 h-16 object-cover rounded border" style={{ borderColor: themeWithDefaults.borders }} />
+                                                                <img src={item.image || '/product-example.png'} alt={item.product_name} className="w-16 h-16 object-cover rounded border" style={{ borderColor: themeWithDefaults.borders }} onError={(e) => e.target.src = '/product-example.png'} />
                                                                 <div className="flex-1">
                                                                     <h5 className="font-medium" style={titleStyles}>{item.product_name}</h5>
                                                                     {item.combinationText && <p className="text-sm opacity-70" style={textStyles}>{item.combinationText}</p>}

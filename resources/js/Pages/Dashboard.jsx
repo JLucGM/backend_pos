@@ -8,38 +8,29 @@ import { Badge } from "@/Components/ui/badge"
 import SummaryCard from '@/Components/SummaryCard';
 import CurrencyDisplay from '@/Components/CurrencyDisplay';
 import SubscriptionStatus from '@/Components/SubscriptionStatus';
-import { ColorPicker } from '@/Components/ui/color-picker';
+import { CheckCircle2, Circle, Settings, ShoppingBag, Globe, ShieldCheck, CreditCard, Truck } from 'lucide-react';
 
 import { usePermission } from '@/hooks/usePermission';
 
-export default function Dashboard({ user, usersCount, orders, ordersCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod, company, currentSubscription }) {
-    const { user: userAuth } = usePermission();
+export default function Dashboard({ user, usersCount, orders, ordersCount, totalTodayOrdersAmount, todayOrdersCount, lowStockProducts, ordersByPaymentMethod, company, currentSubscription, setupChecklist }) {
+    const { roles, isSuperAdmin, user: userAuth } = usePermission();
     const settings = usePage().props.settings;
 
-    // Convertir los datos de user a un formato adecuado para el gráfico
-    const chartData = Object.keys(user).map(month => ({
-        month,
-        usersRegistrados: user[month], // Renombrado para mayor claridad
-    }));
+    const isCustomerService = roles?.includes('customer service');
+    
+    // Solo mostrar el checklist a los Owners, pero NO a los Super Admin
+    const isOwner = roles?.includes('owner') && !isSuperAdmin;
 
-    const chartConfig = {
-        usersRegistrados: {
-            label: "Usuarios Registrados", // Etiqueta más descriptiva
-            color: "#2563eb",
-        },
-    };
+    const checklistItems = [
+        { id: 'products', label: 'Crear tus primeros productos', completed: setupChecklist?.has_products, link: route('products.create'), icon: ShoppingBag },
+        { id: 'logo', label: 'Subir logo de la empresa', completed: setupChecklist?.has_logo, link: route('setting.index'), icon: Settings },
+        { id: 'domain', label: 'Configurar dominio propio', completed: setupChecklist?.has_domain, link: route('setting.index'), icon: Globe },
+        { id: 'policies', label: 'Modificar políticas legales', completed: setupChecklist?.has_policies, link: route('policy.index'), icon: ShieldCheck },
+        { id: 'payment', label: 'Configurar métodos de pago', completed: setupChecklist?.has_payment_methods, link: route('paymentmethod.index'), icon: CreditCard },
+        { id: 'shipping', label: 'Ajustar tarifas de envío', completed: setupChecklist?.has_shipping_rates, link: route('shippingrate.index'), icon: Truck },
+    ];
 
-    const chartDataOrders = Object.keys(orders).map(month => ({
-        month,
-        ordenesRealizadas: orders[month],  // Renombrado para mayor claridad
-    }));
-
-    const chartConfigOrders = {
-        ordenesRealizadas: {
-            label: "Órdenes Realizadas", // Etiqueta más descriptiva
-            color: "#2563eb",
-        },
-    };
+    const allCompleted = checklistItems.every(item => item.completed);
 
     return (
         <AuthenticatedLayout
@@ -57,124 +48,112 @@ export default function Dashboard({ user, usersCount, orders, ordersCount, total
                 {/* Estado de Suscripción */}
                 <SubscriptionStatus company={company} currentSubscription={currentSubscription} />
 
-                {/* Debug temporal - remover después */}
-                {/* {process.env.NODE_ENV === 'development' && (
-                    <div className="p-2 bg-yellow-100 border rounded text-xs">
-                        <strong>Debug:</strong> totalTodayOrdersAmount = {totalTodayOrdersAmount}, 
-                        currency = {settings?.currency?.symbol || 'null'}
-                    </div>
-                )} */}
+                {/* Checklist de Configuración para Owners (desaparece al completar todo) */}
+                {isOwner && !allCompleted && (
+                    <DivSection className="border-l-4 border-l-purple-500 bg-purple-50/30 dark:bg-purple-950/20">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-purple-700 dark:text-purple-400">Pasos para lanzar tu tienda</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Completa estas tareas para optimizar tu negocio.</p>
+                            </div>
+                            <Badge variant="outline" className="text-purple-600 border-purple-200 bg-purple-50">
+                                {checklistItems.filter(i => i.completed).length} de {checklistItems.length} completados
+                            </Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {checklistItems.map((item) => (
+                                <Link 
+                                    key={item.id} 
+                                    href={item.link}
+                                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all hover:shadow-md ${
+                                        item.completed 
+                                            ? 'bg-white dark:bg-gray-800 border-green-100 dark:border-green-900/30' 
+                                            : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:border-purple-200'
+                                    }`}
+                                >
+                                    <div className={`p-2 rounded-lg ${item.completed ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-400'}`}>
+                                        <item.icon className="w-4 h-4" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className={`text-sm font-medium truncate ${item.completed ? 'text-gray-400 line-through' : 'text-gray-700 dark:text-gray-200'}`}>
+                                            {item.label}
+                                        </p>
+                                    </div>
+                                    {item.completed ? (
+                                        <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                                    ) : (
+                                        <Circle className="w-5 h-5 text-gray-300 shrink-0" />
+                                    )}
+                                </Link>
+                            ))}
+                        </div>
+                    </DivSection>
+                )}
+
                 <div className="grid auto-rows-min gap-4 lg:grid-cols-6">
                     <SummaryCard label="Órdenes Totales" value={ordersCount} className="col-span-2" />
                     <SummaryCard label="Usuarios Totales" value={usersCount} className="col-span-1" />
                     <SummaryCard label="Órdenes del Día" value={todayOrdersCount} className="col-span-1" />
-                    <SummaryCard 
-                        label="Recaudado Hoy" 
-                        value={<CurrencyDisplay currency={settings.currency} amount={totalTodayOrdersAmount} />} 
-                        className="col-span-2" 
-                    />
+                    
+                    {/* Restricción para Customer Service */}
+                    {!isCustomerService && (
+                        <SummaryCard 
+                            label="Recaudado Hoy" 
+                            value={<CurrencyDisplay currency={settings.currency} amount={totalTodayOrdersAmount} />} 
+                            className="col-span-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-100 dark:border-blue-900/30 font-bold" 
+                        />
+                    )}
 
-                    {/* <DivSection className="col-span-3">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Usuarios Registrados por Mes</h3>
-                        <ChartContainer config={chartConfig} className="min-h-[200px] w-full ">
-                            <BarChart data={chartData}>
-                                <CartesianGrid vertical={false} />
-                                <XAxis
-                                    dataKey="month"
-                                    tickLine={false}
-                                    tickMargin={10}
-                                    axisLine={false}
-                                    tickFormatter={(value) => value.slice(0, 3)}
-                                />
-                                <YAxis
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={8}
-                                    tickCount={3}
-                                    allowDecimals={false}
-                                />
-                                <ChartLegend content={<ChartLegendContent />} />
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="usersRegistrados" fill="var(--color-desktop)" radius={4} />
-                            </BarChart>
-                        </ChartContainer>
-                    </DivSection>
-
-                    <DivSection className="col-span-3">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-200">Órdenes Realizadas por Mes</h3>
-                        <ChartContainer config={chartConfigOrders} className="min-h-[200px] w-full">
-                            <BarChart data={chartDataOrders}>
-                                <CartesianGrid vertical={false} />
-                                <XAxis
-                                    dataKey="month"
-                                    tickLine={false}
-                                    tickMargin={10}
-                                    axisLine={false}
-                                    tickFormatter={(value) => value.slice(0, 3)}
-                                />
-                                <YAxis
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={8}
-                                    tickCount={10}
-                                />
-                                <ChartLegend content={<ChartLegendContent />} />
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="ordenesRealizadas" fill="var(--color-desktop)" radius={4} />
-                            </BarChart>
-                        </ChartContainer>
-                    </DivSection> */}
-
-                    <DivSection className="col-span-3">
-                        <h3 className="text-md font-medium mb-2 text-gray-700 dark:text-gray-200">Órdenes y Método de Pago del Día</h3>
-                        <ScrollArea className="h-60 max-h-52">
-                            <ul className="mt-2 space-y-2">
-                                {Object.entries(ordersByPaymentMethod).map(([paymentMethod, count]) => (
-                                    <li key={paymentMethod} className="flex justify-between items-center py-2 px-3">
-                                        <span className='font-semibold'>{count}</span>
-                                        <Badge variant="secondary" className="capitalize">{paymentMethod}</Badge>
-                                    </li>
-                                ))}
-                            </ul>
-                        </ScrollArea>
-                    </DivSection>
-
-                    <DivSection className="col-span-3">
+                    <DivSection className={`${isCustomerService ? 'col-span-6' : 'col-span-3'}`}>
                         <h3 className="text-md font-medium mb-2 text-gray-700 dark:text-gray-200">Productos con Bajo Stock</h3>
                         <ScrollArea className="h-60">
                             <ul className="mt-2 space-y-2">
                                 {lowStockProducts.length > 0 ? (
                                     lowStockProducts.map(product => (
-                                        <li key={product.id} className="flex justify-between items-center py-2 px-3">
+                                        <li key={product.id} className="flex justify-between items-center py-2 px-3 border-b last:border-0 border-gray-50 dark:border-gray-800">
                                             <div className="flex items-center">
-                                                {product.media && product.media.length > 0 ? (
-                                                    <img
-                                                        src={product.media[0].original_url}
-                                                        alt={product.media[0].name}
-                                                        className="w-10 h-10 object-cover rounded-xl aspect-square mr-2"
-                                                    />
-                                                ) : (
-                                                    <img
-                                                        src="https://placehold.co/10x10"
-                                                        alt="Placeholder"
-                                                        className="w-10 h-10 object-cover rounded-xl aspect-square mr-2"
-                                                    />
-                                                )}
-                                                <Link href={route('products.edit', product.slug)} className='capitalize text-blue-500 hover:text-blue-700'>
+                                                <img
+                                                    src={product.media && product.media.length > 0 ? product.media[0].original_url : "/product-example.png"}
+                                                    alt={product.product_name}
+                                                    className="w-10 h-10 object-cover rounded-xl aspect-square mr-2 border border-gray-100"
+                                                    onError={(e) => { e.target.src = "/product-example.png"; }}
+                                                />
+                                                <Link href={route('products.edit', product.slug)} className='capitalize text-blue-600 hover:text-blue-800 font-medium text-sm'>
                                                     {product.product_name}
                                                 </Link>
                                             </div>
-                                            <Badge variant="destructive">
+                                            <Badge variant="destructive" className="rounded-full px-2">
                                                 {product.stocks.reduce((total, stock) => total + parseInt(stock.quantity, 10), 0)}
                                             </Badge>
                                         </li>
                                     ))
                                 ) : (
-                                    <li className="text-gray-500 dark:text-gray-400">No hay productos con bajo stock.</li>
+                                    <li className="text-gray-500 dark:text-gray-400 p-4 text-center">No hay productos con bajo stock.</li>
                                 )}
                             </ul>
                         </ScrollArea>
                     </DivSection>
+
+                    {/* Restricción para Customer Service */}
+                    {!isCustomerService && (
+                        <DivSection className="col-span-3">
+                            <h3 className="text-md font-medium mb-2 text-gray-700 dark:text-gray-200">Órdenes y Método de Pago del Día</h3>
+                            <ScrollArea className="h-60 max-h-52">
+                                <ul className="mt-2 space-y-2">
+                                    {Object.entries(ordersByPaymentMethod).length > 0 ? (
+                                        Object.entries(ordersByPaymentMethod).map(([paymentMethod, count]) => (
+                                            <li key={paymentMethod} className="flex justify-between items-center py-2 px-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
+                                                <span className='font-semibold text-gray-700 dark:text-gray-300'>{count} órdenes</span>
+                                                <Badge variant="secondary" className="capitalize bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-none">{paymentMethod}</Badge>
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li className="text-gray-500 dark:text-gray-400 p-4 text-center">No hay ventas registradas hoy.</li>
+                                    )}
+                                </ul>
+                            </ScrollArea>
+                        </DivSection>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>

@@ -43,7 +43,7 @@ const ImageCarouselAccordion = ({
                 const mediaUrl = product.media?.[0]?.original_url;
                 return {
                     id: product.id,
-                    src: mediaUrl || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png',
+                    src: mediaUrl || '/product-example.png',
                     title: product.product_name || product.name,
                     subtitle: product.product_price ? `$${parseFloat(product.product_price).toFixed(2)}` : '',
                     text: '', // Accordion usually doesn't show long text, maybe description?
@@ -210,10 +210,7 @@ const ImageCarouselAccordion = ({
                                     transform: activeIndex === index ? 'scale(1.05)' : 'scale(1)',
                                 }}
                                 src={image.src}
-                                alt={image.title || ''}
-                                onError={(e) => {
-                                    e.target.src = 'https://via.placeholder.com/590x640?text=Sin+imagen';
-                                }}
+                                onError={(e) => { e.target.src = '/product-example.png'; }}
                             />
                             <div
                                 className={classNames(

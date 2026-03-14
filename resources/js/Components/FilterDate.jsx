@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CalendarIcon } from "@heroicons/react/24/outline";
 
-export default function FilterDate({ desde, hasta, routing = "reportes.index" }) {
+export default function FilterDate({ desde, hasta, routing = "reports.index", params = {} }) {
   const [range, setRange] = useState({
     from: new Date(desde),
     to: new Date(hasta),
@@ -21,27 +21,10 @@ export default function FilterDate({ desde, hasta, routing = "reportes.index" })
     const fechaHasta = format(range.to, "yyyy-MM-dd");
 
     router.get(route(routing), {
+      ...params,
       desde: fechaDesde,
       hasta: fechaHasta,
     }, {
-      only: [
-        "totalVentas",
-        "totalCompletados",
-        "totalPedidos",
-        "totalCancelados",
-        "totalPendientes",
-        "ordersByPaymentMethod",
-        "ventasPorCategoria",
-        "pedidosPorDia",
-        "totalDiscounts",
-        "totalShipping",
-        "taxAmount",
-        "ordersByDeliveryType",
-        "totalReembolsos",
-        "ventasPorPais",
-        "ventasPorEstado",
-        "ventasPorCiudad",
-      ],
       preserveScroll: true,
       preserveState: true,
     });

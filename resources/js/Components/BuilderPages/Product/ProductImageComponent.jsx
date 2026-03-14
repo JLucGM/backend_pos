@@ -131,11 +131,11 @@ const ProductImageComponent = ({
             }
         >
             <img
-                src={comp.content || 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png'}
+                src={comp.content || '/product-example.png'}
                 alt="Producto"
                 style={imageStyles}
                 onError={(e) => {
-                    e.target.src = 'https://yadakcenter.ir/wp-content/uploads/2016/07/shop-placeholder.png';
+                    e.target.src = '/product-example.png';
                 }}
                 onMouseEnter={mode === 'frontend' ? handleMouseEnter : undefined}
                 onMouseLeave={mode === 'frontend' ? handleMouseLeave : undefined}
