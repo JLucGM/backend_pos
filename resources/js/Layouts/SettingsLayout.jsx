@@ -1,6 +1,6 @@
 import { Head, usePage, Link } from "@inertiajs/react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
-import { Cog, ShieldCheck, Store, CreditCard, Receipt, Truck, HomeIcon, Users, UserCog } from "lucide-react"; // Importar Users y UserCog
+import { Cog, ShieldCheck, Store, CreditCard, Receipt, Truck, HomeIcon, Users, UserCog, Coins, Globe } from "lucide-react"; // Añadidos Coins y Globe
 import { NavUser } from "@/Components/nav-user";
 import { NavSingle } from "@/Components/nav-single";
 import { usePermission } from "@/hooks/usePermission";
@@ -22,7 +22,9 @@ export default function SettingsLayout({ children }) {
 
     const navItems = [
         { title: "Volver al Panel", url: 'dashboard', icon: HomeIcon },
-        { title: "General", url: 'setting.index', icon: Cog, isActive: url.includes('/setting'), permission: 'admin.setting.index' },
+        { title: "General", url: 'setting.index', icon: Cog, isActive: route().current('setting.index'), permission: 'admin.setting.index' },
+        { title: "Monedas", url: 'setting.currencies', icon: Coins, isActive: route().current('setting.currencies'), permission: 'admin.setting.index' },
+        { title: "Dominio", url: 'setting.domain', icon: Globe, isActive: route().current('setting.domain'), permission: 'admin.setting.index' },
         { title: "Políticas", url: 'policy.index', icon: ShieldCheck, isActive: url.includes('/policy'), permission: 'admin.pages.index' },
         { title: "Tiendas", url: 'stores.index', icon: Store, isActive: url.includes('/stores'), permission: 'admin.stores.index' },
         { title: "Usuarios", url: 'user.index', icon: Users, isActive: url.includes('/users'), permission: 'admin.user.index' },

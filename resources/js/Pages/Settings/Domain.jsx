@@ -6,47 +6,39 @@ import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import Loader from '@/Components/ui/loader';
 
-// Define GeneralForm as a lazy component
-const GeneralForm = lazy(() => import('@/Pages/Settings/GeneralForm'));
+const DomainForm = lazy(() => import('@/Pages/Settings/DomainForm'));
 
-export default function Edit({ setting, currencies, companyCurrencies }) {
+export default function Domain({ setting }) {
     const initialValues = {
-        name: setting.company.name,
-        currency_id: setting.currency_id || '',
+        name: setting.company.name, // Requerido para validación
         subdomain: setting.company.subdomain || '',
         domain: setting.company.domain || '',
-        company_currencies: companyCurrencies || [],
-        selected_currencies: (companyCurrencies || []).map(cc => cc.currency_id),
+        currency_id: setting.currency_id, // Requerido para validación
     }
 
     const { data, setData, errors, post } = useForm(initialValues)
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('setting.updateGeneral', setting), {
+        post(route('setting.updateDomain', setting), {
             onSuccess: () => {
-                toast.success("Información general actualizada exitosamente");
-            },
-            onError: (error) => {
-                console.error("Error al actualizar:", error);
-                toast.error("Error al actualizar la configuración");
+                toast.success("Configuración de dominio actualizada");
             }
         });
     }
 
     return (
         <SettingsLayout>
-            <Head className="capitalize" title="Configuración General" />
+            <Head className="capitalize" title="Configuración de Dominio" />
 
             <div className="space-y-6">
                 <form onSubmit={submit} className="space-y-6">
                     <DivSection>
                         <Suspense fallback={<Loader />}>
-                            <GeneralForm
+                            <DomainForm
                                 data={data}
                                 setData={setData}
                                 errors={errors}
-                                setting={setting}
                             />
                         </Suspense>
                     </DivSection>

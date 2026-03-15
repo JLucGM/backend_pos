@@ -6,15 +6,12 @@ import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import Loader from '@/Components/ui/loader';
 
-// Define GeneralForm as a lazy component
-const GeneralForm = lazy(() => import('@/Pages/Settings/GeneralForm'));
+const CurrencyForm = lazy(() => import('@/Pages/Settings/CurrencyForm'));
 
-export default function Edit({ setting, currencies, companyCurrencies }) {
+export default function Currencies({ setting, currencies, companyCurrencies }) {
     const initialValues = {
-        name: setting.company.name,
         currency_id: setting.currency_id || '',
-        subdomain: setting.company.subdomain || '',
-        domain: setting.company.domain || '',
+        name: setting.company.name, // Se necesita para la validación del controlador aunque no se edite aquí
         company_currencies: companyCurrencies || [],
         selected_currencies: (companyCurrencies || []).map(cc => cc.currency_id),
     }
@@ -23,30 +20,26 @@ export default function Edit({ setting, currencies, companyCurrencies }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('setting.updateGeneral', setting), {
+        post(route('setting.updateCurrencies', setting), {
             onSuccess: () => {
-                toast.success("Información general actualizada exitosamente");
-            },
-            onError: (error) => {
-                console.error("Error al actualizar:", error);
-                toast.error("Error al actualizar la configuración");
+                toast.success("Configuración de monedas actualizada");
             }
         });
     }
 
     return (
         <SettingsLayout>
-            <Head className="capitalize" title="Configuración General" />
+            <Head className="capitalize" title="Configuración de Monedas" />
 
             <div className="space-y-6">
                 <form onSubmit={submit} className="space-y-6">
                     <DivSection>
                         <Suspense fallback={<Loader />}>
-                            <GeneralForm
+                            <CurrencyForm
                                 data={data}
                                 setData={setData}
                                 errors={errors}
-                                setting={setting}
+                                currencies={currencies}
                             />
                         </Suspense>
                     </DivSection>

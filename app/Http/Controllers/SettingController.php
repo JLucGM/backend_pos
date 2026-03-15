@@ -51,6 +51,26 @@ class SettingController extends Controller
         return Inertia::render('Settings/Edit', compact('setting', 'currencies', 'companyCurrencies'));
     }
 
+    public function currencies()
+    {
+        $currencies = Currency::active()->orderBy('name')->get();
+        $user = Auth::user();
+        $setting = Setting::with('company', 'currency')->where('company_id', $user->company_id)->first();
+        $companyCurrencies = \App\Models\CompanyCurrency::with('currency')
+            ->where('company_id', $user->company_id)
+            ->get();
+
+        return Inertia::render('Settings/Currencies', compact('setting', 'currencies', 'companyCurrencies'));
+    }
+
+    public function domain()
+    {
+        $user = Auth::user();
+        $setting = Setting::with('company')->where('company_id', $user->company_id)->first();
+
+        return Inertia::render('Settings/Domain', compact('setting'));
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -83,117 +103,97 @@ class SettingController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Setting $setting)
+    public function updateGeneral(Request $request, Setting $setting)
     {
-        // Validar los datos de entrada
         $request->validate([
-            'currency_id' => 'required|exists:currencies,id',
             'name' => 'required|string|max:255',
-            'domain' => 'nullable|string|max:255|unique:companies,domain,' . ($setting->company->id),
-            'selected_currencies' => 'nullable|array', // Monedas que el usuario quiere tener activas
-            'selected_currencies.*' => 'exists:currencies,id',
-            'company_currencies' => 'nullable|array',
-            'company_currencies.*.id' => 'required|exists:company_currencies,id',
-            'company_currencies.*.exchange_rate' => 'required|numeric|min:0',
+            'logo' => 'nullable|array',
+            'favicon' => 'nullable|array',
+            'logofooter' => 'nullable|array',
         ]);
+
         $user = Auth::user();
         if ($setting->company_id !== $user->company_id) {
-            abort(403, 'No tienes permiso para esta operación.');
+            abort(403);
         }
 
-        // 1. Actualizar los ajustes principales
-        $setting->update($request->only(
-            'currency_id',
-        ));
+        $setting->company->update(['name' => $request->name]);
 
-        // 2. Sincronizar monedas habilitadas para la compañía
-        $selectedCurrencyIds = $request->input('selected_currencies', []);
+        // Manejo de Media
+        if ($request->hasFile('logo')) {
+            $setting->clearMediaCollection('logo');
+            $setting->addMultipleMediaFromRequest(['logo'])->each(fn($f) => $f->toMediaCollection('logo'));
+        }
+        if ($request->hasFile('favicon')) {
+            $setting->clearMediaCollection('favicon');
+            $setting->addMultipleMediaFromRequest(['favicon'])->each(fn($f) => $f->toMediaCollection('favicon'));
+        }
+        if ($request->hasFile('logofooter')) {
+            $setting->clearMediaCollection('logofooter');
+            $setting->addMultipleMediaFromRequest(['logofooter'])->each(fn($f) => $f->toMediaCollection('logofooter'));
+        }
+
+        return to_route('setting.index')->with('success', 'Información general actualizada');
+    }
+
+    public function updateCurrencies(Request $request, Setting $setting)
+    {
+        $request->validate([
+            'currency_id' => 'required|exists:currencies,id',
+            'selected_currencies' => 'required|array',
+            'selected_currencies.*' => 'exists:currencies,id',
+            'company_currencies' => 'nullable|array',
+            'company_currencies.*.id' => 'nullable', // Permitir nulo para nuevas monedas
+            'company_currencies.*.currency_id' => 'required|exists:currencies,id',
+            'company_currencies.*.exchange_rate' => 'required|numeric|min:0',
+        ]);
+
+        $user = Auth::user();
+        if ($setting->company_id !== $user->company_id) {
+            abort(403);
+        }
+
+        $setting->update(['currency_id' => $request->currency_id]);
+
+        $selectedIds = $request->input('selected_currencies', []);
         
-        // Asegurar que la moneda base esté siempre en la lista de seleccionadas
-        if (!in_array($request->currency_id, $selectedCurrencyIds)) {
-            $selectedCurrencyIds[] = $request->currency_id;
-        }
-
-        // Eliminar monedas que ya no están seleccionadas (excepto la base si hubiera error)
+        // Sincronizar monedas (eliminar las que ya no están)
         \App\Models\CompanyCurrency::where('company_id', $user->company_id)
-            ->whereNotIn('currency_id', $selectedCurrencyIds)
-            ->delete();
+            ->whereNotIn('currency_id', $selectedIds)->delete();
 
-        // Agregar nuevas monedas seleccionadas que no existían
-        foreach ($selectedCurrencyIds as $id) {
-            \App\Models\CompanyCurrency::firstOrCreate(
-                ['company_id' => $user->company_id, 'currency_id' => $id],
-                ['exchange_rate' => 1.0, 'is_active' => true, 'is_base' => ($id == $request->currency_id)]
-            );
-        }
-
-        // 3. Sincronizar is_base en company_currencies (por si cambió la base)
-        \App\Models\CompanyCurrency::where('company_id', $user->company_id)
-            ->update(['is_base' => false]);
-            
-        \App\Models\CompanyCurrency::where('company_id', $user->company_id)
-            ->where('currency_id', $request->currency_id)
-            ->update(['is_base' => true, 'exchange_rate' => 1.0]);
-
-        // 4. Actualizar tasas de cambio de las monedas activas
+        // Actualizar o crear cada moneda enviada
         if ($request->has('company_currencies')) {
             foreach ($request->company_currencies as $currData) {
-                \App\Models\CompanyCurrency::where('id', $currData['id'])
-                    ->where('company_id', $user->company_id)
-                    ->where('is_base', false) // No permitir sobrescribir la tasa de la moneda base
-                    ->update([
-                        'exchange_rate' => $currData['exchange_rate'],
-                    ]);
+                $isBase = ($currData['currency_id'] == $request->currency_id);
+                
+                \App\Models\CompanyCurrency::updateOrCreate(
+                    ['company_id' => $user->company_id, 'currency_id' => $currData['currency_id']],
+                    [
+                        'exchange_rate' => $isBase ? 1.0 : $currData['exchange_rate'],
+                        'is_active' => true,
+                        'is_base' => $isBase
+                    ]
+                );
             }
         }
 
-        // Actualizar los campos de la compañía
-        $company = $setting->company; // Obtener la compañía asociada
-        $company->update($request->only(
-            'name',
-            'domain',
-        ));
+        return to_route('setting.currencies')->with('success', 'Monedas y tasas de cambio actualizadas correctamente');
+    }
 
-        // Verificar si se ha subido un nuevo logo
-        if ($request->hasFile('logo')) {
-            // Eliminar la imagen anterior de la colección 'logo'
-            $setting->clearMediaCollection('logo');
+    public function updateDomain(Request $request, Setting $setting)
+    {
+        $request->validate([
+            'domain' => 'nullable|string|max:255|unique:companies,domain,' . $setting->company->id,
+        ]);
 
-            // Agregar la nueva imagen a la colección 'logo'
-            $setting->addMultipleMediaFromRequest(['logo'])
-                ->each(function ($fileAdder) {
-                    $fileAdder->toMediaCollection('logo');
-                });
+        $user = Auth::user();
+        if ($setting->company_id !== $user->company_id) {
+            abort(403);
         }
 
-        // Verificar si se ha subido un nuevo favicon
-        if ($request->hasFile('favicon')) {
-            // Eliminar la imagen anterior de la colección 'favicon'
-            $setting->clearMediaCollection('favicon');
+        $setting->company->update(['domain' => $request->domain]);
 
-            // Agregar la nueva imagen a la colección 'favicon'
-            $setting->addMultipleMediaFromRequest(['favicon'])
-                ->each(function ($fileAdder) {
-                    $fileAdder->toMediaCollection('favicon');
-                });
-        }
-
-        // Verificar si se ha subido un nuevo logofooter
-        if ($request->hasFile('logofooter')) {
-            // Eliminar la imagen anterior de la colección 'logofooter'
-            $setting->clearMediaCollection('logofooter');
-
-            // Agregar la nueva imagen a la colección 'logofooter'
-            $setting->addMultipleMediaFromRequest(['logofooter'])
-                ->each(function ($fileAdder) {
-                    $fileAdder->toMediaCollection('logofooter');
-                });
-        }
-
-        return to_route('setting.index', $setting);
+        return to_route('setting.domain')->with('success', 'Dominio actualizado');
     }
 
     public function updateSettings(Request $request, Setting $setting)

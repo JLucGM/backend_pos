@@ -383,8 +383,12 @@ Route::resource('inventory-transfers', InventoryTransferController::class);
         ->name('pages.delete-image');
 
     Route::get('setting', [SettingController::class, 'index'])->name('setting.index');
-    // Route::get('setting/{setting}/edit', [SettingController::class, 'edit'])->name('setting.edit');
-    Route::post('setting/{setting}', [SettingController::class, 'update'])->name('setting.update');
+    Route::get('setting/currencies', [SettingController::class, 'currencies'])->name('setting.currencies');
+    Route::get('setting/domain', [SettingController::class, 'domain'])->name('setting.domain');
+    
+    Route::post('setting/{setting}/general', [SettingController::class, 'updateGeneral'])->name('setting.updateGeneral');
+    Route::post('setting/{setting}/currencies', [SettingController::class, 'updateCurrencies'])->name('setting.updateCurrencies');
+    Route::post('setting/{setting}/domain', [SettingController::class, 'updateDomain'])->name('setting.updateDomain');
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
