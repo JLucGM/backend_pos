@@ -180,7 +180,7 @@ class StorefrontController extends Controller
                 'currentCollection' => $collection, // Pasamos la colección por si el frontend quiere usarla (título, desc)
                 'mainStore' => $mainStore ? [
                     'id' => $mainStore->id,
-                    'store_name' => $mainStore->store_name,
+                    'name' => $mainStore->name,
                     'is_ecommerce_active' => $mainStore->is_ecommerce_active,
                     'address' => $mainStore->address,
                     'phone' => $mainStore->phone,
@@ -188,6 +188,14 @@ class StorefrontController extends Controller
                     'allow_delivery' => (bool)$mainStore->allow_delivery,
                     'allow_pickup' => (bool)$mainStore->allow_pickup,
                     'allow_shipping' => (bool)$mainStore->allow_shipping,
+                    'schedules' => $mainStore->schedules->map(function($s) {
+                        return [
+                            'day_of_week' => $s->day_of_week,
+                            'open_time' => $s->open_time ? substr($s->open_time, 0, 5) : null,
+                            'close_time' => $s->close_time ? substr($s->close_time, 0, 5) : null,
+                            'is_closed' => (bool)$s->is_closed,
+                        ];
+                    }),
                 ] : null,
                 'collections' => $company->collections()->where('is_active', true)->get(),
             ],
@@ -470,7 +478,7 @@ class StorefrontController extends Controller
                 'cities' => $cities,
                 'mainStore' => $mainStore ? [ // Pasar información de la tienda principal
                     'id' => $mainStore->id,
-                    'store_name' => $mainStore->store_name,
+                    'name' => $mainStore->name,
                     'is_ecommerce_active' => $mainStore->is_ecommerce_active,
                     'address' => $mainStore->address,
                     'phone' => $mainStore->phone,
@@ -478,6 +486,14 @@ class StorefrontController extends Controller
                     'allow_delivery' => (bool)$mainStore->allow_delivery,
                     'allow_pickup' => (bool)$mainStore->allow_pickup,
                     'allow_shipping' => (bool)$mainStore->allow_shipping,
+                    'schedules' => $mainStore->schedules->map(function($s) {
+                        return [
+                            'day_of_week' => $s->day_of_week,
+                            'open_time' => $s->open_time ? substr($s->open_time, 0, 5) : null,
+                            'close_time' => $s->close_time ? substr($s->close_time, 0, 5) : null,
+                            'is_closed' => (bool)$s->is_closed,
+                        ];
+                    }),
                 ] : null,
                 'collections' => $company->collections()->where('is_active', true)->get(),
             ],

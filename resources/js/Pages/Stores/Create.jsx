@@ -1,67 +1,57 @@
 import SettingsLayout from '@/Layouts/SettingsLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import Loader from '@/Components/ui/loader';
 
-// Define StoresForm as a lazy component
 const StoresForm = lazy(() => import('@/Pages/Stores/StoresForm'));
 const StoreSchedulesForm = lazy(() => import('@/Pages/Stores/StoreSchedulesForm'));
-export default function Edit({ store, countries, states, cities, }) {
-    // Generar horarios base si no existen
-    const defaultSchedules = Array.from({ length: 7 }, (_, i) => {
-        const existing = (store.schedules || []).find(s => s.day_of_week === i);
-        return existing ? {
-            ...existing,
-            open_time: existing.open_time ? existing.open_time.substring(0, 5) : '09:00',
-            close_time: existing.close_time ? existing.close_time.substring(0, 5) : '18:00',
-        } : {
-            day_of_week: i,
-            open_time: '09:00',
-            close_time: '18:00',
-            is_closed: false
-        };
-    });
 
-    const initialValues = {
-        name: store.name,
-        phone: store.phone,
-        address: store.address,
-        is_ecommerce_active: store.is_ecommerce_active,
-        allow_delivery: store.allow_delivery,
-        allow_pickup: store.allow_pickup,
-        allow_shipping: store.allow_shipping,
-        country_id: store.country_id,
-        state_id: store.state_id,
-        city_id: store.city_id,
+export default function Create({ countries, states, cities }) {
+
+    const defaultSchedules = Array.from({ length: 7 }, (_, i) => ({
+        day_of_week: i,
+        open_time: '09:00',
+        close_time: '18:00',
+        is_closed: false
+    }));
+
+    const { data, setData, errors, post, processing } = useForm({
+        name: "",
+        phone: "",
+        address: "",
+        is_ecommerce_active: false,
+        allow_delivery: false,
+        allow_pickup: false,
+        allow_shipping: false,
+        country_id: countries[0]?.id || "",
+        state_id: states[0]?.id || "",
+        city_id: cities[0]?.id || "",
         schedules: defaultSchedules,
-    }
-
-    const { data, setData, errors, post } = useForm(initialValues);
+    });
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('stores.update', store), {
+        post(route('stores.store'), {
             onSuccess: () => {
-                toast.success("Tienda actualizada exitosamente");
+                toast.success("Tienda creada con éxito");
             },
             onError: (error) => {
-                toast.error("Error al actualizar la tienda");
+                toast.error("Error al crear la tienda");
             }
         });
     }
 
     return (
         <SettingsLayout>
-            <Head className="capitalize" title={`Editar ${store.name}`} />
+            <Head className="capitalize" title="Nueva Tienda" />
 
             <div className="space-y-6">
                 <div>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Actualizar Tienda</h2>
+                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Nueva Tienda</h2>
                 </div>
-
 
                 <form onSubmit={submit} className="space-y-6">
                     <DivSection className='space-y-4'>
@@ -85,9 +75,12 @@ export default function Edit({ store, countries, states, cities, }) {
                     <div className="flex justify-end pt-4 border-t">
                         <Button
                             variant="default"
+                            size="lg"
                             type="submit"
+                            disabled={processing}
+                            className="px-8 rounded-xl shadow-lg shadow-blue-100"
                         >
-                            Guardar Cambios
+                            {processing ? 'Guardando...' : 'Crear Tienda'}
                         </Button>
                     </div>
                 </form>

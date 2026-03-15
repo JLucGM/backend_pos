@@ -28,11 +28,8 @@ class StoreController extends Controller
     {
         // El CompanyScope se encarga de filtrar por la compañía del usuario logueado
         $stores = Store::all();
-        $countries = Country::all();
-        $states = State::all();
-        $cities = City::all();
 
-        return Inertia::render('Stores/Index', compact('stores', 'countries', 'states', 'cities'));
+        return Inertia::render('Stores/Index', compact('stores'));
     }
 
     /**
@@ -40,7 +37,11 @@ class StoreController extends Controller
      */
     public function create()
     {
-        //
+        $countries = Country::all();
+        $states = State::all();
+        $cities = City::all();
+
+        return Inertia::render('Stores/Create', compact('countries', 'states', 'cities'));
     }
 
     /**
@@ -51,6 +52,7 @@ class StoreController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
             'address' => 'required|string|max:255',
             'is_ecommerce_active' => 'boolean',
             'allow_delivery' => 'boolean',
@@ -59,13 +61,20 @@ class StoreController extends Controller
             'country_id' => 'required|exists:countries,id',
             'state_id' => 'required|exists:states,id',
             'city_id' => 'required|exists:cities,id',
+            'schedules' => 'nullable|array',
+            'schedules.*.day_of_week' => 'required|integer|min:0|max:6',
+            'schedules.*.open_time' => 'nullable|string',
+            'schedules.*.close_time' => 'nullable|string',
+            'schedules.*.is_closed' => 'boolean',
         ]);
 
         $user = Auth::user();
         
-        // Asignar company_id solo si el usuario tiene uno (para tenancy)
+        $storeData = $data;
+        unset($storeData['schedules']);
+
         if ($user->company_id) {
-            $data['company_id'] = $user->company_id;
+            $storeData['company_id'] = $user->company_id;
         }
 
         // Si se está creando un store con is_ecommerce_active = true
@@ -76,7 +85,14 @@ class StoreController extends Controller
         }
 
         // Crear la nueva tienda
-        Store::create($data);
+        $store = Store::create($storeData);
+
+        // Guardar horarios
+        if (!empty($data['schedules'])) {
+            foreach ($data['schedules'] as $schedule) {
+                $store->schedules()->create($schedule);
+            }
+        }
 
         return to_route('stores.index')->with('success', 'Tienda creada con éxito.');
     }
@@ -100,6 +116,7 @@ class StoreController extends Controller
             abort(403, 'No tienes permiso para esta operación.');
         }
 
+        $store->load('schedules');
         $countries = Country::all();
         $states = State::all();
         $cities = City::all();
@@ -120,6 +137,7 @@ class StoreController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
             'address' => 'required|string|max:255',
             'is_ecommerce_active' => 'boolean',
             'allow_delivery' => 'boolean',
@@ -128,7 +146,15 @@ class StoreController extends Controller
             'country_id' => 'required|exists:countries,id',
             'state_id' => 'required|exists:states,id',
             'city_id' => 'required|exists:cities,id',
+            'schedules' => 'nullable|array',
+            'schedules.*.day_of_week' => 'required|integer|min:0|max:6',
+            'schedules.*.open_time' => 'nullable|string',
+            'schedules.*.close_time' => 'nullable|string',
+            'schedules.*.is_closed' => 'boolean',
         ]);
+
+        $storeData = $data;
+        unset($storeData['schedules']);
 
         // Si se está actualizando a is_ecommerce_active = true
         if (!empty($data['is_ecommerce_active'])) {
@@ -138,9 +164,23 @@ class StoreController extends Controller
                 ->update(['is_ecommerce_active' => false]);
         }
 
-        $store->update($data);
+        $store->update($storeData);
 
-        return to_route('stores.edit', $store)->with('success', 'Tienda actualizada con éxito.');
+        // Sincronizar horarios
+        if (isset($data['schedules'])) {
+            foreach ($data['schedules'] as $sData) {
+                $store->schedules()->updateOrCreate(
+                    ['day_of_week' => $sData['day_of_week']],
+                    [
+                        'open_time' => $sData['open_time'],
+                        'close_time' => $sData['close_time'],
+                        'is_closed' => $sData['is_closed'],
+                    ]
+                );
+            }
+        }
+
+        return to_route('stores.index')->with('success', 'Tienda actualizada con éxito.');
     }
 
     /**

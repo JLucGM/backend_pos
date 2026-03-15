@@ -567,24 +567,43 @@ const CustomerInfoComponent = ({
                         <StoreIcon className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: resolveValue(themeWithDefaults.info_color) }} />
                         <div>
                             <h4 className="font-medium" style={{ color: resolveValue(themeWithDefaults.info_color) }}>
-                                Recoger en Tienda: {mainStore?.store_name}
+                                Recoger en Tienda: {mainStore?.name}
                             </h4>
                             <p className="text-sm mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
                                 Puedes recoger tu pedido en nuestra sucursal. Te notificaremos cuando esté listo para retiro.
                             </p>
                             <div className="mt-2 text-sm space-y-1" style={{ color: resolveValue(themeWithDefaults.info_color) }}>
-                                <div className="flex items-center gap-2">
-                                    <MapPinIcon className="h-4 w-4" />
+                                <div className="flex items-start gap-2">
+                                    <MapPinIcon className="h-4 w-4 mt-0.5 flex-shrink-0" />
                                     <span>{mainStore?.address || 'Dirección no disponible'}</span>
                                 </div>
                                 {mainStore?.phone && (
                                     <div className="flex items-center gap-2">
-                                        <CheckIcon className="h-4 w-4" />
+                                        <TruckIcon className="h-4 w-4" /> {/* Cambiado por un icono más genérico o informativo */}
                                         <span>Teléfono: {mainStore.phone}</span>
                                     </div>
                                 )}
-                                <div className="mt-2 italic text-xs">
-                                    Horario: Próximamente disponible
+                                
+                                <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                                    <div className="font-semibold mb-1 uppercase text-[10px] tracking-wider opacity-70">Horarios de Atención:</div>
+                                    <div className="grid grid-cols-1 gap-0.5">
+                                        {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((day, idx) => {
+                                            const daySchedule = mainStore?.schedules?.find(s => s.day_of_week === idx);
+                                            const isToday = new Date().getDay() === idx;
+                                            
+                                            return (
+                                                <div key={idx} className={`flex justify-between text-[11px] ${isToday ? 'font-bold underline' : 'opacity-80'}`}>
+                                                    <span>{day}:</span>
+                                                    <span>
+                                                        {daySchedule?.is_closed 
+                                                            ? 'Cerrado' 
+                                                            : `${daySchedule?.open_time || '--:--'} - ${daySchedule?.close_time || '--:--'}`
+                                                        }
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -11,40 +11,41 @@ use Spatie\Sluggable\SlugOptions;
 class Store extends Model
 {
     use HasFactory, HasSlug;
+protected $fillable = [
+    'name',
+    'slug',
+    'phone',
+    'email',
+    'address',
+    'country_id',
+    'state_id',
+    'city_id',
+    'company_id',
+    'is_ecommerce_active',
+    'allow_delivery',
+    'allow_pickup',
+    'allow_shipping'
+];
 
-    protected $fillable = [
-        'name',
-        'slug',
-        'phone',
-        'address',
-        'country_id',
-        'state_id',
-        'city_id',
-        'company_id',
-        'is_ecommerce_active',
-        'allow_delivery',
-        'allow_pickup',
-        'allow_shipping'
-    ];
+protected $casts = [
+    'is_ecommerce_active' => 'boolean',
+    'allow_delivery' => 'boolean',
+    'allow_pickup' => 'boolean',
+    'allow_shipping' => 'boolean',
+];
 
-    protected $casts = [
-        'is_ecommerce_active' => 'boolean',
-        'allow_delivery' => 'boolean',
-        'allow_pickup' => 'boolean',
-        'allow_shipping' => 'boolean',
-    ];
+public function getRouteKeyName()
+{
+    return 'slug';
+}
 
-    public function getRouteKeyName()
-    {
-        return 'slug';
-    }
+public function getSlugOptions(): SlugOptions
+{
+    return SlugOptions::create()
+        ->generateSlugsFrom('name')
+        ->saveSlugsTo('slug');
+}
 
-    public function getSlugOptions(): SlugOptions
-    {
-        return SlugOptions::create()
-            ->generateSlugsFrom('name')
-            ->saveSlugsTo('slug');
-    }
 
     protected static function booted()
     {
@@ -90,5 +91,10 @@ class Store extends Model
     public function shippingRate()
     {
                 return $this->hasMany(ShippingRate::class);
+    }
+
+    public function schedules()
+    {
+        return $this->hasMany(StoreSchedule::class);
     }
 }

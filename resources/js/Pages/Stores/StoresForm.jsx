@@ -65,21 +65,20 @@ export default function StoresForm({ data, countries, states, cities, setData, e
                 </TextDescription>
                 <InputError message={errors.name} className="mt-2" />
             </div>
-            <div>
-                <InputLabel htmlFor="phone" value="Teléfono" />
-                <TextInput
-                    id="phone"
-                    type="text"
-                    name="phone"
-                    value={data.phone}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('phone', e.target.value)}
-                />
-                {/* <TextDescription>
-                    Asegúrate de que sea claro y representativo de tu negocio.
-                </TextDescription> */}
-                <InputError message={errors.phone} className="mt-2" />
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <InputLabel htmlFor="phone" value="Teléfono" />
+                    <TextInput
+                        id="phone"
+                        type="text"
+                        name="phone"
+                        value={data.phone}
+                        className="mt-1 block w-full"
+                        onChange={(e) => setData('phone', e.target.value)}
+                    />
+                    <InputError message={errors.phone} className="mt-2" />
+                </div>
+
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -176,7 +175,7 @@ export default function StoresForm({ data, countries, states, cities, setData, e
                 <InputError message={errors.allow_pickup} className="mt-2" />
             </div>
 
-            <div className="flex items-center space-x-2">
+            {/* <div className="flex items-center space-x-2">
                 <InputLabel htmlFor="allow_shipping" value="Permitir envíos" />
                 <input
                     id="allow_shipping"
@@ -187,7 +186,7 @@ export default function StoresForm({ data, countries, states, cities, setData, e
                     className="mt-1 block h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <InputError message={errors.allow_shipping} className="mt-2" />
-            </div>
+            </div> */}
         </>
     );
 }
