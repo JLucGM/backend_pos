@@ -1,10 +1,10 @@
 import SettingsLayout from '@/Layouts/SettingsLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react'; // Añadido Link
 import { lazy, Suspense } from 'react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import Loader from '@/Components/ui/loader';
-import DivSection from '@/Components/ui/div-section';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline'; // Añadido icono
 
 const ShippingRatesForm = lazy(() => import('../ShippingRates/ShippingRatesForm'));
 
@@ -37,29 +37,30 @@ export default function Create({ stores }) {
             <Head title="Crear Tarifa de Envío" />
 
             <div className="space-y-6">
-                <div>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Nueva Tarifa de Envío</h2>
+                <div className='flex justify-start items-center'>
+                    <Link href={route('shippingrate.index')} >
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
+                    <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        Nueva Tarifa de Envío
+                    </h2>
                 </div>
 
                 <form onSubmit={submit} className='space-y-6'>
-                    <DivSection>
-                        <Suspense fallback={<Loader />}>
-                            <ShippingRatesForm
-                                data={data}
-                                setData={setData}
-                                errors={errors}
-                                stores={stores}
-                            />
-                        </Suspense>
-                    </DivSection>
+                    <Suspense fallback={<Loader />}>
+                        <ShippingRatesForm
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                            stores={stores}
+                        />
+                    </Suspense>
 
                     <div className="flex justify-end pt-4 border-t">
                         <Button
                             variant="default"
-                            size="lg"
                             type="submit"
                             disabled={processing}
-                            className="px-8 rounded-xl shadow-lg shadow-blue-100"
                         >
                             {processing ? "Guardando..." : "Crear Tarifa"}
                         </Button>

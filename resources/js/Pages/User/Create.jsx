@@ -1,9 +1,10 @@
 import SettingsLayout from '@/Layouts/SettingsLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { lazy, Suspense } from 'react';
 import Loader from '@/Components/ui/loader';
 import DivSection from '@/Components/ui/div-section';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 // Define UserForm como un componente cargado de forma lazy
 const UserForm = lazy(() => import('./UserForm'));
@@ -32,32 +33,32 @@ export default function Create({ roles, role }) {
             <Head className="capitalize" title="Nuevo Staff" />
 
             <div className="space-y-6">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Crear Staff</h2>
-                    <p className="text-slate-500">Añade un nuevo miembro al personal administrativo de tu tienda.</p>
+                <div className='flex justify-start items-center'>
+                    <Link href={route('user.index')} >
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
+                    <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        Crear usuario
+                    </h2>
                 </div>
 
                 <form onSubmit={submit} className='space-y-6'>
-                    <DivSection>
-                        <Suspense fallback={<Loader />}>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <UserForm
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                    roles={roles}
-                                    role={role}
-                                />
-                            </div>
-                        </Suspense>
-                    </DivSection>
+                    <Suspense fallback={<Loader />}>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <UserForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                                roles={roles}
+                                role={role}
+                            />
+                        </div>
+                    </Suspense>
 
-                    <div className="flex justify-end pt-4 border-t">
-                        <Button 
-                            type="submit" 
+                    <div className="flex justify-end p-2.5">
+                        <Button
+                            type="submit"
                             disabled={processing}
-                            size="lg"
-                            className="px-12 rounded-xl shadow-xl shadow-blue-100"
                         >
                             {processing ? 'Guardando...' : 'Crear Usuario'}
                         </Button>

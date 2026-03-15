@@ -1,4 +1,3 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
@@ -6,6 +5,7 @@ import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 import Loader from '@/Components/ui/loader';
+import SettingsLayout from '@/Layouts/SettingsLayout';
 
 const RolesForm = lazy(() => import('./RolesForm'));
 
@@ -28,8 +28,9 @@ export default function Create({ permissionsList }) {
     };
 
     return (
-        <AuthenticatedLayout
-            header={
+        <SettingsLayout>
+
+            <div className="space-y-6">
                 <div className='flex justify-between items-center '>
                     <div className="flex justify-start items-center">
                         <Link href={route('roles.index')} >
@@ -40,40 +41,33 @@ export default function Create({ permissionsList }) {
                         </h2>
                     </div>
                 </div>
-            }
-        >
-            <Head title="Crear Rol" />
+                <Head title="Crear Rol" />
 
-            <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                <form onSubmit={submit} className='space-y-6'>
-                    <DivSection>
-                        <Suspense fallback={<Loader />}>
-                            <RolesForm 
-                                data={data} 
-                                setData={setData} 
-                                errors={errors} 
-                                permissionsList={permissionsList} 
-                            />
-                        </Suspense>
-                    </DivSection>
+                <div className="text-gray-900 dark:text-gray-100">
+                    <form onSubmit={submit} className='space-y-6'>
+                        <DivSection>
+                            <Suspense fallback={<Loader />}>
+                                <RolesForm
+                                    data={data}
+                                    setData={setData}
+                                    errors={errors}
+                                    permissionsList={permissionsList}
+                                />
+                            </Suspense>
+                        </DivSection>
 
-                    <div className="flex justify-end gap-3">
-                        <Link 
-                            href={route('roles.index')}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
-                        >
-                            Cancelar
-                        </Link>
-                        <Button
-                            variant="default"
-                            type="submit"
-                            disabled={processing}
-                        >
-                            {processing ? 'Guardando...' : 'Crear Rol'}
-                        </Button>
-                    </div>
-                </form>
+                        <div className="flex justify-end p-2.5">
+                            <Button
+                                variant="default"
+                                type="submit"
+                                disabled={processing}
+                            >
+                                {processing ? 'Guardando...' : 'Crear Rol'}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </AuthenticatedLayout>
+        </SettingsLayout>
     );
 }

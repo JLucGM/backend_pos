@@ -11,8 +11,8 @@ import { customStyles } from '@/hooks/custom-select';
 import { useSelectOptions } from '@/hooks/useSelectOptions';
 
 export default function UserForm({ data, setData, errors, roles, role, user = "" }) {
-        const { statusOptions } = useSelectOptions();
-    
+    const { statusOptions } = useSelectOptions();
+
     return (
         <>
             {/* {user.avatar ? ( */}
@@ -27,7 +27,7 @@ export default function UserForm({ data, setData, errors, roles, role, user = ""
                 null
             )} */}
 
-            <div className="col-span-full flex justify-center">
+            {/* <div className="col-span-full flex justify-center">
 
                 <Avatar className="h-56 w-56 ">
                     <AvatarImage className="h-56 w-56 object-cover" src={user.avatar_url} />
@@ -35,7 +35,7 @@ export default function UserForm({ data, setData, errors, roles, role, user = ""
                         <p className='text-3xl' >CN</p>
                     </AvatarFallback>
                 </Avatar>
-            </div>
+            </div> */}
 
             <div className="col-span-1 md:col-span-2">
 
@@ -69,7 +69,7 @@ export default function UserForm({ data, setData, errors, roles, role, user = ""
                     </div>
 
                     <div>
-                        <InputLabel htmlFor="identification" value="identification" />
+                        <InputLabel htmlFor="identification" value="Cédula de identidad" />
                         <TextInput
                             id="identification"
                             type="text"
@@ -116,7 +116,7 @@ export default function UserForm({ data, setData, errors, roles, role, user = ""
             <div className="col-span-1">
 
                 <DivSection className='my-4'>
-                    <div>
+                    {/* <div>
                         <InputLabel htmlFor="avatar" value="Avatar" />
                         <Input
                             id="avatar"
@@ -126,7 +126,7 @@ export default function UserForm({ data, setData, errors, roles, role, user = ""
                             onChange={(e) => setData('avatar', e.target.files[0])}
                         />
                         <InputError message={errors.avatar} className="mt-2" />
-                    </div>
+                    </div> */}
 
                     <div>
                         <InputLabel htmlFor="is_active" value="Estado" />

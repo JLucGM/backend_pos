@@ -1,8 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react'; // Añadido Link
 import { lazy, Suspense } from 'react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline'; // Añadido icono
 
 // Cargar el componente de forma diferida
 const CategoriesForm = lazy(() => import('./CategoriesForm'));
@@ -18,10 +19,10 @@ export default function Create() {
         e.preventDefault();
         post(route('category.store'), {
             onSuccess: () => {
-                toast("Producto creado con éxito.");
+                toast("Categoría creada con éxito.");
             },
             onError: () => {
-                toast.error("Error al crear el producto.");
+                toast.error("Error al crear la categoría.");
             }
         });
     }
@@ -29,9 +30,12 @@ export default function Create() {
     return (
         <AuthenticatedLayout
             header={
-                <div className='flex justify-between items-center px-6'>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Crear Categoria
+                <div className='flex justify-start items-center px-6'>
+                    <Link href={route('category.index')} >
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
+                    <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        Crear Categoría
                     </h2>
                 </div>
             }

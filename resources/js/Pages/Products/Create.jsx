@@ -55,7 +55,7 @@ export default function Create({ categories, taxes, stores, libraryMedia = [] })
 
     const submit = (e) => {
         e.preventDefault();
-        console.log('Enviando datos del nuevo producto:', data);
+
         post(route('products.store'), {
             onSuccess: () => {
                 toast("Producto creado con éxito.");

@@ -4,7 +4,7 @@ import TextInput from '@/Components/TextInput';
 import { Checkbox } from '@/Components/ui/checkbox';
 
 export default function RolesForm({ data, setData, errors, permissionsList }) {
-    
+
     const handlePermissionChange = (permissionId, checked) => {
         const currentPermissions = [...(data.permissions || [])];
         if (checked) {
@@ -25,7 +25,7 @@ export default function RolesForm({ data, setData, errors, permissionsList }) {
 
     return (
         <div className="space-y-6">
-            <div className="max-w-md">
+            <div className="">
                 <InputLabel htmlFor="name" value="Nombre del Rol" />
                 <TextInput
                     id="name"

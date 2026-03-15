@@ -1,10 +1,11 @@
 import SettingsLayout from '@/Layouts/SettingsLayout';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage, Link } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { toast } from 'sonner';
 import { lazy, Suspense } from 'react';
 import DivSection from '@/Components/ui/div-section';
 import Loader from '@/Components/ui/loader';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 const StoresForm = lazy(() => import('@/Pages/Stores/StoresForm'));
 const StoreSchedulesForm = lazy(() => import('@/Pages/Stores/StoreSchedulesForm'));
@@ -49,8 +50,13 @@ export default function Create({ countries, states, cities }) {
             <Head className="capitalize" title="Nueva Tienda" />
 
             <div className="space-y-6">
-                <div>
-                    <h2 className="capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Nueva Tienda</h2>
+                <div className='flex justify-start items-center'>
+                    <Link href={route('stores.index')} >
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
+                    <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        Nueva Tienda
+                    </h2>
                 </div>
 
                 <form onSubmit={submit} className="space-y-6">

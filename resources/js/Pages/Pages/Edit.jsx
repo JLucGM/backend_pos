@@ -56,28 +56,27 @@ export default function Edit({ page }) {
 
             <div className={isPolicy ? "space-y-6" : "text-gray-900 dark:text-gray-100"}>
                 {isPolicy && (
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Editar Política</h2>
-                        <p className="text-slate-500">Actualiza el contenido legal de <strong>{page.title}</strong>.</p>
+                    <div className="flex justify-start items-center">
+                        <Link href={route('policy.index')} >
+                            <ArrowLongLeftIcon className='size-6' />
+                        </Link>
+                        <h2 className="ms-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                            Editar Política</h2>
                     </div>
                 )}
 
                 <form onSubmit={submit} className='space-y-6'>
-                    <DivSection>
-                        <Suspense fallback={<Loader />}>
-                            <PagesForm
-                                data={data}
-                                setData={setData}
-                                errors={errors}
-                            />
-                        </Suspense>
-                    </DivSection>
-                    
-                    <div className={`flex justify-end ${isPolicy ? 'pt-4 border-t' : 'p-2.5'}`}>
+                    <Suspense fallback={<Loader />}>
+                        <PagesForm
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                        />
+                    </Suspense>
+
+                    <div className="flex justify-end p-2.5">
                         <Button
                             variant="default"
-                            size={isPolicy ? "lg" : "default"}
-                            className={isPolicy ? "px-12 rounded-xl shadow-xl shadow-blue-100" : ""}
                             disabled={processing}
                         >
                             {processing ? "Guardando..." : "Guardar Cambios"}

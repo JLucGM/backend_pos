@@ -1,16 +1,16 @@
 import SettingsLayout from '@/Layouts/SettingsLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { Button } from '@/Components/ui/button';
 import { lazy, Suspense } from 'react';
-import DivSection from '@/Components/ui/div-section';
 import { toast } from 'sonner';
 import Loader from '@/Components/ui/loader';
+import { ArrowLongLeftIcon } from '@heroicons/react/24/outline';
 
 // Definimos PaymentMethodForm como un componente lazy
 const PaymentMethodForm = lazy(() => import('./PaymentMethodForm'));
 
 export default function Create({ }) {
-    const { data, setData, errors, post } = useForm({
+    const { data, setData, errors, post, processing } = useForm({
         payment_method_name: "",
         description: "",
         is_active: false,
@@ -35,29 +35,34 @@ export default function Create({ }) {
             <Head className="capitalize" title="Nuevo Método de Pago" />
 
             <div className="space-y-6">
+                <div className='flex justify-start items-center'>
+                    <Link href={route('paymentmethod.index')} >
+                        <ArrowLongLeftIcon className='size-6' />
+                    </Link>
+                    <h2 className="mx-2 capitalize font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        Nuevo Método de Pago
+                    </h2>
+                </div>
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Nuevo Método de Pago</h2>
                     <p className="text-slate-500">Configura una nueva forma de recibir pagos en tu comercio.</p>
                 </div>
 
                 <form onSubmit={submit} className='space-y-6'>
-                    <DivSection>
-                        <Suspense fallback={<Loader />}>
-                            <PaymentMethodForm
-                                data={data}
-                                setData={setData}
-                                errors={errors}
-                            />
-                        </Suspense>
-                    </DivSection>
+                    <Suspense fallback={<Loader />}>
+                        <PaymentMethodForm
+                            data={data}
+                            setData={setData}
+                            errors={errors}
+                        />
+                    </Suspense>
 
                     <div className="flex justify-end pt-4 border-t">
-                        <Button 
-                            variant="default" 
-                            size="lg" 
-                            className="px-8 rounded-xl shadow-lg shadow-blue-100"
+                        <Button
+                            variant="default"
+                            disabled={processing}
+
                         >
-                            Crear Método
+                            {processing ? "Guardando..." : "Guardar"}
                         </Button>
                     </div>
                 </form>

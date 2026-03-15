@@ -5,8 +5,8 @@ import TextInput from '@/Components/TextInput';
 export default function DomainForm({ data, setData, errors }) {
     return (
         <div className="space-y-6">
-            <h3 className="text-lg font-medium text-purple-600 dark:text-purple-400">Configuración de Dominio</h3>
-            
+            <h3 className="text-lg font-medium ">Configuración de Dominio</h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <InputLabel value="Subdominio actual" />
