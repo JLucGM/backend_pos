@@ -46,10 +46,14 @@ const CheckoutComponent = ({
     countries = [],
     states = [],
     cities = [],
+    mainStore = null,
 }) => {
     const { props } = usePage();
-    const { currency } = props;
+    const currency = props.currency;
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // Priorizar mainStore pasado por props o caer a usePage().props.mainStore
+    const activeStore = mainStore || props.mainStore;
 
     // ===========================================
     // FUNCIÓN PARA RESOLVER REFERENCIAS
@@ -933,6 +937,7 @@ const CheckoutComponent = ({
                             onEditAddress={handleEditAddress}
                             onDeleteAddress={handleDeleteAddress}
                             mode={mode}
+                            mainStore={activeStore}
                         />
                     </ComponentWithHover>
                 );

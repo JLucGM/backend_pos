@@ -118,7 +118,8 @@ function renderBlock(
     cities = [],
     page,
     collections = [],
-    company = null
+    company = null,
+    mainStore = null
 ) {
     const Component = componentMap[block.type];
 
@@ -268,6 +269,7 @@ function renderBlock(
                     countries={countries}
                     states={states}
                     cities={cities}
+                    mainStore={mainStore}
                 />
             );
 
@@ -328,6 +330,7 @@ export default function Index({
     collections = [],
     currentCollection = null,
     company = null,
+    mainStore = null,
 }) {
     // --- Configuración SEO ---
     const seoSource = (isProductDetailPage && currentProduct) ? currentProduct : (currentCollection || page);
@@ -450,7 +453,8 @@ export default function Index({
                     cities,
                     page,
                     collections,
-                    company
+                    company,
+                    mainStore
                 )
             )}
 

@@ -36,10 +36,26 @@ const CustomerInfoComponent = ({
     shippingRates = [],
     paymentMethods = [],
     showAuthModal,
-    mode = 'builder'
+    mode = 'builder',
+    mainStore = null, // <-- añadido
 }) => {
     const { settings } = usePage().props;
     const themeWithDefaults = getThemeWithDefaults(themeSettings, appliedTheme);
+
+    // Determinar qué métodos están habilitados (usar defaults para modo builder)
+    const isDeliveryAllowed = mode === 'builder' ? true : (mainStore?.allow_delivery || mainStore?.allow_shipping || false);
+    const isPickupAllowed = mode === 'builder' ? true : (mainStore?.allow_pickup || false);
+
+    // Efecto para asegurar que el deliveryType seleccionado sea válido
+    React.useEffect(() => {
+        if (mode === 'frontend' && mainStore) {
+            if (deliveryType === 'delivery' && !isDeliveryAllowed && isPickupAllowed) {
+                onDeliveryTypeChange('pickup');
+            } else if (deliveryType === 'pickup' && !isPickupAllowed && isDeliveryAllowed) {
+                onDeliveryTypeChange('delivery');
+            }
+        }
+    }, [isDeliveryAllowed, isPickupAllowed, deliveryType, mode, mainStore]);
 
     // ===========================================
     // FUNCIÓN PARA RESOLVER REFERENCIAS
@@ -207,93 +223,106 @@ const CustomerInfoComponent = ({
             <div className="mb-6">
                 <h3 className="font-medium mb-3" style={{ color: resolveValue(themeWithDefaults.heading) }}>Tipo de Entrega</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button
-                        type="button"
-                        onClick={() => onDeliveryTypeChange('delivery')}
-                        className="p-4 border rounded-lg text-left transition-all"
-                        style={{
-                            borderColor: deliveryType === 'delivery'
-                                ? resolveValue(themeWithDefaults.links)
-                                : resolveValue(themeWithDefaults.borders),
-                            backgroundColor: deliveryType === 'delivery'
-                                ? resolveValue(themeWithDefaults.links + '10')
-                                : 'transparent',
-                            boxShadow: deliveryType === 'delivery'
-                                ? `0 0 0 2px ${resolveValue(themeWithDefaults.links + '20')}`
-                                : 'none',
-                        }}
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg"
-                                style={{
-                                    backgroundColor: deliveryType === 'delivery'
-                                        ? resolveValue(themeWithDefaults.links + '20')
-                                        : resolveValue(themeWithDefaults.secondary_button_background)
-                                }}>
-                                <TruckIcon className="h-6 w-6" style={{
-                                    color: deliveryType === 'delivery'
-                                        ? resolveValue(themeWithDefaults.links)
-                                        : resolveValue(themeWithDefaults.text)
-                                }} />
-                            </div>
-                            <div>
-                                <div className="font-medium" style={{
-                                    color: deliveryType === 'delivery'
-                                        ? resolveValue(themeWithDefaults.links)
-                                        : resolveValue(themeWithDefaults.heading)
-                                }}>
-                                    Envío a Domicilio
+                    {isDeliveryAllowed && (
+                        <button
+                            type="button"
+                            onClick={() => onDeliveryTypeChange('delivery')}
+                            className="p-4 border rounded-lg text-left transition-all"
+                            style={{
+                                borderColor: deliveryType === 'delivery'
+                                    ? resolveValue(themeWithDefaults.links)
+                                    : resolveValue(themeWithDefaults.borders),
+                                backgroundColor: deliveryType === 'delivery'
+                                    ? resolveValue(themeWithDefaults.links + '10')
+                                    : 'transparent',
+                                boxShadow: deliveryType === 'delivery'
+                                    ? `0 0 0 2px ${resolveValue(themeWithDefaults.links + '20')}`
+                                    : 'none',
+                            }}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg"
+                                    style={{
+                                        backgroundColor: deliveryType === 'delivery'
+                                            ? resolveValue(themeWithDefaults.links + '20')
+                                            : resolveValue(themeWithDefaults.secondary_button_background)
+                                    }}>
+                                    <TruckIcon className="h-6 w-6" style={{
+                                        color: deliveryType === 'delivery'
+                                            ? resolveValue(themeWithDefaults.links)
+                                            : resolveValue(themeWithDefaults.text)
+                                    }} />
                                 </div>
-                                <div className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
-                                    Recibe tu pedido en tu dirección
+                                <div>
+                                    <div className="font-medium" style={{
+                                        color: deliveryType === 'delivery'
+                                            ? resolveValue(themeWithDefaults.links)
+                                            : resolveValue(themeWithDefaults.heading)
+                                    }}>
+                                        Envío a Domicilio
+                                    </div>
+                                    <div className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
+                                        Recibe tu pedido en tu dirección
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </button>
+                        </button>
+                    )}
 
-                    <button
-                        type="button"
-                        onClick={() => onDeliveryTypeChange('pickup')}
-                        className="p-4 border rounded-lg text-left transition-all"
-                        style={{
-                            borderColor: deliveryType === 'pickup'
-                                ? resolveValue(themeWithDefaults.links)
-                                : resolveValue(themeWithDefaults.borders),
-                            backgroundColor: deliveryType === 'pickup'
-                                ? resolveValue(themeWithDefaults.links + '10')
-                                : 'transparent',
-                            boxShadow: deliveryType === 'pickup'
-                                ? `0 0 0 2px ${resolveValue(themeWithDefaults.links + '20')}`
-                                : 'none',
-                        }}
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg"
-                                style={{
-                                    backgroundColor: deliveryType === 'pickup'
-                                        ? resolveValue(themeWithDefaults.links + '20')
-                                        : resolveValue(themeWithDefaults.secondary_button_background)
-                                }}>
-                                <StoreIcon className="h-6 w-6" style={{
-                                    color: deliveryType === 'pickup'
-                                        ? resolveValue(themeWithDefaults.links)
-                                        : resolveValue(themeWithDefaults.text)
-                                }} />
-                            </div>
-                            <div>
-                                <div className="font-medium" style={{
-                                    color: deliveryType === 'pickup'
-                                        ? resolveValue(themeWithDefaults.links)
-                                        : resolveValue(themeWithDefaults.heading)
-                                }}>
-                                    Recoger en Tienda
+                    {isPickupAllowed && (
+                        <button
+                            type="button"
+                            onClick={() => onDeliveryTypeChange('pickup')}
+                            className="p-4 border rounded-lg text-left transition-all"
+                            style={{
+                                borderColor: deliveryType === 'pickup'
+                                    ? resolveValue(themeWithDefaults.links)
+                                    : resolveValue(themeWithDefaults.borders),
+                                backgroundColor: deliveryType === 'pickup'
+                                    ? resolveValue(themeWithDefaults.links + '10')
+                                    : 'transparent',
+                                boxShadow: deliveryType === 'pickup'
+                                    ? `0 0 0 2px ${resolveValue(themeWithDefaults.links + '20')}`
+                                    : 'none',
+                            }}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg"
+                                    style={{
+                                        backgroundColor: deliveryType === 'pickup'
+                                            ? resolveValue(themeWithDefaults.links + '20')
+                                            : resolveValue(themeWithDefaults.secondary_button_background)
+                                    }}>
+                                    <StoreIcon className="h-6 w-6" style={{
+                                        color: deliveryType === 'pickup'
+                                            ? resolveValue(themeWithDefaults.links)
+                                            : resolveValue(themeWithDefaults.text)
+                                    }} />
                                 </div>
-                                <div className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
-                                    Recoge tu pedido en nuestro local
+                                <div>
+                                    <div className="font-medium" style={{
+                                        color: deliveryType === 'pickup'
+                                            ? resolveValue(themeWithDefaults.links)
+                                            : resolveValue(themeWithDefaults.heading)
+                                    }}>
+                                        Recoger en Tienda
+                                    </div>
+                                    <div className="text-sm" style={{ color: resolveValue(themeWithDefaults.text) }}>
+                                        Recoge tu pedido en nuestro local
+                                    </div>
                                 </div>
                             </div>
+                        </button>
+                    )}
+
+                    {!isDeliveryAllowed && !isPickupAllowed && (
+                        <div className="sm:col-span-2 p-4 border border-dashed rounded-lg text-center"
+                             style={{ borderColor: resolveValue(themeWithDefaults.borders) }}>
+                            <p style={{ color: resolveValue(themeWithDefaults.text) }}>
+                                No hay métodos de entrega disponibles para esta tienda en este momento.
+                            </p>
                         </div>
-                    </button>
+                    )}
                 </div>
             </div>
 
@@ -538,14 +567,25 @@ const CustomerInfoComponent = ({
                         <StoreIcon className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: resolveValue(themeWithDefaults.info_color) }} />
                         <div>
                             <h4 className="font-medium" style={{ color: resolveValue(themeWithDefaults.info_color) }}>
-                                Recoger en Tienda
+                                Recoger en Tienda: {mainStore?.store_name}
                             </h4>
                             <p className="text-sm mt-1" style={{ color: resolveValue(themeWithDefaults.text) }}>
-                                Puedes recoger tu pedido en nuestro local. Te notificaremos cuando esté listo.
+                                Puedes recoger tu pedido en nuestra sucursal. Te notificaremos cuando esté listo para retiro.
                             </p>
-                            <div className="mt-2 text-sm" style={{ color: resolveValue(themeWithDefaults.info_color) }}>
-                                <div>Horario: Lunes a Viernes 9:00 - 18:00</div>
-                                <div>Dirección: Av. Principal #123, Ciudad</div>
+                            <div className="mt-2 text-sm space-y-1" style={{ color: resolveValue(themeWithDefaults.info_color) }}>
+                                <div className="flex items-center gap-2">
+                                    <MapPinIcon className="h-4 w-4" />
+                                    <span>{mainStore?.address || 'Dirección no disponible'}</span>
+                                </div>
+                                {mainStore?.phone && (
+                                    <div className="flex items-center gap-2">
+                                        <CheckIcon className="h-4 w-4" />
+                                        <span>Teléfono: {mainStore.phone}</span>
+                                    </div>
+                                )}
+                                <div className="mt-2 italic text-xs">
+                                    Horario: Próximamente disponible
+                                </div>
                             </div>
                         </div>
                     </div>
